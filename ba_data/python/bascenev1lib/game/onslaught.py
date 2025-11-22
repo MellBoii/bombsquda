@@ -232,6 +232,7 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
         self._throw_off_kills = 0
         self._land_mine_kills = 0
         self._tnt_kills = 0
+        self.timebeforedeath = 0
     
     @override
     def on_transition_in(self) -> None:
@@ -1293,22 +1294,21 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
                 # gets locked in).
                 bs.timer(base_delay, bs.WeakCall(self.do_end, 'victory'))
                 return
-
-
             # Short celebration after waves.
             if self._wavenum > 1:
                 self.celebrate(0.5)
-            if self._wavenum == 5:
-                for player in self.players:
-                    player.actor.gosuper()
-                self.timebeforedeath += 20
-            if self._wavenum == 10:
-                for player in self.players:
-                    player.actor.equip_shields()
-                self.timebeforedeath += 20
             bs.timer(base_delay, bs.WeakCall(self._start_next_wave))
+            if self._preset in {Preset.ENDLESS, Preset.ENDLESS_TOURNAMENT}:
+                if self._wavenum == 5:
+                    for player in self.players:
+                        player.actor.gosuper(shouldntsetmusic=True)
+                    self.timebeforedeath += 20
+                if self._wavenum == 10:
+                    for player in self.players:
+                        player.actor.equip_shields()
+                    self.timebeforedeath += 20
+                self.timebeforedeath += 20
             self._wavenum += 1
-            self.timebeforedeath += 20
 
         # Check milestone every 10 waves starting at 20
         if self._wavenum >= 20 and self._wavenum % 10 == 0:

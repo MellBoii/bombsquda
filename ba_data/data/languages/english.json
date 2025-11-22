@@ -1751,7 +1751,7 @@
       "There can be only one.": "have fun trying to survive xd",
       "Touch the enemy flag ${ARG1} times.": "appropriately touch the other flag like ${ARG1} times",
       "Touch the enemy flag.": "bombjump to the flag i dont care how you do it",
-      "carry the flag for ${ARG1} seconds": "hold the flag for like ${ARG} seconds",
+      "carry the flag for ${ARG1} seconds": "hold the flag for like ${ARG1} seconds",
       "kill ${ARG1} enemies": null,
       "last one standing wins": null,
       "last team standing wins": null,
