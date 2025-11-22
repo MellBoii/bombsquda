@@ -119,6 +119,9 @@ class Spaz(bs.Actor):
         self._roulette_active = False
         self._roulette_timer = None
         self._roulette_current = None
+        
+        self._wiggle_count = 0
+        self.wiggling = False
 
         self.source_player = source_player
         self._dead = False
@@ -951,6 +954,22 @@ class Spaz(bs.Actor):
         if not self.node:
             return
         self.node.move_up_down = value
+        
+    def _start_wiggle_sequence(self):
+        if self.wiggling == True:
+            self.resettimer = bs.Timer(0.5, self._stop_wiggle_sequence)
+            return
+        self.wiggledancetimer = bs.Timer(0.01, lambda: self.node.handlemessage('celebrate', int(50)), repeat=True)
+        bs.getsound('drumRollShort').play()
+        self.wiggling = True
+        if isinstance(self.getactivity(), GameActivity):
+            self.getactivity().dancing_players.append(self)
+        
+    def _stop_wiggle_sequence(self):
+        self.wiggledancetimer = None
+        self.wiggling = False
+        self._wiggle_count = 0
+        self.remove_from_dancin()
 
     def on_move_left_right(self, value: float) -> None:
         """
@@ -962,6 +981,19 @@ class Spaz(bs.Actor):
         if not self.node:
             return
         self.node.move_left_right = value
+        # ok so the idea here WAS stolen from bser
+        # but the code was not stolen
+        self._last_lr_value = value
+        def resetwiggle():
+            self._wiggle_count = 0
+        # detect any significant fast changes to the value
+        if abs(value) > 0.9:
+            self._wiggle_count += 1
+            self.wiggle_reset_timer = bs.Timer(0.3, resetwiggle)
+        # start doin it if we wiggled around so much
+        if self._wiggle_count > 14:
+            self._start_wiggle_sequence()
+            self.resettimer = bs.Timer(0.5, self._stop_wiggle_sequence)
 
     def on_punched(self, damage: int) -> None:
         """Called when this spaz gets punched."""
@@ -1045,7 +1077,7 @@ class Spaz(bs.Actor):
     def equip_boxing_gloves_stronger(self) -> None:
         """
         Give this spaz some way stronger boxing gloves.
-        This is mostly exclusive to KNIGHTBot, but
+        This is mostly exclusive to SpazBot.KNIGHTBot, but
         it's still coded in so... i dunno, add it if you want
         """
         assert self.node
@@ -1188,6 +1220,10 @@ class Spaz(bs.Actor):
                 self.getactivity().metal_players.remove(self)
             except: 
                 pass
+                
+    def remove_from_dancin(self):
+        if isinstance(self.getactivity(), GameActivity):
+            self.getactivity().dancing_players.remove(self)
 
     def _activate_metalcap(self) -> None:
         if not self.node:

@@ -246,10 +246,16 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         )
         self._zoom_message_times: dict[int, float] = {}
         self.metal_players: list[PlayerSpaz] = []
+        self.dancing_players: list[PlayerSpaz] = []
         self.metal_sound = _bascenev1.newnode('sound', attrs={'sound': _bascenev1.getsound('metalMusic'),
-                        'volume': 0.0})        
+                        'volume': 0.0})
+        self.dancin_sound = _bascenev1.newnode('sound', attrs={'sound': _bascenev1.getsound('homeroLoop'),
+                        'volume': 0.0}) 
         self._standard_metal_tick_timer = _bascenev1.Timer(
             0.1, babase.WeakCall(self.metal_tick), repeat=True
+        )
+        self._standard_dancin_tick_timer = _bascenev1.Timer(
+            0.1, babase.WeakCall(self.dance_tick), repeat=True
         )
 
     @property
@@ -696,8 +702,10 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
             _bascenev1.timer(4.0, dnode.delete)
 
     def metal_tick(self):
-        """ Tick every few seconds. Used for 
-        transitioning out the Metal Cap Music. """
+        """ 
+        Tick every few seconds. Used for 
+        the Metal Cap Music. 
+        """
         if self.is_transitioning_out():
             self.metal_players = []
             return
@@ -708,6 +716,21 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         else:
             if self.metal_sound:
                 self.metal_sound.volume = 0.0
+
+    def dance_tick(self):
+        """
+        tick for wiggle dance
+        """
+        if self.is_transitioning_out():
+            self.dancing_players = []
+            return
+        
+        if self.dancing_players:
+            if self.dancin_sound:
+                self.dancin_sound.volume = 2.0           
+        else:
+            if self.dancin_sound:
+                self.dancin_sound.volume = 0.0
 
     def _show_tip(self) -> None:
         # pylint: disable=too-many-locals
