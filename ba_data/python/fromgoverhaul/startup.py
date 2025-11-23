@@ -88,8 +88,7 @@ class Startup():
             color=(1, 0.3, 0.3)
         )
         bui.getsound('error').play()
-        bui.getsound('parried').play()
-        
+        bui.getsound('parry').play()       
         try:
             icon = bs.newnode(
                 'image',
