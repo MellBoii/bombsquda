@@ -236,7 +236,7 @@ class RichPresence:
                     
             except Exception as e:
                 # comment this out for now.
-                print(f'Error updating rich presence. ({e})')
+                # print(f'Error updating rich presence. ({e})')
                 pass
             babase.apptimer(0.1, self.check)
         

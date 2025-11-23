@@ -62,7 +62,7 @@ class RadioWindow(bui.Window):
             width=250,
             autoselect=True,
             on_value_change_call=bui.WeakCall(self._on_menu_choice),
-            choices= [
+            choices = [
                 'MENU',
                 'MENU2',
                 'MENU3',

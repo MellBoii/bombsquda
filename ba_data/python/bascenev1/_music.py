@@ -112,6 +112,7 @@ class MusicType(Enum):
     SURVEY = 'SURVEY'
     LOGOTYPE = 'LOGOTYPE'
     OPENING = 'Opening'
+    CRASH_HANDLER = 'Crash_Handler'
     
 def show_music_now_playing(music_type: bs.MusicType) -> None:
         """
@@ -155,9 +156,8 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
             bs.MusicType.SCORES: "Result (1st Place ~ 3rd Place)\n - Mario Kart: Double Dash!!",
             bs.MusicType.CHAR_SELECT2: "Sky Map - Mario Kart World",
             bs.MusicType.RACE: "VS Metal Sonic - Sonic Mania",
-            bs.MusicType.MENU: "Mother Earth - Mother Encore",
-            bs.MusicType.MENUPIANO: "Mother Earth Piano - Mother Encore",
-            bs.MusicType.MENU2: "SMK Title Remastered - Turret 3471",
+            bs.MusicType.MENU: "Artistic Mindset - Spamton123",
+            bs.MusicType.MENU2: "Waluigi Pinball - Mario Kart DS",
             bs.MusicType.MENU3: "Mario vs Luigi 2.0 Title Theme Remix - Goldyber",
             bs.MusicType.MENU6: "Cascade Zone Act 2 (Track B) - Bomb Boy",
             bs.MusicType.MENU7: "Mario vs Luigi 2.0 Title Theme",
@@ -275,3 +275,8 @@ def localsetmusic(musictype: MusicType | None, continuous: bool = False) -> None
             musictype,
             mode=bui.app.classic.MusicPlayMode.TEST,
         )
+def getmusic():
+    """
+    gets the current playing music
+    """
+    return getattr(bs.MusicType, bs.get_foreground_host_activity().globalsnode.music.upper())
