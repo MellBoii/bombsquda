@@ -88,13 +88,13 @@ class Startup():
             color=(1, 0.3, 0.3)
         )
         bui.getsound('error').play()
-        bui.getsound('OUUHH').play()
+        bui.getsound('parried').play()
         
         try:
             icon = bs.newnode(
                 'image',
                 attrs={
-                    'texture': bs.gettexture('melIcon'),  # lol
+                    'texture': bs.gettexture('jacking'),  # lol
                     'position': (0, 0),   # pos
                     'fill_screen': True,
                     'opacity': 1.0,
