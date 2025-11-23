@@ -120,7 +120,6 @@ class Startup():
         ba.app.config['timeserrored'] += 1
         def error_reset():
             ba.app.config['timeserrored'] = 0
-            print('okay, reset everything')
         bs.timer(3.0, error_reset)
         # stop everything if we get a number exceptions so we dont get flooded
         if ba.app.config['timeserrored'] > 20:
@@ -137,7 +136,7 @@ class Startup():
             newnode2 = bs.newnode(
                 'text',
                 attrs={
-                    'text': f"Too many errors occured within a certain timeframe.\nMost recent error: {error_text}",
+                    'text': f"Too many errors occured within a certain timeframe.\nMost recent error:\n{error_text}",
                     'h_align': 'left',
                     'v_attach': 'top',
                     'h_attach': 'left',
@@ -167,7 +166,7 @@ class Startup():
                 attrs={
                     'texture': bs.gettexture('error'),
                     'absolute_scale': True,
-                    'position': (400, 0),
+                    'position': (400, -130),
                     'attach': 'center',
                     'opacity': 1.0,
                     'scale': (550, 550),
