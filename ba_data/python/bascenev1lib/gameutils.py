@@ -11,62 +11,63 @@ import random
 
 if TYPE_CHECKING:
     pass
-class ImageJumper:
-    def jump_image(node: bs.Node,
-                   jump_force: float = 340.0,
-                   randomness: float = 150.0,
-                   fall_speed: float = -420.0,
-                   duration: float = 4.5):
-        """
-        Makes a UI image jump upward, fly in a random direction,
-        and then fall offscreen.
+    
+def jump_image(node: bs.Node,
+               jump_force: float = 340.0,
+               randomness: float = 150.0,
+               fall_speed: float = -420.0,
+               duration: float = 4.0):
+    """
+    Makes a UI image jump upward, fly in a random direction,
+    and then fall offscreen.
 
-        node: the image node
-        jump_force: how hard it jumps upward
-        randomness: how much sideways scatter
-        fall_speed: how fast it falls downward
-        duration: how long before the node deletes
-        """
+    node: the image node
+    jump_force: how hard it jumps upward
+    randomness: how much sideways scatter
+    fall_speed: how fast it falls downward
+    duration: how long before the node deletes
+    """
 
+    if not node:
+        return
+
+    # Start position
+    x0, y0 = node.position
+
+    # Random horizontal velocity
+    vx = random.uniform(-randomness, randomness)
+
+    # Upward jump
+    vy = jump_force
+
+    # Gravity-like fall will be simulated manually
+    # We store the velocity inside a closure
+    velocity = {'vx': vx, 'vy': vy}
+
+    def tick():
         if not node:
             return
+        # apply velocity
+        pos = list(node.position)
+        pos[0] += velocity['vx'] * 0.016
+        pos[1] += velocity['vy'] * 0.016
 
-        # Start position
-        x0, y0 = node.position
+        node.position = (pos[0], pos[1])
 
-        # Random horizontal velocity
-        vx = random.uniform(-randomness, randomness)
+        # gravity
+        velocity['vy'] += fall_speed * 0.016
 
-        # Upward jump
-        vy = jump_force
-
-        # Gravity-like fall will be simulated manually
-        # We store the velocity inside a closure
-        velocity = {'vx': vx, 'vy': vy}
-
-        def tick():
-            if not node:
-                return
-            # apply velocity
-            pos = list(node.position)
-            pos[0] += velocity['vx'] * 0.016
-            pos[1] += velocity['vy'] * 0.016
-
-            node.position = (pos[0], pos[1])
-
-            # gravity
-            velocity['vy'] += fall_speed * 0.016
-
-            # delete when far offscreen
-            if pos[1] < -500:
-                node.delete()
-        def dodelete():
+        # delete when far offscreen
+        if pos[1] < -600:
             node.delete()
-        bs.timer(0.016, tick, repeat=True)
+    def dodelete():
+        node.delete()
+    bs.timer(0.016, tick, repeat=True)
 
-        # delete after duration anyway
-        bs.timer(duration, dodelete)
-
+    # delete after duration anyway
+    bs.timer(duration, dodelete)
+ 
+    
 class SharedObjects:
     """Various common components for use in games.
 
