@@ -283,7 +283,6 @@ class MultiTeamSession(Session):
         if results.winning_sessionteam is None:
             _bascenev1.getsound('bellDraw').play()
             bs.broadcastmessage('It\'s a draw...')
-            activity.globalsnode.paused = True
         else:
             _bascenev1.getsound('boxingBell').play()
 
@@ -297,7 +296,6 @@ class MultiTeamSession(Session):
                 team_name = team.name.evaluate()
                 bs.broadcastmessage(f"{team_name} wins!", color=team.color)
 
-            activity.globalsnode.paused = True
 
         if announce_winning_team:
             winning_sessionteam = results.winning_sessionteam

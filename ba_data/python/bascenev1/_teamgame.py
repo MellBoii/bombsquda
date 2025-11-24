@@ -184,12 +184,10 @@ class TeamGameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
                     if isinstance(results, bascenev1.GameResults) and results.winning_team is None:                   
                         delay = 10.0
                         _bascenev1.getsound('bellDraw').play()
-                        activity.globalsnode.paused = True
                         bascenev1.setmusic(None)
                     else:
                         delay = 10.0
                         _bascenev1.getsound('boxingBell').play()
-                        activity.globalsnode.paused = True
                         bascenev1.setmusic(None)
                 except Exception:
                     _bascenev1.getsound('boxingBell').play()
