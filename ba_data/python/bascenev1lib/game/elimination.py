@@ -237,8 +237,6 @@ class Icon(bs.Actor):
             player = self._player()
             lives = player.lives if player else 0
             if lives == 0:
-                jump_image(self.node)
-                bs.getsound('deathscream').play()
                 bs.timer(0.6, self.update_for_lives)
 
     @override
