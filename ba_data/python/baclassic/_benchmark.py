@@ -176,7 +176,8 @@ def _start_stress_test(args: _StressTestArgs) -> None:
         ba.apptimer(32.0, lambda: ba.screenmessage('Susie, played by herself'))
         ba.apptimer(35.0, lambda: ba.screenmessage('Orangecap, played by Buddie'))
         ba.apptimer(38.0, lambda: ba.screenmessage('Roaring Knight, played by itself'))
-        ba.apptimer(41.0, lambda: ba.screenmessage('Bowser, played by himself'))
+        ba.apptimer(41.0, lambda: ba.screenmessage('Homer Simpson, played by Homer Simpson'))
+        ba.apptimer(44.0, lambda: ba.screenmessage('Bowser, played by himself'))
         ba.apptimer(48.0, lambda: ba.screenmessage('Special thanks to everyone who developed BombSquad ♥'))
 
 

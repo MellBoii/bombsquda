@@ -57,7 +57,8 @@ class CreditsActivity(bs.TeamGameActivity[bs.Player, bs.Team]):
         bs.timer(117.0, lambda: self._start_character_scroll('ralsei'))
         bs.timer(127.0, lambda: self._start_character_scroll('orangecap', leftside=True))
         bs.timer(137.0, lambda: self._start_character_scroll('knight'))
-        
+        bs.timer(147.0, lambda: self._start_character_scroll('homer', leftside=True))
+    
         
     def _start_character_scroll(self, tex: str | None = None, leftside: bool = False):
         """
