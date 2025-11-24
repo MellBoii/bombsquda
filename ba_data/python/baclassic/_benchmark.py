@@ -175,10 +175,9 @@ def _start_stress_test(args: _StressTestArgs) -> None:
         ba.apptimer(29.0, lambda: ba.screenmessage('Ralsei, played by themselves'))
         ba.apptimer(32.0, lambda: ba.screenmessage('Susie, played by herself'))
         ba.apptimer(35.0, lambda: ba.screenmessage('Orangecap, played by Buddie'))
-        ba.apptimer(38.0, lambda: ba.screenmessage(f"John Grace, played by {c4name} except he was pitch black"))
-        ba.apptimer(41.0, lambda: ba.screenmessage('Roaring Knight, played by itself'))
-        ba.apptimer(43.0, lambda: ba.screenmessage('Bowser, played by himself'))
-        ba.apptimer(51.0, lambda: ba.screenmessage('Special thanks to everyone who developed BombSquad ♥'))
+        ba.apptimer(38.0, lambda: ba.screenmessage('Roaring Knight, played by itself'))
+        ba.apptimer(41.0, lambda: ba.screenmessage('Bowser, played by himself'))
+        ba.apptimer(48.0, lambda: ba.screenmessage('Special thanks to everyone who developed BombSquad ♥'))
 
 
 def _update_attract_mode_test(args: _StressTestArgs) -> None:

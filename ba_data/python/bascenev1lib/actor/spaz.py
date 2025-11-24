@@ -1356,9 +1356,7 @@ class Spaz(bs.Actor):
             bs.timer(10.0, self.instructimage.delete)
             if not shouldntsetmusic:
                 # music
-                if self.character == 'John':
-                    bs.setmusic(bs.MusicType.REPRIEVE)
-                elif self.character == 'Agent Johnson':
+                if self.character == 'Agent Johnson':
                     bs.setmusic(bs.MusicType.NOISESUPER)
                 elif self.character == 'Zoe':
                     bs.setmusic(bs.MusicType.GRAND_ROMP)
@@ -2995,11 +2993,6 @@ class Spaz(bs.Actor):
                 bs.Lstr(resource='ralPhrase3')
                 ],
             "Zoe": # THEIR FUCKING PRONOUNS IS THEY/THEM
-                [
-                bs.Lstr(resource='krPhrase1'),
-                bs.Lstr(resource='krPhrase1')
-                ],
-            "John": # grace
                 [
                 bs.Lstr(resource='krPhrase1'),
                 bs.Lstr(resource='krPhrase1')

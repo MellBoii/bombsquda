@@ -954,7 +954,7 @@ class ExplodeyBot(SpazBot):
     category: Bot Classes
     """
 
-    character = 'John'
+    character = 'Jack Morgan'
     run = True
     color = (0.0, 0.0, 0.0)
     highlight = (0.0, 0.0, 0.0)

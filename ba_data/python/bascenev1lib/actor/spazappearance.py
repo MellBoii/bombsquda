@@ -292,33 +292,6 @@ def register_appearances() -> None:
     t.style = 'pirate'
     t.default_color = (1.0, 0.99, 0.13999999999999968)
     t.default_highlight = (0.30999999999999994, 0.4599999999999999, 1)   
-    
-    # john fucking grace. #######################################
-    t = Appearance('John')
-    t.color_texture = 'graceColor'
-    t.color_mask_texture = 'graceColorMask'
-    t.icon_texture = 'graceIcon'
-    t.earthportrait = 'gracebound'
-    t.icon_mask_texture = 'graceIconColorMask'
-    t.head_mesh = 'graceHead'
-    t.torso_mesh = 'graceTorso'
-    t.pelvis_mesh = 'kronkHand'
-    t.upper_arm_mesh = 'graceArm'
-    t.forearm_mesh = 'kronkHand'
-    t.hand_mesh = 'kronkHand'
-    t.upper_leg_mesh = 'graceLeg'
-    t.lower_leg_mesh = 'kronkHand'
-    t.toes_mesh = 'kronkHand'
-    sounds = ['blank']
-    t.jump_sounds = sounds
-    t.attack_sounds = sounds
-    t.impact_sounds = sounds
-    t.death_sounds = sounds
-    t.pickup_sounds = sounds
-    t.fall_sounds = sounds
-    t.style = 'agent'
-    t.default_color = (0.1, 0.1, 0.1)
-    t.default_highlight = (1.0, 1.0, 1.0)
 
     # Snowman ###################################
     t = Appearance('Frosty')

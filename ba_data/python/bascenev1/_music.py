@@ -147,7 +147,6 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
             bs.MusicType.TO_THE_DEATHFAST: "Daniel Bautista - Flight of the Bumblebee",
             bs.MusicType.EPIC: "Nocturne no. 2 in E-Flat major, op. 9 no. 2",
             bs.MusicType.CHAR_SELECT: "Overworld Map - Mario Kart World",
-            bs.MusicType.REPRIEVE: "RETALIATION - Grace OST",
             bs.MusicType.TUTORIAL: "Doing it Right - Mario & Luigi: Bowser's Inside Story",
             bs.MusicType.ONLINE: "Across The World - Tyron",
             bs.MusicType.D_RUNNIN: "Runnin from Evil - Doom II", 
