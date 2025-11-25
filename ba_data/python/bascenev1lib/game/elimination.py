@@ -14,7 +14,6 @@ from typing import TYPE_CHECKING, override
 import bascenev1 as bs
 import random
 
-from bascenev1lib.gameutils import jump_image
 from bascenev1lib.actor.spazfactory import SpazFactory
 from bascenev1lib.actor.scoreboard import Scoreboard
 
