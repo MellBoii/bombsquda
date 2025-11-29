@@ -2375,7 +2375,7 @@ class TutorialActivity(bs.Activity[Player, Team]):
                     Delay(1100),
                     Text(
                         bs.Lstr(resource=f'{self._r}.phrase24Text')
-                    ), # the death of tutorial spaz
+                    ), # welp, guess i'm dead
                     Jump(),
                     Delay(300),
                     AnalyticsScreen('Tutorial Complete'),

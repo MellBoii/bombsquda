@@ -18,7 +18,7 @@ def get_appearances(include_locked: bool = False) -> list[str]:
     get_purchased = plus.get_v1_account_product_purchased
     disallowed = []
     if not include_locked:
-        # alternative to updating modpack since it willt ake too long
+        # alternative to updating modpack since it will TAKING TOO LONG
         if not get_purchased('characters.santa'):
             disallowed.append('Santa Claus')
         if not ba.app.config.get("unlockedmel", True):
@@ -212,8 +212,8 @@ def register_appearances() -> None:
     t.attack_sounds = kronk_sounds
     t.victory_sounds = ['kronk2']
     t.gloat_sounds = ['kronkGloat']
-    t.impact_sounds = kronk_sounds
-    t.death_sounds = ['kronkDeath']
+    t.impact_sounds = ['penguinHit1', 'penguinHit1', 'kronkDeath']
+    t.death_sounds = ['zoeDeath01']
     t.pickup_sounds = kronk_sounds
     t.fall_sounds = ['kronkFall']
     t.style = 'kronk'
