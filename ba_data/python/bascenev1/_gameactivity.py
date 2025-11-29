@@ -1148,7 +1148,7 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
             self._did_hurryup = True
             bs.setmusic(bs.MusicType.HURRYUP)
             bs.broadcastmessage('Hurry up!')
-            bs.timer(2.8, lambda: bs.setmusic(fast_music))
+            bs.timer(2.0, lambda: bs.setmusic(fast_music))
 
     def _setup_tournament_time_limit(self, duration: float) -> None:
         """
