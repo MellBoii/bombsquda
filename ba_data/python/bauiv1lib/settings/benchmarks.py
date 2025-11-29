@@ -187,7 +187,7 @@ class BenchmarksAndStressTestsWindow(bui.MainWindow):
             parent=self._subcontainer,
             position=(x_offs, v),
             width=150,
-            choices=['Random', 'Teams', 'Free-For-All'],
+            choices=['Random', 'Teams', 'Free-For-All', 'Coop'],
             choices_display=[
                 bui.Lstr(resource=a)
                 for a in [

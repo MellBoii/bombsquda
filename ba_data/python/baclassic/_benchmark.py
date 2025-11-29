@@ -103,7 +103,7 @@ def stop_stress_test() -> None:
 
 def _start_stress_test(args: _StressTestArgs) -> None:
     """(internal)"""
-    from bascenev1 import DualTeamSession, FreeForAllSession
+    from bascenev1 import DualTeamSession, FreeForAllSession, CoopSession
 
     classic = babase.app.classic
 
@@ -112,10 +112,12 @@ def _start_stress_test(args: _StressTestArgs) -> None:
     appconfig = babase.app.config
     playlist_type = args.playlist_type
     if playlist_type == 'Random':
-        if random.random() < 0.5:
-            playlist_type = 'Teams'
-        else:
-            playlist_type = 'Free-For-All'
+        playlistchoices = [
+            'Free-For-All',
+            'Teams',
+            'Coop',
+        ]
+        playlist_type = random.choice(playlistchoices)
     if not args.attract_mode:
         babase.screenmessage(
             'Running Stress Test (listType="'
@@ -139,7 +141,7 @@ def _start_stress_test(args: _StressTestArgs) -> None:
                 babase.Call(bascenev1.new_host_session, DualTeamSession),
             ),
         )
-    else:
+    elif playlist_type == 'Free-For-All':
         appconfig['Free-for-All Playlist Selection'] = args.playlist_name
         appconfig['Free-for-All Playlist Randomize'] = 1
         babase.apptimer(
@@ -149,6 +151,24 @@ def _start_stress_test(args: _StressTestArgs) -> None:
                 babase.Call(bascenev1.new_host_session, FreeForAllSession),
             ),
         )
+    elif playlist_type == 'Coop':
+        default_levels = [
+            'Challenges:Infinite Onslaught',
+            'Challenges:Infinite Runaround',
+            'Challenges:The Last Stand',
+            'Default:Onslaught Training',
+            'Default:The Finale',
+        ]
+        custom_level = args.playlist_name
+        if custom_level != '__default__':
+            babase.apptimer(1.0, lambda: classic.launch_coop_game(custom_level))
+        elif custom_level == '':
+            babase.apptimer(1.0, lambda: classic.launch_coop_game(random.choice(default_levels)))
+        else:
+            babase.apptimer(1.0, lambda: classic.launch_coop_game(random.choice(default_levels)))
+        
+    else:
+        print(f"Incorrect playlist_type: {playlist_type}")
     _baclassic.set_stress_testing(True, args.player_count, args.attract_mode)
     classic.stress_test_update_timer = babase.AppTimer(
         args.round_duration, babase.Call(_reset_stress_test, args)

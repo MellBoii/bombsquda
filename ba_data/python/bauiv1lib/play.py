@@ -837,7 +837,7 @@ class CoopSubMenu(bui.MainWindow):
             parent=self._root_widget,
             position=(200, 250),
             scale=1.3,
-            text="Choose Campaign",
+            text=bui.Lstr(resource=f'{self._r}.whichCampaign'),
             h_align='center',
             v_align='center',
             size=(0, 0),
@@ -845,7 +845,7 @@ class CoopSubMenu(bui.MainWindow):
 
         bui.buttonwidget(
             parent=self._root_widget,
-            label="Normal Campaign",
+            label=bui.Lstr(resource=f'{self._r}.regularCampaign'),
             position=(100, 150),
             size=(200, 50),
             on_activate_call=self._normal_campaign,
@@ -853,7 +853,7 @@ class CoopSubMenu(bui.MainWindow):
 
         bui.buttonwidget(
             parent=self._root_widget,
-            label="Custom Campaign (not done)",
+            label=bui.Lstr(resource=f'{self._r}.whichCampaign'),
             position=(100, 80),
             size=(200, 50),
             on_activate_call=self._custom_campaign,
@@ -914,4 +914,3 @@ class CoopSubMenu(bui.MainWindow):
                 origin_widget=self._root_widget,
             )
         )
-    # uh... this game's coding is duct tape. yeah.
