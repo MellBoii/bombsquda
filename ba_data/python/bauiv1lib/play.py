@@ -826,6 +826,7 @@ class CoopSubMenu(bui.MainWindow):
         self.dialog = 1
         self.nobackout = nobackout
         self._main_window_transition_out = 'out_scale'
+        self._r = 'playWindow'
         self._root_widget = bui.containerwidget(
             size=(400, 300),
             transition='in_right',
@@ -853,7 +854,7 @@ class CoopSubMenu(bui.MainWindow):
 
         bui.buttonwidget(
             parent=self._root_widget,
-            label=bui.Lstr(resource=f'{self._r}.whichCampaign'),
+            label=bui.Lstr(resource=f'{self._r}.customCampaign'),
             position=(100, 80),
             size=(200, 50),
             on_activate_call=self._custom_campaign,

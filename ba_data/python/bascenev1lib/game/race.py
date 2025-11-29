@@ -186,8 +186,6 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
         self.default_music = (
             bs.MusicType.EPIC_RACE if self._epic_mode else bs.MusicType.RACE
         )
-        if isinstance(bs.get_foreground_host_session(), bs.CoopSession):
-            print('coop version of race')
 
     @override
     def get_instance_description(self) -> str | Sequence:

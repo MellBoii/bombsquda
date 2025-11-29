@@ -1299,7 +1299,10 @@
   "playWindow": {
     "oneToFourPlayersText": "1-4 players",
     "titleText": "which mode bro?",
-    "twoToEightPlayersText": "2-8 players"
+    "twoToEightPlayersText": "2-8 players",
+    "whichCampaign": "which campaing bro",
+    "regularCampaign": "default campaign",
+    "customCampaign": "custom campaign (wip)"
   },
   "playerCountAbbreviatedText": "${COUNT}p",
   "playerDelayedJoinText": "${PLAYER} got here late and will join laterer",
@@ -1307,7 +1310,7 @@
   "playerLeftText": "${PLAYER} ragequit the game",
   "playerLimitReachedText": "nope you dont get to join",
   "playerProfilesWindow": {
-    "cantDeleteAccountProfileText": "hey silly you cant delete your account",
+    "cantDeleteAccountProfileText": "hey silly you cant delete your account profile",
     "deleteButtonText": "delete",
     "deleteConfirmText": "you really wanna delete ${PROFILE}?",
     "editButtonText": "edit",
