@@ -73,6 +73,8 @@ class RadioWindow(bui.Window):
                 'MENU10',
                 'MENU11',
                 'MENU12',
+                'MENU13',
+                'MENU14',
                 'MENU67',
                 'Victory',
                 'VictoryFinal',
@@ -140,6 +142,7 @@ class RadioWindow(bui.Window):
                 'DS3',
                 'SURVEY',
                 'Opening',
+                'CRASH_HANDLER',
             ],
             button_size=(300, 70),
         )
@@ -147,7 +150,7 @@ class RadioWindow(bui.Window):
             parent=self._root_widget,
             position=(self._width * 0.5, self._height - 105),
             size=(0, 0),
-            scale=0.75 if uiscale is bui.UIScale.SMALL else 1.0,
+            scale=1.0,
             text='Welcome to the Boombox.\nThis allows you to play any of the game\'s music\nINCLUDING whenever in a online party. \nSelect a MusicType and press play to start.',
             color=(1, 1, 1),
             h_align='center',
@@ -201,7 +204,7 @@ class RadioWindow(bui.Window):
             
         self.prefix = "boomboxon"
         self.frame_count = 2
-        self.frame_delay = 0.5
+        self.frame_delay = 0.3
         self._current_frame = 1
         # Start the animation timer.
         self._timer = ba.AppTimer(self.frame_delay, self._next_frame, repeat=True)

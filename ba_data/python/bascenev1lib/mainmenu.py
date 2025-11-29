@@ -16,6 +16,8 @@ import bauiv1 as bui
 import babase as ba
 from bascenev1lib.game.surveyprogram import SURVEYActivity
 from bascenev1lib.actor.cutsceneplayer import CutscenePlayer
+from bascenev1lib.gameutils import SharedObjects
+from bascenev1lib.maps import SNESBattleCourse1
 
 if TYPE_CHECKING:
     from typing import Any
@@ -53,6 +55,7 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         self.today = datetime.datetime.now()
         self.cutscene_player = None
         self.canstartdemo = True
+        self.map = SNESBattleCourse1
 
     
     @override
@@ -191,13 +194,16 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
                 },
             )
         )
+        shared = SharedObjects.get()
         self.terrain = bs.NodeActor(
             bs.newnode(
                 'terrain',
                 attrs={
                     'mesh': mesh,
+                    'collision_mesh': bs.getcollisionmesh('snesCourseCollide'),
                     'color_texture': color_texture,
                     'reflection': 'soft',
+                    'materials': [shared.footing_material],
                     'reflection_scale': [0.3],
                 },
             )
@@ -723,16 +729,9 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
                 bs.MusicType.MENU10,
                 bs.MusicType.MENU11,
                 bs.MusicType.MENU12,
-                bs.MusicType.MENU,
-                bs.MusicType.MENU2,
-                bs.MusicType.MENU6,
-                bs.MusicType.MENU7,
-                bs.MusicType.MENU8,
-                bs.MusicType.MENU9,
-                bs.MusicType.MENU10,
-                bs.MusicType.MENU11,
-                bs.MusicType.MENU12,
-                bs.MusicType.MENU67
+                bs.MusicType.MENU13,
+                bs.MusicType.MENU14,
+                bs.MusicType.MENU67,
             ]
             self.chosen_music = random.choice(music_choices)
             bs.setmusic(self.chosen_music)
@@ -1081,8 +1080,3 @@ class MainMenuSession(bs.Session):
 
         # Any ending activity leads us into the main menu one.
         self.setactivity(bs.newactivity(MainMenuActivity))
-
-    @override
-    def on_player_request(self, player: bs.SessionPlayer) -> bool:
-        # Reject all player requests.
-        return False

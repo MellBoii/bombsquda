@@ -38,6 +38,8 @@ class MusicType(Enum):
     MENU10 = 'MENU10'
     MENU11 = 'MENU11'
     MENU12 = 'MENU12'
+    MENU13 = 'MENU13'
+    MENU14 = 'MENU14'
     MENU67 = 'MENU67'
     VICTORY = 'Victory'
     VICTORYFINAL = 'VictoryFinal'
