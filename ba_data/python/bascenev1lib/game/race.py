@@ -84,6 +84,7 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
     scoreconfig = bs.ScoreConfig(
         label='Time', lower_is_better=True, scoretype=bs.ScoreType.MILLISECONDS
     )
+    suppress_gong = True
 
     @override
     @classmethod
@@ -176,16 +177,16 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
         self._entire_team_must_finish = bool(
             settings.get('Entire Team Must Finish', False)
         )
+        self.player_finished_count = 0
         self._time_limit = float(settings['Time Limit'])
         self._mine_spawning = int(settings['Mine Spawning'])
         self._bomb_spawning = int(settings['Bomb Spawning'])
         self._epic_mode = bool(settings['Epic Mode'])
+        self.time_before_death = 60.0
+        self.timer_over = False
 
         # Base class overrides.
         self.slow_motion = self._epic_mode
-        self.default_music = (
-            bs.MusicType.EPIC_RACE if self._epic_mode else bs.MusicType.RACE
-        )
 
     @override
     def get_instance_description(self) -> str | Sequence:
@@ -210,11 +211,55 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
         if self._laps > 1:
             return 'run ${ARG1} laps', self._laps
         return 'run 1 lap'
+        
+    def tick(self):
+        self.time_before_death -= 1
+        self.timer_text.text = str(self.time_before_death)
+        if self.time_before_death <= 30:
+            self.timer_text.color = (1, 0.3, 0.3)
+        elif self.time_before_death <= 10:
+            bs.getsound('tick').play()
+            self.timer_text.color = (1, 0, 0)
+            self.timer_text.scale = 1.7
+        else:
+            self.timer_text.color = (1, 1, 1)
+        if self.time_before_death <= 0:
+            bs.setmusic(None)
+            bs.getsound('didnotfinish').play()
+            self.tick_timer = None
+            self.timer_over = True
+            bs.timer(7.5, self.session.end)
+            for player in self.players:
+                player.actor.smashkill(sound='thunder')
+
 
     @override
     def on_transition_in(self) -> None:
         super().on_transition_in()
         shared = SharedObjects.get()
+        if isinstance(bs.get_foreground_host_session(), bs.CoopSession):
+            bs.getsound('newlapsound').play()
+            self.timer_text = bs.newnode(
+                'text',
+                attrs={
+                    'text': str(self.time_before_death),
+                    'h_align': 'center',
+                    'v_attach': 'bottom',
+                    'position': (0, -50),
+                    'scale': 1.2,
+                    'color': (1, 1, 1),
+                    'shadow': 0.7,
+                    'flatness': 0.6,
+                },
+            )
+            bs.animate_array(self.timer_text, 'position', 2, 
+                {
+                    1.0: (0, -50), 
+                    3.0: (0, 0), # move upwards
+                }
+            )
+        else:
+            bs.getsound('startGrid').play()
         pts = self.map.get_def_points('race_point')
         mat = self.race_region_material = bs.Material()
         mat.add_actions(
@@ -325,6 +370,16 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
                         # Flash where the player is.
                         self._flash_player(player, 1.0)
                         player.finished = True
+                        self.player_finished_count += 1
+                        if self.player_finished_count > 2:
+                            if isinstance(bs.get_foreground_host_session(), bs.CoopSession):
+                                bs.setmusic(None)
+                            bs.getsound('secondFanfare').play()
+                        elif self.player_finished_count == 1:
+                            if isinstance(bs.get_foreground_host_session(), bs.CoopSession):
+                                bs.setmusic(None)
+                                self.tick_timer = None
+                            bs.getsound('firstFanfare').play()
                         assert player.actor
                         player.actor.handlemessage(
                             bs.DieMessage(immediate=True)
@@ -516,7 +571,7 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
         else:
             t_scale = 1.0
             light_y = 150
-        lstart = 7.1 * t_scale
+        lstart = 6.3 * t_scale
         inc = 1.25 * t_scale
 
         bs.timer(lstart, self._do_light_1)
@@ -588,6 +643,13 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
             self._bomb_spawn_timer = bs.Timer(
                 0.001 * self._bomb_spawning, self._spawn_bomb, repeat=True
             )
+        if self._epic_mode:
+            bs.setmusic(bs.MusicType.EPIC_RACE)
+        else:
+            bs.setmusic(bs.MusicType.RACE)
+        if isinstance(bs.get_foreground_host_session(), bs.CoopSession):
+            self.tick_timer = bs.Timer(1.0, self.tick, repeat=True)
+            bs.setmusic(bs.MusicType.TO_THE_DEATH3)
 
         self._race_started = True
 
@@ -825,6 +887,8 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
             # Augment default behavior.
             super().handlemessage(msg)
             player = msg.getplayer(Player)
+            if self.timer_over == True:
+                return
             if not player.finished:
                 self.respawn_player(player, respawn_time=1)
         else:

@@ -149,7 +149,13 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
         self._tntspawner = TNTSpawner(
             position=self._tntspawnpos, respawn_time=10.0
         )
-            
+        random_musicas = [
+            bs.MusicType.THEFINALE,
+            bs.MusicType.WAR,
+            bs.MusicType.EPIC_RACE,
+            bs.MusicType.LAP4,
+        ]
+        bs.setmusic(random.choice(random_musicas))
 
     @override
     def spawn_player(self, player: Player) -> bs.Actor:
@@ -160,11 +166,11 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
             self._spawn_center[1],
             self._spawn_center[2] + random.uniform(6, 3),
         )
-        bs.timer(0.22, lambda: player.actor.gosuper())
+        bs.timer(0.22, lambda: player.actor.gosuper(shouldntsetmusic=True))
         return self.spawn_player_spaz(player, position=pos)
 
     def _start_bot_updates(self) -> None:
-        self._bot_update_interval = 4.0 - 0.3 * (len(self.players))
+        self._bot_update_interval = 3.3 - 0.3 * (len(self.players))
         self._update_bots()
         self._update_bots()
         if len(self.players) > 2:
@@ -280,11 +286,11 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
             self._bot_update_interval, bs.WeakCall(self._update_bots)
         )
         botspawnpts: list[Sequence[float]] = [
-            [-4.0, 2.0, 3.14],
-            [0.0, 0.0, 4.14],
-            [2.0, 1.5, 7.14],
+            [-9.0, 2.0, 0.14],
+            [1.0, 0.0, -5.14],
+            [8.0, 1.5, 1.14],
         ]
-        dists = [0.0, 0.0, 0.0]
+        dists = [1.0, 1.7, 0.7]
         playerpts: list[Sequence[float]] = []
         for player in self.players:
             try:

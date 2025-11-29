@@ -97,6 +97,7 @@ class MusicType(Enum):
     RUNAROUNDFINAL = 'RunaroundFinal'
     WAR = 'War'
     LAP0 = 'Lap0'
+    LAP0H = 'Lap0H'
     LAP1 = 'Lap1'
     LAP2 = 'Lap2'
     LAP3 = 'Lap3'
