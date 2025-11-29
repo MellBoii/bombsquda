@@ -446,7 +446,7 @@ class PublicGatherTab(GatherTab):
         )
         self._host_text = bui.textwidget(
             parent=self._container,
-            position=(c_width * 0.5 + 45, v - 13),
+            position=(c_width * 0.5 + 65, v - 13),
             color=(0.6, 1.0, 0.6),
             scale=1.3,
             size=(200, 30),

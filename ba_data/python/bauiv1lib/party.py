@@ -36,14 +36,14 @@ class PartyWindow(bui.Window):
         self._height = (
             365
             if uiscale is bui.UIScale.SMALL
-            else 480 if uiscale is bui.UIScale.MEDIUM else 600
+            else 480 if uiscale is bui.UIScale.MEDIUM else 540
         )
         self._display_old_msgs = True
         super().__init__(
             root_widget=bui.containerwidget(
                 size=(self._width, self._height),
-                transition='in_scale',
-                color=(0.40, 0.55, 0.20),
+                transition='in_right',
+                color=(0.60, 0.60, 0.60),
                 parent=bui.get_special_widget('overlay_stack'),
                 on_outside_click_call=self.close_with_sound,
                 scale_origin_stack_offset=origin,
@@ -56,7 +56,7 @@ class PartyWindow(bui.Window):
                     (200, -10)
                     if uiscale is bui.UIScale.SMALL
                     else (
-                        (260, 0) if uiscale is bui.UIScale.MEDIUM else (370, 60)
+                        (260, 0) if uiscale is bui.UIScale.MEDIUM else (465, -170)
                     )
                 ),
             ),
@@ -73,7 +73,7 @@ class PartyWindow(bui.Window):
             label='',
             on_activate_call=self.close,
             autoselect=True,
-            color=(0.45, 0.63, 0.15),
+            color=(0.45, 0.45, 0.45),
             icon=bui.gettexture('crossOut'),
             iconscale=1.2,
         )
@@ -90,7 +90,7 @@ class PartyWindow(bui.Window):
             autoselect=True,
             button_type='square',
             on_activate_call=bui.WeakCall(self._on_menu_button_press),
-            color=(0.55, 0.73, 0.25),
+            color=(0.55, 0.5, 0.55),
             iconscale=1.2,
         )
 
@@ -104,7 +104,7 @@ class PartyWindow(bui.Window):
         self._title_text = bui.textwidget(
             parent=self._root_widget,
             scale=0.9,
-            color=(0.5, 0.7, 0.5),
+            color=(0.9, 0.9, 0.9),
             text=title,
             size=(0, 0),
             position=(self._width * 0.5, self._height - 29),
@@ -128,7 +128,7 @@ class PartyWindow(bui.Window):
             parent=self._root_widget,
             scale=0.5,
             size=(0, 0),
-            color=(0.5, 1.0, 0.5),
+            color=(1.0, 1.0, 1.0),
             shadow=0.1,
             position=(self._width * 0.5, self._height - 75),
             maxwidth=self._width * 0.85,
@@ -193,6 +193,7 @@ class PartyWindow(bui.Window):
             parent=self._root_widget,
             size=(50, 35),
             label=bui.Lstr(resource=f'{self._r}.sendText'),
+            color=(0.6, 0.6, 0.6),
             button_type='square',
             autoselect=True,
             position=(self._width - 70, 35),
@@ -627,5 +628,5 @@ class PartyWindow(bui.Window):
         if not self._root_widget or self._root_widget.transitioning_out:
             return
 
-        bui.getsound('back').play()
+        bui.getsound('swish').play()
         self.close()

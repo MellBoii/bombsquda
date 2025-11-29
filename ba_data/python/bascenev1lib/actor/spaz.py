@@ -740,15 +740,14 @@ class Spaz(bs.Actor):
         """
         if not self.node or self.frozen or self.node.knockout > 0.0:
             return
-        if self.character == 'Spaz':
-            if not self.node:
-                return
-            def unangry():
-                self.node.color_texture = bs.gettexture('neoSpazColor')
-            def angry():
-                self.node.color_texture = bs.gettexture('spazAngry')
-                bs.timer(0.7, unangry)
-            angry()
+        if self.source_player != None:
+            if self.character == 'Spaz':
+                def unangry():
+                    self.node.color_texture = bs.gettexture('neoSpazColor')
+                def angry():
+                    self.node.color_texture = bs.gettexture('spazAngry')
+                    bs.timer(0.7, unangry)
+                angry()
         t_ms = int(bs.time() * 1000.0)
         assert isinstance(t_ms, int)
         if t_ms - self.last_punch_time_ms >= self._punch_cooldown:

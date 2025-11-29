@@ -22,11 +22,10 @@ class InventoryWindow(bui.MainWindow):
 
         assert bui.app.classic is not None
         uiscale = bui.app.ui_v1.uiscale
-        self._width = 1400 if uiscale is bui.UIScale.SMALL else 750
+        self._width = 1400 if uiscale is bui.UIScale.SMALL else 450
         self._height = (
             1200
-            if uiscale is bui.UIScale.SMALL
-            else 530 if uiscale is bui.UIScale.MEDIUM else 600
+            if uiscale is bui.UIScale.SMALL else 300
         )
         # xoffs = 70 if uiscale is bui.UIScale.SMALL else 0
         # yoffs = -45 if uiscale is bui.UIScale.SMALL else 0
@@ -48,7 +47,7 @@ class InventoryWindow(bui.MainWindow):
 
         # To get top/left coords, go to the center of our window and
         # offset by half the width/height of our target area.
-        yoffs = 0.5 * self._height + 0.5 * target_height + 30.0
+        yoffs = 0.5 * self._height + 0.5 * target_height + 100.0
 
         super().__init__(
             root_widget=bui.containerwidget(
@@ -68,7 +67,7 @@ class InventoryWindow(bui.MainWindow):
             parent=self._root_widget,
             position=(
                 self._width * 0.5,
-                yoffs - (50 if uiscale is bui.UIScale.SMALL else 30),
+                yoffs - (50 if uiscale is bui.UIScale.SMALL else 80),
             ),
             size=(0, 0),
             text=bui.Lstr(resource='inventoryText'),
@@ -86,7 +85,7 @@ class InventoryWindow(bui.MainWindow):
         else:
             btn = bui.buttonwidget(
                 parent=self._root_widget,
-                position=(50, yoffs - 50),
+                position=(50, yoffs - 100),
                 size=(60, 55),
                 scale=0.8,
                 label=bui.charstr(bui.SpecialChar.BACK),
