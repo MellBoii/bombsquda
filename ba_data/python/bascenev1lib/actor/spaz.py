@@ -330,6 +330,7 @@ class Spaz(bs.Actor):
         self.pick_up_powerup_callback: Callable[[Spaz], Any] | None = None
         self.flashing = False
         self._flash_timer = None
+        self.impulse_scale = 0
         if self.source_player:
             if self.character == 'Spaz':
                 self.randomnuumber = random.randint(1, 2)
@@ -870,7 +871,7 @@ class Spaz(bs.Actor):
         Called to 'press bomb' on this spaz;
         used for player or AI connections.
         """
-        if (not self.node):
+        if not self.node or self.node.knockout > 0:
             return
         if self.source_player: # Prevent tutorial from dying.
             if self.character == 'Robot':
@@ -2397,8 +2398,26 @@ class Spaz(bs.Actor):
                     msg.force_direction[1],
                     msg.force_direction[2],
                 )
-
                 damage = int(damage_scale * self.node.damage)
+                # Apply another impulse but with extra force based on
+                # Impulse scale.
+                if self.impulse_scale > 0:
+                    self.node.handlemessage(
+                        'impulse',
+                        msg.pos[0],
+                        msg.pos[1],
+                        msg.pos[2],
+                        msg.velocity[0],
+                        msg.velocity[1],
+                        msg.velocity[2],
+                        mag * self.impulse_scale,
+                        velocity_mag * self.impulse_scale,
+                        msg.radius,
+                        0,
+                        msg.force_direction[0],
+                        msg.force_direction[1],
+                        msg.force_direction[2],
+                    )
             self.node.handlemessage('hurt_sound')
 
             def show_floating_text(text, pos, color):
