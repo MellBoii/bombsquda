@@ -45,18 +45,19 @@ class PowerupAcceptMessage:
 
 def get_default_powerup_distribution() -> Sequence[tuple[str, int]]:
     """Standard set of powerups."""
+    debug_powerup = None
     return (
-        ('triple_bombs', 3),
-        ('ice_bombs', 3),
-        ('punch', 3),
-        ('impact_bombs', 3),
-        ('land_mines', 2),
-        ('sticky_bombs', 3),
-        ('shield', 2),
-        ('health', 2),
-        ('curse', 1),
-        ('metal', 1),
+        ('triple_bombs', 9999 if debug_powerup == 'triple_bombs' else 3),
+        ('ice_bombs', 9999 if debug_powerup == 'ice_bombs' else 3),
+        ('punch', 9999 if debug_powerup == 'punch' else 3),
+        ('impact_bombs', 9999 if debug_powerup == 'impact_bombs' else 3),
+        ('land_mines', 9999 if debug_powerup == 'land_mines' else 2),
+        ('sticky_bombs', 9999 if debug_powerup == 'sticky_bombs' else 3),
+        ('shield', 9999 if debug_powerup == 'shield' else 2),
+        ('health', 9999 if debug_powerup == 'health' else 2),
+        ('curse', 9999 if debug_powerup == 'curse' else 1),
+        ('metal', 9999 if debug_powerup == 'metal' else 1),
         ('random', 9999 if ba.app.config.get("gamblingmode", True) else 1),
-        ('spongebob', 2),
-        ('strong', 3),
+        ('spongebob', 9999 if debug_powerup == 'spongebob' else 2),
+        ('strong', 9999 if debug_powerup == 'strong' else 3),
     )

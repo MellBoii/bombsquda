@@ -509,6 +509,43 @@ class Blast(bs.Actor):
             # It looks better if we delay a bit.
             bs.timer(0.05, emit)
 
+        elif self.blast_type == 'running_bomb':
+
+            def emit() -> None:
+                bs.emitfx(
+                    position=position,
+                    velocity=velocity,
+                    count=int(4.0 + random.random() * 8),
+                    scale=0.8,
+                    chunk_type='metal',
+                )
+                bs.emitfx(
+                    position=position,
+                    velocity=velocity,
+                    count=int(4.0 + random.random() * 8),
+                    scale=0.4,
+                    chunk_type='metal',
+                )
+                bs.emitfx(
+                    position=position,
+                    velocity=velocity,
+                    count=20,
+                    scale=0.7,
+                    chunk_type='spark',
+                    emit_type='stickers',
+                )
+                bs.emitfx(
+                    position=position,
+                    velocity=velocity,
+                    count=int(8.0 + random.random() * 15),
+                    scale=0.8,
+                    spread=1.5,
+                    chunk_type='spark',
+                )
+
+            # It looks better if we delay a bit.
+            bs.timer(0.05, emit)
+
         else:  # Regular or land mine bomb shrapnel.
 
             def emit() -> None:
@@ -641,7 +678,10 @@ class Blast(bs.Actor):
             factory.hiss_sound.play(position=light.position)
 
         lpos = light.position
-        factory.random_explode_sound().play(position=lpos)
+        if self.blast_type == 'running_bomb':
+            bs.getsound('thunderDamage').play()
+        else:
+            factory.random_explode_sound().play(position=lpos)
         factory.debris_fall_sound.play(position=lpos)
 
         bs.camerashake(intensity=5.0 if self.blast_type == 'tnt' else 1.0)
@@ -679,6 +719,8 @@ class Blast(bs.Actor):
             elif self.blast_type == 'land_mine':
                 mag *= 2.5
             elif self.blast_type == 'tnt':
+                mag *= 2.0
+            elif self.blast_type == 'running_bomb':
                 mag *= 2.0
 
             node.handlemessage(
@@ -737,6 +779,7 @@ class Bomb(bs.Actor):
         if bomb_type not in (
             'ice',
             'impact',
+            'running_bomb',
             'land_mine',
             'normal',
             'sticky',
@@ -757,6 +800,8 @@ class Bomb(bs.Actor):
         if self.bomb_type == 'ice':
             self.blast_radius *= 1.2
         elif self.bomb_type == 'impact':
+            self.blast_radius *= 0.7
+        elif self.bomb_type == 'running_bomb':
             self.blast_radius *= 0.7
         elif self.bomb_type == 'land_mine':
             self.blast_radius *= 0.7
@@ -797,6 +842,8 @@ class Bomb(bs.Actor):
             materials = (factory.bomb_material, shared.object_material)
 
         if self.bomb_type == 'impact':
+            materials = materials + (factory.impact_blast_material,)
+        if self.bomb_type == 'running_bomb':
             materials = materials + (factory.impact_blast_material,)
         elif self.bomb_type == 'land_mine':
             materials = materials + (factory.land_mine_no_explode_material,)
@@ -870,6 +917,32 @@ class Bomb(bs.Actor):
             self.warn_timer = bs.Timer(
                 fuse_time - 1.7, bs.WeakCall(self.handlemessage, WarnMessage())
             )
+            
+        elif self.bomb_type == 'running_bomb':
+            fuse_time = 20.0
+            self.node = bs.newnode(
+                'prop',
+                delegate=self,
+                attrs={
+                    'position': position,
+                    'velocity': velocity,
+                    'body': 'sphere',
+                    'body_scale': self.scale,
+                    'mesh': factory.impact_bomb_mesh,
+                    'shadow_size': 0.3,
+                    'color_texture': factory.impact_tex,
+                    'reflection': 'powerup',
+                    'reflection_scale': [1.5],
+                    'materials': materials,
+                },
+            )
+            self.arm_timer = bs.Timer(
+                0.2, bs.WeakCall(self.handlemessage, ArmMessage())
+            )
+            self.warn_timer = bs.Timer(
+                fuse_time - 1.7, bs.WeakCall(self.handlemessage, WarnMessage())
+            )
+
 
         else:
             fuse_time = 2.0
@@ -1071,6 +1144,23 @@ class Bomb(bs.Actor):
                 ),
             )
         elif self.bomb_type == 'impact':
+            intex = (
+                factory.impact_lit_tex,
+                factory.impact_tex,
+                factory.impact_tex,
+            )
+            self.texture_sequence = bs.newnode(
+                'texture_sequence',
+                owner=self.node,
+                attrs={'rate': 100, 'input_textures': intex},
+            )
+            bs.timer(
+                0.25,
+                bs.WeakCall(
+                    self._add_material, factory.land_mine_blast_material
+                ),
+            )
+        elif self.bomb_type == 'running_bomb':
             intex = (
                 factory.impact_lit_tex,
                 factory.impact_tex,

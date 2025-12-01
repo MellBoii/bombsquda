@@ -198,7 +198,7 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
         bs.set_analytics_screen('Coop Score Screen')
         super().on_transition_in()
         self._background = background.Background(
-            fade_time=0.45, start_faded=False, show_logo=True
+            fade_time=0.45, start_faded=False, show_logo=False
         )
 
     def _ui_menu(self) -> None:

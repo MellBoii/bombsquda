@@ -1134,21 +1134,30 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
             base_music = self.default_music
 
         # get the fast version
-        music_name = base_music.name  # e.g. "normal music"
-        fast_name = music_name + "FAST"  # → "fast music"
+        try:
+            music_name = base_music.name  # e.g. "normal music"
+            fast_name = music_name + "FAST"  # → "fast music"
+        except AttributeError:
+            music_name = None
+            fast_name = None
 
-        # switch to that if it exists
-        if hasattr(bs.MusicType, fast_name):
-            fast_music = getattr(bs.MusicType, fast_name)
-        else:
-            fast_music = base_music  # doesn't exist? we haven't added it yet. fallback to normal.
-
+        try:
+            # switch to that if it exists
+            if hasattr(bs.MusicType, fast_name):
+                fast_music = getattr(bs.MusicType, fast_name)
+            else:
+                fast_music = base_music  # doesn't exist? we haven't added it yet. fallback to normal.
+        except TypeError:
+            fast_music = None
         # alright lets trigger the thing now
         if self._standard_time_limit_time <= 61 and not getattr(self, "_did_hurryup", False):
             self._did_hurryup = True
             bs.setmusic(bs.MusicType.HURRYUP)
             bs.broadcastmessage('Hurry up!')
-            bs.timer(2.0, lambda: bs.setmusic(fast_music))
+            if base_music == None:
+                bs.timer(2.0, lambda: bs.setmusic(None))
+            else:
+                bs.timer(2.0, lambda: bs.setmusic(fast_music))
 
     def _setup_tournament_time_limit(self, duration: float) -> None:
         """

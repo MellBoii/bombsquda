@@ -19,7 +19,7 @@ import baclassic as bsc
 import bascenev1lib.actor.bomb as bomb
 import math
 import os
-from bascenev1lib.actor.popuptext import PopupText
+from bascenev1lib.actor.popuptext import PopupText, PopupWriterText
 from bascenev1lib.actor import spazappearance
 import bascenev1lib.actor.spazappearance as spazappearance
 from bascenev1._gameactivity import GameActivity
@@ -348,8 +348,13 @@ class Spaz(bs.Actor):
                     doactblink()
                     self.blinktimer = bs.Timer(self.randomnuumber, doblink, repeat=True)
                 self.blinktimer = bs.Timer(self.randomnuumber, doblink, repeat=True)
-        
+        self.is_nessEB = False
+        self.can_starstorm = False
         if self.source_player: # Prevent tutorial from dying.
+            def name_check():
+                if self.node.name.startswith(('Ness', 'ness')):
+                    self.is_nessEB = True
+            bs.timer(0.2, name_check)
             if self.character == 'Robot': # bombgeon snake shadow
                 # Now define snake shadow's specific attrs
                 self.dashcooldown = bs.Timer(3, self.NINJA_increase, repeat=True)
@@ -468,6 +473,52 @@ class Spaz(bs.Actor):
                 'scale',
                 {0.0: self._score_text.scale, 0.2: 0.0},
             )
+            
+    def _drop_bomb_cluster(self) -> None:
+        # Drop several bombs in series.
+        delay = 0.0
+        for _i in range(random.randrange(1, 3)):
+            # Drop them somewhere within our bounds with velocity pointing
+            # toward the opposite side.
+            pos = (
+                self.node.position[0] * random.random(),
+                self.node.position[1] + 5,
+                self.node.position[2] + 2.1 * random.random(),
+            )
+            vel = (
+                self.node.velocity[0] + random.randint(-30, 30),
+                self.node.velocity[1] - random.randint(15, 25),
+                self.node.velocity[2] + random.randint(-15, 15)
+            )
+            bs.timer(0.01, bs.Call(self._drop_bomb, pos, vel))
+        
+    def _drop_bomb(
+        self, 
+        position: Sequence[float], 
+        velocity: Sequence[float],
+        bomb_type: str = 'normal'
+    ) -> None:
+        ourbomb = Bomb(
+            position=position, 
+            velocity=velocity, 
+            bomb_type=bomb_type, 
+            source_player=self.source_player
+        ).autoretain()
+        node = ourbomb.node
+        
+    def trigger_starstorm(self):
+        bs.getsound('starStorm').play()
+        def startstarstorm():
+            self.starstorm_timer = bs.Timer(
+                0.07, 
+                self._drop_bomb_cluster,
+                repeat=True
+            )
+        def stopstarstorm():
+            self.starstorm_timer = None
+        bs.timer(0.1, startstarstorm)
+        bs.timer(2.5, stopstarstorm)
+        
 
     def _turbo_filter_add_press(self, source: str) -> None:
         """
@@ -865,6 +916,18 @@ class Spaz(bs.Actor):
             bs.getsound('okitem').play()
         self.handlemessage(bs.PowerupMessage(self._roulette_current))
         self._roulette_current = None
+        
+    def do_starstorm(self):
+        bs.getsound('playerPSI').play()
+        self.node.handlemessage('celebrate', 1000)
+        self.node.counter_text = ''
+        PopupWriterText(
+            f"{self.node.name} tried PSI Starstorm!", 
+            position=self.node.position,
+            scale=1.3,
+            delay=0.04,
+        )
+        bs.timer(1.5, self.trigger_starstorm)
 
     def on_bomb_press(self) -> None:
         """
@@ -877,13 +940,37 @@ class Spaz(bs.Actor):
             if self.character == 'Robot':
                 self.on_jump_dash()
                 return
+            if self.is_nessEB == True:
+                if not self.node.hold_node:
+                    if self.can_starstorm == True:
+                        self.do_starstorm()
+                        self.can_starstorm = False
+                        return
+                    if self.bomb_type == 'impact':
+                        self._drop_bomb(
+                            position=self.node.position,
+                            velocity=(
+                                self.node.velocity[0] * 3,
+                                self.node.velocity[1] + 9,
+                                self.node.velocity[2] * 3
+                            ),
+                            bomb_type='running_bomb'
+                        )
+                        bs.getsound('rockin1').play()
+                        bs.getsound('playerPSI').play()
+                        self.bomb_type = 'normal'
+                        self.on_punch_press()
+                        self.on_punch_release()
+                        self.node.counter_text = ''
+                        return
         t_ms = int(bs.time() * 1000.0)
         assert isinstance(t_ms, int)
         if t_ms - self.last_bomb_time_ms >= self._bomb_cooldown:
             self.last_bomb_time_ms = t_ms
             self.node.bomb_pressed = True
             if not self.node.hold_node:
-                self.drop_bomb()
+                if not self.is_nessEB == True:
+                    self.drop_bomb()
         self._turbo_filter_add_press('bomb')
 
     def on_bomb_release(self) -> None:
@@ -1778,47 +1865,57 @@ class Spaz(bs.Actor):
                         bs.WeakCall(self._multi_bomb_wear_off),
                     )
             elif msg.poweruptype == 'land_mines':
-                self.set_land_mine_count(min(self.land_mine_count + 3, 3))
+                self.set_land_mine_count(min(self.land_mine_count + 3, 9999))
             elif msg.poweruptype == 'impact_bombs':
-                self.bomb_type = 'impact'
-                tex = self._get_bomb_type_tex()
-                self._flash_billboard(tex)
-                if self.powerups_expire:
-                    self.node.mini_billboard_2_texture = tex
-                    t_ms = int(bs.time() * 1000.0)
-                    assert isinstance(t_ms, int)
-                    self.node.mini_billboard_2_start_time = t_ms
-                    self.node.mini_billboard_2_end_time = (
-                        t_ms + POWERUP_WEAR_OFF_TIME
-                    )
-                    self._bomb_wear_off_flash_timer = bs.Timer(
-                        (POWERUP_WEAR_OFF_TIME - 2000) / 1000.0,
-                        bs.WeakCall(self._bomb_wear_off_flash),
-                    )
-                    self._bomb_wear_off_timer = bs.Timer(
-                        POWERUP_WEAR_OFF_TIME / 1000.0,
-                        bs.WeakCall(self._bomb_wear_off),
-                    )
+                if self.is_nessEB == True:
+                    self.node.counter_text = 'READY'
+                    self.node.counter_texture = bs.gettexture('powerupImpactBombs')
+                    self.bomb_type = 'impact'
+                    bs.getsound('learnPSI').play()
+                else:
+                    self.bomb_type = 'impact'
+                    tex = self._get_bomb_type_tex()
+                    self._flash_billboard(tex)
+                    if self.powerups_expire:
+                        self.node.mini_billboard_2_texture = tex
+                        t_ms = int(bs.time() * 1000.0)
+                        assert isinstance(t_ms, int)
+                        self.node.mini_billboard_2_start_time = t_ms
+                        self.node.mini_billboard_2_end_time = (
+                            t_ms + POWERUP_WEAR_OFF_TIME
+                        )
+                        self._bomb_wear_off_flash_timer = bs.Timer(
+                            (POWERUP_WEAR_OFF_TIME - 2000) / 1000.0,
+                            bs.WeakCall(self._bomb_wear_off_flash),
+                        )
+                        self._bomb_wear_off_timer = bs.Timer(
+                            POWERUP_WEAR_OFF_TIME / 1000.0,
+                            bs.WeakCall(self._bomb_wear_off),
+                        )
             elif msg.poweruptype == 'sticky_bombs':
-                self.bomb_type = 'sticky'
-                tex = self._get_bomb_type_tex()
-                self._flash_billboard(tex)
-                if self.powerups_expire:
-                    self.node.mini_billboard_2_texture = tex
-                    t_ms = int(bs.time() * 1000.0)
-                    assert isinstance(t_ms, int)
-                    self.node.mini_billboard_2_start_time = t_ms
-                    self.node.mini_billboard_2_end_time = (
-                        t_ms + POWERUP_WEAR_OFF_TIME
-                    )
-                    self._bomb_wear_off_flash_timer = bs.Timer(
-                        (POWERUP_WEAR_OFF_TIME - 2000) / 1000.0,
-                        bs.WeakCall(self._bomb_wear_off_flash),
-                    )
-                    self._bomb_wear_off_timer = bs.Timer(
-                        POWERUP_WEAR_OFF_TIME / 1000.0,
-                        bs.WeakCall(self._bomb_wear_off),
-                    )
+                if self.is_nessEB == True:
+                    self.set_can_starstorm()
+                    bs.getsound('learnPSI').play()
+                else:
+                    self.bomb_type = 'sticky'
+                    tex = self._get_bomb_type_tex()
+                    self._flash_billboard(tex)
+                    if self.powerups_expire:
+                        self.node.mini_billboard_2_texture = tex
+                        t_ms = int(bs.time() * 1000.0)
+                        assert isinstance(t_ms, int)
+                        self.node.mini_billboard_2_start_time = t_ms
+                        self.node.mini_billboard_2_end_time = (
+                            t_ms + POWERUP_WEAR_OFF_TIME
+                        )
+                        self._bomb_wear_off_flash_timer = bs.Timer(
+                            (POWERUP_WEAR_OFF_TIME - 2000) / 1000.0,
+                            bs.WeakCall(self._bomb_wear_off_flash),
+                        )
+                        self._bomb_wear_off_timer = bs.Timer(
+                            POWERUP_WEAR_OFF_TIME / 1000.0,
+                            bs.WeakCall(self._bomb_wear_off),
+                        )
             elif msg.poweruptype == 'punch':
                 tex = PowerupBoxFactory.get().tex_punch
                 self._flash_billboard(tex)
@@ -3379,6 +3476,11 @@ class Spaz(bs.Actor):
                 )
             else:
                 self.node.counter_text = ''
+                
+    def set_can_starstorm(self):
+        self.node.counter_text = 'READY'
+        self.node.counter_texture = bs.gettexture('powerupStickyBombs')
+        self.can_starstorm = True
 
     def curse_explode(self, source_player: bs.Player | None = None) -> None:
         """Explode the poor spaz spectacularly."""

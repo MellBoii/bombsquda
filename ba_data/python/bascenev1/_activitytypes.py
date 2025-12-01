@@ -163,8 +163,9 @@ class ScoreScreenActivity(Activity[EmptyPlayer, EmptyTeam]):
         self._birth_time = babase.apptime()
         self._min_view_time = 5.0
         self._allow_server_transition = False
-        self._background: bascenev1.Actor | None = None
         self._tips_text: bascenev1.Actor | None = None
+        self._background: bascenev1.Actor | None = None
+        self._background2: bascenev1.Actor | None = None
         self._kicked_off_server_shutdown = False
         self._kicked_off_server_restart = False
         self._default_show_tips = True
@@ -187,11 +188,55 @@ class ScoreScreenActivity(Activity[EmptyPlayer, EmptyTeam]):
     @override
     def on_transition_in(self) -> None:
         from bascenev1lib.actor.tipstext import TipsText
-        from bascenev1lib.actor.background import Background
-
         super().on_transition_in()
-        self._background = Background(
-            fade_time=0.5, start_faded=False, show_logo=True
+        mesh = bs.getmesh('thePadLevel')
+        bottom_mesh = bs.getmesh('thePadLevelBottom')
+        color_texture = bs.gettexture('thePadLevelColor')
+        bgtex = bs.gettexture('menuBG')
+        bgmesh = bs.getmesh('thePadBG')
+
+        gnode = self.globalsnode
+        gnode.camera_mode = 'rotate'
+
+        gnode.tint = (0.5, 0.6, 1.0)
+        gnode.ambient_color = (1.1, 1.1, 1.0)
+        gnode.vignette_outer = (0.5, 0.5, 0.65)
+        gnode.vignette_inner = (0.95, 0.95, 0.93)
+        
+        self.bottom = bs.NodeActor(
+            bs.newnode(
+                'terrain',
+                attrs={
+                    'mesh': bottom_mesh,
+                    'lighting': False,
+                    'reflection': 'soft',
+                    'reflection_scale': [0.45],
+                    'color_texture': color_texture,
+                },
+            )
+        )
+        self.terrain = bs.NodeActor(
+            bs.newnode(
+                'terrain',
+                attrs={
+                    'mesh': mesh,
+                    'color_texture': color_texture,
+                    'reflection': 'soft',
+                    'reflection_scale': [0.3],
+                },
+            )
+        )
+        self.bgterrain = bs.NodeActor(
+            bs.newnode(
+                'terrain',
+                attrs={
+                    'mesh': bgmesh,
+                    'color': (0.92, 0.91, 0.9),
+                    'lighting': False,
+                    'background': True,
+                    'color_texture': bgtex,
+                },
+            )
         )
         if self._default_show_tips:
             self._tips_text = TipsText()
@@ -249,6 +294,11 @@ class ScoreScreenActivity(Activity[EmptyPlayer, EmptyTeam]):
         # If server-mode is handling this, don't do anything ourself.
         if self._server_transitioning is True:
             return
+        from bascenev1lib.actor.background import Background
+        self._background2 = Background(
+            fade_time=0.4, start_faded=False, show_logo=True
+        )
+        bs.timer(1.4, self._background2.__del__)
 
         # Otherwise end the activity normally.
         self.end()
