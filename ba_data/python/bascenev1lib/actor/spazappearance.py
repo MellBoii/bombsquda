@@ -92,24 +92,39 @@ def register_appearances() -> None:
     t.upper_leg_mesh = 'neoSpazUpperLeg'
     t.lower_leg_mesh = 'neoSpazLowerLeg'
     t.toes_mesh = 'neoSpazToes'
-    t.jump_sounds = ['spazJump01', 'spazJump02', 'spazJump03', 'spazJump04']
+    t.jump_sounds = [
+        'voicelines/spaz/spazJump01',
+        'voicelines/spaz/spazJump02', 
+        'voicelines/spaz/spazJump03', 
+        'voicelines/spaz/spazJump04'
+    ]
     t.attack_sounds = [
-        'spazAttack01',
-        'spazAttack02',
-        'spazAttack03',
-        'spazAttack04',
+        'voicelines/spaz/spazAttack01',
+        'voicelines/spaz/spazAttack02',
+        'voicelines/spaz/spazAttack03',
+        'voicelines/spaz/spazAttack04',
     ]
     t.impact_sounds = [
-        'spazImpact01',
-        'spazImpact02',
-        'spazImpact03',
-        'spazImpact04',
+        'voicelines/spaz/spazImpact01',
+        'voicelines/spaz/spazImpact02',
+        'voicelines/spaz/spazImpact03',
+        'voicelines/spaz/spazImpact04',
     ]
-    t.death_sounds = ['spazDeath01', 'spazDeath02', 'spazDeath03', 'spazDeath04'] # these too
-    t.pickup_sounds = ['spazPickup01']
-    t.victory_sounds = ['spazWin01']
-    t.gloat_sounds = ['spazGloat01']
-    t.fall_sounds = ['spazFall01', 'spazFall02', 'spazFall03', 'spazFall04'] # added these because lemon asked for it :sunglassesmoment:
+    t.death_sounds = [
+        'voicelines/spaz/spazDeath01', 
+        'voicelines/spaz/spazDeath02', 
+        'voicelines/spaz/spazDeath03', 
+        'voicelines/spaz/spazDeath04'
+    ]
+    t.pickup_sounds = ['voicelines/spaz/spazPickup01']
+    t.victory_sounds = ['voicelines/spaz/spazWin01']
+    t.gloat_sounds = ['voicelines/spaz/spazGloat01']
+    t.fall_sounds = [
+        'voicelines/spaz/spazFall01', 
+        'voicelines/spaz/spazFall02', 
+        'voicelines/spaz/spazFall03', 
+        'voicelines/spaz/spazFall04'
+    ]
     t.style = 'spaz'
 
     # Roaring Knight's right hand they/them #####################################
@@ -221,6 +236,7 @@ def register_appearances() -> None:
     t.default_highlight = (0.5333333333333333, 0.09019607843137255, 0.41568627450980394)
 
     # fatass ###########################################
+    # thank you lemon for this incredible voice acting
     t = Appearance('Mel')
     t.color_texture = 'melColor'
     t.color_mask_texture = 'melColorMask'
