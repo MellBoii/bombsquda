@@ -28,3 +28,19 @@ and 1 (yes, ONE) new coop level.</p>
 <p>Download Github Desktop and clone the repository, 
 make changes to some files, commit and push your changes, then make a pull request. 
 If everything looks fine, i'll accept the merge. :)</p>
+
+## Anyone helped make this? Credits and such?
+<p align="center">
+    <picture>
+        <img src="ba_data/textures2/credits.png">
+    </picture>
+</p>
+<p>Yes, actually!<br>
+GummyBoiYT - Snake Shadow's character, Ninjageon and Metal Music's code, and Orangecap's old model.<br>
+Buddie - Orangecap's character. Not the model, just the character. :^)<br>
+Lemon - Voice-acted Mell and also gave some great ideas like the spongebob powerup<br>
+Various sources - Sounds, music, and everything. There's WAY too many sources to list, so you're better off just searching for em.<br>
+Mell - The original sound pack, BombSquad 21st century edition and making this entire modpack.</p>
+
+## Why does this modpack suck?
+<p>Yes</p>
