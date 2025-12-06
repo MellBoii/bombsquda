@@ -380,58 +380,11 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         if ba.app.config.get("noisepolution", True):
             def checkdosound():
                 if random.random() < 0.2:
-                    # long ass fucking list cuz fuck you lmfao
-                    self.random_sounds = (
-                        'randomnoises/noisePolution1',
-                        'randomnoises/noisePolution2',
-                        'randomnoises/noisePolution3',
-                        'randomnoises/noisePolution4',
-                        'randomnoises/noisePolution5',
-                        'randomnoises/noisePolution6',
-                        'randomnoises/noisePolution7',
-                        'randomnoises/noisePolution8',
-                        'randomnoises/noisePolution9',
-                        'randomnoises/noisePolution10',
-                        'randomnoises/noisePolution11',
-                        'randomnoises/noisePolution12',
-                        'randomnoises/noisePolution13',
-                        'randomnoises/noisePolution14',
-                        'randomnoises/noisePolution15',
-                        'randomnoises/noisePolution16',
-                        'randomnoises/noisePolution17',
-                        'randomnoises/noisePolution18',
-                        'randomnoises/noisePolution19',
-                        'randomnoises/noisePolution20',
-                        'randomnoises/noisePolution21',
-                        'randomnoises/noisePolution22',
-                        'randomnoises/noisePolution23',
-                        'randomnoises/noisePolution24',
-                        'randomnoises/noisePolution25',
-                        'randomnoises/noisePolution26',
-                        'randomnoises/noisePolution27',
-                        'randomnoises/noisePolution28',
-                        'randomnoises/noisePolution29',
-                        'randomnoises/noisePolution30',
-                        'randomnoises/noisePolution31',
-                        'randomnoises/noisePolution32',
-                    )        
-                    randomsound = self.random_sounds[random.randrange(len(self.random_sounds))]
-                    bs.getsound(randomsound).play()
+                    # no more big ass list :)
+                    n = random.randint(1, 32)
+                    sound_name = f"randomnoises/noisePolution{n}"
+                    bs.getsound(sound_name).play()
             bs.timer(0.4, checkdosound, repeat=True)
-        if ba.app.config.get("noisepolution", True):
-            self.instructimage = bs.newnode('image', 
-                attrs={
-                    'texture': bs.gettexture('parryinstructions'),
-                    'absolute_scale': True,
-                    'position': (0, -200),
-                    'opacity': 1.0,
-                    'scale': (200, 200),
-                    'color': (1, 1, 1)
-                }
-            )
-            bs.animate(self.instructimage, 'opacity',
-                       {0.1: 1.0, 4.5: 1.0, 6.2: 0.0})
-            bs.timer(10.0, self.instructimage.delete)
         music = map_music if map_music is not None else self.default_music
 
         if music is not None:
