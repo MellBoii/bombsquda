@@ -929,7 +929,7 @@ class Spaz(bs.Actor):
         )
         # random chance to fucking explode and die
         if random.random() < 0.3:
-            bs.timer(1.5, lambda: self.smashkill(sound='thunder')
+            bs.timer(1.5, lambda: self.smashkill(sound='thunder'))
         else:
             bs.timer(1.5, self.trigger_starstorm)
 
