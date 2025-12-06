@@ -928,9 +928,9 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
                 fade_duration=2.0
             )
 
-            bs.timer(30.0, lambda: bs.setmusic(self.chosen_music))
-            bs.timer(30.0, self._start_updating_waves)
-            bs.timer(30.0, lambda: self.givebackinput())
+            self._music_timer = bs.Timer(30.0, lambda: bs.setmusic(self.chosen_music))
+            self._wave_timer = bs.Timer(30.0, self._start_updating_waves)
+            self._input_timer = bs.Timer(30.0, lambda: self.givebackinput())
 
             self._enable_cutscene_skip()
 
