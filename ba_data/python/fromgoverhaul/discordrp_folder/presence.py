@@ -67,7 +67,7 @@ class Presence:
         self._socket: _Socket = (
             _WindowsSocket() if sys.platform == "win32" else _UnixSocket()
         )
-        print(self._socket)
+        print('Discord RPC is up and runnin\'!')
         # Send a handshake request
         self._handshake()
 
@@ -249,9 +249,7 @@ class _WindowsSocket(_Socket):
             except FileNotFoundError:
                 pass
         else:        
-            raise FileNotFoundError(
-                "Cannot find a Windows socket to connect to Discord.\nPerhaps Discord isn't open?"
-            )
+            print('Cannot find a Windows socket to connect to Discord.\nPerhaps Discord isn\'t open?')
 
     def _read(self, size: int) -> bytes:
         return self._buffer.read(size)
