@@ -330,7 +330,7 @@ class Spaz(bs.Actor):
         self.pick_up_powerup_callback: Callable[[Spaz], Any] | None = None
         self.flashing = False
         self._flash_timer = None
-        self.impulse_scale = 0
+        self.impulse_scale = 1.5
         if self.source_player:
             if self.character == 'Spaz':
                 self.randomnuumber = random.randint(1, 2)
