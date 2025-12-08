@@ -16,6 +16,7 @@ import random
 
 from bascenev1lib.actor.spazfactory import SpazFactory
 from bascenev1lib.actor.scoreboard import Scoreboard
+from bascenev1lib.actor.nodejumper import ImageJumper
 
 if TYPE_CHECKING:
     from typing import Any, Sequence
@@ -236,6 +237,8 @@ class Icon(bs.Actor):
             player = self._player()
             lives = player.lives if player else 0
             if lives == 0:
+                bs.getsound('randomnoises/noisePolution5').play()
+                ImageJumper.jump_image(self.node)
                 bs.timer(0.6, self.update_for_lives)
 
     @override
