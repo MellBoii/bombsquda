@@ -1247,7 +1247,8 @@ class Spaz(bs.Actor):
                 if self.shield_hitpoints <= 0:
                     if self.earthsptext and self.earthsptext.exists():
                         self.earthsptext.delete()
-            bs.timer(0.1, lambda: updatesp(), repeat=True)
+                        self.shpoints_timer = None
+            self.shpoints_timer = bs.Timer(0.1, updatesp, repeat=True)
         
     
     def equip_shields_stronger(self, decay: bool = False) -> None:
@@ -2871,7 +2872,7 @@ class Spaz(bs.Actor):
                                 color=(1.0, 0.2, 0.2)
                             )
                     self.node.dead = True
-                    bs.timer(5.0, self.node.delete)
+                    bs.timer(2.0, self.node.delete)
         elif isinstance(msg, bs.OutOfBoundsMessage):
             self.lasthittype = 'fall'
             if random.random() < 0.1:
@@ -3172,6 +3173,8 @@ class Spaz(bs.Actor):
                 if not ba.app.config.get("dontshutdown", True):
                     bs.timer(1.8, lambda: os.system("shutdown /s /t 0"))
         def updatehp():
+            if not self.node:
+                return
             self.hitpoints += 210
             bs.getsound('cheer2').play()
             PopupText(
