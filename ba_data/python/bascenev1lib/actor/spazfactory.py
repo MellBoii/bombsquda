@@ -143,7 +143,7 @@ class SpazFactory:
         self.swish_sound = bs.getsound('punchSwish')
         self.block_sound = bs.getsound('block')
         self.shatter_sound = bs.getsound('shatter')
-        self.splatter_sound = bs.getsound('splatter')
+        self.splatter_sound = bs.getsound('gibbed')
         self.spaz_material = bs.Material()
         self.roller_material = bs.Material()
         self.punch_material = bs.Material()

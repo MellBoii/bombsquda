@@ -3593,10 +3593,15 @@ class Spaz(bs.Actor):
                 position=self.node.position,
             )
         else:
-            SpazFactory.get().splatter_sound.play(
-                2.5,
-                position=self.node.position,
-            )
+            sounds = ['gibbed', 'gibbed2']
+            bs.getsound(random.choice(sounds)).play(position=self.node.position)
+            if random.random() < 0.35:
+                shatter2sfx = [
+                    'motorroach_dies', 
+                    'motorroach_dies2',
+                    'fpants_death',
+                ]
+                bs.getsound(random.choice(shatter2sfx)).play(position=self.node.position)
         self.handlemessage(bs.DieMessage())
         self.node.shattered = 2 if extreme else 1
 
