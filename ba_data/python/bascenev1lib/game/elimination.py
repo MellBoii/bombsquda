@@ -17,6 +17,7 @@ import random
 from bascenev1lib.actor.spazfactory import SpazFactory
 from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.actor.nodejumper import ImageJumper
+from bascenev1lib.actor.image_looped import LoopingImageAnimation
 
 if TYPE_CHECKING:
     from typing import Any, Sequence
@@ -94,9 +95,7 @@ class Icon(bs.Actor):
                 },
             )
         self.set_position_and_scale(position, scale)
-        self._flash_timer = None
-        self.danger_flash_timer = None
-
+        
     def set_position_and_scale(
         self, position: tuple[float, float], scale: float
     ) -> None:
@@ -129,79 +128,7 @@ class Icon(bs.Actor):
             assert self.node
             self.node.color = (0.7, 0.3, 0.3)
             self.node.opacity = 0.2
-            self._flash_timer = None
-            self._warning_icon.delete()
-        # if we're on last life, tell player to "peril!". i love paper mario. 
-        if lives == 1:
-            # cleanup any danger icon if it exists
-            if hasattr(self, "_danger_icon") and self._danger_icon:
-                self._danger_icon.delete()
-            if hasattr(self, "danger_flash_timer"):
-                self.danger_flash_timer = None
-
-            # make the texture
-            self._warning_icon = bs.newnode(
-                'image',
-                attrs={
-                    'texture': bs.gettexture('peril'),
-                    'position': (self.node.position[0], self.node.position[1] + 60),
-                    'scale': (80, 80),
-                    'opacity': 1.0,
-                    'absolute_scale': True,
-                    'attach': 'bottomCenter',
-                },
-            )
-
-            # flash it
-            def _flash():
-                if self._warning_icon and self._warning_icon.exists():
-                    self._warning_icon.opacity = (
-                        0.0 if self._warning_icon.opacity > 0.0 else 1.0
-                    )
-
-            self._flash_timer = bs.Timer(0.2, _flash, repeat=True)
-
-        elif lives == 2:
-            # cleanup any peril icon if it exists
-            if hasattr(self, "_warning_icon") and self._warning_icon:
-                self._warning_icon.delete()
-            if hasattr(self, "_flash_timer"):
-                self._flash_timer = None
-
-            # make the texture
-            self._danger_icon = bs.newnode(
-                'image',
-                attrs={
-                    'texture': bs.gettexture('danger'),
-                    'position': (self.node.position[0], self.node.position[1] + 60),
-                    'scale': (80, 80),
-                    'opacity': 1.0,
-                    'absolute_scale': True,
-                    'attach': 'bottomCenter',
-                },
-            )
-
-            # flash it
-            def danger_flash():
-                if self._danger_icon and self._danger_icon.exists():
-                    self._danger_icon.opacity = (
-                        0.0 if self._danger_icon.opacity > 0.0 else 1.0
-                    )
-
-            self.danger_flash_timer = bs.Timer(0.4, danger_flash, repeat=True)
-
-        else:
-            # If not on 1 or 2 lives, clean up both
-            if hasattr(self, "_warning_icon") and self._warning_icon:
-                self._warning_icon.delete()
-            if hasattr(self, "_flash_timer"):
-                self._flash_timer = None
-
-            if hasattr(self, "_danger_icon") and self._danger_icon:
-                self._danger_icon.delete()
-            if hasattr(self, "danger_flash_timer"):
-                self.danger_flash_timer = None
-
+    
     def handle_player_spawned(self) -> None:
         """Our player spawned; hooray!"""
         if not self.node:
@@ -243,8 +170,6 @@ class Icon(bs.Actor):
     def handlemessage(self, msg: Any) -> Any:
         if isinstance(msg, bs.DieMessage):
             self.node.delete()
-            self._flash_timer = None
-            self.danger_flash_timer = None
             return None
         return super().handlemessage(msg)
 
@@ -400,7 +325,7 @@ class EliminationGame(bs.TeamGameActivity[Player, Team]):
         self._start_time = bs.time()
         self.setup_standard_time_limit(self._time_limit)
         self.setup_standard_powerup_drops()
-        if self._solo_mode:
+        if self._solo_mode and len(self.players) != 2:
             self._vs_text = bs.NodeActor(
                 bs.newnode(
                     'text',
@@ -418,7 +343,15 @@ class EliminationGame(bs.TeamGameActivity[Player, Team]):
                     },
                 )
             )
-
+        if len(self.players) == 2:
+            bs.setmusic(bs.MusicType.ELIM_VERSUS)
+            self._vs_text = LoopingImageAnimation(
+                prefix='versus_fire', 
+                frame_count=4, 
+                frame_delay=0.05, 
+                scale=(70, 70),
+                position=(0, -230)
+            )
         # If balance-team-lives is on, add lives to the smaller team until
         # total lives match.
         if (
@@ -645,6 +578,34 @@ class EliminationGame(bs.TeamGameActivity[Player, Team]):
                     random.choice(death_sound).play()  # pick a random one
                 else:
                     death_sound.play()
+            if self._solo_mode and player.lives == 1:
+                remaining = [p for p in player.team.players if p.lives > 0]
+                if len(remaining) == 1:
+                    iposition = player.icons[0].node.position
+                    y = 310
+                    x = 80
+                    theposition = (
+                        (iposition[0] + x, iposition[1] - y)
+                        if iposition[0] == 60.0 else 
+                        (iposition[0] - x, iposition[1] - y)
+                    )
+                    if iposition[0] = 60.0:
+                        self.danger_icon_right = LoopingImageAnimation(
+                            prefix='elim_danger', 
+                            frame_count=3, 
+                            frame_delay=0.03, 
+                            scale=(100, 100),
+                            position=theposition,
+                        )
+                    else:
+                        self.danger_icon_left = LoopingImageAnimation(
+                            prefix='elim_danger_flipped', 
+                            frame_count=3, 
+                            frame_delay=0.03, 
+                            scale=(100, 100),
+                            position=theposition,
+                        )
+                    bs.setmusic(bs.MusicType.ELIM_DANGER)
 
             # If we hit zero lives, we're dead (and our team might be too).
             if player.lives == 0:
@@ -699,7 +660,14 @@ class EliminationGame(bs.TeamGameActivity[Player, Team]):
         if self.has_ended():
             return
         results = bs.GameResults()
-        self._vs_text = None  # Kill our 'vs' if its there.
+        if len(self.players) == 2:
+            self._vs_text.die()
+            if self.danger_icon_left:
+                self.danger_icon_left.die()
+            if self.danger_icon_right:
+                self.danger_icon_right.die()
+        else:
+            self._vs_text = None  # Kill our 'vs' if its there.
         for team in self.teams:
             results.set_team_score(team, team.survival_seconds)
         self.end(results=results)

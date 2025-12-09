@@ -116,6 +116,8 @@ class MusicType(Enum):
     LOGOTYPE = 'LOGOTYPE'
     OPENING = 'Opening'
     CRASH_HANDLER = 'Crash_Handler'
+    ELIM_DANGER = 'Elim_Danger'
+    ELIM_VERSUS = 'Elim_Versus'
     
 def show_music_now_playing(music_type: bs.MusicType) -> None:
         """

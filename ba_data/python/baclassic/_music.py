@@ -116,6 +116,8 @@ ASSET_SOUNDTRACK_ENTRIES: dict[MusicType, AssetSoundtrackEntry] = {
     MusicType.SPORTS: AssetSoundtrackEntry('music/sportsMusic', volume=0.8),
     MusicType.HOCKEY: AssetSoundtrackEntry('music/sportsMusic', volume=0.8),
     MusicType.FOOTBALL: AssetSoundtrackEntry('music/sportsMusic', volume=0.8),
+    MusicType.ELIM_DANGER: AssetSoundtrackEntry('music/danger_mbm'),
+    MusicType.ELIM_VERSUS: AssetSoundtrackEntry('music/versus_mbm'),
     MusicType.FLYING: AssetSoundtrackEntry('music/flyingMusic', volume=0.8),
     MusicType.FLYING2: AssetSoundtrackEntry('music/flyingMusic2'),
     MusicType.SCARY: AssetSoundtrackEntry('music/scaryMusic', volume=0.8),
