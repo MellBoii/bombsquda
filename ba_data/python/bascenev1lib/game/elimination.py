@@ -94,6 +94,8 @@ class Icon(bs.Actor):
                 },
             )
         self.set_position_and_scale(position, scale)
+        self._flash_timer = None
+        self.danger_flash_timer = None
 
     def set_position_and_scale(
         self, position: tuple[float, float], scale: float
@@ -127,6 +129,8 @@ class Icon(bs.Actor):
             assert self.node
             self.node.color = (0.7, 0.3, 0.3)
             self.node.opacity = 0.2
+            self._flash_timer = None
+            self._warning_icon.delete()
         # if we're on last life, tell player to "peril!". i love paper mario. 
         if lives == 1:
             # cleanup any danger icon if it exists
@@ -134,9 +138,6 @@ class Icon(bs.Actor):
                 self._danger_icon.delete()
             if hasattr(self, "danger_flash_timer"):
                 self.danger_flash_timer = None
-
-            # play the sound
-            bs.getsound('peril').play()
 
             # make the texture
             self._warning_icon = bs.newnode(
@@ -166,9 +167,6 @@ class Icon(bs.Actor):
                 self._warning_icon.delete()
             if hasattr(self, "_flash_timer"):
                 self._flash_timer = None
-
-            # play the sound
-            bs.getsound('danger').play()
 
             # make the texture
             self._danger_icon = bs.newnode(
@@ -245,6 +243,8 @@ class Icon(bs.Actor):
     def handlemessage(self, msg: Any) -> Any:
         if isinstance(msg, bs.DieMessage):
             self.node.delete()
+            self._flash_timer = None
+            self.danger_flash_timer = None
             return None
         return super().handlemessage(msg)
 
