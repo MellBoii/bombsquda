@@ -253,15 +253,13 @@ class MainMenuWindow(bui.MainWindow):
         thistdelay = self._tdelay + td3 * self._t_delay_inc
         bui.textwidget(
             parent=self._root_widget,
-            position=(self._width * 0.5, button_y_offs - 10),
+            position=(self._width * 0.5, button_y_offs + 115),
             size=(0, 0),
-            scale=0.4,
+            scale=0.6,
             flatness=1.0,
-            color=(1, 1, 1, 0.3),
+            color=(1, 1, 1, 0.7),
             text=(
-                f'{app.env.engine_version}'
-                f' build {app.env.engine_build_number}.'
-                f' Copyright 2025 Eric Froemling.'
+                f'BombSquda v2.0\nBombSquad Version {app.env.engine_version}\nBombSquad is copyright of Eric Froemling.'
             ),
             h_align='center',
             v_align='center',
