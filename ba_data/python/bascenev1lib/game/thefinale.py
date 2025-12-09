@@ -145,7 +145,6 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
         bs.timer(2.0, bs.WeakCall(self._start_powerup_drops))
         bs.timer(0.001, bs.WeakCall(self._start_bot_updates))
         self.setup_low_life_warning_sound()
-        self._update_scores()
         self._tntspawner = TNTSpawner(
             position=self._tntspawnpos, respawn_time=10.0
         )
@@ -156,6 +155,22 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
             bs.MusicType.LAP4,
         ]
         bs.setmusic(random.choice(random_musicas))
+        self.points_text = bs.newnode(
+                'text',
+                attrs={
+                    'v_attach': 'top',
+                    'h_attach': 'center',
+                    'h_align': 'center',
+                    'vr_depth': -10,
+                    'color': (1, 1, 1),
+                    'shadow': 1.0,
+                    'flatness': 1.0,
+                    'position': (0, -40),
+                    'scale': 1.3,
+                    'text': '',
+                },
+            )
+        self._update_scores()
 
     @override
     def spawn_player(self, player: Player) -> bs.Actor:
@@ -173,7 +188,9 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
         self._bot_update_interval = 3.3 - 0.3 * (len(self.players))
         self._update_bots()
         self._update_bots()
+        self._update_bots()
         if len(self.players) > 2:
+            self._update_bots()
             self._update_bots()
         if len(self.players) > 3:
             self._update_bots()
@@ -359,16 +376,18 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
                 for player in self.players:
                     player.actor.say()
                 bs.getsound('srank').play()
+                ba.app.classic.ach.award_local_achievement('I am the BombSquad:tm:')
+                self.points_text.text = 'yuo\'re winner :)'
                 return
-        
         assert self._scoreboard is not None
         self._scoreboard.set_team_value(self.teams[0], score, max_score=None)
-        if score >= 1500:
-            if self._alrdidach3 == True:
-                return
-            self._alrdidach3 = True
-            ba.app.config.commit()
-            ba.app.classic.ach.award_local_achievement('I am the BombSquad:tm:')
+        ptext_lstr = bs.Lstr(
+            resource='finalePoints',
+            subs=[
+                ('${NUM}', str(1500 - self._score)),
+            ],
+        )
+        self.points_text.text = ptext_lstr
         if score >= 500:
             if self._alrdidach2 == True:
                 return

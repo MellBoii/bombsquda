@@ -2160,6 +2160,7 @@
     "watchReplayButtonText": "play"
   },
   "waveText": "Wave",
+  "finalePoints": "Points to win: ${NUM}",
   "wellSureText": "Well Sure!",
   "whatIsThisText": "What is this?",
   "winsPlayerText": "${NAME} Wins!",
