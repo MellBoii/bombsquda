@@ -821,54 +821,93 @@ class CoopSubMenu(bui.MainWindow):
         transition: str | None = 'in_right',
         origin_widget: bui.Widget | None = None,
         playlist_select_context: PlaylistSelectContext | None = None,
-        nobackout: bool = False,
     ):
-        self.dialog = 1
-        self.nobackout = nobackout
-        self._main_window_transition_out = 'out_scale'
+        self._main_window_transition_out = 'out_left'
         self._r = 'playWindow'
+        
+        uiscale = bui.app.ui_v1.uiscale
+        # JESUS THAT IS A LOT OF CALCULATIONS
+        # it doesn't even help! the ui still
+        # somewhat looks fuckin ugly!!
+        self._width = (
+            1500 if uiscale is bui.UIScale.SMALL 
+            else 920 if uiscale is bui.UIScale.MEDIUM else 720
+        )
+        self._height = (
+            1000
+            if uiscale is bui.UIScale.SMALL
+            else 600 if uiscale is bui.UIScale.MEDIUM else 400
+        )
         self._root_widget = bui.containerwidget(
-            size=(400, 300),
+            size=(self._width, self._height),
             transition='in_right',
             parent=bui.get_special_widget('overlay_stack'),
-            on_cancel_call=self.main_window_back if not self.nobackout else self.saythingyr
+            on_cancel_call=self.main_window_back
         )
-
+        buttonscale = (
+            2.0 if uiscale is bui.UIScale.SMALL 
+            else 1.5 if uiscale is bui.UIScale.MEDIUM else 1.2
+        )
+        buttonX = (
+            self._width * 0.36 if uiscale is bui.UIScale.SMALL
+            else self._width * 0.35 if uiscale is bui.UIScale.MEDIUM
+            else self._width * 0.34
+        )
+        textY = (
+            380
+            if uiscale is bui.UIScale.SMALL
+            else 280 if uiscale is bui.UIScale.MEDIUM else 180
+        )   
+        bbtn_width = (
+            self._width - 1450 if uiscale is bui.UIScale.SMALL
+            else self._width - 900 if uiscale is bui.UIScale.MEDIUM 
+            else self._width - 700
+        )
+        bbtn_height = (
+            self._height - 250 if uiscale is bui.UIScale.SMALL 
+            else self._height - 60
+        )
+        
+        self._back_button = bui.buttonwidget(
+            parent=self._root_widget,
+            position=(bbtn_width, bbtn_height),
+            size=(60, 50),
+            scale=2.8 if uiscale is bui.UIScale.SMALL else 1.2,
+            label=bui.charstr(bui.SpecialChar.BACK),
+            button_type='backSmall',
+            on_activate_call=self.main_window_back,
+        )
+        bui.containerwidget(
+            edit=self._root_widget, cancel_button=self._back_button
+        )
         bui.textwidget(
             parent=self._root_widget,
-            position=(200, 250),
-            scale=1.3,
+            position=(self._width * 0.5, self._height / 2.5 + textY),
+            scale=buttonscale,
             text=bui.Lstr(resource=f'{self._r}.whichCampaign'),
             h_align='center',
             v_align='center',
             size=(0, 0),
         )
-
         bui.buttonwidget(
             parent=self._root_widget,
             label=bui.Lstr(resource=f'{self._r}.regularCampaign'),
-            position=(100, 150),
-            size=(200, 50),
+            position=(buttonX, self._height / 2.5 + 40 * buttonscale),
+            size=(200, 80),
+            scale=buttonscale,
             on_activate_call=self._normal_campaign,
+            autoselect=True,
         )
 
         bui.buttonwidget(
             parent=self._root_widget,
             label=bui.Lstr(resource=f'{self._r}.customCampaign'),
-            position=(100, 80),
-            size=(200, 50),
+            position=(buttonX, self._height / 2.5 - 80 * buttonscale),
+            size=(200, 80),
+            scale=buttonscale,
             on_activate_call=self._custom_campaign,
         )
-
-        # Back button
-        bui.buttonwidget(
-            parent=self._root_widget,
-            label="Back",
-            position=(100, 20),
-            size=(200, 50),
-            on_activate_call=self.main_window_back if not self.nobackout else self.saythingyr,
-        )
-    
+    # now unused
     def saythingyr(self):
         if self.dialog == 1:
             ba.screenmessage('Nope. We\'re going back there. Whether you like it or not.', color=(0.5, 0.25, 1.0))
