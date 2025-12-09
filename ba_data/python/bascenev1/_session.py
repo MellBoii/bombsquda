@@ -354,13 +354,6 @@ class Session:
             sessionteam = sessionplayer.sessionteam
             assert sessionteam is not None
 
-            _bascenev1.broadcastmessage(
-                babase.Lstr(
-                    resource='playerLeftText',
-                    subs=[('${PLAYER}', sessionplayer.getname(full=True))],
-                )
-            )
-
             # Remove them from their SessionTeam.
             if sessionplayer in sessionteam.players:
                 sessionteam.players.remove(sessionplayer)

@@ -842,7 +842,19 @@ class Spaz(bs.Actor):
                                 scale=1.1,
                             ).autoretain()
         self._turbo_filter_add_press('punch')
-        
+    def lvgame_explode(self) -> None:
+        if self.node.invincible == True:
+            self.node.invincible = False
+        self.explode()
+        def trigger_funny():
+            bs.broadcastmessage(
+                ba.Lstr(
+                    resource='playerLeftText',
+                    subs=[('${PLAYER}', self.node.name)],
+                )
+            )
+            bs.getsound('didnotfinish').play()
+        bs.timer(0.6, trigger_funny)
     def explode(self) -> None:
         """
         Explodes our spaz if 
@@ -878,11 +890,8 @@ class Spaz(bs.Actor):
                                     xforce, 0.05, 0, 0,
                                         v[0]*15*2, 0, v[2]*15*2)
             bs.timer(0.6, lambda: bomb.Bomb(position=self.node.position, bomb_type='tnt').explode())
-            bs.timer(0.6, lambda: self.node and self.node.handlemessage(
-                bs.getsound('retired').play(),
-                bs.DieMessage()
-                )
-            )
+            bs.timer(0.6, self.shatter)
+            bs.timer(0.6, bs.getsound('retired').play)
 
     def _safe_play_sound(self, sound: bs.Sound, volume: float) -> None:
         """Plays a sound at our position if we exist."""
@@ -3595,7 +3604,7 @@ class Spaz(bs.Actor):
         else:
             sounds = ['gibbed', 'gibbed2']
             bs.getsound(random.choice(sounds)).play(position=self.node.position)
-            if random.random() < 0.35:
+            if random.random() < 0.5:
                 shatter2sfx = [
                     'motorroach_dies', 
                     'motorroach_dies2',

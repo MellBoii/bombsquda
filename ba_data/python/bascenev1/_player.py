@@ -115,7 +115,7 @@ class Player[TeamT: bascenev1.Team]:
         try:
             # If they still have an actor, kill it.
             if self.actor:
-                self.actor.explode()
+                self.actor.lvgame_explode()
             self.actor = None
         except Exception:
             logging.exception('Error killing actor on leave for %s.', self)
