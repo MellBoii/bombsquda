@@ -279,6 +279,8 @@ class EliminationGame(bs.TeamGameActivity[Player, Team]):
 
         # Base class overrides:
         self.slow_motion = self._epic_mode
+        self.danger_icon_left = None
+        self.danger_icon_right = None
         self.default_music = (
             bs.MusicType.EPIC if self._epic_mode else bs.MusicType.SURVIVAL
         )
@@ -589,7 +591,7 @@ class EliminationGame(bs.TeamGameActivity[Player, Team]):
                         if iposition[0] == 60.0 else 
                         (iposition[0] - x, iposition[1] - y)
                     )
-                    if iposition[0] = 60.0:
+                    if iposition[0] == 60.0:
                         self.danger_icon_right = LoopingImageAnimation(
                             prefix='elim_danger', 
                             frame_count=3, 
@@ -605,7 +607,7 @@ class EliminationGame(bs.TeamGameActivity[Player, Team]):
                             scale=(100, 100),
                             position=theposition,
                         )
-                    bs.setmusic(bs.MusicType.ELIM_DANGER)
+                    bs.setmusic(bs.MusicType.ELIM_DANGER, continuous=True)
 
             # If we hit zero lives, we're dead (and our team might be too).
             if player.lives == 0:

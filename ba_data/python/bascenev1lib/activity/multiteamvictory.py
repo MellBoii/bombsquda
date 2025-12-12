@@ -7,6 +7,8 @@ from __future__ import annotations
 from typing import override, TYPE_CHECKING
 
 import bascenev1 as bs
+import random
+from bascenev1lib.actor.bomb import Bomb
 
 from bascenev1lib.activity.multiteamscore import MultiTeamScoreScreenActivity
 
@@ -29,6 +31,47 @@ class TeamSeriesVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
         self._default_show_tips = False
         self._ffa_top_player_info: list[Any] | None = None
         self._ffa_top_player_rec: bs.PlayerRecord | None = None
+        self.bomb_timer = None
+    
+    def _drop_bomb_cluster(self) -> None:
+        # Random note: code like this is a handy way to plot out extents
+        # and debug things.
+        loc_test = False
+        if loc_test:
+            bs.newnode('locator', attrs={'position': (8, 6, -5.5)})
+            bs.newnode('locator', attrs={'position': (8, 6, -2.3)})
+            bs.newnode('locator', attrs={'position': (-7.3, 6, -5.5)})
+            bs.newnode('locator', attrs={'position': (-7.3, 6, -2.3)})
+
+        # Drop several bombs in series.
+        delay = 0.0
+        for _i in range(random.randrange(1, 3)):
+            # Drop them somewhere within our bounds with velocity pointing
+            # toward the opposite side.
+            pos = (
+                -7.3 + 15.3 * random.random(),
+                11,
+                random.randint(-9, 6),
+            )
+            dropdir = -1.0 if pos[0] > 0 else 1.0
+            vel = (
+                (-5.0 + random.random() * 30.0) * dropdir,
+                random.uniform(-3.066, -4.12),
+                random.randint(-4, 3),
+            )
+            self._drop_bomb(pos, vel)
+
+    def _drop_bomb(
+        self, position: Sequence[float], velocity: Sequence[float]
+    ) -> None:
+        Bomb(position=position, velocity=velocity, nosound=True).autoretain()
+    
+    def start_bombs(self):
+        self.bomb_timer = bs.Timer(
+            0.1, 
+            self._drop_bomb_cluster, 
+            repeat=True
+        )
 
     @override
     def on_begin(self) -> None:
@@ -61,6 +104,7 @@ class TeamSeriesVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
         bs.timer(4.5, self._score_display_sound.play)
         bs.timer(4.5, lambda: bs.getsound('achievement').play())
         bs.timer(4.5, lambda: bs.getsound('cheer2').play())
+        bs.timer(4.5, self.start_bombs)
         bs.timer(38.0, lambda: bs.setmusic(bs.MusicType.SCORES))
 
         # Score / Name / Player-record.

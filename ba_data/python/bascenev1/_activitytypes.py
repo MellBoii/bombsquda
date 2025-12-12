@@ -190,6 +190,7 @@ class ScoreScreenActivity(Activity[EmptyPlayer, EmptyTeam]):
         from bascenev1lib.actor.tipstext import TipsText
         super().on_transition_in()
         mesh = bs.getmesh('thePadLevel')
+        cmesh = bs.getcollisionmesh('thePadLevelCollide')
         bottom_mesh = bs.getmesh('thePadLevelBottom')
         color_texture = bs.gettexture('thePadLevelColor')
         bgtex = bs.gettexture('menuBG')
@@ -220,6 +221,7 @@ class ScoreScreenActivity(Activity[EmptyPlayer, EmptyTeam]):
                 'terrain',
                 attrs={
                     'mesh': mesh,
+                    'collision_mesh': cmesh,
                     'color_texture': color_texture,
                     'reflection': 'soft',
                     'reflection_scale': [0.3],

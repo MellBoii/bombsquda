@@ -339,6 +339,7 @@ class Blast(bs.Actor):
         hit_type: str = 'explosion',
         hit_subtype: str = 'normal',
         owner: bs.Node | None = None,
+        nosound: bool = False
     ):
         """Instantiate with given values."""
 
@@ -356,6 +357,7 @@ class Blast(bs.Actor):
         self.hit_type = hit_type
         self.hit_subtype = hit_subtype
         self.radius = blast_radius
+        self.nosound = nosound
 
         # Set our position a bit lower so we throw more things upward.
         rmats = (factory.blast_material, shared.attack_material)
@@ -681,8 +683,9 @@ class Blast(bs.Actor):
         if self.blast_type == 'running_bomb':
             bs.getsound('thunderDamage').play()
         else:
-            factory.random_explode_sound().play(position=lpos)
-        factory.debris_fall_sound.play(position=lpos)
+            if self.nosound != True:
+                factory.random_explode_sound().play(position=lpos)
+                factory.debris_fall_sound.play(position=lpos)
 
         bs.camerashake(intensity=5.0 if self.blast_type == 'tnt' else 1.0)
 
@@ -764,6 +767,7 @@ class Bomb(bs.Actor):
         bomb_scale: float = 1.0,
         source_player: bs.Player | None = None,
         owner: bs.Node | None = None,
+        nosound: bool = False,
     ):
         """Create a new Bomb.
 
@@ -790,6 +794,7 @@ class Bomb(bs.Actor):
 
         self._exploded = False
         self.scale = bomb_scale
+        self.nosound = nosound
 
         self.texture_sequence: bs.Node | None = None
 
@@ -979,13 +984,13 @@ class Bomb(bs.Actor):
                     'materials': materials,
                 },
             )
-
-            sound = bs.newnode(
-                'sound',
-                owner=self.node,
-                attrs={'sound': factory.fuse_sound, 'volume': 0.25},
-            )
-            self.node.connectattr('position', sound, 'position')
+            if self.nosound != True:
+                sound = bs.newnode(
+                    'sound',
+                    owner=self.node,
+                    attrs={'sound': factory.fuse_sound, 'volume': 0.25},
+                )
+                self.node.connectattr('position', sound, 'position')
             bs.animate(self.node, 'fuse_length', {0.0: 1.0, fuse_time: 0.0})
 
         # Light the fuse!!!
@@ -1096,7 +1101,8 @@ class Bomb(bs.Actor):
                 source_player=bs.existing(self._source_player),
                 hit_type=self.hit_type,
                 hit_subtype=self.hit_subtype,
-                owner=self.owner
+                owner=self.owner,
+                nosound=self.nosound
             ).autoretain()
             for callback in self._explode_callbacks:
                 callback(self, blast)
