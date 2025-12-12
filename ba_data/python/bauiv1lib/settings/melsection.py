@@ -146,7 +146,7 @@ class MelWindow(bui.MainWindow):
         assert bui.app.classic is not None
         uiscale = bui.app.ui_v1.uiscale
         width = 1000 if uiscale is bui.UIScale.SMALL else 800
-        height = 750
+        height = 700
         self._r = 'melWindow'
 
         uiscale = bui.app.ui_v1.uiscale
@@ -213,7 +213,8 @@ class MelWindow(bui.MainWindow):
                 on_activate_call=self.main_window_back,
             )
             bui.containerwidget(edit=self._root_widget, cancel_button=btn)
-        thefuckedupuifix = 200
+        # i love thefuckedupuifix!! thefuckedupuifix forever!!
+        thefuckedupuifix = 220
         bui.textwidget(
             parent=self._root_widget,
             position=(0, yoffs - (70 if uiscale is bui.UIScale.SMALL else 60)),
@@ -396,5 +397,10 @@ class MelWindow(bui.MainWindow):
     def changemeter(self, val: str) -> None:
         cfg = bui.app.config
         cfg['squda_enablemeter'] = val
+        cfg.apply_and_commit()
+
+    def changesc(self, val: str) -> None:
+        cfg = bui.app.config
+        cfg['squda_nosugarcoats'] = val
         cfg.apply_and_commit()
     

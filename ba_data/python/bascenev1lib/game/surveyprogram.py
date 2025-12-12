@@ -731,7 +731,7 @@ class ALTBombSqudaSettings(bui.MainWindow):
             # We're affected by screen size only at small ui-scale.
             refresh_on_screen_size_changes=uiscale is bui.UIScale.SMALL,
         )
-        thefuckedupuifix = 220
+        thefuckedupuifix = 270
         bui.textwidget(
             parent=self._root_widget,
             position=(0, yoffs - (70 if uiscale is bui.UIScale.SMALL else 60)),
