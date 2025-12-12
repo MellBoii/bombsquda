@@ -122,6 +122,7 @@ class Spaz(bs.Actor):
         
         self._wiggle_count = 0
         self.wiggling = False
+        self.light = None
 
         self.source_player = source_player
         self._dead = False
@@ -247,6 +248,8 @@ class Spaz(bs.Actor):
         self.lasthittype = None
         self.timesparried = 0
         self.timesparriedtotal = 0
+        self.yeehaws = 0
+        self.yeehaw_text = None
         self.blast_radius = 2.0
         self.powerups_expire = powerups_expire
         if self._demo_mode:  # Preserve old behavior.
@@ -1811,6 +1814,93 @@ class Spaz(bs.Actor):
         bs.timer(5.0, force_stop)
         roll()
         
+    def increase_chain(self, number: int = 1):
+        self.yeehaws += number
+        # play sounds based on our chains
+        if self.yeehaws > 7:
+            bs.getsound('mbmYeehaw4').play()
+            bs.getsound('mbmChain7').play()
+        if self.yeehaws == 7:
+            bs.getsound('mbmYeehaw4').play()
+            bs.getsound('mbmChain7').play()
+        elif self.yeehaws == 6:
+            bs.getsound('mbmYeehaw4').play()
+            bs.getsound('mbmChain6').play()
+        elif self.yeehaws == 5:
+            bs.getsound('mbmYeehaw4').play()
+            bs.getsound('mbmChain5').play()
+        elif self.yeehaws == 4:
+            bs.getsound('mbmYeehaw4').play()
+            bs.getsound('mbmChain4').play()
+        elif self.yeehaws == 3:
+            bs.getsound('mbmYeehaw3').play()
+            bs.getsound('mbmChain3').play()
+        elif self.yeehaws == 2:
+            bs.getsound('mbmYeehaw2').play()
+            bs.getsound('mbmChain2').play()
+        elif self.yeehaws == 1:
+            bs.getsound('mbmYeehaw1').play()
+            bs.getsound('mbmChain1').play()
+        # add a light to us indicating we have a chain
+        if not self.light:
+            self.light = bs.newnode(
+                'flash',
+                attrs={
+                    'position': self.node.position,
+                    'size': 0.5,
+                    'color': (1.0, 0.8, 0.4),
+                },
+            )
+            self.node.connectattr('position', self.light, 'position')
+        # auugghhh text
+        if not self.yeehaw_text:
+            mathnode = bs.newnode(
+                'math',
+                owner=self.node,
+                attrs={'input1': (0, 1.4, 0), 'operation': 'add'},
+            )
+            self.node.connectattr('torso_position', mathnode, 'input2')
+            self.yeehaw_text = bs.newnode(
+                'text',
+                owner=self.node,
+                attrs={
+                    'text': str(self.yeehaws),
+                    'in_world': True,
+                    'shadow': 1.0,
+                    'flatness': 1.0,
+                    'scale': 0.02,
+                    'h_align': 'center',
+                },
+            )
+            mathnode.connectattr('output', self.yeehaw_text, 'position')
+        else:
+            self.yeehaw_text.text = str(self.yeehaws)
+            
+    def release_chain(self):
+        if self.yeehaws < 1:
+            return
+        if self.yeehaws > 4:
+            rsfx = [
+                'mbmThunder1',
+                'mbmThunder2',
+                'mbmThunder3',
+                'mbmThunder4',
+            ]
+            bs.getsound(random.choice(rsfx)).play()
+        elif self.yeehaws == 3:
+            bs.getsound('mbmCR3').play()
+        elif self.yeehaws == 2:
+            bs.getsound('mbmCR2').play()
+        elif self.yeehaws == 1:
+            bs.getsound('mbmCR1').play()
+        
+        self.yeehaws = 0
+        if self.light:
+            self.light.delete()
+            self.light = None
+        if self.yeehaw_text:
+            self.yeehaw_text.delete()
+            self.yeehaw_text = None
     
     @override
     def handlemessage(self, msg: Any) -> Any:
@@ -2958,26 +3048,54 @@ class Spaz(bs.Actor):
                 punchdir = self.node.punch_velocity
                 vel = self.node.punch_momentum_linear
 
-                self._punched_nodes.add(node)
-                node.handlemessage(
-                    bs.HitMessage(
-                        pos=ppos,
-                        velocity=vel,
-                        magnitude=punch_power * punch_momentum_angular * 110.0,
-                        velocity_magnitude=punch_power * 40,
-                        radius=0,
-                        srcnode=self.node,
-                        source_player=self.source_player,
-                        force_direction=punchdir,
-                        hit_type='punch',
-                        hit_subtype=(
-                            'super_punch'
-                            if self._has_boxing_gloves
-                            else 'default'
-                        ),
+                self._punched_nodes.add(node)                
+                isspaz = node.getnodetype() == 'spaz'
+                punchmag = punch_power * punch_momentum_angular * 110.0
+                # SPECIFICALLY do extra damage if our punch mag is
+                # high, we have over 1 chains, and the other node is a spaz
+                if punchmag <= 210 and self.yeehaws > 1 and isspaz:
+                    node.handlemessage(
+                        bs.HitMessage(
+                            pos=ppos,
+                            velocity=vel,
+                            magnitude=punch_power * punch_momentum_angular * 110.0 * self.yeehaws * self.yeehaws,
+                            velocity_magnitude=punch_power * 40,
+                            radius=0,
+                            srcnode=self.node,
+                            source_player=self.source_player,
+                            force_direction=punchdir,
+                            hit_type='punch',
+                            hit_subtype=(
+                                'super_punch'
+                                if self._has_boxing_gloves
+                                else 'default'
+                            ),
+                        )
                     )
-                )
-
+                    # release our chain
+                    self.release_chain()
+                # else, just hit the node normally :^)
+                else:
+                    node.handlemessage(
+                        bs.HitMessage(
+                            pos=ppos,
+                            velocity=vel,
+                            magnitude=punch_power * punch_momentum_angular * 110.0,
+                            velocity_magnitude=punch_power * 40,
+                            radius=0,
+                            srcnode=self.node,
+                            source_player=self.source_player,
+                            force_direction=punchdir,
+                            hit_type='punch',
+                            hit_subtype=(
+                                'super_punch'
+                                if self._has_boxing_gloves
+                                else 'default'
+                            ),
+                        )
+                    )
+                if punchmag >= 210 and isspaz:
+                    self.increase_chain()
                 # Also apply opposite to ourself for the first punch only.
                 # This is given as a constant force so that it is more
                 # noticeable for slower punches where it matters. For fast
@@ -2985,7 +3103,7 @@ class Spaz(bs.Actor):
                 # the target.
                 mag = -270.0
                 if self._hockey:
-                    mag *= 0.5
+                    mag *= 0.7
                 if len(self._punched_nodes) == 1:
                     self.node.handlemessage(
                         'kick_back',
