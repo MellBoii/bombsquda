@@ -588,7 +588,7 @@ class PlayWindow(bui.MainWindow):
             return
             
         # Show the submenu instead of jumping directly to browser
-        if ba.app.config.get("canopencredits", True):
+        if ba.app.config.get("squda_canopencredits", True):
             self.dialog += 1
             if self.dialog == 1:    
                 ba.screenmessage('I\'m not going there again.', color=(0.5, 0.25, 1.0))
@@ -604,7 +604,6 @@ class PlayWindow(bui.MainWindow):
                 bui.getsound('spazImpact04').play()
                 ba.apptimer(3.0, lambda: ba.screenmessage('..okay yeah they\'re DEFINETLY still there.', color=(0.5, 0.25, 1.0)))
                 ba.apptimer(3.0, lambda: bui.getsound('spazImpact03').play())
-                ba.apptimer(3.2, lambda: bui.getsound('recordscratch').play())
                 ba.apptimer(3.2, lambda: bs.setmusic(None))
                 ba.apptimer(5.5, lambda: ba.screenmessage('Well, guess I\'ll have to go there.\n AGAIN.', color=(0.5, 0.25, 1.0)))
                 ba.apptimer(5.5, lambda: bui.getsound('spazAttack02').play())
@@ -613,7 +612,7 @@ class PlayWindow(bui.MainWindow):
                 ba.apptimer(8.4, lambda: bs.setmusic(bs.MusicType.MENU))
                 ba.apptimer(8.5, lambda: ba.screenmessage('You re-unlocked Co-op.'))
                 ba.apptimer(8.5, lambda: bui.getsound('ding').play())
-                ba.app.config['canopencredits'] = False
+                ba.app.config['squda_canopencredits'] = False
                 ba.app.config.commit()
             else:
                 raise TypeError(f'Dialog number is {self.dialog}; it should ONLY be 5 and not above.\nWhat the fuck are you doing?')

@@ -206,7 +206,7 @@ class Spaz(bs.Actor):
         # ask if our player's config has spazhardmode on, and
         # if our spaz has a source player (defines if they're a bot or not)
         # then set our hitpoints to 1 (to well, make it hard)
-        if ba.app.config.get("spazhardmode", True) and not source_player == None:
+        if ba.app.config.get("squda_spazhardmode", True) and not source_player == None:
             self.hitpoints = 1
             self.hitpoints_max = 1  
             # ew, we have to do this in a timer otherwise it'll break...
@@ -367,12 +367,12 @@ class Spaz(bs.Actor):
                 self._punch_power_scale = 1.04
                 self._jump_cooldown = 0.27
                 self.pasheal_timer = bs.Timer(1.5, self.passiveheal, repeat=True)
-            if ba.app.config.get("parryalways", True) and not source_player == None:
+            if ba.app.config.get("squda_parryalways", True) and not source_player == None:
                 self.canparry = True
             if self.character == 'Spaz':
                 # because buddie and gummy asked me to keep it
                 def checkifpeakeyes():
-                    if ba.app.config.get("spazfuckedup", True) and not source_player == None:
+                    if ba.app.config.get("squda_spazfuckedup", True) and not source_player == None:
                         self.node.color_texture = bs.gettexture('fuckedupspaz')
                 bs.timer(0.21, checkifpeakeyes)
             char_name = getattr(self, 'character', None)
@@ -718,13 +718,13 @@ class Spaz(bs.Actor):
             self.parrying = False
         def letparryagain():
             self.canparry2 = True
-        if ba.app.config.get("parrytype") == 3:
+        if ba.app.config.get("squda_parrytype") == 3:
             parrytime = 0.3
             parrycooldown = 0.8
-        if ba.app.config.get("parrytype") == 2:
+        if ba.app.config.get("squda_parrytype") == 2:
             parrytime = 0.2
             parrycooldown = 0.6
-        if ba.app.config.get("parrytype") == 1:
+        if ba.app.config.get("squda_parrytype") == 1:
             parrytime = 0.1
             parrycooldown = 0.4
         # Close our parry timeframe after our chosen second(s).
@@ -1203,7 +1203,7 @@ class Spaz(bs.Actor):
             self.earthsptext.delete()
         # Prevent players from getting shields if they're on hardmode
         # (so that it's not cheesable)
-        if ba.app.config.get("spazhardmode", True) and not self.source_player == None:
+        if ba.app.config.get("squda_spazhardmode", True) and not self.source_player == None:
             PopupText(
                 bs.Lstr(resource='noShield'),
                 position=self.node.position,
@@ -1607,7 +1607,10 @@ class Spaz(bs.Actor):
         """ for use when... not sugarcoating it lol """
         # sound
         bs.getsound(sound).play()
-
+        # if the person doesn't really like getting jumpscared
+        # by the stupid thing just return lmfao
+        if ba.app.config.get("squda_nosugarcoats", True):
+            return
         # sugarcoating itnt
         icon = bs.newnode(
             'image',
@@ -2275,7 +2278,7 @@ class Spaz(bs.Actor):
                         bs.getsound('bellHigh').play()
                         bs.getsound('orchestraHit').play()
                     # let us "counter" if parrytype is 1
-                    if ba.app.config.get("parrytype") == 1:
+                    if ba.app.config.get("squda_parrytype") == 1:
                         savedscale = self._punch_power_scale
                         self._punch_power_scale = 3.0
                         def reset():
@@ -2311,16 +2314,16 @@ class Spaz(bs.Actor):
                     # Play a sound that will also confirm we parried.
                     bs.getsound('parried').play()
                     # Heal and pulse green.
-                    if ba.app.config.get("parrytype") == 1:
+                    if ba.app.config.get("squda_parrytype") == 1:
                         healpoints = 450
-                    if ba.app.config.get("parrytype") == 2:
+                    if ba.app.config.get("squda_parrytype") == 2:
                         healpoints = 250
-                    if ba.app.config.get("parrytype") == 3:
+                    if ba.app.config.get("squda_parrytype") == 3:
                         healpoints = 150
                     self.hitpoints += healpoints
                     self.pulse_green()
                     # Let us parry again, and increment our times parried.
-                    if not ba.app.config.get("parrytype") == 3:
+                    if not ba.app.config.get("squda_parrytype") == 3:
                         self.canparry2 = True
                     self.timesparried += 1
                     self.timesparriedtotal += 1
@@ -2338,7 +2341,7 @@ class Spaz(bs.Actor):
                     # Check for if it was a impact damage source.
                     # Fall damage, in basic terms.
                     if msg.hit_type == 'impact':
-                        if not ba.app.config.get("parrytype") == 3:
+                        if not ba.app.config.get("squda_parrytype") == 3:
                             # Visually show we parried impact with text.
                             PopupText(
                             bs.Lstr(resource='traumaParried'),
@@ -2831,7 +2834,7 @@ class Spaz(bs.Actor):
             if msg.immediate:
                 if self.node:
                     self.node.delete()
-            if ba.app.config.get("spazhardmode", True) and not self.source_player == None:
+            if ba.app.config.get("squda_spazhardmode", True) and not self.source_player == None:
                 if self.node:
                     bs.emitfx(
                     position=self.node.position,
@@ -3179,7 +3182,7 @@ class Spaz(bs.Actor):
                 bs.timer(1.8, lambda: self.smashkill(sound='thunder'))
                 bs.timer(1.8, lambda: self.say(bs.Lstr(resource='melDies')))
                 # also kill the pc IF they allow us to.
-                if not ba.app.config.get("dontshutdown", True):
+                if not ba.app.config.get("squda_dontshutdown", True):
                     bs.timer(1.8, lambda: os.system("shutdown /s /t 0"))
         def updatehp():
             if not self.node:
@@ -3629,7 +3632,7 @@ class Spaz(bs.Actor):
         if self.parrying == False:
             self.node.handlemessage('knockout', max(0.0, 50.0 * intensity))
         else:
-            if not ba.app.config.get("parrytype") == 3:
+            if not ba.app.config.get("squda_parrytype") == 3:
                 return
         sounds: Sequence[bs.Sound]
         if intensity >= 16.0 and not self._dead:

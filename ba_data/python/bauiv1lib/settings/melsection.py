@@ -231,7 +231,7 @@ class MelWindow(bui.MainWindow):
             autoselect=False,
             maxwidth=300,
             textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("spazfuckedup", False),
+            value=bui.app.config.get("squda_spazfuckedup", False),
             text='big eyed spaz!!!!!!',
             on_value_change_call=self.changespazinga
         )
@@ -242,7 +242,7 @@ class MelWindow(bui.MainWindow):
             autoselect=False,
             maxwidth=300,
             textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("noisepolution", False),
+            value=bui.app.config.get("squda_noisepolution", False),
             text='make my game inaudible',
             on_value_change_call=self.changenoise
         )
@@ -253,7 +253,7 @@ class MelWindow(bui.MainWindow):
             autoselect=False,
             maxwidth=300,
             textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("gamblingmode", False),
+            value=bui.app.config.get("squda_gamblingmode", False),
             text='i love gambling!',
             on_value_change_call=self.changegambling
         )
@@ -264,7 +264,7 @@ class MelWindow(bui.MainWindow):
             autoselect=False,
             maxwidth=300,
             textcolor=(0.9, 0.2, 0.2),
-            value=bui.app.config.get("spazhardmode", False),
+            value=bui.app.config.get("squda_spazhardmode", False),
             text='make me oneshot die lmfao',
             on_value_change_call=self.changehardmode
         )
@@ -275,7 +275,7 @@ class MelWindow(bui.MainWindow):
             autoselect=False,
             maxwidth=300,
             textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("parryalways", False),
+            value=bui.app.config.get("squda_parryalways", False),
             text='i wanna parry all the time',
             on_value_change_call=self.changeparry
         )
@@ -295,7 +295,7 @@ class MelWindow(bui.MainWindow):
             autoselect=False,
             maxwidth=300,
             textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("dontshutdown", False),
+            value=bui.app.config.get("squda_dontshutdown", False),
             text='pls dont shutdown my pc i dont like that',
             on_value_change_call=self.changeshutdown
         )
@@ -306,7 +306,7 @@ class MelWindow(bui.MainWindow):
             autoselect=False,
             maxwidth=300,
             textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("dontdomarioman", False),
+            value=bui.app.config.get("squda_dontdomarioman", False),
             text='i hate fuckass mario delay on quit',
             on_value_change_call=self.changemario
         )
@@ -317,7 +317,7 @@ class MelWindow(bui.MainWindow):
             autoselect=False,
             maxwidth=300,
             textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("richpresence", False),
+            value=bui.app.config.get("squda_richpresence", False),
             text='enable discord rpc',
             on_value_change_call=self.changediscord
         )
@@ -328,14 +328,14 @@ class MelWindow(bui.MainWindow):
             autoselect=False,
             maxwidth=300,
             textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("enablemeter", False),
+            value=bui.app.config.get("squda_enablemeter", False),
             text='enable earthbound-ish visualizer',
             on_value_change_call=self.changemeter
         )
 
     def changehardmode(self, val: str) -> None:
         cfg = bui.app.config
-        cfg['spazhardmode'] = val
+        cfg['squda_spazhardmode'] = val
         cfg.apply_and_commit()
         if val == True:
             bui.getsound('baditem').play()
@@ -344,41 +344,41 @@ class MelWindow(bui.MainWindow):
 
     def changegambling(self, val: str) -> None:
         cfg = bui.app.config
-        cfg['gamblingmode'] = val
+        cfg['squda_gamblingmode'] = val
         cfg.apply_and_commit() 
         
     def changenoise(self, val: str) -> None:
         cfg = bui.app.config
-        cfg['noisepolution'] = val
+        cfg['squda_noisepolution'] = val
         cfg.apply_and_commit()
         
     def changespazinga(self, val: str) -> None:
         cfg = bui.app.config
-        cfg['spazfuckedup'] = val
+        cfg['squda_spazfuckedup'] = val
         cfg.apply_and_commit()
         
     def changeparry(self, val: str) -> None:
         cfg = bui.app.config
-        cfg['parryalways'] = val
+        cfg['squda_parryalways'] = val
         cfg.apply_and_commit()
         
     def changeshutdown(self, val: str) -> None:
         cfg = bui.app.config
-        cfg['dontshutdown'] = val
+        cfg['squda_dontshutdown'] = val
         cfg.apply_and_commit()
         
     def changemario(self, val: str) -> None:
         cfg = bui.app.config
-        cfg['dontdomarioman'] = val
+        cfg['squda_dontdomarioman'] = val
         cfg.apply_and_commit()
     
     def changediscord(self, val: str) -> None:
         cfg = bui.app.config
-        cfg['richpresence'] = val
+        cfg['squda_richpresence'] = val
         cfg.apply_and_commit()
     
     def changemeter(self, val: str) -> None:
         cfg = bui.app.config
-        cfg['enablemeter'] = val
+        cfg['squda_enablemeter'] = val
         cfg.apply_and_commit()
     

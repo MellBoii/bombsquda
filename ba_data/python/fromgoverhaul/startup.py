@@ -25,21 +25,23 @@ class Startup():
     # made by temp in the 'bombarmy' discussion in the discord server.
     config = bs.app.config
     conflist = {
-    "parryalways": False,
-    "richpresence": True,
-    "spazfuckedup": False,
-    "spazhardmode": False,
-    "unlockedmel": False,
-    "noisepolution": False,
-    "canopencredits": False,
-    "dontdomarioman": False,
-    "dontshutdown": False,
-    "enablemeter": False,
-    "gamblingmode": False,
-    "playersfirsttime": True,
-    "isplayingmusic": False,
-    "timesattracted": 1,
-    "timeserrored": 0,
+    "squda_parryalways": False,
+    "squda_richpresence": False,
+    "squda_spazfuckedup": False,
+    "squda_spazhardmode": False,
+    "squda_unlockedmel": False,
+    "squda_noisepolution": False,
+    "squda_canopencredits": False,
+    "squda_dontdomarioman": False,
+    "squda_dontshutdown": False,
+    "squda_enablemeter": False,
+    "squda_gamblingmode": False,
+    "squda_nosugarcoats": False,
+    "squda_playersfirsttime": True,
+    "squda_isplayingmusic": False,
+    "squda_timesattracted": 1,
+    "squda_timeserrored": 0,
+    "squda_parrytype": 2,
     }
     # "setdefault" to create config settings
     # won't affect already existing ones.
@@ -88,8 +90,9 @@ class Startup():
             color=(1, 0.3, 0.3)
         )
         bui.getsound('error').play()
-        bui.getsound('parry').play()       
-        try:
+        with bs.get_foreground_host_activity().context:
+            if ba.app.config.get("squda_nosugarcoats", True):
+                return
             icon = bs.newnode(
                 'image',
                 attrs={
@@ -113,15 +116,12 @@ class Startup():
 
             # after a bit of delay THEN start fading
             bs.timer(0.1, _fade_step)
-        except babase._error.ContextError:
-            pass
-            
-        ba.app.config['timeserrored'] += 1
+        ba.app.config['squda_timeserrored'] += 1
         def error_reset():
-            ba.app.config['timeserrored'] = 0
+            ba.app.config['squda_timeserrored'] = 0
         bs.timer(3.0, error_reset)
         # stop everything if we get a number exceptions so we dont get flooded
-        if ba.app.config['timeserrored'] > 20:
+        if ba.app.config['squda_timeserrored'] > 10:
             newnode = bs.newnode(
                 'image', 
                 attrs={

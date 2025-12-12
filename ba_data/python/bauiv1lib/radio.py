@@ -195,7 +195,7 @@ class RadioWindow(bui.Window):
             opacity=0.0,
         )
         
-        if ba.app.config.get("isplayingmusic", True):
+        if ba.app.config.get("squda_isplayingmusic", True):
             bui.imagewidget(edit=self.animboombox, opacity=1.0)
             bui.imagewidget(edit=self.normalboombox, opacity=0.0)
         else:
@@ -231,15 +231,15 @@ class RadioWindow(bui.Window):
         self._timer = None
     def _on_menu_choice(self, choice: str) -> None:
         self.choice2 = choice.upper()
-        if ba.app.config.get("isplayingmusic", True):
+        if ba.app.config.get("squda_isplayingmusic", True):
             bs.localsetmusic(getattr(bs.MusicType, self.choice2))
     def stopmusic(self):
         bui.imagewidget(edit=self.animboombox, opacity=0.0)
         bui.imagewidget(edit=self.normalboombox, opacity=1.0)
         bs.localsetmusic(None)
-        bui.app.config['isplayingmusic'] = False
+        bui.app.config['squda_isplayingmusic'] = False
     def playmusic(self):
         bui.imagewidget(edit=self.animboombox, opacity=1.0)
         bui.imagewidget(edit=self.normalboombox, opacity=0.0)
         bs.localsetmusic(getattr(bs.MusicType, self.choice2))
-        bui.app.config['isplayingmusic'] = True
+        bui.app.config['squda_isplayingmusic'] = True

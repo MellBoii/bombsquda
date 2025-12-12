@@ -377,7 +377,7 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
 
         # Give our map a chance to override the music
         map_music = self._map_type.get_music_type()
-        if ba.app.config.get("noisepolution", True):
+        if ba.app.config.get("squda_noisepolution", True):
             def checkdosound():
                 if random.random() < 0.2:
                     # no more big ass list :)

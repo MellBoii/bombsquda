@@ -21,7 +21,7 @@ def get_appearances(include_locked: bool = False) -> list[str]:
         # alternative to updating modpack since it will TAKING TOO LONG
         if not get_purchased('characters.santa'):
             disallowed.append('Santa Claus')
-        if not ba.app.config.get("unlockedmel", True):
+        if not ba.app.config.get("squda_unlockedmel", True):
             disallowed.append('Mel')
             
     return [

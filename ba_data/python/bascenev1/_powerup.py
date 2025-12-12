@@ -57,7 +57,7 @@ def get_default_powerup_distribution() -> Sequence[tuple[str, int]]:
         ('health', 9999 if debug_powerup == 'health' else 2),
         ('curse', 9999 if debug_powerup == 'curse' else 1),
         ('metal', 9999 if debug_powerup == 'metal' else 1),
-        ('random', 9999 if ba.app.config.get("gamblingmode", True) else 1),
+        ('random', 9999 if ba.app.config.get("squda_gamblingmode", True) else 1),
         ('spongebob', 9999 if debug_powerup == 'spongebob' else 2),
         ('strong', 9999 if debug_powerup == 'strong' else 3),
     )

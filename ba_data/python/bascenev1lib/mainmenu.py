@@ -753,7 +753,7 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
                 bs.setmusic(self.chosen_music)
                 self.startdemotimer = None
                 self.startmusictimer = None
-                bui.app.config['timesattracted'] = 1
+                bui.app.config['squda_timesattracted'] = 1
                 self.canstartdemo = True
 
         if not bui.app.config.resolve('Show Demos When Idle'):
@@ -767,7 +767,7 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         # If we're idle *and* have been in this activity for that long,
         # flip over to our cpu demo.
         if bui.get_input_idle_time() > threshold and bs.time() > threshold:
-            if ba.app.config.get("timesattracted") == 3:
+            if ba.app.config.get("squda_timesattracted") == 3:
                 self.cutscene_player = CutscenePlayer(
                     cutscene_id=1,
                     frame_delays=[3.0, 3.0, 2.0, 15.0, 3.0, 3.0],
@@ -775,7 +775,7 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
                 )
                 bs.setmusic(bs.MusicType.CUTSCENE1)
                 self.canstartdemo = False
-                bui.app.config['timesattracted'] = 1
+                bui.app.config['squda_timesattracted'] = 1
                 def setstartdemo():
                     self.canstartdemo = True
                 def setchosenmusic():
@@ -790,9 +790,9 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
                     round_duration=75,
                     attract_mode=True,
                 )
-                if not ba.app.config.get("isplayingmusic", True):
+                if not ba.app.config.get("squda_isplayingmusic", True):
                     bs.localsetmusic(bs.MusicType.OPENING)
-                bui.app.config['timesattracted'] += 1
+                bui.app.config['squda_timesattracted'] += 1
 
 
 class NewsDisplay:
@@ -1068,7 +1068,7 @@ class MainMenuSession(bs.Session):
 
         super().__init__([self._activity_deps])
         self._locked = False
-        if ba.app.config.get("playersfirsttime", True):
+        if ba.app.config.get("squda_playersfirsttime", True):
             self.setactivity(bs.newactivity(SURVEYActivity))
         else:
             self.setactivity(bs.newactivity(MainMenuActivity))

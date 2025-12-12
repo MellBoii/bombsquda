@@ -744,7 +744,7 @@ class ALTBombSqudaSettings(bui.MainWindow):
             autoselect=False,
             maxwidth=300,
             textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("spazfuckedup", False),
+            value=bui.app.config.get("squda_spazfuckedup", False),
             text='Make my Spaz have a weird texture',
             on_value_change_call=self.changespazinga
         )
@@ -755,7 +755,7 @@ class ALTBombSqudaSettings(bui.MainWindow):
             autoselect=False,
             maxwidth=300,
             textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("noisepolution", False),
+            value=bui.app.config.get("squda_noisepolution", False),
             text='Make the gameplay too loud',
             on_value_change_call=self.changenoise
         )
@@ -766,7 +766,7 @@ class ALTBombSqudaSettings(bui.MainWindow):
             autoselect=False,
             maxwidth=300,
             textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("gamblingmode", False),
+            value=bui.app.config.get("squda_gamblingmode", False),
             text='Make every powerup the random-based one',
             on_value_change_call=self.changegambling
         )
@@ -777,7 +777,7 @@ class ALTBombSqudaSettings(bui.MainWindow):
             autoselect=False,
             maxwidth=300,
             textcolor=(0.9, 0.2, 0.2),
-            value=bui.app.config.get("spazhardmode", False),
+            value=bui.app.config.get("squda_spazhardmode", False),
             text='Make me die even with one hit',
             on_value_change_call=self.changehardmode
         )
@@ -788,7 +788,7 @@ class ALTBombSqudaSettings(bui.MainWindow):
             autoselect=False,
             maxwidth=300,
             textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("parryalways", False),
+            value=bui.app.config.get("squda_parryalways", False),
             text='Make me parry whenever i want',
             on_value_change_call=self.changeparry
         )
@@ -799,7 +799,7 @@ class ALTBombSqudaSettings(bui.MainWindow):
             autoselect=False,
             maxwidth=300,
             textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("dontshutdown", False),
+            value=bui.app.config.get("squda_dontshutdown", False),
             text='Do not shutdown my device',
             on_value_change_call=self.changeshutdown
         )
@@ -810,7 +810,7 @@ class ALTBombSqudaSettings(bui.MainWindow):
             autoselect=False,
             maxwidth=300,
             textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("dontdomarioman", False),
+            value=bui.app.config.get("squda_dontdomarioman", False),
             text='Do not delay upon attempting to quit the game',
             on_value_change_call=self.changemario
         )
@@ -821,7 +821,7 @@ class ALTBombSqudaSettings(bui.MainWindow):
             autoselect=False,
             maxwidth=300,
             textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("richpresence", False),
+            value=bui.app.config.get("squda_richpresence", False),
             text='Show people on Discord if i\'m playing',
             on_value_change_call=self.changediscord
         )
@@ -832,7 +832,7 @@ class ALTBombSqudaSettings(bui.MainWindow):
             autoselect=False,
             maxwidth=300,
             textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("enablemeter", False),
+            value=bui.app.config.get("squda_enablemeter", False),
             text='Enable the EarthBound Stat Meter',
             on_value_change_call=self.changemeter
         )
@@ -1248,7 +1248,7 @@ class SURVEYActivity2(bs.Activity[bs.Player, bs.Team]):
             0.0: (0.0),
             1.5: (1.0)
         })
-        bui.app.config['playersfirsttime'] = False
+        bui.app.config['squda_playersfirsttime'] = False
         bui.app.config.apply_and_commit()
         bs.timer(2.5, lambda: bs.setmusic(bs.MusicType.LOGOTYPE))
         bs.timer(2.5, lambda: CutscenePlayerSpecialEditionCuzFucked(
