@@ -214,7 +214,7 @@ class MelWindow(bui.MainWindow):
             )
             bui.containerwidget(edit=self._root_widget, cancel_button=btn)
         # i love thefuckedupuifix!! thefuckedupuifix forever!!
-        thefuckedupuifix = 220
+        thefuckedupuifix = 250
         bui.textwidget(
             parent=self._root_widget,
             position=(0, yoffs - (70 if uiscale is bui.UIScale.SMALL else 60)),
@@ -344,6 +344,17 @@ class MelWindow(bui.MainWindow):
             text='stop jumpscaring me with sugarcoating it',
             on_value_change_call=self.changesc
         )
+        self._changemmusic = bui.checkboxwidget(
+            parent=self._root_widget,
+            position=(250, -200 + thefuckedupuifix),
+            size=(180, 40),
+            autoselect=False,
+            maxwidth=300,
+            textcolor=(1.0, 1.0, 1.0),
+            value=bui.app.config.get("squda_disablemm", False),
+            text='disable the metal cap music',
+            on_value_change_call=self.changemetalm
+        )
 
     def changehardmode(self, val: str) -> None:
         cfg = bui.app.config
@@ -402,5 +413,10 @@ class MelWindow(bui.MainWindow):
     def changesc(self, val: str) -> None:
         cfg = bui.app.config
         cfg['squda_nosugarcoats'] = val
+        cfg.apply_and_commit()
+        
+    def changemetalm(self, val: str) -> None:
+        cfg = bui.app.config
+        cfg['squda_disablemm'] = val
         cfg.apply_and_commit()
     

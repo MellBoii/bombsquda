@@ -1341,7 +1341,8 @@ class Spaz(bs.Actor):
             bs.setmusic(bs.MusicType.METALCAPTIME)
         else:
             if isinstance(self.getactivity(), GameActivity):
-                self.getactivity().metal_players.append(self)
+                if ba.app.config.get("squda_disablemmusic", False):
+                    self.getactivity().metal_players.append(self)
             
         # play a sound
         self._metalcap_sound = bs.getsound('metalcap').play()
@@ -2805,7 +2806,8 @@ class Spaz(bs.Actor):
                 if musicis == 'MetalCapTime':
                     bs.setmusic(bs.MusicType.GRAND_ROMP)
                 else:
-                    self.remove_from_metal_list()
+                    if ba.app.config.get("squda_disablemmusic", False):
+                        self.remove_from_metal_list()
             if self.earthmeter and not self.alreadydidanimation == True:
                 self.earthhptext.delete()
                 self.alreadydidanimation == True
