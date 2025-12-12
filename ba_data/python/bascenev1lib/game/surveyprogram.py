@@ -258,10 +258,15 @@ class SURVEYWindow2(bui.MainWindow):
             on_activate_call=self.closeit,
         )
         
-    def get_main_window_state(self):
-        # Return empty objects, because why would we save
-        # a window's state if we're not gonna go back??
-        return DummyWindowState()
+    @override
+    def get_main_window_state(self) -> bui.MainWindowState:
+        # Support recreating our window for back/refresh purposes.
+        cls = type(self)
+        return bui.BasicMainWindowState(
+            create_call=lambda transition, origin_widget: cls(
+                transition=transition, origin_widget=origin_widget
+            )
+        )
             
     def closeit(self):
         self.changename()
@@ -678,7 +683,7 @@ class ALTBombSqudaSettings(bui.MainWindow):
         assert bui.app.classic is not None
         uiscale = bui.app.ui_v1.uiscale
         width = 1000 if uiscale is bui.UIScale.SMALL else 800
-        height = 700
+        height = 750
         self._r = 'melWindow'
 
         uiscale = bui.app.ui_v1.uiscale
@@ -836,6 +841,17 @@ class ALTBombSqudaSettings(bui.MainWindow):
             text='Enable the EarthBound Stat Meter',
             on_value_change_call=self.changemeter
         )
+        self._changesugsgcaottgshshs = bui.checkboxwidget(
+            parent=self._root_widget,
+            position=(250, -150 + thefuckedupuifix),
+            size=(180, 40),
+            autoselect=False,
+            maxwidth=300,
+            textcolor=(1.0, 1.0, 1.0),
+            value=bui.app.config.get("squda_enablemeter", False),
+            text='No "not gonna sugarcoat it" popups',
+            on_value_change_call=self.changemeter
+        )
         self.choosename = bui.textwidget(
             parent=self._root_widget,
             text='You may always change these \nlater down the line.',
@@ -866,47 +882,52 @@ class ALTBombSqudaSettings(bui.MainWindow):
 
     def changehardmode(self, val: str) -> None:
         cfg = bui.app.config
-        cfg['spazhardmode'] = val
+        cfg['squda_spazhardmode'] = val
         cfg.apply_and_commit()
         
     def changegambling(self, val: str) -> None:
         cfg = bui.app.config
-        cfg['gamblingmode'] = val
+        cfg['squda_gamblingmode'] = val
         cfg.apply_and_commit() 
         
     def changenoise(self, val: str) -> None:
         cfg = bui.app.config
-        cfg['noisepolution'] = val
+        cfg['squda_noisepolution'] = val
         cfg.apply_and_commit()
         
     def changespazinga(self, val: str) -> None:
         cfg = bui.app.config
-        cfg['spazfuckedup'] = val
+        cfg['squda_spazfuckedup'] = val
         cfg.apply_and_commit()
         
     def changeparry(self, val: str) -> None:
         cfg = bui.app.config
-        cfg['parryalways'] = val
+        cfg['squda_parryalways'] = val
         cfg.apply_and_commit()
         
     def changeshutdown(self, val: str) -> None:
         cfg = bui.app.config
-        cfg['dontshutdown'] = val
+        cfg['squda_dontshutdown'] = val
         cfg.apply_and_commit()
         
     def changemario(self, val: str) -> None:
         cfg = bui.app.config
-        cfg['dontdomarioman'] = val
+        cfg['squda_dontdomarioman'] = val
         cfg.apply_and_commit()
     
     def changediscord(self, val: str) -> None:
         cfg = bui.app.config
-        cfg['richpresence'] = val
+        cfg['squda_richpresence'] = val
         cfg.apply_and_commit()
     
     def changemeter(self, val: str) -> None:
         cfg = bui.app.config
-        cfg['enablemeter'] = val
+        cfg['squda_enablemeter'] = val
+        cfg.apply_and_commit()  
+        
+    def changescoats(self, val: str) -> None:
+        cfg = bui.app.config
+        cfg['squda_nosugarcoats'] = val
         cfg.apply_and_commit()  
         
     @override

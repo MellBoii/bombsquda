@@ -146,7 +146,7 @@ class MelWindow(bui.MainWindow):
         assert bui.app.classic is not None
         uiscale = bui.app.ui_v1.uiscale
         width = 1000 if uiscale is bui.UIScale.SMALL else 800
-        height = 700
+        height = 750
         self._r = 'melWindow'
 
         uiscale = bui.app.ui_v1.uiscale
@@ -332,6 +332,17 @@ class MelWindow(bui.MainWindow):
             text='enable earthbound-ish visualizer',
             on_value_change_call=self.changemeter
         )
+        self._changesugarcoats = bui.checkboxwidget(
+            parent=self._root_widget,
+            position=(250, -150 + thefuckedupuifix),
+            size=(180, 40),
+            autoselect=False,
+            maxwidth=300,
+            textcolor=(1.0, 1.0, 1.0),
+            value=bui.app.config.get("squda_nosugarcoats", False),
+            text='stop jumpscaring me with sugarcoating it',
+            on_value_change_call=self.changesc
+        )
 
     def changehardmode(self, val: str) -> None:
         cfg = bui.app.config
@@ -345,6 +356,11 @@ class MelWindow(bui.MainWindow):
     def changegambling(self, val: str) -> None:
         cfg = bui.app.config
         cfg['squda_gamblingmode'] = val
+        cfg.apply_and_commit() 
+        
+    def changegambling(self, val: str) -> None:
+        cfg = bui.app.config
+        cfg['squda_nosugarcoats'] = val
         cfg.apply_and_commit() 
         
     def changenoise(self, val: str) -> None:
