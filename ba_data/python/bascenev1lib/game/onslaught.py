@@ -141,6 +141,29 @@ class Player(bs.Player['Team']):
     def __init__(self) -> None:
         self.has_been_hurt = False
         self.respawn_wave = 0
+    # FIXME: We shouldn't be using customdata here
+    # (but need to update respawn funcs accordingly first).
+    @property
+    def respawn_timer(self) -> bs.Timer | None:
+        """Type safe access to standard respawn timer."""
+        val = self.customdata.get('respawn_timer', None)
+        assert isinstance(val, (bs.Timer, type(None)))
+        return val
+
+    @respawn_timer.setter
+    def respawn_timer(self, value: bs.Timer | None) -> None:
+        self.customdata['respawn_timer'] = value
+
+    @property
+    def respawn_icon(self) -> RespawnIcon | None:
+        """Type safe access to standard respawn icon."""
+        val = self.customdata.get('respawn_icon', None)
+        assert isinstance(val, (RespawnIcon, type(None)))
+        return val
+
+    @respawn_icon.setter
+    def respawn_icon(self, value: RespawnIcon | None) -> None:
+        self.customdata['respawn_icon'] = value
 
 
 class Team(bs.Team[Player]):
@@ -1802,6 +1825,7 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
         elif isinstance(msg, bs.PlayerDiedMessage):
             super().handlemessage(msg)  # Augment standard behavior.
             player = msg.getplayer(Player)
+            self.respawn_player(player)
             self._a_player_has_been_hurt = True
 
             # Make note with the player when they can respawn:
@@ -1811,22 +1835,6 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
                 player.respawn_wave = max(2, self._wavenum + 2)
             else:
                 player.respawn_wave = max(2, self._wavenum + 3)
-            try:
-                if len(self.players) > 4:
-                    timeofrespawn = 12
-                elif len(self.players) > 3:
-                    timeofrespawn = 10
-                elif len(self.players) > 2:
-                    timeofrespawn = 8
-                elif len(self.players) > 1:
-                    timeofrespawn = 6
-                else:
-                    timeofrespawn = 14
-                bs.timer(timeofrespawn, lambda: self.spawn_player(player))
-                bs.timer(timeofrespawn, self._update_player_spawn_info)
-            except:
-                return
-            bs.timer(0.1, self._update_player_spawn_info)
             bs.timer(0.1, self._checkroundover)
 
         elif isinstance(msg, SpazBotDiedMessage):
@@ -1941,7 +1949,13 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
                     if not any(player.is_alive() for player in self.teams[0].players):
                         bs.broadcastmessage('No one respawned before the timer. :^)')
                         self.end_game()
+                        for player in self.players:
+                            player.respawn_timer = None
+                            player.respawn_icon = None
                 bs.timer(2.0, checkpartfuckin2)
             else:
                 if not any(player.is_alive() for player in self.teams[0].players):
                     self.end_game()
+                    for player in self.players:
+                        player.respawn_timer = None
+                        player.respawn_icon = None
