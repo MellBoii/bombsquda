@@ -9,6 +9,7 @@ import babase
 
 import _bascenev1
 from bascenev1._session import Session
+import bascenev1 as bs
 
 if TYPE_CHECKING:
     from typing import Any, Callable, Sequence
@@ -28,7 +29,6 @@ class CoopSession(Session):
 
     use_teams = True
     use_team_colors = False
-    allow_mid_activity_joins = False
 
     # Note: even though these are instance vars, we annotate them at the
     # class level so that docs generation can access their types.
@@ -87,6 +87,7 @@ class CoopSession(Session):
         self._ran_tutorial_activity = False
         self._tutorial_activity: bascenev1.Activity | None = None
         self._custom_menu_ui: list[dict[str, Any]] = []
+        self.amaj = False
 
         # Start our joining screen.
         self.setactivity(_bascenev1.newactivity(CoopJoinActivity))
@@ -98,19 +99,6 @@ class CoopSession(Session):
     def get_current_game_instance(self) -> bascenev1.GameActivity:
         """Get the game instance currently being played."""
         return self._current_game_instance
-
-    @override
-    def should_allow_mid_activity_joins(
-        self, activity: bascenev1.Activity
-    ) -> bool:
-        # pylint: disable=cyclic-import
-        from bascenev1._gameactivity import GameActivity
-
-        # Disallow any joins in the middle of the game.
-        if isinstance(activity, GameActivity):
-            return False
-
-        return True
 
     def _update_on_deck_game_instances(self) -> None:
         # pylint: disable=cyclic-import
@@ -183,9 +171,105 @@ class CoopSession(Session):
 
     @override
     def on_player_leave(self, sessionplayer: bascenev1.SessionPlayer) -> None:
+        # Save the sessionplayer's activityplayer.
+        player = sessionplayer.activityplayer
+        if player:
+            if player.actor.node:
+                # If within reasonable hitpoints or
+                # alive, allow mid activity rejoining.
+                if player.actor.hitpoints >= 410:
+                    self.amaj = True
+                    bs.broadcastmessage(f'{player.actor.node.name} left the game, anyone can replace their spot')
+                # Otherwise, just don't.
+                else:
+                    self.amaj = False
+            else:
+                self.amaj = False
         super().on_player_leave(sessionplayer)
+        _bascenev1.timer(4.0, babase.WeakCall(self._handle_empty_activity))
+        
+    @override
+    def _add_chosen_player(
+        self, chooser: bascenev1.Chooser
+    ) -> bascenev1.SessionPlayer:
+        from bascenev1._team import SessionTeam
 
-        _bascenev1.timer(2.0, babase.WeakCall(self._handle_empty_activity))
+        sessionplayer = chooser.getplayer()
+        assert sessionplayer in self.sessionplayers, (
+            'SessionPlayer not found in session '
+            'player-list after chooser selection.'
+        )
+
+        activity = self._activity_weak()
+        assert activity is not None
+
+        # Reset the player's input here, as it is probably
+        # referencing the chooser which could inadvertently keep it alive.
+        sessionplayer.resetinput()
+
+        # We can pass it to the current activity if it has already begun
+        # (otherwise it'll get passed once begin is called).
+        pass_to_activity = (
+            activity.has_begun() and not activity.is_joining_activity
+        )
+
+        # However, if we're not allowing mid-game joins, don't actually pass;
+        # just announce the arrival and say they'll partake next round.
+        if pass_to_activity:
+            if self.amaj == False:
+                pass_to_activity = False
+                with self.context:
+                    _bascenev1.broadcastmessage(
+                        babase.Lstr(
+                            resource='playerDelayedJoinText',
+                            subs=[
+                                ('${PLAYER}', sessionplayer.getname(full=True))
+                            ],
+                        ),
+                        color=(0, 1, 0),
+                    )
+        if self.amaj == True:
+            self.amaj = False
+
+        # If we're a non-team session, each player gets their own team.
+        # (keeps mini-game coding simpler if we can always deal with teams).
+        if self.use_teams:
+            sessionteam = chooser.sessionteam
+        else:
+            our_team_id = self._next_team_id
+            self._next_team_id += 1
+            sessionteam = SessionTeam(
+                team_id=our_team_id,
+                color=chooser.get_color(),
+                name=chooser.getplayer().getname(full=True, icon=False),
+            )
+
+            # Add player's team to the Session.
+            self.sessionteams.append(sessionteam)
+
+            with self.context:
+                try:
+                    self.on_team_join(sessionteam)
+                except Exception:
+                    logging.exception('Error in on_team_join for %s.', self)
+
+            # Add player's team to the Activity.
+            if pass_to_activity:
+                activity.add_team(sessionteam)
+
+        assert sessionplayer not in sessionteam.players
+        sessionteam.players.append(sessionplayer)
+        sessionplayer.setdata(
+            team=sessionteam,
+            character=chooser.get_character_name(),
+            color=chooser.get_color(),
+            highlight=chooser.get_highlight(),
+        )
+
+        self.stats.register_sessionplayer(sessionplayer)
+        if pass_to_activity:
+            activity.add_player(sessionplayer)
+        return sessionplayer
 
     def _handle_empty_activity(self) -> None:
         """Handle cases where all players have left the current activity."""
