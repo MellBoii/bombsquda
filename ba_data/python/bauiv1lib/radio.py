@@ -94,6 +94,8 @@ class RadioWindow(bui.Window):
                 'Rage',
                 'NoiseSuper',
                 'Business',
+                'Elim_Versus',
+                'Elim_Danger',
                 'To_The_Death',
                 'To_The_DeathFast',
                 'To_The_Death2Fast',

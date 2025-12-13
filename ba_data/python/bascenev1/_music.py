@@ -136,10 +136,6 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
         
         if music_type in excluded_types:
             return
-        try:
-            bs.getactivity()
-        except babase._error.ActivityNotFoundError:
-            return
 
         # Define a list of display names for each type
         # Here you should put music names and artists.
