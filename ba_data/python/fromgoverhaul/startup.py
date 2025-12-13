@@ -62,8 +62,8 @@ class Startup():
                 babase.apptimer(1.3, RichPresence)
             except Exception as e:
                 print(f'Unable to start rich presence: {e}')
-    bui.app.config['isplayingmusic'] = False
-    bui.app.config['timesattracted'] = 0
+    bui.app.config['squda_isplayingmusic'] = False
+    bui.app.config['squda_timesattracted'] = 0
     def my_global_exception_hook(exc_type, exc_value, exc_traceback):
         """
         custom ass exception hook

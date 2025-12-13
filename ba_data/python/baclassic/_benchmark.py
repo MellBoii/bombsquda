@@ -218,7 +218,7 @@ def _reset_stress_test(args: _StressTestArgs) -> None:
     babase.app.classic.stress_test_update_timer = None
     babase.app.classic.stress_test_update_timer_2 = None
     if args.attract_mode:
-        if not ba.app.config.get("isplayingmusic", True):
+        if not ba.app.config.get("squda_isplayingmusic", True):
             bs.localsetmusic(None)
 
     # For regular stress tests we keep the party going. For attract-mode

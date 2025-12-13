@@ -972,8 +972,8 @@ class App:
                 else:
                     applog.info('Quitting game...')
                     self._on_shutting_down()
-                bauiv1.app.config['isplayingmusic'] = False
-                bauiv1.app.config['timesattracted'] = 0
+                bauiv1.app.config['squda_isplayingmusic'] = False
+                bauiv1.app.config['squda_timesattracted'] = 0
 
         elif self._native_suspended:
             # Entering suspended state:
