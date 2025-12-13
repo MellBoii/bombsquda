@@ -176,6 +176,7 @@ class Activity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
 
         self.teams = []
         self.players = []
+        self.music_texts = []
 
         self.lobby = None
         self._stats: bascenev1.Stats | None = None

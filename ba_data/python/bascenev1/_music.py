@@ -128,9 +128,6 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
             None,
             bs.MusicType.CUTSCENE1,
             bs.MusicType.HURRYUP,
-            bs.MusicType.PAUSE, 
-            bs.MusicType.SURVEY,
-            bs.MusicType.LOGOTYPE
         ]
         
         if music_type in excluded_types:
@@ -161,7 +158,7 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
             bs.MusicType.CHAR_SELECT2: "Sky Map - Mario Kart World",
             bs.MusicType.RACE: "VS Metal Sonic - Sonic Mania",
             bs.MusicType.MENU: "Artistic Mindset - Spamton123",
-            bs.MusicType.MENU2: "Waluigi Pinball - Mario Kart DS",
+            bs.MusicType.MENU2: "Super Mario Kart Title Remastered",
             bs.MusicType.MENU3: "Mario vs Luigi 2.0 Title Theme Remix - Goldyber",
             bs.MusicType.MENU6: "Cascade Zone Act 2 (Track B) - Bomb Boy",
             bs.MusicType.MENU7: "Mario vs Luigi 2.0 Title Theme",
@@ -170,14 +167,22 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
             bs.MusicType.MENU10: "The Great Strategy - badliz",
             bs.MusicType.MENU11: "Title Theme -  Mario Kart 7",
             bs.MusicType.MENU12: "Friends no More x Papá Cerdito vs Bebé George",
+            bs.MusicType.MENU13: "Title Theme - Super Mario Kart",
+            bs.MusicType.MENU14: "Title Theme - Mario Kart 64",
+            bs.MusicType.MENU15: "Title Theme - Dr. Robotnik's Mean Bean Machine",
+            bs.MusicType.MENU16: "Pizza Deluxe - POST ELVIS",
+            bs.MusicType.MENU17: "Pollyanna Rock My World \n- Furries in a blender",
+            bs.MusicType.MENU18: "Wii Theme but it's September \n- Mr Rock",
             bs.MusicType.MENU67: "what the fuck is this",
             bs.MusicType.CREDITS: "Staff Roll - Mario Kart DS",
             bs.MusicType.SNESCOURSE: "SNES Battle Course - Mario Kart World",
             bs.MusicType.SNESCOURSE2: "Battle Course - Super Mario Kart",
             bs.MusicType.DEFEAT: "Blues in Velvet Room - Persona 3",
             bs.MusicType.THEFINALE: "Final Destination - Super Smash Bros Melee",
-            bs.MusicType.WAR: "Thousand March - Pizza Tower",
-            bs.MusicType.LAP0: "It's Pizza Time! - Pizza Tower",
+            bs.MusicType.WAR: "Thousand March - Mr. Sauceman",
+            bs.MusicType.LAP0: "It's Pizza Time! - Mr. Sauceman",
+            bs.MusicType.LAP1: "The Death I Deservioli - Mr. Sauceman",
+            bs.MusicType.LAP1: "Pillar John's Revenge - Lap 3",
             bs.MusicType.GAMBLING: "WEXECUTED (Instrumental) - Sherry",
             bs.MusicType.METALCAPTIME: "IT'S TV TIME but it's \nMetal Cap Theme\n - @secret_fan48",
             bs.MusicType.COOKIN: "True Final Boss - Sonic Mania",
@@ -185,8 +190,8 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
             bs.MusicType.RAGE: "Dr. Andonuts' Rage SSBU Mix - Frakture",
             bs.MusicType.GRAND_ROMP: "It's TV Time! - Deltarune",
             bs.MusicType.HOCKEY: "Koopa Cape - Mario Kart Wii",
-            bs.MusicType.VICTORY: "Stars and Stripes Forever (Metal Rock Remix)\n - Blue Claw Philharmonic",
-            bs.MusicType.VICTORYFINAL: "Stars and Stripes Forever (Metal Rock Remix, Longer)\n - Blue Claw Philharmonic",
+            bs.MusicType.VICTORY: "Stars and Stripes Forever \n(Metal Rock Remix) - Blue Claw Philharmonic",
+            bs.MusicType.VICTORYFINAL: "Stars and Stripes Forever (Metal Rock Remix, Longer) \n- Blue Claw Philharmonic",
             bs.MusicType.ONSLAUGHT2: "Ruder Buster - Deltarune",
             bs.MusicType.SURVIVAL: "Tough Guy Alert! - M&L:BIS GaMetal Remix",
             bs.MusicType.ONSLAUGHT3: "Rude Buster - Deltarune",
@@ -196,35 +201,53 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
         # If we don't get any, tell the player it's either unknown
         # or will be added later down the line. Laziness kills the mellboii.
         name = music_names.get(music_type, "TBA/Unknown")
-
+        activity = bs.get_foreground_host_activity()
+        if activity == None:
+            return
         # Create text node (off-screen initially)
-        txt = Text(
-            f"Now playing: {name}",
-            position=(1000, 20),
-            h_attach=Text.HAttach.CENTER,
-            h_align=Text.HAlign.CENTER,
-            v_attach=Text.VAttach.BOTTOM,
-            color=(1, 1, 1, 1),
-            scale=0.8,
-            shadow=0.5,
-            flatness=0.5,
-        ).autoretain()
-        
-        # Animate position: slide in then out after a delay
-        bs.animate_array(
-            txt.node,
-            "position",
-            2,
-            {
-                0.0: (1000, 20),
-                1.0: (400, 20),  # visible position
-                6.0: (400, 20),  # stay for ~6s
-                7.0: (1000, 20),  # slide back out
-            },
-        )
-
-        # Delete after finished.
-        bs.timer(10.0, txt.node.delete)
+        with activity.context:
+            amt = activity.music_texts
+            # wowza. that's a lotta else ifs.
+            ypos = (
+                30 if len(amt) == 0
+                else 100 if len(amt) == 1
+                else 200 if len(amt) == 2
+                else 300 if len(amt) == 3
+                else 400 if len(amt) == 4
+                else 500 if len(amt) == 5
+                else 600
+            )
+            xpos = 620
+            ofscrX = 1500
+            txt = Text(
+                f"Now playing: {name}",
+                position=(ofscrX, ypos),
+                h_attach=Text.HAttach.CENTER,
+                h_align=Text.HAlign.RIGHT,
+                v_attach=Text.VAttach.BOTTOM,
+                color=(1, 1, 1, 1),
+                scale=0.8,
+                shadow=0.5,
+                flatness=0.5,
+            ).autoretain()
+            # Animate position: slide in then out after a delay
+            bs.animate_array(
+                txt.node,
+                "position",
+                2,
+                {
+                    0.0: (ofscrX, ypos),
+                    1.0: (xpos, ypos),  # visible position
+                    6.0: (xpos, ypos),  # stay for ~6s
+                    7.0: (ofscrX, ypos),  # slide back out
+                },
+            )
+            activity.music_texts.append(txt)
+            def do_delete():
+                txt.node.delete()
+                activity.music_texts.remove(txt)
+            # Delete after finished.
+            bs.timer(10.0, do_delete)
 
 
 def setmusic(musictype: MusicType | None, continuous: bool = False) -> None:

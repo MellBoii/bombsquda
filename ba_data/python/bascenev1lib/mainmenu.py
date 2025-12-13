@@ -779,6 +779,10 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
                 bs.MusicType.MENU12,
                 bs.MusicType.MENU13,
                 bs.MusicType.MENU14,
+                bs.MusicType.MENU15,
+                bs.MusicType.MENU16,
+                bs.MusicType.MENU17,
+                bs.MusicType.MENU18,
                 bs.MusicType.MENU67,
             ]
             self.chosen_music = random.choice(music_choices)
