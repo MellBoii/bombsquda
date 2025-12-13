@@ -253,7 +253,7 @@ class MainMenuWindow(bui.MainWindow):
         thistdelay = self._tdelay + td3 * self._t_delay_inc
         bui.textwidget(
             parent=self._root_widget,
-            position=(self._width * 0.5, button_y_offs + 115),
+            position=(self._width * 0.5, button_y_offs - 115),
             size=(0, 0),
             scale=0.6,
             flatness=1.0,

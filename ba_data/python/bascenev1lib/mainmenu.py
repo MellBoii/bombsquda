@@ -95,51 +95,6 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
             assert self.my_name.node
             bs.animate(self.my_name.node, 'opacity', {2.3: 0, 3.0: 1.0})
 
-
-        # Throw in test build info.
-        self.splashtext = self.beta_info_2 = None
-
-        random.seed(time.time())
-        chosen_text = bs.Lstr(resource=f'splashText{random.randint(1, 19)}')
-        
-        pos = (0, -250)
-        self.splashtext = bs.NodeActor(
-            bs.newnode(
-                'text',
-                attrs={
-                    'v_attach': 'center',
-                    'h_align': 'center',
-                    'color': (1, 1, 0, 1),
-                    'shadow': 0.5,
-                    'flatness': 0.5,
-                    'scale': 1,
-                    'vr_depth': -60,
-                    'position': pos,
-                    'text': chosen_text,
-                },
-            )
-        )
-        self.modpack_name = bs.NodeActor(
-            bs.newnode(
-                'text',
-                attrs={
-                    'v_attach': 'center',
-                    'h_align': 'center',
-                    'color': (1, 1, 1, 1),
-                    'shadow': 0.5,
-                    'flatness': 0.5,
-                    'scale': 1,
-                    'vr_depth': -60,
-                    'position': (225, 35),
-                    'text': bs.Lstr(resource=f'modpackName'),
-                },
-            )
-        )
-
-        if not self._did_initial_transition:
-            assert self.splashtext.node
-            bs.animate(self.splashtext.node, 'opacity', {1.3: 0, 2.5: 1.0})
-
         mesh = bs.getmesh('snesCourseLevel')
         trees_mesh = bs.getmesh('kronkHand')
         trees_texture = bs.gettexture('kronkHand')
@@ -418,6 +373,70 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
                 0.32 * base_scale,
                 delay=base_delay,
             )
+            random.seed(time.time())
+            cfgget = ba.app.config.get
+            c1name = cfgget('playername')[0]
+            c2name = cfgget('character1name')[0]
+            c3name = cfgget('character2name')[0]
+            c4name = cfgget('character3name')[0]
+            chosen_text = bs.Lstr(
+                resource=f'splashText{random.randint(1, 53)}',
+                subs=[
+                    ('${SPAZ}', c1name),
+                    ('${KRIS}', c2name),
+                    ('${SS}', c3name),
+                    ('${NOOB}', c4name)
+                ],
+            )
+            pos = (240, 220)
+            self.splashtext = bs.NodeActor(
+                bs.newnode(
+                    'text',
+                    attrs={
+                        'v_attach': 'center',
+                        'h_align': 'center',
+                        'color': (1, 1, 0, 1),
+                        'shadow': 0.5,
+                        'flatness': 0.5,
+                        'scale': 1,
+                        'vr_depth': -60,
+                        'position': pos,
+                        'text': chosen_text,
+                    },
+                )
+            )
+            self.splashtext.node.rotate = -15
+            lowerscale = 0.2
+            bs.animate(
+                self.splashtext.node,
+                    'scale',
+                    {
+                        0.0: 1.0 - lowerscale,
+                        0.1: 1.2 - lowerscale,
+                        0.2: 1.3 - lowerscale,
+                        0.3: 1.2 - lowerscale,
+                        0.4: 1.0 - lowerscale,
+                    },
+                loop=True,
+            )
+            self.modpack_name = bs.NodeActor(
+                bs.newnode(
+                    'text',
+                    attrs={
+                        'v_attach': 'center',
+                        'h_align': 'center',
+                        'color': (1, 1, 1, 1),
+                        'shadow': 0.5,
+                        'flatness': 0.5,
+                        'scale': 1.3,
+                        'vr_depth': -60,
+                        'position': (10, 10),
+                        'text': bs.Lstr(resource=f'modpackName'),
+                    },
+                )
+            )
+            assert self.splashtext.node
+            bs.animate(self.splashtext.node, 'opacity', {0.5: 0, 1.0: 1.0})
 
     def _make_word(
         self,
@@ -472,6 +491,56 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
                 )
             )
             self._word_actors.append(word_obj)
+            
+        # Add a bit of stop-motion-y jitter to the logo (unless we're in
+        # VR mode in which case its best to leave things still).
+        if not bs.app.env.vr:
+            cmb: bs.Node | None
+            cmb2: bs.Node | None
+            if not shadow:
+                cmb = bs.newnode(
+                    'combine', owner=word_obj.node, attrs={'size': 2}
+                )
+            else:
+                cmb = None
+            if shadow:
+                cmb2 = bs.newnode(
+                    'combine', owner=word_obj.node, attrs={'size': 2}
+                )
+            else:
+                cmb2 = None
+            if not shadow:
+                assert cmb and word_obj.node
+                cmb.connectattr('output', word_obj.node, 'position')
+            if shadow:
+                assert cmb2 and word_obj.node
+                cmb2.connectattr('output', word_obj.node, 'position')
+            keys = {}
+            keys2 = {}
+            time_v = 0.0
+            for _i in range(10):
+                val = x + (random.random() - 0.5) * 0.8
+                val2 = x + (random.random() - 0.5) * 0.8
+                keys[time_v * self._ts] = val
+                keys2[time_v * self._ts] = val2 + 5
+                time_v += random.random() * 0.1
+            if cmb is not None:
+                bs.animate(cmb, 'input0', keys, loop=True)
+            if cmb2 is not None:
+                bs.animate(cmb2, 'input0', keys2, loop=True)
+            keys = {}
+            keys2 = {}
+            time_v = 0
+            for _i in range(10):
+                val = y + (random.random() - 0.5) * 0.8
+                val2 = y + (random.random() - 0.5) * 0.8
+                keys[time_v * self._ts] = val
+                keys2[time_v * self._ts] = val2 - 9
+                time_v += random.random() * 0.1
+            if cmb is not None:
+                bs.animate(cmb, 'input1', keys, loop=True)
+            if cmb2 is not None:
+                bs.animate(cmb2, 'input1', keys2, loop=True)
 
         if not shadow:
             assert word_obj.node
