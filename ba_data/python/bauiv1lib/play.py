@@ -864,9 +864,26 @@ class CoopSubMenu(bui.MainWindow):
         )
         bbtn_height = (
             self._height - 250 if uiscale is bui.UIScale.SMALL 
-            else self._height - 60
+            else self._height - 50
         )
-        
+        bui.buttonwidget(
+            parent=self._root_widget,
+            label=bui.Lstr(resource=f'{self._r}.regularCampaign'),
+            position=(buttonX, self._height / 2.5 + 40 * buttonscale),
+            size=(200, 80),
+            scale=buttonscale,
+            on_activate_call=self._normal_campaign,
+            autoselect=True,
+        )
+
+        bui.buttonwidget(
+            parent=self._root_widget,
+            label=bui.Lstr(resource=f'{self._r}.customCampaign'),
+            position=(buttonX, self._height / 2.5 - 80 * buttonscale),
+            size=(200, 80),
+            scale=buttonscale,
+            on_activate_call=self._custom_campaign,
+        )
         self._back_button = bui.buttonwidget(
             parent=self._root_widget,
             position=(bbtn_width, bbtn_height),
@@ -887,24 +904,6 @@ class CoopSubMenu(bui.MainWindow):
             h_align='center',
             v_align='center',
             size=(0, 0),
-        )
-        bui.buttonwidget(
-            parent=self._root_widget,
-            label=bui.Lstr(resource=f'{self._r}.regularCampaign'),
-            position=(buttonX, self._height / 2.5 + 40 * buttonscale),
-            size=(200, 80),
-            scale=buttonscale,
-            on_activate_call=self._normal_campaign,
-            autoselect=True,
-        )
-
-        bui.buttonwidget(
-            parent=self._root_widget,
-            label=bui.Lstr(resource=f'{self._r}.customCampaign'),
-            position=(buttonX, self._height / 2.5 - 80 * buttonscale),
-            size=(200, 80),
-            scale=buttonscale,
-            on_activate_call=self._custom_campaign,
         )
     # now unused
     def saythingyr(self):
