@@ -174,17 +174,12 @@ class CoopSession(Session):
         # Save the sessionplayer's activityplayer.
         player = sessionplayer.activityplayer
         if player:
-            if player.actor.node:
+            if player.actor:
                 # If within reasonable hitpoints or
                 # alive, allow mid activity rejoining.
                 if player.actor.hitpoints >= 410:
                     self.amaj = True
                     bs.broadcastmessage(f'{player.actor.node.name} left the game, anyone can replace their spot')
-                # Otherwise, just don't.
-                else:
-                    self.amaj = False
-            else:
-                self.amaj = False
         super().on_player_leave(sessionplayer)
         _bascenev1.timer(4.0, babase.WeakCall(self._handle_empty_activity))
         

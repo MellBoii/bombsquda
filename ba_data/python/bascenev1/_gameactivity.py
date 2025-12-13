@@ -839,8 +839,10 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
                 respawn_time = 5.0
             elif teamsize == 3:
                 respawn_time = 6.0
-            else:
+            elif teamsize == 4:
                 respawn_time = 7.0
+            else:
+                respawn_time = 8.0
 
         # If this standard setting is present, factor it in.
         if 'Respawn Times' in self.settings_raw:
