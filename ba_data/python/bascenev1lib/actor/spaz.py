@@ -2900,6 +2900,12 @@ class Spaz(bs.Actor):
                 else:
                     if ba.app.config.get("squda_disablemmusic", False):
                         self.remove_from_metal_list()
+            if self.light:
+                self.light.delete()
+                self.light = None
+            if self.yeehaw_text:
+                self.yeehaw_text.delete()
+                self.yeehaw_text = None
             if self.earthmeter and not self.alreadydidanimation == True:
                 self.earthhptext.delete()
                 self.alreadydidanimation == True
