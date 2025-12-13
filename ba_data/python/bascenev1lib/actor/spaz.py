@@ -2674,6 +2674,8 @@ class Spaz(bs.Actor):
                     bs.timer(0.12, light.delete)
                     def checkifdied():
                         # Died? Do a custom earthbound-y sequence.
+                        if not self.node:
+                            return
                         if self._dead:
                             bs.getsound('youwon').play()
                             pos = self.node.position
@@ -2976,7 +2978,7 @@ class Spaz(bs.Actor):
                                 color=(1.0, 0.2, 0.2)
                             )
                     self.node.dead = True
-                    bs.timer(2.0, self.node.delete)
+                    bs.timer(6.0, self.node.delete)
         elif isinstance(msg, bs.OutOfBoundsMessage):
             self.lasthittype = 'fall'
             if random.random() < 0.1:
