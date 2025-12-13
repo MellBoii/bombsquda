@@ -35,6 +35,7 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
     def __init__(self, settings: dict):
         super().__init__(settings)
         self._logo_node: bs.Node | None = None
+        self._logo = None
         self._custom_logo_tex_name: str | None = None
         self._word_actors: list[bs.Actor] = []
         self.my_name: bs.NodeActor | None = None
@@ -251,6 +252,33 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         )
 
         app.classic.invoke_main_menu_ui()
+        
+    def do_quit(self):
+        from bascenev1lib.actor.nodejumper import ImageJumper
+        for nodeactor in self._word_actors:
+            ImageJumper.jump_image(
+                nodeactor.node, 
+                fall_speed = -860,
+                jump_force = 550,
+                randomness = 350
+            )
+        bs.getsound('randomnoises/noisePolution5').play()
+        bs.getsound('didnotfinish').play()
+        bs.setmusic(None)
+        bs.timer(0.01, lambda: bs.camerashake(9.0), repeat=True)
+        rsfx = [
+            'explosion01',
+            'explosion02',
+            'explosion03',
+            'explosion04',
+            'explosion05',
+        ]
+        bs.timer(0.2, bs.getsound(random.choice(rsfx)).play, repeat=True)
+        bs.timer(0.1, bs.getsound(random.choice(rsfx)).play, repeat=True)
+        bs.timer(0.4, bs.getsound(random.choice(rsfx)).play, repeat=True)
+        bs.timer(0.5, bs.getsound(random.choice(rsfx)).play, repeat=True)
+        bs.timer(0.6, bs.getsound(random.choice(rsfx)).play, repeat=True)
+        self._logo_node.texture = bs.gettexture('logoDies')
 
     def _update(self) -> None:
         # pylint: disable=too-many-locals
@@ -445,56 +473,6 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
             )
             self._word_actors.append(word_obj)
 
-        # Add a bit of stop-motion-y jitter to the logo (unless we're in
-        # VR mode in which case its best to leave things still).
-        if not bs.app.env.vr:
-            cmb: bs.Node | None
-            cmb2: bs.Node | None
-            if not shadow:
-                cmb = bs.newnode(
-                    'combine', owner=word_obj.node, attrs={'size': 2}
-                )
-            else:
-                cmb = None
-            if shadow:
-                cmb2 = bs.newnode(
-                    'combine', owner=word_obj.node, attrs={'size': 2}
-                )
-            else:
-                cmb2 = None
-            if not shadow:
-                assert cmb and word_obj.node
-                cmb.connectattr('output', word_obj.node, 'position')
-            if shadow:
-                assert cmb2 and word_obj.node
-                cmb2.connectattr('output', word_obj.node, 'position')
-            keys = {}
-            keys2 = {}
-            time_v = 0.0
-            for _i in range(10):
-                val = x + (random.random() - 0.5) * 0.8
-                val2 = x + (random.random() - 0.5) * 0.8
-                keys[time_v * self._ts] = val
-                keys2[time_v * self._ts] = val2 + 5
-                time_v += random.random() * 0.1
-            if cmb is not None:
-                bs.animate(cmb, 'input0', keys, loop=True)
-            if cmb2 is not None:
-                bs.animate(cmb2, 'input0', keys2, loop=True)
-            keys = {}
-            keys2 = {}
-            time_v = 0
-            for _i in range(10):
-                val = y + (random.random() - 0.5) * 0.8
-                val2 = y + (random.random() - 0.5) * 0.8
-                keys[time_v * self._ts] = val
-                keys2[time_v * self._ts] = val2 - 9
-                time_v += random.random() * 0.1
-            if cmb is not None:
-                bs.animate(cmb, 'input1', keys, loop=True)
-            if cmb2 is not None:
-                bs.animate(cmb2, 'input1', keys2, loop=True)
-
         if not shadow:
             assert word_obj.node
             bs.animate(
@@ -559,6 +537,7 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
             logo_attrs['scale'] = (2000.0, 2000.0)
         logo = bs.NodeActor(bs.newnode('image', attrs=logo_attrs))
         self._logo_node = logo.node
+        self._logo = logo
         self._word_actors.append(logo)
 
         # Add a bit of stop-motion-y jitter to the logo (unless we're in

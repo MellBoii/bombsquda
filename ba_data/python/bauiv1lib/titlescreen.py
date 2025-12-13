@@ -26,7 +26,6 @@ class TitleWindow(bui.MainWindow):
         assert bui.app.classic is not None
         uiscale = bui.app.ui_v1.uiscale
         self._height= 0
-        blmsh = bui.getmesh('shield')
         super().__init__(
             root_widget=bui.containerwidget(
                 size=(self._width, self._height),
@@ -50,8 +49,8 @@ class TitleWindow(bui.MainWindow):
             autoselect=True,
             position=(-120, -220),
             size=(200, 200),
-            mesh_transparent=blmsh,
-            mesh_opaque=blmsh,
+            mesh_transparent=None,
+            mesh_opaque=None,
             textcolor=(1, 1, 1),
             scale=9999,
             text_scale=1.3,
@@ -59,11 +58,22 @@ class TitleWindow(bui.MainWindow):
             enable_sound=False,
             on_activate_call=self.close,
         )
+        self.quit_btn = bui.buttonwidget(
+            parent=self._root_widget,
+            position=(-600, -310),
+            size=(200, 80),
+            textcolor=(1, 1, 1),
+            color=(0.8, 0.4, 0.4),
+            scale=0.8,
+            text_scale=1.3,
+            label='quit game',
+            on_activate_call=self.quit_window,
+        )
+        bui.containerwidget(edit=self._root_widget, cancel_button=self.quit_btn)
     def close(self) -> None:
         """Close the window."""
         # no-op if we're not currently in control.
         rsfx = [
-            'randomnoises/noisePolution5',
             'voicelines/spaz/spazDeath04',
             'learnPSI',
             'punchStrong01',
@@ -90,6 +100,18 @@ class TitleWindow(bui.MainWindow):
                 origin_widget=self._root_widget,
             )
         )
+    def quit_window(self):
+        # pylint: disable=cyclic-import
+        from bauiv1lib.confirm import QuitWindow
+
+        # no-op if we're not currently in control.
+        if not self.main_window_has_control():
+            return
+
+        # Note: Normally we should go through bui.quit(confirm=True) but
+        # invoking the window directly lets us scale it up from the
+        # button.
+        QuitWindow(origin_widget=self.quit_btn)
     @override
     def get_main_window_state(self) -> bui.MainWindowState:
         # Support recreating our window for back/refresh purposes.

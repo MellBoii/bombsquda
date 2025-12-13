@@ -958,8 +958,16 @@ class App:
                 lifecyclelog.info('app-state is now %s', self.state.name)
                 import bauiv1
                 if not _babase.app.config.get("dontdomarioman", True):
-                    bauiv1.getsound('quit').play()
-                    _babase.apptimer(1.4, lambda: self._on_shutting_down())
+                    import bascenev1 as bs
+                    from bascenev1lib.mainmenu import MainMenuActivity
+                    self.activity = bs.get_foreground_host_activity()
+                    if isinstance(self.activity, MainMenuActivity):
+                        with self.activity.context:
+                            self.activity.do_quit()
+                        _babase.apptimer(2.3, lambda: self._on_shutting_down())
+                    else:
+                        bauiv1.getsound('quit').play()
+                        _babase.apptimer(1.4, lambda: self._on_shutting_down())
                     applog.info('Buh bye!')
                 else:
                     applog.info('Quitting game...')

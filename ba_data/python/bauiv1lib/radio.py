@@ -36,26 +36,20 @@ class RadioWindow(bui.Window):
             prevent_main_window_auto_recreate=False,
         )
         uiscale = bui.app.ui_v1.uiscale
-        if uiscale is bui.UIScale.SMALL:
-            self._back_button = None
-            bui.containerwidget(
-                edit=self._root_widget, on_cancel_call=self.close
-            )
-        else:
-            self._back_button = btn = bui.buttonwidget(
-                parent=self._root_widget,
-                autoselect=False,
-                position=(self._width - 700, self._height - 80),
-                size=(80, 80),
-                color=(0.7, 0.3, 0.3),
-                textcolor=(1, 1, 1),
-                scale=0.8,
-                text_scale=1.3,
-                label=bui.charstr(bui.SpecialChar.BACK),
-                button_type='backSmall',
-                on_activate_call=self.close,
-            )
-            bui.containerwidget(edit=self._root_widget, cancel_button=btn)
+        self._back_button = btn = bui.buttonwidget(
+            parent=self._root_widget,
+            autoselect=False,
+            position=(self._width - 700, self._height - 80),
+            size=(80, 80),
+            color=(0.7, 0.3, 0.3),
+            textcolor=(1, 1, 1),
+            scale=0.8,
+            text_scale=1.3,
+            label=bui.charstr(bui.SpecialChar.BACK),
+            button_type='backSmall',
+            on_activate_call=self.close,
+        )
+        bui.containerwidget(edit=self._root_widget, cancel_button=btn)
         self.popup = PopupMenu(
             parent=self._root_widget,
             position=(self._width - 500, self._height - 250),

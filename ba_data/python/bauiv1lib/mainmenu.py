@@ -381,10 +381,10 @@ class MainMenuWindow(bui.MainWindow):
         )
         self.boomboxbtn = bui.buttonwidget(
             parent=self._root_widget,
-            position=(-455, -200),
+            position=(-self._width - 10, -self._height),
             button_type='square',
             size=(180, 80),
-            label='Boombox',
+            label='music player',
             autoselect=True,
             on_activate_call=self.boombox_press
         )
@@ -496,14 +496,9 @@ class MainMenuWindow(bui.MainWindow):
                 size=(side_button_2_width, side_button_2_height),
                 scale=side_button_2_scale,
                 label=bui.Lstr(
-                    resource=self._r
-                    + (
-                        '.quitText'
-                        if 'Mac' in app.classic.legacy_user_agent_string
-                        else '.exitGameText'
-                    )
+                    resource=self._r + '.titleScreen'
                 ),
-                on_activate_call=self._quit,
+                on_activate_call=self.goto_title,
                 transition_delay=thistdelay,
             )
 
@@ -516,15 +511,9 @@ class MainMenuWindow(bui.MainWindow):
             rightmost_button = self._credits_button
             self._quit_button = None
 
-            # If we're not in-game, have no quit button, and this is
-            # android, we want back presses to quit our activity.
             if app.classic.platform == 'android':
-
-                def _do_quit() -> None:
-                    bui.quit(confirm=True, quit_type=bui.QuitType.BACK)
-
                 bui.containerwidget(
-                    edit=self._root_widget, on_cancel_call=_do_quit
+                    edit=self._root_widget, on_cancel_call=self.goto_title
                 )
         bui.widget(
             edit=rightmost_button,
@@ -535,18 +524,13 @@ class MainMenuWindow(bui.MainWindow):
         from bauiv1lib.radio import RadioWindow
         RadioWindow()
     
-    def _quit(self) -> None:
-        # pylint: disable=cyclic-import
-        from bauiv1lib.confirm import QuitWindow
-
-        # no-op if we're not currently in control.
-        if not self.main_window_has_control():
-            return
-
-        # Note: Normally we should go through bui.quit(confirm=True) but
-        # invoking the window directly lets us scale it up from the
-        # button.
-        QuitWindow(origin_widget=self._quit_button)
+    def goto_title(self) -> None:
+        from bauiv1lib.titlescreen import TitleWindow
+        self.main_window_replace(
+            TitleWindow(
+                origin_widget=self._root_widget,
+            )
+        )
 
     def _credits(self) -> None:
         # pylint: disable=cyclic-import
