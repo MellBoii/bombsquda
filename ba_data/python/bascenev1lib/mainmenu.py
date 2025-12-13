@@ -217,6 +217,8 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
                 jump_force = 550,
                 randomness = 350
             )
+        ImageJumper.jump_image(self.modpack_name.node)
+        ImageJumper.jump_image(self.splashtext.node)
         bs.getsound('randomnoises/noisePolution5').play()
         bs.getsound('didnotfinish').play()
         bs.setmusic(None)
@@ -234,6 +236,8 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         bs.timer(0.5, bs.getsound(random.choice(rsfx)).play, repeat=True)
         bs.timer(0.6, bs.getsound(random.choice(rsfx)).play, repeat=True)
         self._logo_node.texture = bs.gettexture('logoDies')
+        self.splashtext.node.text = 'ow.'
+        self.modpack_name.node.text = 'no more modpack...\ntwin why.......'
 
     def _update(self) -> None:
         # pylint: disable=too-many-locals
