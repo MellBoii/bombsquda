@@ -57,7 +57,7 @@ class Startup():
         print('something went bad in fromgoverhaul\'s startup, and we couldn\t add config stuff')
 
     if babase.app.classic.platform not in ['android', 'mac']:
-        if babase.app.config.get("richpresence", True):
+        if babase.app.config.get("squda_richpresence", True):
             try:
                 babase.apptimer(1.3, RichPresence)
             except Exception as e:
