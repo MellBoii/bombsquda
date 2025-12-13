@@ -36,7 +36,7 @@ class TitleWindow(bui.MainWindow):
         )
         self._title_text = bui.textwidget(
             parent=self._root_widget,
-            position=(10, -100),
+            position=(0, -150),
             size=(0, 0),
             scale=1.8,
             text='press to start twinny',
@@ -47,12 +47,13 @@ class TitleWindow(bui.MainWindow):
         self.play_button = bui.buttonwidget(
             parent=self._root_widget,
             autoselect=True,
-            position=(-120, -220),
-            size=(200, 200),
+            position=(-1000, -600),
+            size=(2000, 1500),
             mesh_transparent=None,
             mesh_opaque=None,
+            texture=bui.gettexture('empty'),
             textcolor=(1, 1, 1),
-            scale=9999,
+            scale=1.0,
             text_scale=1.3,
             label='',
             enable_sound=False,
