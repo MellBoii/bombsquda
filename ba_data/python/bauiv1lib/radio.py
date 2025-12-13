@@ -21,10 +21,10 @@ class RadioWindow(bui.Window):
     """
 
     def __init__(self, origin: Sequence[float] = (0, 0)):
-        self._width = 700
         assert bui.app.classic is not None
         uiscale = bui.app.ui_v1.uiscale
-        self._height= 350
+        self._width = 700
+        self._height = 350
         self.choice2 = 'MENU'
         super().__init__(
             root_widget=bui.containerwidget(
@@ -62,6 +62,7 @@ class RadioWindow(bui.Window):
             width=250,
             autoselect=True,
             on_value_change_call=bui.WeakCall(self._on_menu_choice),
+            # we should REALLY optimize this
             choices = [
                 'MENU',
                 'MENU2',
@@ -94,7 +95,6 @@ class RadioWindow(bui.Window):
                 'MetalCapTime',
                 'Rage',
                 'NoiseSuper',
-                'Reprieve',
                 'Business',
                 'To_The_Death',
                 'To_The_DeathFast',
