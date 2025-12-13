@@ -50,6 +50,10 @@ ASSET_SOUNDTRACK_ENTRIES: dict[MusicType, AssetSoundtrackEntry] = {
     MusicType.MENU12: AssetSoundtrackEntry('music/menuMusic12'),
     MusicType.MENU13: AssetSoundtrackEntry('music/menuMusic13'),
     MusicType.MENU14: AssetSoundtrackEntry('music/menuMusic14'),
+    MusicType.MENU15: AssetSoundtrackEntry('music/menuMusic15'),
+    MusicType.MENU16: AssetSoundtrackEntry('music/menuMusic16'),
+    MusicType.MENU17: AssetSoundtrackEntry('music/menuMusic17'),
+    MusicType.MENU18: AssetSoundtrackEntry('music/menuMusic18'),
     MusicType.MENU67: AssetSoundtrackEntry('music/stupidfuckingmenu'), 
     MusicType.VICTORY: AssetSoundtrackEntry(
         'music/victoryMusic', volume=1.2, loop=False
