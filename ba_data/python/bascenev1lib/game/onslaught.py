@@ -386,7 +386,7 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
             self.thugshaketimer = bs.Timer(0.040, lambda: bs.camerashake(intensity=0.1), repeat=True)
             self.timebeforedeath = 200
             self.timer_background = bs.newnode('image', attrs={
-                    'texture': bs.gettexture('windowHSmallVMed'),
+                    'texture': bs.gettexture('windowHSmallVSmall'),
                     'position': (30, -600),
                     'scale': (300, 200),
                     'color': (0.5, 0.2, 1.0),
@@ -410,13 +410,13 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
             bs.animate_array(self.pizzatimertext, 'position', 2, 
                 {
                     0.0: (0, -60), 
-                    1.0: (0, -10), # move upwards
+                    1.0: (0, 0), # move upwards
                 }
             )
             bs.animate_array(self.timer_background, 'position', 2, 
                 {
-                    0.0: (20, -100), 
-                    1.0: (20, -30), # move upwards
+                    0.0: (20, -130), 
+                    1.0: (20, 0), # move upwards
                 }
             )
             def tick():

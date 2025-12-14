@@ -295,30 +295,31 @@ class Spaz(bs.Actor):
             players = bs.getactivity().players
             normalmeterx = -670
             multiplier = 150
+            defaultmeterY = -270
             if players.index(self.source_player) == 0:
                 self.meterx = normalmeterx + multiplier
-                self.metery = -300
+                self.metery = defaultmeterY
             elif players.index(self.source_player) == 1:
                 self.meterx = normalmeterx + multiplier * 2
-                self.metery = -300
+                self.metery = defaultmeterY
             elif players.index(self.source_player) == 2:
                 self.meterx = normalmeterx + multiplier * 3
-                self.metery = -300
+                self.metery = defaultmeterY
             elif players.index(self.source_player) == 3:
                 self.meterx = normalmeterx + multiplier * 4
-                self.metery = -300
+                self.metery = defaultmeterY
             elif players.index(self.source_player) == 4:
                 self.meterx = normalmeterx + multiplier * 5
-                self.metery = -300
+                self.metery = defaultmeterY
             elif players.index(self.source_player) == 5:
                 self.meterx = normalmeterx + multiplier * 6
-                self.metery = -300
+                self.metery = defaultmeterY
             elif players.index(self.source_player) == 6:
                 self.meterx = normalmeterx + multiplier * 7
-                self.metery = -300
+                self.metery = defaultmeterY
             elif players.index(self.source_player) == 7:
                 self.meterx = normalmeterx + multiplier * 8
-                self.metery = -300
+                self.metery = defaultmeterY
             else:
                 self.meterx = -9999
                 self.metery = -9999
