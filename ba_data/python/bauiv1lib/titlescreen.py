@@ -39,7 +39,7 @@ class TitleWindow(bui.MainWindow):
             position=(0, -150),
             size=(0, 0),
             scale=1.8,
-            text='press to start twinny',
+            text=ba.Lstr(resource='pressStart'),
             color=(1, 1, 1),
             h_align='center',
             v_align='center',
@@ -67,7 +67,7 @@ class TitleWindow(bui.MainWindow):
             color=(0.8, 0.4, 0.4),
             scale=0.8,
             text_scale=1.3,
-            label='quit game',
+            label=ba.Lstr(resource='quitFuckinGame'),
             on_activate_call=self.quit_window,
         )
         bui.containerwidget(edit=self._root_widget, cancel_button=self.quit_btn)

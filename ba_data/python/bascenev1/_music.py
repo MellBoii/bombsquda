@@ -11,6 +11,7 @@ import _bascenev1
 import bascenev1 as bs
 import babase
 import bauiv1 as bui
+import babase as ba
 
 if TYPE_CHECKING:
     pass
@@ -200,7 +201,7 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
         # Get the music name from the list above.
         # If we don't get any, tell the player it's either unknown
         # or will be added later down the line. Laziness kills the mellboii.
-        name = music_names.get(music_type, "TBA/Unknown")
+        name = music_names.get(music_type, ba.Lstr(resource='npUnknownMusic'))
         activity = bs.get_foreground_host_activity()
         if activity == None:
             return
@@ -220,7 +221,12 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
             xpos = 620
             ofscrX = 1500
             txt = Text(
-                f"Now playing: {name}",
+                ba.Lstr(
+                    resource='npPlaying',
+                    subs=[
+                        ('${MUSIC}', name)
+                    ],
+                ),
                 position=(ofscrX, ypos),
                 h_attach=Text.HAttach.CENTER,
                 h_align=Text.HAlign.RIGHT,
