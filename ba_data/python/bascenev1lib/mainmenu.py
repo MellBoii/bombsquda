@@ -384,7 +384,7 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
             c3name = cfgget('character2name')[0]
             c4name = cfgget('character3name')[0]
             chosen_text = bs.Lstr(
-                resource=f'splashText{random.randint(1, 53)}',
+                resource=f'splashText{random.randint(1, 87)}',
                 subs=[
                     ('${SPAZ}', c1name),
                     ('${KRIS}', c2name),
