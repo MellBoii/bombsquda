@@ -323,8 +323,8 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
         else:
             # Normal onslaught → pick from standard list
             music_choices = [
+                bs.MusicType.ONSLAUGHT,
                 bs.MusicType.ONSLAUGHT2,
-                bs.MusicType.ONSLAUGHT3,
             ]
             chosen_music = random.choice(music_choices)
             self.chosen_music = chosen_music

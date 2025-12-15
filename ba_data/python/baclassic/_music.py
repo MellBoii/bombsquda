@@ -38,7 +38,6 @@ class AssetSoundtrackEntry:
 # What gets played by default for our different music types:
 ASSET_SOUNDTRACK_ENTRIES: dict[MusicType, AssetSoundtrackEntry] = {
     MusicType.MENU: AssetSoundtrackEntry('music/menuMusic'),
-    MusicType.MENUPIANO: AssetSoundtrackEntry('music/menuMusicPiano'),
     MusicType.MENU2: AssetSoundtrackEntry('music/menuMusic2'),
     MusicType.MENU3: AssetSoundtrackEntry('music/menuMusic3'),
     MusicType.MENU6: AssetSoundtrackEntry('music/menuMusic6'),
@@ -65,10 +64,9 @@ ASSET_SOUNDTRACK_ENTRIES: dict[MusicType, AssetSoundtrackEntry] = {
     MusicType.CHAR_SELECT2: AssetSoundtrackEntry('music/charSelect2', volume=1.0),
     MusicType.TUTORIAL: AssetSoundtrackEntry('music/tutorial', volume=1.4),
     MusicType.RUN_AWAY: AssetSoundtrackEntry('music/runAwayMusic', volume=1.0),
-    MusicType.ONSLAUGHT: AssetSoundtrackEntry('music/onslaughtMusic', volume=1.0),
     MusicType.METALCAPTIME: AssetSoundtrackEntry('music/metalMusicALT', volume=2.0),
+    MusicType.ONSLAUGHT: AssetSoundtrackEntry('music/onslaughtMusic', volume=1.0),
     MusicType.ONSLAUGHT2: AssetSoundtrackEntry('music/onslaughtMusic2', volume=1.0),
-    MusicType.ONSLAUGHT3: AssetSoundtrackEntry('music/onslaughtMusic3', volume=1.0),
     MusicType.THEFINALE: AssetSoundtrackEntry('music/finaldestination', volume=2.1),
     MusicType.NOISESUPER: AssetSoundtrackEntry('music/noisexpectancy', volume=1.0),
     MusicType.SURVEY: AssetSoundtrackEntry('music/SURVEYPROGRAM', volume=1.0),

@@ -29,7 +29,6 @@ class MusicType(Enum):
     # perhaps should add music for when playing online?? seems cool audibly
     # also, don't rename the other names. they'll break if you pause and upnause.
     MENU = 'MENU'
-    MENUPIANO = 'MENUPiano'
     MENU2 = 'MENU2'
     MENU3 = 'MENU3'
     MENU6 = 'MENU6'
@@ -50,15 +49,13 @@ class MusicType(Enum):
     VICTORYFINAL = 'VictoryFinal'
     CHAR_SELECT = 'Char_Select'
     CHAR_SELECT2 = 'Char_Select2'
-    MINIONSELECT = 'Level Select'
     TUTORIAL = 'Tutorial'
     RUN_AWAY = 'Run_Away'
     MODULATINGTIME = 'ModulatingTime'
     HURRYUP = 'HURRYUP'
-    ONSLAUGHT = 'Onslaught'
     CUTSCENE1 = 'Cutscene1'
+    ONSLAUGHT = 'Onslaught'
     ONSLAUGHT2 = 'Onslaught2'
-    ONSLAUGHT3 = 'Onslaught3'
     KEEP_AWAY = 'Keep_Away'
     RACE = 'Race'
     GAMBLING = 'Gambling'
@@ -68,7 +65,6 @@ class MusicType(Enum):
     METALCAPTIME = 'MetalCapTime'
     RAGE = 'Rage'
     NOISESUPER = 'NoiseSuper'
-    REPRIEVE = 'Reprieve'
     BUSINESS = 'Business'
     TO_THE_DEATH = 'To_The_Death'
     TO_THE_DEATHFAST = 'To_The_DeathFast'
@@ -95,10 +91,8 @@ class MusicType(Enum):
     COOKIN = 'Cookin'
     MARCHING = 'Marching'
     DEFEAT = 'Defeat'
-    BREAKFREE = 'BreakFree'
     CREDITS = 'Credits'
     THEFINALE = 'TheFinale'
-    DEFEATQUMARK = 'DefeatQuMark'
     RUNAROUNDFINAL = 'RunaroundFinal'
     WAR = 'War'
     LAP0 = 'Lap0'
@@ -150,15 +144,21 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
             bs.MusicType.TO_THE_DEATH3: "Bãtutã din Moldova - Rabbids Go Home",
             bs.MusicType.TO_THE_DEATHFAST: "Daniel Bautista - Flight of the Bumblebee",
             bs.MusicType.EPIC: "Nocturne no. 2 in E-Flat major, op. 9 no. 2",
+            bs.MusicType.EPICFAST: "Starvation V2 - T_heonlywhitesofa",
             bs.MusicType.CHAR_SELECT: "Overworld Map - Mario Kart World",
             bs.MusicType.TUTORIAL: "Doing it Right - Mario & Luigi: Bowser's Inside Story",
             bs.MusicType.ONLINE: "Across The World - Tyron",
             bs.MusicType.D_RUNNIN: "Runnin from Evil - Doom II", 
             bs.MusicType.BUSINESS: "Porky Means Business! - EarthBound",
             bs.MusicType.PAUSE: "As You Wish - MOTHER 3",
+            bs.MusicType.ELIM_DANGER: "Danger - Dr. Robotnik's Mean Bean Machine",
+            bs.MusicType.ELIM_VERSUS: "2P. Versus - Dr. Robotnik's Mean Bean Machine",
             bs.MusicType.SCORES: "Result (1st Place ~ 3rd Place) - Mario Kart: Double Dash!!",
             bs.MusicType.CHAR_SELECT2: "Sky Map - Mario Kart World",
+            bs.MusicType.FLYING: "Ducktales Moon Theme meets Metal - 331Erock",
+            bs.MusicType.FLYING2: "Sky Theme - Mario vs Luigi Online",
             bs.MusicType.RACE: "VS Metal Sonic - Sonic Mania",
+            bs.MusicType.EPIC_RACE: "Final Boss - Sonic Mania",
             bs.MusicType.MENU: "Artistic Mindset - Spamton123",
             bs.MusicType.MENU2: "Super Mario Kart Title Remastered",
             bs.MusicType.MENU3: "Mario vs Luigi 2.0 Title Theme Remix - Goldyber",
@@ -183,21 +183,47 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
             bs.MusicType.THEFINALE: "Final Destination - Super Smash Bros Melee",
             bs.MusicType.WAR: "Thousand March - Mr. Sauceman",
             bs.MusicType.LAP0: "It's Pizza Time! - Mr. Sauceman",
+            bs.MusicType.LAP0H: "Nuclear Avalanche - Ronach",
             bs.MusicType.LAP1: "The Death I Deservioli - Mr. Sauceman",
-            bs.MusicType.LAP1: "Pillar John's Revenge - Lap 3",
+            bs.MusicType.LAP2: "Pillar John's Revenge - Lap 3",
+            bs.MusicType.LAP3: "Absolute AbsurZiti V2 - bilkshaker",
+            bs.MusicType.LAP4: "Pasta La Vista - Oofator",
+            bs.MusicType.LAP5: "Doppelganger's Delight V1 - ???",
+            bs.MusicType.LAP6: "Moon-Eyed Madness - spooklass",
+            bs.MusicType.LAP7: "Holy Ravioli S&%t - Parpal",
+            bs.MusicType.LAP8: "Closed for Renovations - LyteRayz",
+            bs.MusicType.LAP9: "Vengeance With a Pinch of Sauce - skibsthegoober2500",
             bs.MusicType.GAMBLING: "WEXECUTED (Instrumental) - Sherry",
             bs.MusicType.METALCAPTIME: "IT'S TV TIME but it's Metal Cap Theme - @secret_fan48",
             bs.MusicType.COOKIN: "True Final Boss - Sonic Mania",
-            bs.MusicType.FOOTBALL: "Koopa Cape - Mario Kart Wii",
             bs.MusicType.RAGE: "Dr. Andonuts' Rage SSBU Mix - Frakture",
             bs.MusicType.GRAND_ROMP: "It's TV Time! - Deltarune",
             bs.MusicType.HOCKEY: "Koopa Cape - Mario Kart Wii",
+            bs.MusicType.FOOTBALL: "Koopa Cape - Mario Kart Wii",
+            bs.MusicType.SPORTS: "Koopa Cape - Mario Kart Wii",
             bs.MusicType.VICTORY: "Stars and Stripes Forever (Metal Rock Remix) - Blue Claw Philharmonic",
             bs.MusicType.VICTORYFINAL: "Stars and Stripes Forever (Metal Rock Remix, Longer) - Blue Claw Philharmonic",
-            bs.MusicType.ONSLAUGHT2: "Ruder Buster - Deltarune",
+            bs.MusicType.ONSLAUGHT: "Ruder Buster - Deltarune",
             bs.MusicType.SURVIVAL: "Tough Guy Alert! - M&L:BIS GaMetal Remix",
-            bs.MusicType.ONSLAUGHT3: "Rude Buster - Deltarune",
+            bs.MusicType.ONSLAUGHT2: "Rude Buster - Deltarune",
             bs.MusicType.NOISESUPER: "Unexpectancy Gatcha Remix - ClascyJitto",
+            bs.MusicType.MODULATINGTIME: "A Journey in Modulating Time - MaliceX",
+            bs.MusicType.KEEP_AWAY: "Flying Battery Zone 1 - Tee Lopes",
+            bs.MusicType.KEEP_AWAY2: "Flying Battery Zone 2 - Tee Lopes",
+            bs.MusicType.MARCHING: "Boss - Bowser Jr.'s Journey",
+            bs.MusicType.RUNAROUNDFINAL: "Final Boss - Bowser Jr.'s Journey",
+            bs.MusicType.DS1: "Battle Theme - Mario Kart DS",
+            bs.MusicType.DS2: "Waluigi Pinball - Mario Kart DS",
+            bs.MusicType.DS3: "Twilight House - Mario Kart Wii",
+            bs.MusicType.SURVEY: "ANOTHER HIM - Deltarune",
+            bs.MusicType.CRASH_HANDLER: "Cloudcones - Nagz",
+            bs.MusicType.LOGOTYPE: "LOGOTYPE - Mother 3",
+            bs.MusicType.FLAG_CATCHER: "Metallic Madness 1 - Tee Lopes",
+            bs.MusicType.FORWARD_MARCH: "Metallic Madness 2 - Tee Lopes",
+            bs.MusicType.OPENING: "Opening Credits - Bound to the Dark World",
+            bs.MusicType.CHOSEN_ONE: "Tough Guy Alert! - M&L Bowser's Inside Story - GaMetal Cover",
+            bs.MusicType.RUN_AWAY: "Tough Guy Alert! - M&L Bowser's Inside Story - GaMetal Cover",
+            bs.MusicType.SCARY: "???",
         }
         # Get the music name from the list above.
         # If we don't get any, tell the player it's either unknown
@@ -206,94 +232,87 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
         if music_type not in music_names:
             print(f'QUICK NOTE: {music_type} is missing from the music popup list.')
             print('Please add it later.')
-        def do_thing():
-            activity = bs.get_foreground_host_activity()
-            with activity.context:
-                # get important variables
-                uiscale = bui.app.ui_v1.uiscale
-                amt = activity.music_texts
-                base_y = 0
-                step_y = 30
-                ypos = base_y + len(activity.music_texts) * step_y
-                xpos = 635
-                ofscrX = 1500
-                tscale = (
-                    1.3 if uiscale is bui.UIScale.SMALL
-                    else 0.8
-                )
-                # make our disc image..
-                img = Image(
-                    bs.gettexture('coverDisc'),
-                    position=(ofscrX, ypos),
-                    scale=(300, 300),
-                    attach=Image.Attach.BOTTOM_CENTER,
-                    color=(1, 1, 1, 0.5),
-                ).autoretain()
-                # and our now playing text
-                txt = Text(
-                    ba.Lstr(
-                        resource='npPlaying',
-                        subs=[
-                            ('${MUSIC}', name)
-                        ],
-                    ),
-                    position=(ofscrX, ypos),
-                    h_attach=Text.HAttach.CENTER,
-                    h_align=Text.HAlign.RIGHT,
-                    v_attach=Text.VAttach.BOTTOM,
-                    color=(1, 1, 1, 1),
-                    scale=tscale,
-                    shadow=0.5,
-                    flatness=0.5,
-                ).autoretain()
-                # animate text going on screen then back out
-                bs.animate_array(
-                    txt.node,
-                    "position",
-                    2,
-                    {
-                        0.0: (ofscrX, ypos),
-                        1.0: (xpos, ypos),  # visible position
-                        6.0: (xpos, ypos),  # stay for ~6s
-                        7.0: (ofscrX, ypos),  # slide back out
-                    },
-                )
-                # repeat for image
-                bs.animate_array(
-                    img.node,
-                    "position",
-                    2,
-                    {
-                        0.0: (ofscrX, ypos),
-                        1.0: (xpos, ypos),  # visible position
-                        6.0: (xpos, ypos),  # stay for ~6s
-                        7.0: (ofscrX, ypos),  # slide back out
-                    },
-                )
-                # append us to the activity's music texts
-                # so we can track how many texts there are
-                # so we don't show up infront of one
-                activity.music_texts.append(txt)
-                # define stuff
-                def add_one():
-                    # add 5 to rotation
-                    img.node.rotate += 5
-                def do_delete():
-                    # stop everything that's needed
-                    # and delete stuff
-                    txt.node.delete()
-                    img.node.delete()
-                    activity.music_texts.remove(txt)
-                    img.rotatetimer = None
-                # timers
-                img.rotatetimer = bs.Timer(0.01, add_one, repeat=True)
-                bs.timer(7.0, do_delete)
-        # delay before doing the music popup 
-        # so our activity has time to start
         activity = bs.get_foreground_host_activity()
         with activity.context:
-            bs.timer(0.001, do_thing)
-
+            # get important variables
+            uiscale = bui.app.ui_v1.uiscale
+            amt = activity.music_texts
+            base_y = 0
+            step_y = 30
+            ypos = base_y + len(activity.music_texts) * step_y
+            xpos = 635
+            ofscrX = 1500
+            tscale = (
+                1.3 if uiscale is bui.UIScale.SMALL
+                else 0.8
+            )
+            # make our disc image..
+            img = Image(
+                bs.gettexture('coverDisc'),
+                position=(ofscrX, ypos),
+                scale=(300, 300),
+                attach=Image.Attach.BOTTOM_CENTER,
+                color=(1, 1, 1, 0.5),
+            ).autoretain()
+            # and our now playing text
+            txt = Text(
+                ba.Lstr(
+                    resource='npPlaying',
+                    subs=[
+                        ('${MUSIC}', name)
+                    ],
+                ),
+                position=(ofscrX, ypos),
+                h_attach=Text.HAttach.CENTER,
+                h_align=Text.HAlign.RIGHT,
+                v_attach=Text.VAttach.BOTTOM,
+                color=(1, 1, 1, 1),
+                scale=tscale,
+                shadow=0.5,
+                flatness=0.5,
+            ).autoretain()
+            # animate text going on screen then back out
+            bs.animate_array(
+                txt.node,
+                "position",
+                2,
+                {
+                    0.0: (ofscrX, ypos),
+                    1.0: (xpos, ypos),  # visible position
+                    6.0: (xpos, ypos),  # stay for ~6s
+                    7.0: (ofscrX, ypos),  # slide back out
+                },
+            )
+            # repeat for image
+            bs.animate_array(
+                img.node,
+                "position",
+                2,
+                {
+                    0.0: (ofscrX, ypos),
+                    1.0: (xpos, ypos),  # visible position
+                    6.0: (xpos, ypos),  # stay for ~6s
+                    7.0: (ofscrX, ypos),  # slide back out
+                },
+            )
+            # append us to the activity's music texts
+            # so we can track how many texts there are
+            # so we don't show up infront of one
+            activity.music_texts.append(txt)
+            # define stuff
+            def add_one():
+                # add 5 to rotation
+                img.node.rotate += 5
+            def do_delete():
+                # stop everything that's needed
+                # and delete stuff
+                txt.node.delete()
+                img.node.delete()
+                activity.music_texts.remove(txt)
+                img.rotatetimer = None
+            # timers
+            img.rotatetimer = bs.Timer(0.01, add_one, repeat=True)
+            bs.timer(7.0, do_delete)
 
 def setmusic(musictype: MusicType | None, continuous: bool = False) -> None:
     """Set the app to play (or stop playing) a certain type of music.
@@ -326,7 +345,7 @@ def setmusic(musictype: MusicType | None, continuous: bool = False) -> None:
     gnode.music_continuous = continuous
     gnode.music = '' if musictype is None else musictype.value
     gnode.music_count += 1
-    show_music_now_playing(music_type=musictype)
+    ba.apptimer(0.1, lambda: show_music_now_playing(music_type=musictype))
     
 def localsetmusic(musictype: MusicType | None, continuous: bool = False) -> None:
     """
