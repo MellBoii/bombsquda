@@ -290,7 +290,9 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
                 bs.timer(7.0, do_delete)
         # delay before doing the music popup 
         # so our activity has time to start
-        bs.timer(0.001, do_thing)
+        activity = bs.get_foreground_host_activity()
+        with activity.context:
+            bs.timer(0.001, do_thing)
 
 
 def setmusic(musictype: MusicType | None, continuous: bool = False) -> None:
