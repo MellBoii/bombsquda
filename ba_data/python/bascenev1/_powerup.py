@@ -45,6 +45,7 @@ class PowerupAcceptMessage:
 
 def get_default_powerup_distribution() -> Sequence[tuple[str, int]]:
     """Standard set of powerups."""
+    # set this variable to debug a powerup!!
     debug_powerup = None
     return (
         ('triple_bombs', 9999 if debug_powerup == 'triple_bombs' else 3),

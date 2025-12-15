@@ -179,6 +179,7 @@ from bascenev1._gameutils import (
     get_trophy_string,
     show_damage_count,
     Time,
+    getplayers,
 )
 from bascenev1._level import Level
 from bascenev1._lobby import Lobby, Chooser, JoinInfo

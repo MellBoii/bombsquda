@@ -164,7 +164,14 @@ def animate_array(
         _bascenev1.timer(
             (int(mult * items[-1][0]) + 1000) / 1000.0, combine.delete
         )
-
+        
+def getplayers() -> None:
+    """ 
+    Just return a 
+    activity's players.
+    """
+    return _bascenev1.getactivity().players
+    
 def show_damage_count(
     damage: str, position: Sequence[float], direction: Sequence[float]
 ) -> None:

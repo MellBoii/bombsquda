@@ -481,7 +481,7 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
         self.setup_low_life_warning_sound()
         self._update_scores()
         # lets do stupid music change if we're on the last level
-        if self._preset == Preset.UBER:
+        if self._preset in [Preset.UBER, Preset.UBER_EASY]:
             bs.setmusic(bs.MusicType.RUNAROUNDFINAL)
         self.earthmover = bs.NodeActor(
             bs.newnode(
