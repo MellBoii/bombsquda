@@ -24,7 +24,7 @@ class TeamSeriesVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
 
     def __init__(self, settings: dict):
         super().__init__(settings=settings)
-        self._min_view_time = 5.0
+        self._min_view_time = 10.0
         self._is_ffa = isinstance(self.session, bs.FreeForAllSession)
         self._allow_server_transition = True
         self._tips_text = None

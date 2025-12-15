@@ -161,7 +161,7 @@ class ScoreScreenActivity(Activity[EmptyPlayer, EmptyTeam]):
     def __init__(self, settings: dict):
         super().__init__(settings)
         self._birth_time = babase.apptime()
-        self._min_view_time = 10.0
+        self._min_view_time = 5.0
         self._allow_server_transition = False
         self._tips_text: bascenev1.Actor | None = None
         self._background: bascenev1.Actor | None = None

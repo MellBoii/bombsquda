@@ -38,6 +38,7 @@ class SpongetatoGame(bs.TeamGameActivity[Player, Team]):
         label='Survived', scoretype=bs.ScoreType.SECONDS, none_is_winner=True
     )
     allow_mid_activity_joins = False
+    announce_player_deaths = True
 
     @override
     @classmethod
@@ -115,6 +116,7 @@ class SpongetatoGame(bs.TeamGameActivity[Player, Team]):
         # Veeerry low impact scale
         # so we don't die frequently.
         actor.impact_scale = 0.01
+        actor.play_big_death_sound = True
         return actor
         
     @override

@@ -116,19 +116,19 @@ class ParrySelectionWindow(bui.Window):
     # there's a easier way to do this
     def parrysetup1(self) -> None:
         cfg = bui.app.config
-        cfg['parrytype'] = 1
+        cfg['squda_parrytype'] = 1
         cfg.apply_and_commit()
         self.close()
         
     def parrysetup2(self) -> None:
         cfg = bui.app.config
-        cfg['parrytype'] = 2
+        cfg['squda_parrytype'] = 2
         cfg.apply_and_commit()
         self.close()
         
     def parrysetup3(self) -> None:
         cfg = bui.app.config
-        cfg['parrytype'] = 3
+        cfg['squda_parrytype'] = 3
         cfg.apply_and_commit()
         self.close()
     
