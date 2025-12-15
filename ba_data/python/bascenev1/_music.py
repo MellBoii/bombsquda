@@ -129,6 +129,7 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
         Display current music on screen.
         """
         from bascenev1lib.actor.text import Text
+        from bascenev1lib.actor.image import Image
         excluded_types = [
             None,
             bs.MusicType.CUTSCENE1,
@@ -155,7 +156,7 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
             bs.MusicType.D_RUNNIN: "Runnin from Evil - Doom II", 
             bs.MusicType.BUSINESS: "Porky Means Business! - EarthBound",
             bs.MusicType.PAUSE: "As You Wish - MOTHER 3",
-            bs.MusicType.SCORES: "Result (1st Place ~ 3rd Place)\n - Mario Kart: Double Dash!!",
+            bs.MusicType.SCORES: "Result (1st Place ~ 3rd Place) - Mario Kart: Double Dash!!",
             bs.MusicType.CHAR_SELECT2: "Sky Map - Mario Kart World",
             bs.MusicType.RACE: "VS Metal Sonic - Sonic Mania",
             bs.MusicType.MENU: "Artistic Mindset - Spamton123",
@@ -172,8 +173,8 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
             bs.MusicType.MENU14: "Title Theme - Mario Kart 64",
             bs.MusicType.MENU15: "Title Theme - Dr. Robotnik's Mean Bean Machine",
             bs.MusicType.MENU16: "Pizza Deluxe - POST ELVIS",
-            bs.MusicType.MENU17: "Pollyanna Rock My World \n- Furries in a blender",
-            bs.MusicType.MENU18: "Wii Theme but it's September \n- Mr Rock",
+            bs.MusicType.MENU17: "Pollyanna Rock My World - Furries in a blender",
+            bs.MusicType.MENU18: "Wii Theme but it's September - Mr Rock",
             bs.MusicType.MENU67: "what the fuck is this",
             bs.MusicType.CREDITS: "Staff Roll - Mario Kart DS",
             bs.MusicType.SNESCOURSE: "SNES Battle Course - Mario Kart World",
@@ -185,14 +186,14 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
             bs.MusicType.LAP1: "The Death I Deservioli - Mr. Sauceman",
             bs.MusicType.LAP1: "Pillar John's Revenge - Lap 3",
             bs.MusicType.GAMBLING: "WEXECUTED (Instrumental) - Sherry",
-            bs.MusicType.METALCAPTIME: "IT'S TV TIME but it's \nMetal Cap Theme\n - @secret_fan48",
+            bs.MusicType.METALCAPTIME: "IT'S TV TIME but it's Metal Cap Theme - @secret_fan48",
             bs.MusicType.COOKIN: "True Final Boss - Sonic Mania",
             bs.MusicType.FOOTBALL: "Koopa Cape - Mario Kart Wii",
             bs.MusicType.RAGE: "Dr. Andonuts' Rage SSBU Mix - Frakture",
             bs.MusicType.GRAND_ROMP: "It's TV Time! - Deltarune",
             bs.MusicType.HOCKEY: "Koopa Cape - Mario Kart Wii",
-            bs.MusicType.VICTORY: "Stars and Stripes Forever \n(Metal Rock Remix) - Blue Claw Philharmonic",
-            bs.MusicType.VICTORYFINAL: "Stars and Stripes Forever (Metal Rock Remix, Longer) \n- Blue Claw Philharmonic",
+            bs.MusicType.VICTORY: "Stars and Stripes Forever (Metal Rock Remix) - Blue Claw Philharmonic",
+            bs.MusicType.VICTORYFINAL: "Stars and Stripes Forever (Metal Rock Remix, Longer) - Blue Claw Philharmonic",
             bs.MusicType.ONSLAUGHT2: "Ruder Buster - Deltarune",
             bs.MusicType.SURVIVAL: "Tough Guy Alert! - M&L:BIS GaMetal Remix",
             bs.MusicType.ONSLAUGHT3: "Rude Buster - Deltarune",
@@ -207,19 +208,24 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
             return
         # Create text node (off-screen initially)
         with activity.context:
+            uiscale = bui.app.ui_v1.uiscale
             amt = activity.music_texts
-            # wowza. that's a lotta else ifs.
-            ypos = (
-                30 if len(amt) == 0
-                else 100 if len(amt) == 1
-                else 200 if len(amt) == 2
-                else 300 if len(amt) == 3
-                else 400 if len(amt) == 4
-                else 500 if len(amt) == 5
-                else 600
-            )
+            base_y = 0
+            step_y = 30
+            ypos = base_y + len(activity.music_texts) * step_y
             xpos = 620
             ofscrX = 1500
+            tscale = (
+                1.3 if uiscale is bui.UIScale.SMALL
+                else 0.8
+            )
+            img = Image(
+                bs.gettexture('coverDisc'),
+                position=(ofscrX, ypos),
+                scale=(300, 300),
+                attach=Image.Attach.BOTTOM_CENTER,
+                color=(1, 1, 1, 0.5),
+            ).autoretain()
             txt = Text(
                 ba.Lstr(
                     resource='npPlaying',
@@ -232,7 +238,7 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
                 h_align=Text.HAlign.RIGHT,
                 v_attach=Text.VAttach.BOTTOM,
                 color=(1, 1, 1, 1),
-                scale=0.8,
+                scale=tscale,
                 shadow=0.5,
                 flatness=0.5,
             ).autoretain()
@@ -248,12 +254,28 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
                     7.0: (ofscrX, ypos),  # slide back out
                 },
             )
+            bs.animate_array(
+                img.node,
+                "position",
+                2,
+                {
+                    0.0: (ofscrX, ypos),
+                    1.0: (xpos, ypos),  # visible position
+                    6.0: (xpos, ypos),  # stay for ~6s
+                    7.0: (ofscrX, ypos),  # slide back out
+                },
+            )
             activity.music_texts.append(txt)
+            def add_one():
+                img.node.rotate += 5
             def do_delete():
                 txt.node.delete()
+                img.node.delete()
                 activity.music_texts.remove(txt)
+                img.rotatetimer = None
             # Delete after finished.
-            bs.timer(10.0, do_delete)
+            img.rotatetimer = bs.Timer(0.01, add_one, repeat=True)
+            bs.timer(7.0, do_delete)
 
 
 def setmusic(musictype: MusicType | None, continuous: bool = False) -> None:
