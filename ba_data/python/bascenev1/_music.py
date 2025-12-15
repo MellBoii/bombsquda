@@ -212,7 +212,7 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
                 base_y = 0
                 step_y = 30
                 ypos = base_y + len(activity.music_texts) * step_y
-                xpos = 620
+                xpos = 635
                 ofscrX = 1500
                 tscale = (
                     1.3 if uiscale is bui.UIScale.SMALL
