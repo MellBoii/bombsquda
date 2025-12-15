@@ -203,6 +203,9 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
         # If we don't get any, tell the player it's either unknown
         # or will be added later down the line. Laziness kills the mellboii.
         name = music_names.get(music_type, ba.Lstr(resource='npUnknownMusic'))
+        if music_type not in music_names:
+            print(f'QUICK NOTE: {music_type} is missing from the music popup list.')
+            print('Please add it later.')
         def do_thing():
             activity = bs.get_foreground_host_activity()
             with activity.context:
