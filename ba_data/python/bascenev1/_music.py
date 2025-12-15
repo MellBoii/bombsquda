@@ -203,79 +203,91 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
         # If we don't get any, tell the player it's either unknown
         # or will be added later down the line. Laziness kills the mellboii.
         name = music_names.get(music_type, ba.Lstr(resource='npUnknownMusic'))
-        activity = bs.get_foreground_host_activity()
-        if activity == None:
-            return
-        # Create text node (off-screen initially)
-        with activity.context:
-            uiscale = bui.app.ui_v1.uiscale
-            amt = activity.music_texts
-            base_y = 0
-            step_y = 30
-            ypos = base_y + len(activity.music_texts) * step_y
-            xpos = 620
-            ofscrX = 1500
-            tscale = (
-                1.3 if uiscale is bui.UIScale.SMALL
-                else 0.8
-            )
-            img = Image(
-                bs.gettexture('coverDisc'),
-                position=(ofscrX, ypos),
-                scale=(300, 300),
-                attach=Image.Attach.BOTTOM_CENTER,
-                color=(1, 1, 1, 0.5),
-            ).autoretain()
-            txt = Text(
-                ba.Lstr(
-                    resource='npPlaying',
-                    subs=[
-                        ('${MUSIC}', name)
-                    ],
-                ),
-                position=(ofscrX, ypos),
-                h_attach=Text.HAttach.CENTER,
-                h_align=Text.HAlign.RIGHT,
-                v_attach=Text.VAttach.BOTTOM,
-                color=(1, 1, 1, 1),
-                scale=tscale,
-                shadow=0.5,
-                flatness=0.5,
-            ).autoretain()
-            # Animate position: slide in then out after a delay
-            bs.animate_array(
-                txt.node,
-                "position",
-                2,
-                {
-                    0.0: (ofscrX, ypos),
-                    1.0: (xpos, ypos),  # visible position
-                    6.0: (xpos, ypos),  # stay for ~6s
-                    7.0: (ofscrX, ypos),  # slide back out
-                },
-            )
-            bs.animate_array(
-                img.node,
-                "position",
-                2,
-                {
-                    0.0: (ofscrX, ypos),
-                    1.0: (xpos, ypos),  # visible position
-                    6.0: (xpos, ypos),  # stay for ~6s
-                    7.0: (ofscrX, ypos),  # slide back out
-                },
-            )
-            activity.music_texts.append(txt)
-            def add_one():
-                img.node.rotate += 5
-            def do_delete():
-                txt.node.delete()
-                img.node.delete()
-                activity.music_texts.remove(txt)
-                img.rotatetimer = None
-            # Delete after finished.
-            img.rotatetimer = bs.Timer(0.01, add_one, repeat=True)
-            bs.timer(7.0, do_delete)
+        def do_thing():
+            activity = bs.get_foreground_host_activity()
+            with activity.context:
+                # get important variables
+                uiscale = bui.app.ui_v1.uiscale
+                amt = activity.music_texts
+                base_y = 0
+                step_y = 30
+                ypos = base_y + len(activity.music_texts) * step_y
+                xpos = 620
+                ofscrX = 1500
+                tscale = (
+                    1.3 if uiscale is bui.UIScale.SMALL
+                    else 0.8
+                )
+                # make our disc image..
+                img = Image(
+                    bs.gettexture('coverDisc'),
+                    position=(ofscrX, ypos),
+                    scale=(300, 300),
+                    attach=Image.Attach.BOTTOM_CENTER,
+                    color=(1, 1, 1, 0.5),
+                ).autoretain()
+                # and our now playing text
+                txt = Text(
+                    ba.Lstr(
+                        resource='npPlaying',
+                        subs=[
+                            ('${MUSIC}', name)
+                        ],
+                    ),
+                    position=(ofscrX, ypos),
+                    h_attach=Text.HAttach.CENTER,
+                    h_align=Text.HAlign.RIGHT,
+                    v_attach=Text.VAttach.BOTTOM,
+                    color=(1, 1, 1, 1),
+                    scale=tscale,
+                    shadow=0.5,
+                    flatness=0.5,
+                ).autoretain()
+                # animate text going on screen then back out
+                bs.animate_array(
+                    txt.node,
+                    "position",
+                    2,
+                    {
+                        0.0: (ofscrX, ypos),
+                        1.0: (xpos, ypos),  # visible position
+                        6.0: (xpos, ypos),  # stay for ~6s
+                        7.0: (ofscrX, ypos),  # slide back out
+                    },
+                )
+                # repeat for image
+                bs.animate_array(
+                    img.node,
+                    "position",
+                    2,
+                    {
+                        0.0: (ofscrX, ypos),
+                        1.0: (xpos, ypos),  # visible position
+                        6.0: (xpos, ypos),  # stay for ~6s
+                        7.0: (ofscrX, ypos),  # slide back out
+                    },
+                )
+                # append us to the activity's music texts
+                # so we can track how many texts there are
+                # so we don't show up infront of one
+                activity.music_texts.append(txt)
+                # define stuff
+                def add_one():
+                    # add 5 to rotation
+                    img.node.rotate += 5
+                def do_delete():
+                    # stop everything that's needed
+                    # and delete stuff
+                    txt.node.delete()
+                    img.node.delete()
+                    activity.music_texts.remove(txt)
+                    img.rotatetimer = None
+                # timers
+                img.rotatetimer = bs.Timer(0.01, add_one, repeat=True)
+                bs.timer(7.0, do_delete)
+        # delay before doing the music popup 
+        # so our activity has time to start
+        bs.timer(0.001, do_thing)
 
 
 def setmusic(musictype: MusicType | None, continuous: bool = False) -> None:
