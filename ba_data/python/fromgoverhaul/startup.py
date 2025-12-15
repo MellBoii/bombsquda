@@ -39,6 +39,7 @@ class Startup():
     "squda_nosugarcoats": False,
     "squda_playersfirsttime": True,
     "squda_isplayingmusic": False,
+    "squda_customfont": False,
     "squda_timesattracted": 1,
     "squda_timeserrored": 0,
     "squda_parrytype": 2,

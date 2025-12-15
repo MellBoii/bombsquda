@@ -9,6 +9,7 @@ import logging
 
 import bauiv1 as bui
 import bascenev1 as bs
+import os
 
 if TYPE_CHECKING:
     from typing import Callable
@@ -146,7 +147,7 @@ class MelWindow(bui.MainWindow):
         assert bui.app.classic is not None
         uiscale = bui.app.ui_v1.uiscale
         width = 1000 if uiscale is bui.UIScale.SMALL else 800
-        height = 700
+        height = 750
         self._r = 'melWindow'
 
         uiscale = bui.app.ui_v1.uiscale
@@ -214,7 +215,7 @@ class MelWindow(bui.MainWindow):
             )
             bui.containerwidget(edit=self._root_widget, cancel_button=btn)
         # i love thefuckedupuifix!! thefuckedupuifix forever!!
-        thefuckedupuifix = 250
+        thefuckedupuifix = 300
         bui.textwidget(
             parent=self._root_widget,
             position=(0, yoffs - (70 if uiscale is bui.UIScale.SMALL else 60)),
@@ -355,6 +356,17 @@ class MelWindow(bui.MainWindow):
             text='disable the metal cap music',
             on_value_change_call=self.changemetalm
         )
+        self._changefont = bui.checkboxwidget(
+            parent=self._root_widget,
+            position=(250, -250 + thefuckedupuifix),
+            size=(180, 40),
+            autoselect=False,
+            maxwidth=300,
+            textcolor=(1.0, 1.0, 1.0),
+            value=bui.app.config.get("squda_customfont", False),
+            text='use the custom font (WARNING: RENAMES TEXTURES)',
+            on_value_change_call=self.changefont
+        )
 
     def changehardmode(self, val: str) -> None:
         cfg = bui.app.config
@@ -364,6 +376,38 @@ class MelWindow(bui.MainWindow):
             bui.getsound('baditem').play()
         if val == False:
             bui.getsound('okitem').play()
+    
+    def changefont(self, val: str) -> None:
+        cfg = bui.app.config
+        cfg['squda_customfont'] = val
+        cfg.apply_and_commit()
+        # THE FOLLOWING CODE BELOW
+        # SHOULD **NEVER** BE REPLICATED IN
+        # AN ACTUAL WELL DEVELOPED MODPACK!!
+        # NOT ONLY ARE THEY ARBITRARY AND RENAME
+        # FILES (WHICH ALSO MEANS THEY REVERT
+        # EVERY UPDATE), BUT THEY COULD JUST SCREW UP
+        # SOMETHING AND I DON'T EVEN KNOW THAT!!
+        if val == True:
+            local = os.getcwd() + '\\ba_data'
+            textures = local + '\\textures\\'
+            os.rename(textures + 'fontSmall0.dds', textures + 'oldefont.dds')
+            os.rename(textures + 'fontBig.dds', textures + 'oldefont2.dds')
+            os.rename(textures + 'fontALT0.dds', textures + 'fontSmall0.dds')
+            os.rename(textures + 'fontBigALT.dds', textures + 'fontBig.dds')
+            os.rename(textures + 'oldefont.dds', textures + 'fontALT0.dds')
+            os.rename(textures + 'oldefont2.dds', textures + 'fontBigALT.dds')
+            bs.screenmessage('its done blud restart the game!!')
+        if val == False:
+            local = os.getcwd() + '\\ba_data'
+            textures = local + '\\textures\\'
+            os.rename(textures + 'fontSmall0.dds', textures + 'oldefont.dds')
+            os.rename(textures + 'fontBig.dds', textures + 'oldefont2.dds')
+            os.rename(textures + 'fontALT0.dds', textures + 'fontSmall0.dds')
+            os.rename(textures + 'fontBigALT.dds', textures + 'fontBig.dds')
+            os.rename(textures + 'oldefont.dds', textures + 'fontALT0.dds')
+            os.rename(textures + 'oldefont2.dds', textures + 'fontBigALT.dds')
+            bs.screenmessage('its done blud restart the game!!')
 
     def changegambling(self, val: str) -> None:
         cfg = bui.app.config
