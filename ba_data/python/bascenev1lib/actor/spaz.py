@@ -951,7 +951,7 @@ class Spaz(bs.Actor):
         Called to 'press bomb' on this spaz;
         used for player or AI connections.
         """
-        if not self.node or self.node.knockout > 0.07:
+        if not self.node or self.node.knockout > 0.04 or self.frozen:
             return
         if self.source_player: # Prevent tutorial from dying.
             if self.character == 'Robot':
