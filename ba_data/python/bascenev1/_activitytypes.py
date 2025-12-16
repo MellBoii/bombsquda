@@ -248,6 +248,7 @@ class ScoreScreenActivity(Activity[EmptyPlayer, EmptyTeam]):
     def on_begin(self) -> None:
         # pylint: disable=cyclic-import
         from bascenev1lib.actor.text import Text
+        from bascenev1lib.actor.background import Background
 
         super().on_begin()
 
@@ -278,6 +279,10 @@ class ScoreScreenActivity(Activity[EmptyPlayer, EmptyTeam]):
             transition=Text.Transition.IN_BOTTOM_SLOW,
             transition_delay=self._min_view_time,
         ).autoretain()
+        self._background = Background(
+            fade_time=0.5, start_faded=True, show_logo=False
+        )
+        self._background.__del__()
 
     def _player_press(self) -> None:
         # If this activity is a good 'end point', ask server-mode just once if

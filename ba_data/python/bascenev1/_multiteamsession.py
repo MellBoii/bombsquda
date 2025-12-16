@@ -67,6 +67,7 @@ class MultiTeamSession(Session):
             min_players=1,
             max_players=self.get_max_players(),
         )
+        self.background = None
 
         self._series_length: int = int(cfg.get('Teams Series Length', 7))
         self._ffa_series_length: int = int(cfg.get('FFA Series Length', 24))
@@ -276,27 +277,11 @@ class MultiTeamSession(Session):
         from bascenev1._gameutils import cameraflash
         from bascenev1._freeforallsession import FreeForAllSession
         from bascenev1._messages import CelebrateMessage
+        from bascenev1lib.actor.background import Background
         
         if bs.get_foreground_host_activity().shouldntannounce == True:
             return
         bascenev1.setmusic(None)
-        if results.winning_sessionteam is None:
-            _bascenev1.getsound('bellDraw').play()
-            bs.broadcastmessage('It\'s a draw...')
-        else:
-            _bascenev1.getsound('boxingBell').play()
-
-            team = results.winning_sessionteam
-            if len(team.players) == 1:
-                # Single player (FFA win)
-                winner_name = team.players[0].getname()
-                bs.broadcastmessage(f"{winner_name} wins!", color=team.color)
-            else:
-                # Team win
-                team_name = team.name.evaluate()
-                bs.broadcastmessage(f"{team_name} wins!", color=team.color)
-
-
         if announce_winning_team:
             winning_sessionteam = results.winning_sessionteam
             if winning_sessionteam is not None:
@@ -321,6 +306,32 @@ class MultiTeamSession(Session):
                     scale=0.85,
                     color=babase.normalized_color(winning_sessionteam.color),
                 )
+                bs.cameraflash()
+                bs.getsound('boxingBell').play()
+                
+            else:
+                bs.getsound('bellDraw').play()
+                bs.broadcastmessage('It\'s a draw...')
+            def do_bg():
+                self.background = bs.newnode(
+                    'image',
+                    attrs={
+                        'texture': bs.gettexture('bg'),  # lol
+                        'fill_screen': True,
+                        'opacity': 0.0,
+                        'absolute_scale': True,
+                        'attach': 'center'
+                    },
+                )
+                bs.animate(
+                    self.background, 
+                    'opacity',
+                    {
+                        0.0: 0.0, 
+                        1.0: 1.0,
+                    }
+                )
+            ba.apptimer(2.5, do_bg)
 
 
 class ShuffleList:
