@@ -139,7 +139,7 @@ class HelpWindow(bui.MainWindow):
         # self._sub_width = 810 if uiscale is bui.UIScale.SMALL else 660
         self._sub_width = 660
         self._sub_height = (
-            1790
+            1800
             + bui.app.lang.get_resource(f'{self._r}.someDaysExtraSpace')
             + bui.app.lang.get_resource(
                 f'{self._r}.orPunchingSomethingExtraSpace'
@@ -415,7 +415,7 @@ class HelpWindow(bui.MainWindow):
             color=(1, 0.7, 0.3),
             selectable=False,
             enable_sound=False,
-            on_activate_call=bui.WeakCall(self._play_sound, 'spazAttack0', 4),
+            on_activate_call=bui.getsound('superPunch').play,
         )
 
         txt_scale = getres(f'{self._r}.punchInfoTextScale')
@@ -443,7 +443,7 @@ class HelpWindow(bui.MainWindow):
             color=(1, 0.3, 0.3),
             selectable=False,
             enable_sound=False,
-            on_activate_call=bui.WeakCall(self._play_sound, 'explosion0', 5),
+            on_activate_call=bui.getsound('fuse01').play,
         )
 
         txt = bui.Lstr(resource=f'{self._r}.bombInfoText').evaluate()
@@ -472,7 +472,7 @@ class HelpWindow(bui.MainWindow):
             color=(0.5, 0.5, 1),
             selectable=False,
             enable_sound=False,
-            on_activate_call=bui.WeakCall(self._play_sound, 'spazPickup0', 1),
+            on_activate_call=bui.getsound('zoePickup01').play,
         )
 
         txtl = bui.Lstr(resource=f'{self._r}.pickUpInfoText')
@@ -500,7 +500,7 @@ class HelpWindow(bui.MainWindow):
             color=(0.4, 1, 0.4),
             selectable=False,
             enable_sound=False,
-            on_activate_call=bui.WeakCall(self._play_sound, 'spazJump0', 4),
+            on_activate_call=bui.getsound('zoeJump01').play,
         )
 
         txt = bui.Lstr(resource=f'{self._r}.jumpInfoText').evaluate()
@@ -605,6 +605,7 @@ class HelpWindow(bui.MainWindow):
             'powerupMetal',
             'powerupStrong',
             'powerupSponge',
+            'powerupRandom',
         ]:
             name = bui.Lstr(resource=f'{self._r}.' + tex + 'NameText')
             desc = bui.Lstr(resource=f'{self._r}.' + tex + 'DescriptionText')
@@ -622,11 +623,16 @@ class HelpWindow(bui.MainWindow):
                 color=(0, 0, 0),
                 opacity=0.5,
             )
-            bui.imagewidget(
+            bui.buttonwidget(
                 parent=self._subcontainer,
                 size=(icon_size, icon_size),
                 position=(h + mm1 - 0.5 * icon_size, v - 0.5 * icon_size),
                 texture=bui.gettexture(tex),
+                label='',
+                selectable=False,
+                color=(1.5, 1.5, 1.5),
+                enable_sound=False,
+                on_activate_call=bui.WeakCall(self.plpwpsound, tex),
             )
 
             txt_scale = t_big
@@ -661,6 +667,40 @@ class HelpWindow(bui.MainWindow):
 
     def _play_sound(self, text: str, num: int) -> None:
         bui.getsound(text + str(random.randint(1, num))).play()
+        
+    def plpwpsound(self, text: str) -> None:
+        if text == 'powerupPunch':
+            bui.getsound('punchStrong03').play()
+        elif text == 'powerupShield':
+            bui.getsound('shieldUp').play()
+        elif text == 'powerupBomb':
+            bui.getsound('explosion01').play()
+            bui.getsound('explosion02').play()
+            bui.getsound('explosion03').play()
+        elif text == 'powerupHealth':
+            bui.getsound('healthPowerup').play()
+        elif text == 'powerupIceBombs':
+            bui.getsound('freeze').play()
+        elif text == 'powerupImpactBombs':
+            bui.getsound('warnBeep').play()
+        elif text == 'powerupStickyBombs':
+            bui.getsound('stickyImpact').play()
+        elif text == 'powerupLandMines':
+            bui.getsound('activateBeep').play()
+        elif text == 'powerupCurse':
+            bui.getsound('crazyOver').play()
+        elif text == 'powerupMetal':
+            bui.getsound('metalcap').play()
+        elif text == 'powerupStrong':
+            bui.getsound('punchWeak01').play()
+        elif text == 'powerupSponge':
+            bui.getsound('spongebob').play()
+        elif text == 'powerupRandom':
+            bui.getsound('okitem').play()
+        else:
+            print(f'HelpWindow error: {text} not in plpwpsound')
+            bui.getsound('error').play()
+
 
     @override
     def get_main_window_state(self) -> bui.MainWindowState:
