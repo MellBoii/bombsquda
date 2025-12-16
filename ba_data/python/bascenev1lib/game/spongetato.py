@@ -39,7 +39,25 @@ class SpongetatoGame(bs.TeamGameActivity[Player, Team]):
     )
     allow_mid_activity_joins = False
     announce_player_deaths = True
-
+    
+    @override
+    @classmethod
+    def get_available_settings(
+        cls, sessiontype: type[bs.Session]
+    ) -> list[bs.Setting]:
+        settings = [
+            bs.IntChoiceSetting(
+                'Time to Pass',
+                choices=[
+                    ('5 Seconds', 5),
+                    ('10 Seconds', 10),
+                    ('15 Seconds', 15),
+                ],
+                default=10,
+            ),
+            bs.BoolSetting('Epic Mode', default=False),
+        ]
+        return settings
     @override
     @classmethod
     def supports_session_type(cls, sessiontype: type[bs.Session]) -> bool:
@@ -56,13 +74,14 @@ class SpongetatoGame(bs.TeamGameActivity[Player, Team]):
     def __init__(self, settings: dict):
         super().__init__(settings)
         self._score_to_win: int | None = None
-        # For now, keep it false. We ain't
-        # doing slow mode for now
-        self._epic_mode = False
+        # stuff.
+        self._epic_mode = bool(settings['Epic Mode'])
+        self._time_to_pass = int(settings['Time to Pass'])
+        self._speed = 1.0
         # Base class overrides.
         self.slow_motion = self._epic_mode
         if self._epic_mode:
-            self.default_music = bs.MusicType.EPIC
+            self.default_music = bs.MusicType.EPIC_RACE
         else:
             music_choices = [
                 bs.MusicType.MODULATINGTIME,
@@ -83,7 +102,7 @@ class SpongetatoGame(bs.TeamGameActivity[Player, Team]):
         ]
             
     def trigger_potato(self, player: Player) -> None:
-        player.actor._activate_spongebob()
+        player.actor._activate_spongebob(time=self._time_to_pass, speed=self._speed)
         
     @override
     def on_begin(self) -> None:

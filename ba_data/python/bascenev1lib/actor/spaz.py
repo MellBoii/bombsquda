@@ -119,7 +119,7 @@ class Spaz(bs.Actor):
         self._roulette_active = False
         self._roulette_timer = None
         self._roulette_current = None
-        
+        self.spongebob_timer = None
         self._wiggle_count = 0
         self.wiggling = False
         self.light = None
@@ -1471,13 +1471,14 @@ class Spaz(bs.Actor):
             # flashy effect
             start_flash_effect()
     
-    def _activate_spongebob(self):
+    def _activate_spongebob(self, time: int, speed: int):
         """Give this spaz the 'Hot Potato' effect."""
         if getattr(self, "_has_hot_potato", False):
             return  # Already has one, don't stack
 
         self._has_hot_potato = True
-        self._potato_time = 10.0  # seconds remaining
+        self._potato_time = time  # seconds remaining
+        self._potato_speed = speed
         
         
         if self.node.name:
@@ -1554,6 +1555,7 @@ class Spaz(bs.Actor):
             if self._has_hot_potato == False or not self.node or self._dead:
                 self._potato_holder_text.delete()
                 self._potato_timer_text.delete()
+                self.spongebob_timer = None
                 return
 
             self._potato_time -= 1
@@ -1578,11 +1580,12 @@ class Spaz(bs.Actor):
                 self.explode()
                 self._potato_holder_text.delete()
                 self._potato_timer_text.delete()
+                self.spongebob_timer = None
                 bs.getsound('spongebobdead').play()
             else:
-                bs.timer(1.0, tick)
                 bs.getsound('spongebob').play()
-        tick()    
+        tick()
+        self.spongebob_timer = bs.Timer(self._potato_speed, tick, repeat=True)
             
     def smashkill(self, sound: str) -> None:    
         """ Explodes us in a kind of smash-style 
@@ -2142,7 +2145,7 @@ class Spaz(bs.Actor):
             elif msg.poweruptype == 'random':
                 self._activate_roulette()
             elif msg.poweruptype == 'spongebob':
-                self._activate_spongebob()
+                self._activate_spongebob(10, 1)
             
             self.node.handlemessage('flash')
             if msg.sourcenode:
@@ -3012,7 +3015,11 @@ class Spaz(bs.Actor):
             self.curse_explode()
             
         elif isinstance(msg, bs.SpongebobMessage):
-            self._activate_spongebob()
+            if self.activity._time_to_pass:
+                activity = self.activity
+                self._activate_spongebob(activity._time_to_pass, activity._speed)
+            else:
+                self._activate_spongebob(10, 1)
         elif isinstance(msg, PunchHitMessage):
             if not self.node:
                 return None

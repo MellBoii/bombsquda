@@ -224,6 +224,7 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
 
         self._spawn_sound = _bascenev1.getsound('spawn')
         self.shouldntannounce = False
+        self._time_to_pass = None
         self._map_type.preload()
         self._map: bascenev1.Map | None = None
         self._powerup_drop_timer: bascenev1.Timer | None = None
