@@ -345,7 +345,8 @@ def setmusic(musictype: MusicType | None, continuous: bool = False) -> None:
     gnode.music_continuous = continuous
     gnode.music = '' if musictype is None else musictype.value
     gnode.music_count += 1
-    ba.apptimer(0.1, lambda: show_music_now_playing(music_type=musictype))
+    if ba.app.config.get("squda_nosugarcoats", False):
+        ba.apptimer(0.1, lambda: show_music_now_playing(music_type=musictype))
     
 def localsetmusic(musictype: MusicType | None, continuous: bool = False) -> None:
     """
