@@ -10,6 +10,7 @@ import logging
 import bauiv1 as bui
 import bascenev1 as bs
 import os
+import babase
 
 if TYPE_CHECKING:
     from typing import Callable
@@ -388,7 +389,12 @@ class MelWindow(bui.MainWindow):
         # FILES (WHICH ALSO MEANS THEY REVERT
         # EVERY UPDATE), BUT THEY COULD JUST SCREW UP
         # SOMETHING AND I DON'T EVEN KNOW THAT!!
+        app = babase.app
+        platform = app.classic.platform
         if val == True:
+            if platform not in ['windows', 'linux']:
+                bs.screenmessage('twinny. this clearly renames files. it doesnt work on non-windows.')
+                return
             local = os.getcwd() + '\\ba_data'
             textures = local + '\\textures\\'
             os.rename(textures + 'fontSmall0.dds', textures + 'oldefont.dds')
@@ -399,6 +405,9 @@ class MelWindow(bui.MainWindow):
             os.rename(textures + 'oldefont2.dds', textures + 'fontBigALT.dds')
             bs.screenmessage('its done blud restart the game!!')
         if val == False:
+            if platform not in ['windows', 'linux']:
+                bs.screenmessage('twinny. this clearly renames files. it doesnt work on non-windows.')
+                return
             local = os.getcwd() + '\\ba_data'
             textures = local + '\\textures\\'
             os.rename(textures + 'fontSmall0.dds', textures + 'oldefont.dds')
