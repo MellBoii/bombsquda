@@ -335,23 +335,6 @@ class Spaz(bs.Actor):
         self.flashing = False
         self._flash_timer = None
         self.impulse_scale = 1.5
-        if self.source_player:
-            if self.character == 'Spaz':
-                self.randomnuumber = random.randint(1, 2)
-                def doblink():
-                    def unblink():
-                        if not self.node:
-                            return
-                        self.node.color_texture = bs.gettexture('neoSpazColor')
-                        self.randomnuumber = random.randint(1,4)
-                    def doactblink():
-                        if not self.node:
-                            return
-                        self.node.color_texture = bs.gettexture('spazBlink')
-                        bs.timer(0.2, unblink)
-                    doactblink()
-                    self.blinktimer = bs.Timer(self.randomnuumber, doblink, repeat=True)
-                self.blinktimer = bs.Timer(self.randomnuumber, doblink, repeat=True)
         self.is_nessEB = False
         self.can_starstorm = False
         if self.source_player: # Prevent tutorial from dying.
@@ -796,14 +779,6 @@ class Spaz(bs.Actor):
         """
         if not self.node or self.frozen or self.node.knockout > 0.0:
             return
-        if self.source_player != None:
-            if self.character == 'Spaz':
-                def unangry():
-                    self.node.color_texture = bs.gettexture('neoSpazColor')
-                def angry():
-                    self.node.color_texture = bs.gettexture('spazAngry')
-                    bs.timer(0.7, unangry)
-                angry()
         t_ms = int(bs.time() * 1000.0)
         assert isinstance(t_ms, int)
         if t_ms - self.last_punch_time_ms >= self._punch_cooldown:
@@ -2877,17 +2852,6 @@ class Spaz(bs.Actor):
                 if damage_avg >= 1000:
                     # WITHER AND DIE :fire::fire::fire::fire::fire::fire::fire:
                     self.shatter()
-            if self.character == 'Spaz' and not self.hitpoints <= 0:
-                def undod():
-                    if not self.node:
-                        return
-                    self.node.color_texture = bs.gettexture('neoSpazColor')
-                def dod():
-                    if not self.node:
-                        return
-                    self.node.color_texture = bs.gettexture('spazDead')
-                    bs.timer(0.4, undod)
-                dod()
 
         elif isinstance(msg, BombDiedMessage):
             self.bomb_count += 1
@@ -2928,11 +2892,6 @@ class Spaz(bs.Actor):
                 bs.timer(1.0, lambda: self.earthchar.delete())
                 bs.timer(1.0, lambda: self.earthmeter.delete())
                 bs.timer(1.0, lambda: self.earthmetertext.delete())
-            if self.character == 'Spaz':
-                if not self.node:
-                    return
-                self.node.color_texture = bs.gettexture('spazDead')
-                self.blinktimer = None
             if self.earthsptext and self.earthsptext.exists():
                 self.earthsptext.delete()
             if msg.immediate:
