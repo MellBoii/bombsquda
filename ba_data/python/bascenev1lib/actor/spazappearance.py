@@ -574,14 +574,34 @@ def register_appearances() -> None:
     t.upper_leg_mesh = 'wizardUpperLeg'
     t.lower_leg_mesh = 'wizardLowerLeg'
     t.toes_mesh = 'wizardToes'
-    wizard_sounds = ['wizard1', 'wizard2', 'wizard3', 'wizard4']
-    wizard_hit_sounds = ['wizardHit1', 'wizardHit2']
-    t.jump_sounds = wizard_sounds
-    t.attack_sounds = wizard_sounds
-    t.impact_sounds = wizard_hit_sounds
-    t.death_sounds = ['wizardDeath']
-    t.pickup_sounds = wizard_sounds
-    t.fall_sounds = ['wizardFall']
+    t.jump_sounds = [
+        'voicelines/ocap/jump1',
+        'voicelines/ocap/jump2',
+        'voicelines/ocap/jump3',
+        'voicelines/ocap/jump4',
+    ]
+    t.attack_sounds = [
+        'voicelines/ocap/punch1',
+        'voicelines/ocap/punch2',
+        'voicelines/ocap/punch3',
+        'voicelines/ocap/punch4',
+    ]
+    t.impact_sounds = ['voicelines/ocap/hurt1']
+    t.death_sounds = [
+        'voicelines/ocap/death1',
+        'voicelines/ocap/death2',
+    ]
+    t.pickup_sounds = [
+        'voicelines/ocap/pickup1',
+        'voicelines/ocap/pickup2',
+        'voicelines/ocap/pickup3',
+        'voicelines/ocap/pickup4',
+    ]
+    t.fall_sounds = [
+        'voicelines/ocap/fall1',
+        'voicelines/ocap/fall2',
+        'voicelines/ocap/fall3',
+    ]
     t.style = 'agent'
     t.default_color = (0.2, 0.4, 1.0)
     t.default_highlight = (0.06, 0.15, 0.4)
