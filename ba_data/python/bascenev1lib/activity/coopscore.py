@@ -17,6 +17,7 @@ import bauiv1 as bui
 
 from bascenev1lib.actor.text import Text
 from bascenev1lib.actor.zoomtext import ZoomText
+from bascenev1lib.actor.image import Image
 
 if TYPE_CHECKING:
     from typing import Any, Sequence
@@ -326,7 +327,7 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
             return False
 
         # Link is too complicated to display with no browser.
-        return bui.is_browser_likely_available()
+        return True
 
     def request_ui(self) -> None:
         """Set up a callback to show our UI at the next opportune time."""
@@ -389,7 +390,7 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
             bui.buttonwidget(
                 parent=rootc,
                 color=(0.45, 0.4, 0.5),
-                position=(240, v_offs2 + 439),
+                position=(220, v_offs2 + 439),
                 size=(350, 62),
                 label=(
                     bui.Lstr(resource='tournamentStandingsText')
@@ -401,6 +402,7 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
                     )
                 ),
                 autoselect=True,
+                texture=bui.gettexture('empty'),
                 on_activate_call=bui.WeakCall(self._ui_worlds_best),
                 transition_delay=delay + 1.9,
                 selectable=can_select_extra_buttons,
@@ -813,7 +815,7 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
                 value='${A}...',
                 subs=[('${A}', bs.Lstr(resource='loadingText'))],
             ),
-            position=(280, 150 + 30),
+            position=(350, 150 + 30),
             color=(1, 1, 1, 0.4),
             transition=Text.Transition.FADE_IN,
             scale=0.7,
@@ -1264,7 +1266,7 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
             if results is None:
                 self._score_loading_status = Text(
                     bs.Lstr(resource='worldScoresUnavailableText'),
-                    position=(280, 130 + v_offs),
+                    position=(300, 130 + v_offs),
                     color=(1, 1, 1, 0.4),
                     transition=Text.Transition.FADE_IN,
                     transition_delay=base_delay + 0.3,
@@ -1703,294 +1705,56 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
                         scale=0.7,
                         transition_delay=1.0,
                     ).autoretain()
-        else:
-            assert rating is not None
-            ZoomText(
-                (
-                    f'{rating:.1f}'
-                    if available
-                    else bs.Lstr(resource='unavailableText')
-                ),
-                flash=True,
-                trail=True,
-                scale=0.6 if available else 0.333,
-                tilt_translate=0.11,
-                h_align='center',
-                position=(190 + offs_x, -94),
-                maxwidth=200,
-                jitter=1.0,
-            ).autoretain()
-            if not available:
-                bs.timer(0.1, lambda: Text(
-                    bs.Lstr(resource='ratingfucked'),
-                    h_align=Text.HAlign.CENTER,
-                    position=(0, -180),
-                    maxwidth=300,
-                    color=(1, 1, 1, 0.5),
-                    transition=Text.Transition.FADE_IN,
-                    transition_delay=2.5,
-                ).autoretain())
-                bs.timer(0.1, lambda: Text(
-                    bs.Lstr(resource='ratingfucked2'),
-                    h_align=Text.HAlign.CENTER,
-                    position=(0, -200),
-                    maxwidth=300,
-                    color=(1, 1, 1, 0.5),
-                    transition=Text.Transition.FADE_IN,
-                    transition_delay=3.5,
-                ).autoretain())
-            else:
-                pass
-
-            if available:
-                if rating >= 9.5:
-                    bs.timer(0.1, lambda: Text(
-                        bs.Lstr(resource='ratingawsome'),
-                        h_align=Text.HAlign.CENTER,
-                        position=(0, -180),
-                        maxwidth=300,
-                        color=(1, 1, 1, 0.5),
-                        transition=Text.Transition.FADE_IN,
-                        transition_delay=2.5,
-                    ).autoretain())
-                    stars = 3
-                elif rating >= 7.5:
-                    bs.timer(0.1, lambda: Text(
-                        bs.Lstr(resource='ratinggreat'),
-                        h_align=Text.HAlign.CENTER,
-                        position=(0, -180),
-                        maxwidth=300,
-                        color=(1, 1, 1, 0.5),
-                        transition=Text.Transition.FADE_IN,
-                        transition_delay=2.5,
-                    ).autoretain())
-                    stars = 2
-                elif rating > 0.0:
-                    stars = 1
-                    bs.timer(0.1, lambda: Text(
-                        bs.Lstr(resource='ratinggood'),
-                        h_align=Text.HAlign.CENTER,
-                        position=(0, -180),
-                        maxwidth=300,
-                        color=(1, 1, 1, 0.5),
-                        transition=Text.Transition.FADE_IN,
-                        transition_delay=2.5,
-                    ).autoretain())
-                else:
-                    bs.timer(0.1, lambda: Text(
-                        bs.Lstr(resource='notgood'),
-                        h_align=Text.HAlign.CENTER,
-                        position=(0, -170),
-                        maxwidth=300,
-                        color=(1, 1, 1, 0.5),
-                        transition=Text.Transition.FADE_IN,
-                        transition_delay=2.0,
-                    ).autoretain())
-                    bs.timer(0.1, lambda: Text(
-                        bs.Lstr(resource='anotherShotText'),
-                        h_align=Text.HAlign.CENTER,
-                        position=(0, -190),
-                        maxwidth=300,
-                        color=(1, 1, 1, 0.5),
-                        transition=Text.Transition.FADE_IN,
-                        transition_delay=3.5,
-                    ).autoretain())
-                    stars = 0
-                star_tex = bs.gettexture('star')
-                star_x = 135 + offs_x
-                for _i in range(stars):
-                    img = bs.NodeActor(
-                        bs.newnode(
-                            'image',
-                            attrs={
-                                'texture': star_tex,
-                                'position': (star_x, -16),
-                                'scale': (62, 62),
-                                'opacity': 1.0,
-                                'color': (2.2, 1.2, 0.3),
-                                'absolute_scale': True,
-                            },
-                        )
-                    ).autoretain()
-
-                    assert img.node
-                    bs.animate(img.node, 'opacity', {0.15: 0, 0.4: 1})
-                    star_x += 60
-                for _i in range(3 - stars):
-                    img = bs.NodeActor(
-                        bs.newnode(
-                            'image',
-                            attrs={
-                                'texture': star_tex,
-                                'position': (star_x, -16),
-                                'scale': (62, 62),
-                                'opacity': 1.0,
-                                'color': (0.3, 0.3, 0.3),
-                                'absolute_scale': True,
-                            },
-                        )
-                    ).autoretain()
-                    assert img.node
-                    bs.animate(img.node, 'opacity', {0.15: 0, 0.4: 1})
-                    star_x += 60
-
-                def dostar(
-                    count: int, xval: float, offs_y: float, score: str
-                ) -> None:
-                    Text(
-                        score + ' =',
-                        position=(xval, -64 + offs_y),
-                        color=(0.6, 0.6, 0.6, 0.6),
-                        h_align=Text.HAlign.CENTER,
-                        v_align=Text.VAlign.CENTER,
-                        transition=Text.Transition.FADE_IN,
-                        scale=0.4,
-                        transition_delay=1.0,
-                    ).autoretain()
-                    stx = xval + 20
-                    for _i2 in range(count):
-                        img2 = bs.NodeActor(
-                            bs.newnode(
-                                'image',
-                                attrs={
-                                    'texture': star_tex,
-                                    'position': (stx, -64 + offs_y),
-                                    'scale': (12, 12),
-                                    'opacity': 0.7,
-                                    'color': (2.2, 1.2, 0.3),
-                                    'absolute_scale': True,
-                                },
-                            )
-                        ).autoretain()
-                        assert img2.node
-                        bs.animate(img2.node, 'opacity', {1.0: 0.0, 1.5: 0.5})
-                        stx += 13.0
-
-                dostar(1, -44 - 30, -112, '0.0')
-                dostar(2, 10 - 30, -112, '7.5')
-                dostar(3, 77 - 30, -112, '9.5')
-            try:
-                best_rank = self._campaign.getlevel(self._level_name).rating
-            except Exception:
-                best_rank = 0.0
-
-            if available:
-                Text(
-                    bs.Lstr(
-                        resource='outOfText',
-                        subs=[
-                            (
-                                '${RANK}',
-                                str(int(self._show_info['results']['rank'])),
-                            ),
-                            (
-                                '${ALL}',
-                                str(self._show_info['results']['total']),
-                            ),
-                        ],
-                    ),
-                    position=(0, -155 if self._newly_complete else -145),
-                    color=(1, 1, 1, 0.7),
-                    h_align=Text.HAlign.CENTER,
-                    transition=Text.Transition.FADE_IN,
-                    scale=0.55,
-                    transition_delay=1.0,
-                ).autoretain()
-
-            new_best = best_rank > self._old_best_rank and best_rank > 0.0
-            was_string = bs.Lstr(
-                value=' ${A}',
-                subs=[
-                    ('${A}', bs.Lstr(resource='scoreWasText')),
-                    ('${COUNT}', str(self._old_best_rank)),
-                ],
-            )
-            if not self._newly_complete:
-                Text(
-                    (
-                        bs.Lstr(
-                            value='${A}${B}',
-                            subs=[
-                                (
-                                    '${A}',
-                                    bs.Lstr(resource='newPersonalBestText'),
-                                ),
-                                ('${B}', was_string),
-                            ],
-                        )
-                        if new_best
-                        else bs.Lstr(
-                            resource='bestRatingText',
-                            subs=[('${RATING}', str(best_rank))],
-                        )
-                    ),
-                    position=(0, -165),
-                    color=(1, 1, 1, 0.7),
-                    flash=new_best,
-                    h_align=Text.HAlign.CENTER,
-                    transition=(
-                        Text.Transition.IN_RIGHT
-                        if new_best
-                        else Text.Transition.FADE_IN
-                    ),
-                    scale=0.5,
-                    transition_delay=1.0,
-                ).autoretain()
-
-            Text(
-                bs.Lstr(
-                    value='${A}:',
-                    subs=[('${A}', bs.Lstr(resource='ratingText'))],
-                ),
-                position=(0, 36),
-                maxwidth=300,
-                transition=Text.Transition.FADE_IN,
-                h_align=Text.HAlign.CENTER,
-                v_align=Text.VAlign.CENTER,
-                transition_delay=0,
-            ).autoretain()
-
-        if self._submit_score:
-            bs.timer(0.35, self._score_display_sound.play)
-            if not error:
-                bs.timer(0.35, self.cymbal_sound.play)
 
     def _show_fail(self) -> None:
         ZoomText(
             bs.Lstr(resource='failText'),
             maxwidth=300,
             flash=False,
+            color=(1.0, 0.1, 0.1),
+            trailcolor=(0.8, 0.3, 0.3),
             trail=True,
             h_align='center',
             tilt_translate=0.11,
-            position=(0, 40),
-            jitter=1.0,
+            position=(190 + -195, 40),
+            jitter=0.3,
+            scale=1.5,
         ).autoretain()
         if self._fail_message is not None:
             Text(
                 self._fail_message,
                 h_align=Text.HAlign.CENTER,
-                position=(0, -130),
+                position=(0, -100),
                 maxwidth=300,
                 color=(1, 1, 1, 0.5),
                 transition=Text.Transition.FADE_IN,
                 transition_delay=1.0,
             ).autoretain()
-            bs.timer(0.1, lambda: Text(
-                bs.Lstr(resource='anotherShotText'),
-                h_align=Text.HAlign.CENTER,
-                position=(0, -180),
-                maxwidth=300,
-                color=(1, 1, 1, 0.5),
-                transition=Text.Transition.FADE_IN,
-                transition_delay=2.5,
-            ).autoretain())
-        bs.timer(0.35, self._score_display_sound.play)
+        bs.timer(0.35, bs.getsound('boo').play)
     
 
     def _show_score_val(self, offs_x: float) -> None:
         assert self._score_type is not None
         assert self._score is not None
+
+        sesh = bs.getsession()
+        players = sesh.sessionplayers
+
+        center_x = 190 + offs_x
+        y = -90
+        spacing = 60
+        n = len(players)
+
+        for i, sessionplayer in enumerate(players):
+            xpos = center_x + (i - (n - 1) / 2) * spacing
+
+            Image(
+                texture=sessionplayer.get_icon(),
+                position=(xpos, y),
+                scale=(50.0, 50.0),
+                transition=Image.Transition.FADE_IN,
+            ).autoretain()
+
         ZoomText(
             (
                 str(self._score)
@@ -1998,14 +1762,17 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
                 else bs.timestring((self._score * 10) / 1000.0)
             ),
             maxwidth=300,
-            flash=True,
+            flash=False,
+            color=(0.4, 1.0, 0.6),
+            trailcolor=(0.5, 0.8, 0.6),
             trail=True,
-            scale=1.0 if self._score_type == 'points' else 0.6,
+            scale=1.4 if self._score_type == 'points' else 0.6,
             h_align='center',
             tilt_translate=0.11,
-            position=(190 + offs_x, 115),
+            position=(center_x, 40),
             jitter=1.0,
         ).autoretain()
+
         Text(
             (
                 bs.Lstr(
@@ -2019,10 +1786,10 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
                 )
             ),
             maxwidth=300,
-            position=(0, 200),
+            position=(center_x, 150),
             transition=Text.Transition.FADE_IN,
             h_align=Text.HAlign.CENTER,
             v_align=Text.VAlign.CENTER,
-            transition_delay=0,
         ).autoretain()
+
         bs.timer(0.35, self._score_display_sound.play)
