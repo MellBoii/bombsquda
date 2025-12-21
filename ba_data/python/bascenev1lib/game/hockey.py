@@ -174,7 +174,7 @@ class HockeyGame(bs.TeamGameActivity[Player, Team]):
         self._chant_sound = bs.getsound('crowdChant')
         self._foghorn_sound = bs.getsound('foghorn')
         self._swipsound = bs.getsound('swip')
-        self._whistle_sound = bs.getsound('refWhistle')
+        self._whistle_sound = bs.getsound('deek2')
         self.puck_mesh = bs.getmesh('puck')
         self.puck_tex = bs.gettexture('puckColor')
         self._puck_sound = bs.getsound('metalHit')

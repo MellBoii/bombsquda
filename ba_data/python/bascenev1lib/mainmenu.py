@@ -1108,7 +1108,7 @@ def _preload4() -> None:
         bs.gettexture(tname)
     for mname in ['frameInset', 'meterTransparent', 'achievementOutline']:
         bs.getmesh(mname)
-    for sname in ['metalHit', 'metalSkid', 'refWhistle', 'achievement']:
+    for sname in ['metalHit', 'metalSkid', 'deek2', 'achievement']:
         bs.getsound(sname)
     from bascenev1lib.actor.flag import FlagFactory
 

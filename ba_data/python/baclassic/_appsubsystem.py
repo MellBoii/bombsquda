@@ -258,7 +258,6 @@ class ClassicAppSubsystem(babase.AppSubsystem):
         if (
             activity is not None
             and activity.allow_pausing
-            and not bascenev1.have_connected_clients()
         ):
             from babase import Lstr
             from bascenev1 import NodeActor
@@ -268,7 +267,7 @@ class ClassicAppSubsystem(babase.AppSubsystem):
             with activity.context:
                 globs = activity.globalsnode
                 if not globs.paused:
-                    bascenev1.getsound('refWhistle').play()
+                    bascenev1.getsound('pause').play()
                     globs.paused = True
                     self.savedmusic = globs.music
                     bascenev1.setmusic(None)

@@ -1075,7 +1075,7 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
                     'text': babase.Lstr(resource='timeExpiredText'),
                 },
             )
-            _bascenev1.getsound('refWhistle').play()
+            _bascenev1.getsound('deek2').play()
             animate(node, 'scale', {0.0: 0.0, 0.1: 1.4, 0.15: 1.2})
         
         # function for the hurry up popup
@@ -1237,7 +1237,7 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
                     'text': tval,
                 },
             )
-            _bascenev1.getsound('refWhistle').play()
+            _bascenev1.getsound('deek2').play()
             animate(node, 'scale', {0: 0.0, 0.1: 1.4, 0.15: 1.2})
 
         # Normally we just connect this to time, but since this is a bit of a

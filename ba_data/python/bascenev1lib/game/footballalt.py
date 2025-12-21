@@ -93,10 +93,10 @@ class Team(bs.Team[Player]):
 
 
 # ba_meta export bascenev1.GameActivity
-class FootballTeamGame(bs.TeamGameActivity[Player, Team]):
+class FootballTeamGame2(bs.TeamGameActivity[Player, Team]):
     """Football game for teams mode."""
 
-    name = 'Football'
+    name = 'Football But The Flag Fucking Explodes'
     description = 'Get the flag to the enemy end zone.'
     available_settings = [
         bs.IntSetting(
@@ -154,7 +154,7 @@ class FootballTeamGame(bs.TeamGameActivity[Player, Team]):
         self._chant_sound = bs.getsound('crowdChant')
         self._score_sound = bs.getsound('score')
         self._swipsound = bs.getsound('swip')
-        self._whistle_sound = bs.getsound('refWhistle')
+        self._whistle_sound = bs.getsound('deek2')
         self._score_region_material = bs.Material()
         self._score_region_material.add_actions(
             conditions=('they_have_material', FlagFactory.get().flagmaterial),
@@ -438,7 +438,7 @@ class FootballCoopGame(bs.CoopGameActivity[Player, Team]):
         self._chant_sound = bs.getsound('crowdChant')
         self._score_sound = bs.getsound('score')
         self._swipsound = bs.getsound('swip')
-        self._whistle_sound = bs.getsound('refWhistle')
+        self._whistle_sound = bs.getsound('deek2')
         self._score_to_win = 21
         self._score_region_material = bs.Material()
         self._score_region_material.add_actions(
