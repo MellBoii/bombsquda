@@ -235,12 +235,12 @@ class PartyQueueWindow(bui.Window):
         self._boost_button: bui.Widget | None = None
         self._boost_price: bui.Widget | None = None
         self._boost_label: bui.Widget | None = None
-        self._field_shown = False
-        self._connect_sound_timer: Optional[bui.AppTimer] = None
-        self._connect_sound_active = True           
-        self._connect_sound_timer = bui.AppTimer(
-            1.4, bui.WeakCall(self._play_connecting_sound), repeat=True
-        )
+        self._field_shown = False    
+        def _loop_sound():
+            self.theound = bui.getsound('connecting')
+            self.theound.play()
+        _loop_sound()
+        self.looptimer = bui.AppTimer(1.1, _loop_sound, repeat=True)
         self._dudes: list[PartyQueueWindow.Dude] = []
         self._dudes_by_id: dict[int, PartyQueueWindow.Dude] = {}
         self._line_left = 40.0
@@ -329,10 +329,6 @@ class PartyQueueWindow(bui.Window):
             0.033, bui.WeakCall(self.update), repeat=True
         )
         self.update()
-
-    def _play_connecting_sound(self) -> None:
-        if self._connect_sound_active:
-            bui.getsound('connecting2').play()   
         
     def __del__(self) -> None:
         try:
@@ -374,9 +370,8 @@ class PartyQueueWindow(bui.Window):
 
     def close(self) -> None:
         """Close the ui."""
-        self._connect_sound_active = False
-        if self._connect_sound_timer is not None:
-            self._connect_sound_timer = None        
+        self.looptimer = None
+        self.theound.stop()
         bui.containerwidget(edit=self._root_widget, transition='out_scale')
 
     def _update_field(self, response: dict[str, Any]) -> None:
@@ -570,11 +565,19 @@ class PartyQueueWindow(bui.Window):
                     if bs.app.classic is not None:
                         bs.app.classic.save_ui_state()
 
-                    bs.connect_to_party(
+                    bui.apptimer(0.2, lambda: bs.connect_to_party(
                         address=self._address,
                         port=self._port,
                         print_progress=False,
+                    ))
+                    bui.textwidget(
+                        edit=self._title_text,
+                        text='Attempting connection...',
+                        position=(self._width * 0.5, self._height * 0.85),
                     )
+                    self.looptimer = None
+                    self.theound.stop()
+                    bui.getsound('connected').play()
                     self._last_connect_attempt_time = now
 
     def on_boost_press(self) -> None:

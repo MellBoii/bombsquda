@@ -59,10 +59,10 @@ class WaitForConnectivityWindow(bui.Window):
         self._sound_playing = True
         def _loop_sound():
             if self._sound_playing:
-                self.theound = bui.getsound('connecting2')
+                self.theound = bui.getsound('connecting')
                 self.theound.play()
         _loop_sound()
-        self.looptimer = bui.AppTimer(1.35, _loop_sound, repeat=True)
+        self.looptimer = bui.AppTimer(1.1, _loop_sound, repeat=True)
 
         bui.textwidget(
             parent=self._root_widget,
@@ -140,7 +140,7 @@ class WaitForConnectivityWindow(bui.Window):
         )
         if self._spinner:
             self._spinner.delete()
-        bui.getsound('dingSmallHigh').play()
+        bui.getsound('connected').play()
         bui.containerwidget(edit=self._root_widget, transition='out_scale')
         bui.pushcall(self._on_connected)
 
@@ -151,5 +151,6 @@ class WaitForConnectivityWindow(bui.Window):
         self.theound.stop()
         self.looptimer = None
         bui.containerwidget(edit=self._root_widget, transition='out_scale')
+        bui.getsound('cancel_cnct').play()
         if self._on_cancel is not None:
             bui.pushcall(self._on_cancel)
