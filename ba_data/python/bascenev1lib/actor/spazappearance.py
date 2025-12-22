@@ -77,12 +77,11 @@ def register_appearances() -> None:
 
     # spazinga #######################################
     t = Appearance('Spaz')
-    t.color_texture = 'neoSpazColor'
-    t.color_mask_texture = 'neoSpazColorMask'
-    t.icon_texture = 'neoSpazIcon'
+    t.color_texture = 'spazlingColor'
+    t.color_mask_texture = 'spazlingColorMask'
+    t.icon_texture = 'spazlingIcon'
     t.earthportrait = 'spazbound'
-    
-    t.icon_mask_texture = 'neoSpazIconColorMask'
+    t.icon_mask_texture = 'spazlingIconCM'
     t.head_mesh = 'neoSpazHead'
     t.torso_mesh = 'neoSpazTorso'
     t.pelvis_mesh = 'neoSpazPelvis'
@@ -168,9 +167,9 @@ def register_appearances() -> None:
     t = Appearance('Snake Shadow')
     t.color_texture = 'ninjaColor'
     t.color_mask_texture = 'ninjaColorMask'
-    t.icon_texture = 'ninjaIcon'
+    t.icon_texture = 'snakeyIcon'
     t.earthportrait = 'snakebound'
-    t.icon_mask_texture = 'ninjaIconColorMask'
+    t.icon_mask_texture = 'snakeyIconCM'
     t.head_mesh = 'ninjaHead'
     t.torso_mesh = 'ninjaTorso'
     t.pelvis_mesh = 'ninjaPelvis'
@@ -182,8 +181,7 @@ def register_appearances() -> None:
     t.toes_mesh = 'ninjaToes'
     ninja_attacks = ['ninjaAttack' + str(i + 1) + '' for i in range(7)]
     ninja_hits = ['ninjaHit' + str(i + 1) + '' for i in range(8)]
-    ninja_jumps = ['ninjaAttack' + str(i + 1) + '' for i in range(7)]
-    t.jump_sounds = ninja_jumps
+    t.jump_sounds = ninja_attacks
     t.attack_sounds = ninja_attacks
     t.impact_sounds = ninja_hits
     t.death_sounds = ['ninjaDeath1']
@@ -197,11 +195,11 @@ def register_appearances() -> None:
 
     # Barney the relentless Killer #####################################
     t = Appearance('Kronk')
-    t.color_texture = 'kronk'
-    t.color_mask_texture = 'kronkColorMask'
-    t.icon_texture = 'kronkIcon'
+    t.color_texture = 'susieColor'
+    t.color_mask_texture = 'susieColorMask'
+    t.icon_texture = 'susieIcon'
     t.earthportrait = 'susiebound'
-    t.icon_mask_texture = 'kronkIconColorMask'
+    t.icon_mask_texture = 'susieIconCM'
     t.head_mesh = 'kronkHead'
     t.torso_mesh = 'kronkTorso'
     t.pelvis_mesh = 'kronkPelvis'
@@ -240,9 +238,9 @@ def register_appearances() -> None:
     t = Appearance('Mel')
     t.color_texture = 'melColor'
     t.color_mask_texture = 'melColorMask'
-    t.icon_texture = 'melIcon'
+    t.icon_texture = 'mell_Icon'
     t.earthportrait = 'mellbound'
-    t.icon_mask_texture = 'melIconColorMask'
+    t.icon_mask_texture = 'mell_IconCM'
     t.head_mesh = 'melHead'
     t.torso_mesh = 'melTorso'
     t.pelvis_mesh = 'kronkPelvis'
@@ -398,11 +396,11 @@ def register_appearances() -> None:
 
     # Prince of the Dark ###################################
     t = Appearance('Pascal')
-    t.color_texture = 'penguinColor'
-    t.color_mask_texture = 'penguinColorMask'
-    t.icon_texture = 'penguinIcon'
+    t.color_texture = 'ralseiColor'
+    t.color_mask_texture = 'ralseiColorMask'
+    t.icon_texture = 'ralsIcon'
     t.earthportrait = 'ralseibound'
-    t.icon_mask_texture = 'penguinIconColorMask'
+    t.icon_mask_texture = 'ralsIconCM'
     t.head_mesh = 'penguinHead'
     t.torso_mesh = 'penguinTorso'
     t.pelvis_mesh = 'penguinPelvis'
@@ -560,11 +558,11 @@ def register_appearances() -> None:
 
     # orange guy with the cap... like some kinda buddy... ###################################
     t = Appearance('Grumbledorf')
-    t.color_texture = 'wizardColor'
-    t.color_mask_texture = 'wizardColorMask'
-    t.icon_texture = 'wizardIcon'
+    t.color_texture = 'ocapColor'
+    t.color_mask_texture = 'ocapColorMask'
+    t.icon_texture = 'ocapIconCM'
     t.earthportrait = 'capbound'
-    t.icon_mask_texture = 'wizardIconColorMask'
+    t.icon_mask_texture = 'ocapIconCM'
     t.head_mesh = 'wizardHead'
     t.torso_mesh = 'wizardTorso'
     t.pelvis_mesh = 'wizardPelvis'
@@ -608,10 +606,10 @@ def register_appearances() -> None:
 
     # The Original      Spaz ###################################
     t = Appearance('OldLady')
-    t.color_texture = 'oldLadyColor'
-    t.color_mask_texture = 'oldLadyColorMask'
-    t.icon_texture = 'oldLadyIcon'
-    t.icon_mask_texture = 'oldLadyIconColorMask'
+    t.color_texture = 'spazColor'
+    t.color_mask_texture = 'spazColorMask'
+    t.icon_texture = 'spazIcon'
+    t.icon_mask_texture = 'spazIconCM'
     t.head_mesh = 'oldLadyHead'
     t.torso_mesh = 'oldLadyTorso'
     t.pelvis_mesh = 'oldLadyPelvis'
