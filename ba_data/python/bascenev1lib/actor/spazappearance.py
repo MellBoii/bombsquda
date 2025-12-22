@@ -560,7 +560,7 @@ def register_appearances() -> None:
     t = Appearance('Grumbledorf')
     t.color_texture = 'ocapColor'
     t.color_mask_texture = 'ocapColorMask'
-    t.icon_texture = 'ocapIconCM'
+    t.icon_texture = 'ocapIcon'
     t.earthportrait = 'capbound'
     t.icon_mask_texture = 'ocapIconCM'
     t.head_mesh = 'wizardHead'
@@ -629,8 +629,6 @@ def register_appearances() -> None:
     t.victory_sounds = ['spazogJump01']
     t.fall_sounds = ['oldLadyFall']
     t.style = 'spaz'
-    t.default_color = (0.3, 0.5, 0.8)
-    t.default_highlight = (1, 0, 0)
     
     # Pixie ###################################
     t = Appearance('Pixel')
