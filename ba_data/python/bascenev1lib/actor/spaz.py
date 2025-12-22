@@ -493,6 +493,18 @@ class Spaz(bs.Actor):
         ).autoretain()
         node = ourbomb.node
         
+    def getspeed(self, should_abs: bool = True):
+        """
+        Returns the highest number of
+        our velocity. If should_abs is true,
+        we'll get absolute values (so that
+        negative numbers count)
+        """
+        if should_abs == True:
+            return max(self.node.velocity, key=abs)
+        else:
+            return max(self.node.velocity)
+        
     def trigger_starstorm(self):
         bs.getsound('starStorm').play()
         def startstarstorm():
@@ -1022,33 +1034,6 @@ class Spaz(bs.Actor):
         used for player or AI connections.
         """
         self.node.handlemessage('move', x, y)
-     
-    def on_move_up_down(self, value: float) -> None:
-        """
-        Called to set the up/down joystick amount on this spaz;
-        used for player or AI connections.
-        value will be between -32768 to 32767
-        WARNING: deprecated; use on_move instead.
-        """
-        if not self.node:
-            return
-        self.node.move_up_down = value
-        
-    def _start_wiggle_sequence(self):
-        if self.wiggling == True:
-            self.resettimer = bs.Timer(0.5, self._stop_wiggle_sequence)
-            return
-        self.wiggledancetimer = bs.Timer(0.01, lambda: self.node.handlemessage('celebrate', int(50)), repeat=True)
-        bs.getsound('drumRollShort').play()
-        self.wiggling = True
-        if isinstance(self.getactivity(), GameActivity):
-            self.getactivity().dancing_players.append(self)
-        
-    def _stop_wiggle_sequence(self):
-        self.wiggledancetimer = None
-        self.wiggling = False
-        self._wiggle_count = 0
-        self.remove_from_dancin()
 
     def on_move_left_right(self, value: float) -> None:
         """
@@ -1073,6 +1058,32 @@ class Spaz(bs.Actor):
         if self._wiggle_count > 14:
             self._start_wiggle_sequence()
             self.resettimer = bs.Timer(0.5, self._stop_wiggle_sequence)
+     
+    def on_move_up_down(self, value: float) -> None:
+        """
+        Called to set the up/down joystick amount on this spaz;
+        used for player or AI connections.
+        value will be between 1 to 0
+        """
+        if not self.node:
+            return
+        self.node.move_up_down = value
+        
+    def _start_wiggle_sequence(self):
+        if self.wiggling == True:
+            self.resettimer = bs.Timer(0.5, self._stop_wiggle_sequence)
+            return
+        self.wiggledancetimer = bs.Timer(0.01, lambda: self.node.handlemessage('celebrate', int(50)), repeat=True)
+        bs.getsound('drumRollShort').play()
+        self.wiggling = True
+        if isinstance(self.getactivity(), GameActivity):
+            self.getactivity().dancing_players.append(self)
+        
+    def _stop_wiggle_sequence(self):
+        self.wiggledancetimer = None
+        self.wiggling = False
+        self._wiggle_count = 0
+        self.remove_from_dancin()
 
     def on_punched(self, damage: int) -> None:
         """Called when this spaz gets punched."""
