@@ -246,6 +246,8 @@ class Spaz(bs.Actor):
         self.instructimage = None
         self.cansay = False
         self.lasthittype = None
+        self.letimer = None
+        self.letimer2 = None
         self.timesparried = 0
         self.timesparriedtotal = 0
         self.yeehaws = 0
@@ -833,56 +835,55 @@ class Spaz(bs.Actor):
                                 scale=1.1,
                             ).autoretain()
         self._turbo_filter_add_press('punch')
+        
     def lvgame_explode(self) -> None:
         if self.node.invincible == True:
             self.node.invincible = False
-        self.explode()
-        def trigger_funny():
-            bs.broadcastmessage(
-                ba.Lstr(
-                    resource='playerLeftText',
-                    subs=[('${PLAYER}', self.node.name)],
-                )
+        self.firework_explode()
+        bs.broadcastmessage(
+            ba.Lstr(
+                resource='playerLeftText',
+                subs=[('${PLAYER}', self.node.name)],
             )
-            bs.getsound('didnotfinish').play()
-        bs.timer(0.6, trigger_funny)
-    def explode(self) -> None:
+        )
+        
+    def firework_explode(self, snd1: str = 'wackyplatform', snd2: str = 'retired') -> None:
         """
-        Explodes our spaz if 
-        we're asked to.
+        Throw our actor into the 
+        air and explode em.
+        snd1 is the sound played when being 
+        launched up, and snd2 is the sound played
+        when exploding.
         """
         if self.node:
-            bs.getsound('wackyplatform').play()
-            pos = self.node.position
-            xforce = 0
-            yforce = 200
-            v = self.node.velocity
-            self.node.handlemessage('impulse', self.node.position[0], self.node.position[1], self.node.position[2],
-                                    0, 25, 0,
-                                    yforce, 0.05, 0, 0,
-                                    0, 20*400, 0)
-            bs.timer(0.0001, lambda: self.node.handlemessage('impulse', self.node.position[0], self.node.position[1], self.node.position[2],
-                                    0, 25, 0,
-                                    yforce, 0.05, 0, 0,
-                                    0, 20*400, 0)
-                    )
-            bs.timer(0.001, lambda: self.node.handlemessage('impulse', self.node.position[0], self.node.position[1], self.node.position[2],
-                                    0, 25, 0,
-                                    yforce, 0.05, 0, 0,
-                                    0, 20*400, 0)
-                    )
-            bs.timer(0.01, lambda: self.node.handlemessage('impulse', self.node.position[0], self.node.position[1], self.node.position[2],
-                                    0, 25, 0,
-                                    yforce, 0.05, 0, 0,
-                                    0, 20*400, 0)
-                    )
-            self.node.handlemessage('impulse', self.node.position[0], self.node.position[1], self.node.position[2],
-                                    0, 25, 0,
-                                    xforce, 0.05, 0, 0,
-                                        v[0]*15*2, 0, v[2]*15*2)
-            bs.timer(0.6, lambda: bomb.Bomb(position=self.node.position, bomb_type='tnt').explode())
-            bs.timer(0.6, self.shatter)
-            bs.timer(0.6, bs.getsound('retired').play)
+            bs.getsound(snd1).play()
+            yforce = 240
+            savedY = self.node.position[1]
+            def actualexplode():
+                bomb.Bomb(position=self.node.position, bomb_type='tnt').explode()
+                self.shatter()
+                bs.getsound(snd2).play(position=self.node.position)
+            # Check if we're a little above where we once were,
+            # and if we are, trigger our actual 'firework' explosion.
+            def chkifexplo():
+                if self.node.position[1] >= savedY + 5:
+                    self.letimer = None
+                    self.letimer2 = None
+                    actualexplode()
+            # Constantly give us a upwards impulse.
+            self.letimer = bs.Timer(0.1, lambda: self.node.handlemessage(
+                    'impulse', 
+                        self.node.position[0], 
+                        self.node.position[1], 
+                        self.node.position[2],
+                        0, 25, 0,
+                        yforce, 0.05, 0, 0,
+                        0, 20*400, 0
+                    ),
+                repeat=True
+            )
+            # Keep checking if we can explode.
+            self.letimer2 = bs.Timer(0.1, chkifexplo, repeat=True)
 
     def _safe_play_sound(self, sound: bs.Sound, volume: float) -> None:
         """Plays a sound at our position if we exist."""
@@ -1087,6 +1088,11 @@ class Spaz(bs.Actor):
 
     def on_punched(self, damage: int) -> None:
         """Called when this spaz gets punched."""
+    
+    def die(self, how: bs.DeathType = bs.DeathType.IMPACT):
+        """Kill us. Simple."""
+        self.node.handlemessage(bs.DieMessage(how=how))
+
 
     def get_death_points(self, how: bs.DeathType) -> tuple[int, int]:
         """Get the points awarded for killing this spaz."""
@@ -1563,7 +1569,7 @@ class Spaz(bs.Actor):
             if self._potato_time <= 0:
                 if self._has_hot_potato == False:
                     return
-                self.explode()
+                self.firework_explode()
                 self._potato_holder_text.delete()
                 self._potato_timer_text.delete()
                 self.spongebob_timer = None
@@ -1595,7 +1601,7 @@ class Spaz(bs.Actor):
             ).autoretain()
 
         # send a death message
-        self.handlemessage(bs.DieMessage(how=bs.DeathType.FALL))
+        self.die(how=bs.DeathType.FALL)
         
     def sugarcoatit(self, sound, image):
         """ for use when... not sugarcoating it lol """
@@ -2683,7 +2689,7 @@ class Spaz(bs.Actor):
                         scale=1.8,
                     ).autoretain()
                     if damage >= self.hitpoints and not self._dead:
-                        self.handlemessage(bs.DieMessage())
+                        self.die()
                     bs.timer(1.5, checkifdied)
                 # try to show text if player has a actor position
                 def try_show(text, sound_name, color):
@@ -2837,23 +2843,21 @@ class Spaz(bs.Actor):
                 elif self.hitpoints <= 0:
                     if damage >= 1000 and msg.hit_type == 'punch':
                         self.sugarcoatit(sound='bellMed', image='sugarcoatpunch')
-                        self.node.handlemessage(bs.DieMessage(how=bs.DeathType.IMPACT))
+                        self.die()
                     elif damage >= 1000 and msg.hit_type == 'explosion':
                         self.sugarcoatit(sound='bellMed', image='sugarcoatbomb')
-                        self.node.handlemessage(bs.DieMessage(how=bs.DeathType.IMPACT))
+                        self.die()
                     elif damage <= 150 and msg.hit_type == 'impact':
                         self.sugarcoatit(sound='OUUHH', image='sugarcoatfall')
-                        self.node.handlemessage(bs.DieMessage(how=bs.DeathType.IMPACT))
+                        self.die()
                     else:
-                        if random.random() < 0.2:
-                            self.explode()
-                            return # Return to prevent dying from the damage dealt before
-                        else:
-                            if random.random() < 0.01:
+                        if random.random() < 0.01:
                                 self.gosuper()
                                 return  # prevent actual death
-
-                        self.node.handlemessage(bs.DieMessage(how=bs.DeathType.IMPACT))
+                        elif random.random() < 0.2:
+                            self.firework_explode()
+                            return # Return to prevent dying from the damage dealt before
+                        self.die()
 
             # If we're dead, take a look at the smoothed damage value
             # (which gives us a smoothed average of recent damage) and shatter
@@ -2964,7 +2968,7 @@ class Spaz(bs.Actor):
             if random.random() < 0.1:
                 self.smashkill(sound='cheer')
             else:
-                self.handlemessage(bs.DieMessage(how=bs.DeathType.FALL))
+                self.die(how=bs.DeathType.FALL)
 
         elif isinstance(msg, bs.StandMessage):
             self._last_stand_pos = (
@@ -3651,7 +3655,7 @@ class Spaz(bs.Actor):
             return
         if self._cursed and self.node:
             self.shatter(extreme=True)
-            self.handlemessage(bs.DieMessage())
+            self.die()
             activity = self._activity()
             bs.getsound('crazyOver').play() # play the last sound (it syncs with the usual curse sound)
             if activity:
@@ -3720,7 +3724,7 @@ class Spaz(bs.Actor):
                     'fpants_death',
                 ]
                 bs.getsound(random.choice(shatter2sfx)).play(position=self.node.position)
-        self.handlemessage(bs.DieMessage())
+        self.die()
         self.node.shattered = 2 if extreme else 1
 
     def _hit_self(self, intensity: float) -> None:

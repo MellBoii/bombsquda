@@ -428,7 +428,7 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
                     self.pizzatimertext.color = (1, 1, 1)
                 if self.timebeforedeath <= 0:
                     for player in self.players:
-                        player.actor.explode()
+                        player.actor.firework_explode()
                         self.tickintimer = None
                         self.thugshaketimer = None
             self.tickintimer = bs.Timer(1.0, tick, repeat=True)
