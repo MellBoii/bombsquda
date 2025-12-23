@@ -465,6 +465,7 @@
   "defaultPhrase6": "Bye bye!",
   "cheeredPlayer": "The audience cheered ${NAME} on!",
   "melDies": "ow.",
+  "melDiesnt": "nope, not today",
   "geonPowerup": "Bombgeon SS can't pickup powerups!",
   "freezeImmunity": "IMMUNE TO ICE",
   "smash": "SMAAAASH!!",

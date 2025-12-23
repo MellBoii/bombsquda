@@ -847,7 +847,11 @@ class Spaz(bs.Actor):
             )
         )
         
-    def firework_explode(self, snd1: str = 'wackyplatform', snd2: str = 'retired') -> None:
+    def firework_explode(self, 
+        on_die_call: Callable = None,
+        snd1: str = 'wackyplatform', 
+        snd2: str = 'retired',
+    ) -> None:
         """
         Throw our actor into the 
         air and explode em.
@@ -863,6 +867,8 @@ class Spaz(bs.Actor):
                 bomb.Bomb(position=self.node.position, bomb_type='tnt').explode()
                 self.shatter()
                 bs.getsound(snd2).play(position=self.node.position)
+                if on_die_call:
+                    bs.Call(on_die_call)()
             # Check if we're a little above where we once were,
             # and if we are, trigger our actual 'firework' explosion.
             def chkifexplo():
@@ -1579,29 +1585,30 @@ class Spaz(bs.Actor):
         tick()
         self.spongebob_timer = bs.Timer(self._potato_speed, tick, repeat=True)
             
-    def smashkill(self, sound: str) -> None:    
+    def smashkill(self, 
+        sound: str, 
+        autodie: bool = True
+    ) -> None:    
         """ Explodes us in a kind of smash-style 
         (normally called by OutOfBounds) """
         
         if self._dead == True:
             return
+        if not self.node:
+            return
         
-        # play our sound
-        if self.node:
-            bs.getsound(sound).play(position=self.node.position)
-
-        # explode
-        if self.node:
-            Blast(
-                position=self.node.position,
-                velocity=(0, 0, 0),
-                blast_radius=5.0,
-                blast_type='tnt',
-                source_player=self.source_player
-            ).autoretain()
+        bs.getsound(sound).play(position=self.node.position)
+        Blast(
+            position=self.node.position,
+            velocity=(0, 0, 0),
+            blast_radius=5.0,
+            blast_type='tnt',
+            source_player=self.source_player
+        ).autoretain()
 
         # send a death message
-        self.die(how=bs.DeathType.FALL)
+        if autodie == True:
+            self.die(how=bs.DeathType.FALL)
         
     def sugarcoatit(self, sound, image):
         """ for use when... not sugarcoating it lol """
@@ -2854,7 +2861,7 @@ class Spaz(bs.Actor):
                         if random.random() < 0.01:
                                 self.gosuper()
                                 return  # prevent actual death
-                        elif random.random() < 0.2:
+                        elif random.random() < 0.25:
                             self.firework_explode()
                             return # Return to prevent dying from the damage dealt before
                         self.die()
@@ -3162,16 +3169,20 @@ class Spaz(bs.Actor):
         return None
         
     
-    def say(self, txt: str | None = None, wave: bool = False) -> None:
+    def say(self, 
+        txt: str | None = None, 
+        wave: bool = False,
+        shouldcelb: bool = True,
+    ) -> None:
         """
-        Show some text if we're asked to, or a random character line.
+        Show some text if we're asked to, 
+        or a random character line.
         """
         if not self.node:
             return
         # Don't just let them spam the taunt... say.. thing.
         self.cansay = False
         # Define character-specific phrases
-        # jesus, this is INCREDIBLY hard to port to lstrs....
         phrases = {
             "Spaz": # Spaz i love you please give me your autograph please please please please
                 [
@@ -3287,13 +3298,28 @@ class Spaz(bs.Actor):
         # Mel BombSquad, we're going to kill you
         # /ref
         if self.character == 'Mel':
-            if random.random() < 0.1:
+            if random.random() < 0.15:
                 # kill mel
-                bs.timer(1.8, lambda: self.smashkill(sound='thunder'))
-                bs.timer(1.8, lambda: self.say(bs.Lstr(resource='melDies')))
+                bs.timer(1.5, lambda: PopupText(
+                        '!!!',
+                        position=self.node.position,
+                        color=(1.0, 0.1, 0.1),
+                        scale=1.8,
+                        lifespan=0.5,
+                    ).autoretain()
+                )
+                bs.timer(1.4, bs.getsound('mbmCR3').play)
+                bs.timer(1.8, lambda: self.smashkill(sound='thunder', autodie=False))
+                bs.timer(1.8, lambda: self.say(bs.Lstr(resource='melDies'), shouldcelb=False))
                 # also kill the pc IF they allow us to.
-                if not ba.app.config.get("squda_dontshutdown", True):
-                    bs.timer(1.8, lambda: os.system("shutdown /s /t 0"))
+                def chec():
+                    if not self.is_alive():
+                        if not ba.app.config.get("squda_dontshutdown", True):
+                            os.system("shutdown /s /t 0")
+                    else:
+                        self.say(bs.Lstr(resource='melDiesnt'), shouldcelb=False)
+                bs.timer(1.9, chec)
+                
         def updatehp():
             if not self.node:
                 return
@@ -3329,8 +3355,8 @@ class Spaz(bs.Actor):
                     self.earthmetertext.color = (1.0, 1.0, 1.0)
                 if self.earthsptext and self.earthsptext.exists():
                     self.earthsptext.color = (1.0, 1.0, 1.0)
-        if random.random() < 0.42:
-            bs.timer(1.2, lambda: updatehp())
+        if random.random() < 0.42 and shouldcelb == True:
+            bs.timer(1.2, updatehp)
 
         # Play a jump sound (random)
         random.choice(self.node.jump_sounds).play(position=self.node.position)
