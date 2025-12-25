@@ -1304,6 +1304,7 @@
     "teamsText": "team vs team"
   },
   "playText": "start gaming",
+  "rerollText": "reroll!",
   "playWindow": {
     "oneToFourPlayersText": "1-4 players",
     "titleText": "which mode bro?",

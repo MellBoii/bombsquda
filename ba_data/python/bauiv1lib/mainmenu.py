@@ -405,6 +405,17 @@ class MainMenuWindow(bui.MainWindow):
             transition_delay=thistdelay,
             on_activate_call=self._play_press,
         )
+        rr_button_scale = 1.7
+        self._reroll_button = start_button = bui.buttonwidget(
+            parent=self._root_widget,
+            position=(h - 55, v - 50),
+            size=(play_button_width * 0.5, play_button_height * 0.5),
+            scale=rr_button_scale,
+            text_res_scale=2.3,
+            label=bui.Lstr(resource='rerollText'),
+            transition_delay=thistdelay,
+            on_activate_call=self._reroll_press,
+        )
         bui.containerwidget(
             edit=self._root_widget,
             start_button=start_button,
@@ -648,3 +659,8 @@ class MainMenuWindow(bui.MainWindow):
             return
 
         self.main_window_replace(PlayWindow(origin_widget=self._play_button))
+        
+    def _reroll_press(self) -> None:
+        gfha = bs.get_foreground_host_activity()
+        with gfha.context:
+            gfha.menu_music()

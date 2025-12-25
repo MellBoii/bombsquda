@@ -766,7 +766,29 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
 
             # Schedule it
             bs.timer(start_time, make_text_fn)
-
+    def menu_music(self) -> None:
+        assert bs.app.classic is not None
+        music_choices = [
+            bs.MusicType.MENU,
+            bs.MusicType.MENU2,
+            bs.MusicType.MENU6,
+            bs.MusicType.MENU7,
+            bs.MusicType.MENU8,
+            bs.MusicType.MENU9,
+            bs.MusicType.MENU10,
+            bs.MusicType.MENU11,
+            bs.MusicType.MENU12,
+            bs.MusicType.MENU13,
+            bs.MusicType.MENU14,
+            bs.MusicType.MENU15,
+            bs.MusicType.MENU16,
+            bs.MusicType.MENU17,
+            bs.MusicType.MENU18,
+            bs.MusicType.MENU67,
+        ]
+        self.chosen_music = random.choice(music_choices)
+        bs.setmusic(self.chosen_music)
+        
     def _start_preloads(self) -> None:
         # FIXME: The func that calls us back doesn't save/restore state
         #  or check for a dead activity so we have to do that ourself.
@@ -774,34 +796,7 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
             return
         with self.context:
             _preload1()
-
-        def _start_menu_music() -> None:
-            assert bs.app.classic is not None
-            music_choices = [
-                bs.MusicType.MENU,
-                bs.MusicType.MENU2,
-                bs.MusicType.MENU6,
-                bs.MusicType.MENU7,
-                bs.MusicType.MENU8,
-                bs.MusicType.MENU9,
-                bs.MusicType.MENU10,
-                bs.MusicType.MENU11,
-                bs.MusicType.MENU12,
-                bs.MusicType.MENU13,
-                bs.MusicType.MENU14,
-                bs.MusicType.MENU15,
-                bs.MusicType.MENU16,
-                bs.MusicType.MENU17,
-                bs.MusicType.MENU18,
-                bs.MusicType.MENU67,
-            ]
-            self.chosen_music = random.choice(music_choices)
-            bs.setmusic(self.chosen_music)
-            if self.chosen_music == bs.MusicType.MENU12:
-                self.play_lyrics()
-                bs.timer(101.0, self.play_lyrics, repeat=True)
-
-        bui.apptimer(0.1, _start_menu_music)        
+        bui.apptimer(0.1, self.menu_music)        
 
     def _update_attract_mode(self) -> None:
         if bui.app.classic is None:
