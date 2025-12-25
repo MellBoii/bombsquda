@@ -562,11 +562,17 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
             )
 
     def _get_custom_logo_tex_name(self) -> str | None:
+        from datetime import date
+        today = date.today()
+        day = today.day
+        month = today.month
         plus = bui.app.plus
         assert plus is not None
 
         if plus.get_v1_account_misc_read_val('easter', False):
             return 'logoEaster'
+        if month == 12 and day == 25:
+            return 'logoChristmas'
         return None
 
     # Pop the logo and menu in.

@@ -864,7 +864,7 @@ class Spaz(bs.Actor):
             yforce = 240
             savedY = self.node.position[1]
             def actualexplode():
-                bomb.Bomb(position=self.node.position, bomb_type='tnt').explode()
+                bomb.Bomb(position=self.node.position, bomb_type='tntfirework').explode()
                 self.shatter()
                 bs.getsound(snd2).play(position=self.node.position)
                 if on_die_call:
@@ -2848,6 +2848,10 @@ class Spaz(bs.Actor):
                 if self.frozen and (damage > 1 or self.hitpoints <= 0):
                     self.shatter()
                 elif self.hitpoints <= 0:
+                    if msg.hit_subtype == 'tntfirework' and msg.srcnode != self.node:
+                        ba.app.classic.ach.award_local_achievement(
+                            'Fireworked'
+                        )
                     if damage >= 1000 and msg.hit_type == 'punch':
                         self.sugarcoatit(sound='bellMed', image='sugarcoatpunch')
                         self.die()
@@ -2859,8 +2863,8 @@ class Spaz(bs.Actor):
                         self.die()
                     else:
                         if random.random() < 0.01:
-                                self.gosuper()
-                                return  # prevent actual death
+                            self.gosuper()
+                            return  # prevent actual death
                         elif random.random() < 0.25:
                             self.firework_explode()
                             return # Return to prevent dying from the damage dealt before

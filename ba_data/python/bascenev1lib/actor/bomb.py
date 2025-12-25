@@ -358,6 +358,7 @@ class Blast(bs.Actor):
         self.hit_subtype = hit_subtype
         self.radius = blast_radius
         self.nosound = nosound
+        self.owner = owner
 
         # Set our position a bit lower so we throw more things upward.
         rmats = (factory.blast_material, shared.attack_material)
@@ -408,7 +409,7 @@ class Blast(bs.Actor):
         bs.emitfx(
             position=position,
             emit_type='distortion',
-            spread=1.0 if self.blast_type == 'tnt' else 2.0,
+            spread=1.0 if self.blast_type in ('tnt', 'tntfirework') else 2.0,
         )
 
         # And emit some shrapnel.
@@ -551,7 +552,7 @@ class Blast(bs.Actor):
         else:  # Regular or land mine bomb shrapnel.
 
             def emit() -> None:
-                if self.blast_type != 'tnt':
+                if self.blast_type not in ('tnt', 'tntfirework'):
                     bs.emitfx(
                         position=position,
                         velocity=velocity,
@@ -569,7 +570,7 @@ class Blast(bs.Actor):
                     position=position,
                     velocity=velocity,
                     count=30,
-                    scale=1.0 if self.blast_type == 'tnt' else 0.7,
+                    scale=1.0 if self.blast_type in ('tnt', 'tntfirework') else 0.7,
                     chunk_type='spark',
                     emit_type='stickers',
                 )
@@ -577,13 +578,13 @@ class Blast(bs.Actor):
                     position=position,
                     velocity=velocity,
                     count=int(18.0 + random.random() * 20),
-                    scale=1.0 if self.blast_type == 'tnt' else 0.8,
+                    scale=1.0 if self.blast_type in ('tnt', 'tntfirework') else 0.8,
                     spread=1.5,
                     chunk_type='spark',
                 )
 
                 # TNT throws splintery chunks.
-                if self.blast_type == 'tnt':
+                if self.blast_type in ('tnt', 'tntfirework'):
 
                     def emit_splinters() -> None:
                         bs.emitfx(
@@ -598,7 +599,7 @@ class Blast(bs.Actor):
                     bs.timer(0.01, emit_splinters)
 
                 # Every now and then do a sparky one.
-                if self.blast_type == 'tnt' or random.random() < 0.1:
+                if self.blast_type in ('tnt', 'tntfirework') or random.random() < 0.2:
 
                     def emit_extra_sparks() -> None:
                         bs.emitfx(
@@ -687,10 +688,10 @@ class Blast(bs.Actor):
                 factory.random_explode_sound().play(position=lpos)
                 factory.debris_fall_sound.play(position=lpos)
 
-        bs.camerashake(intensity=5.0 if self.blast_type == 'tnt' else 1.0)
+        bs.camerashake(intensity=5.0 if self.blast_type in ('tnt', 'tntfirework') else 1.0)
 
         # TNT is more epic.
-        if self.blast_type == 'tnt':
+        if self.blast_type in ('tnt', 'tntfirework'):
             factory.random_explode_sound().play(position=lpos)
 
             def _extra_boom() -> None:
@@ -721,7 +722,7 @@ class Blast(bs.Actor):
                 mag *= 0.5
             elif self.blast_type == 'land_mine':
                 mag *= 2.5
-            elif self.blast_type == 'tnt':
+            elif self.blast_type in ('tnt', 'tntfirework'):
                 mag *= 2.0
             elif self.blast_type == 'running_bomb':
                 mag *= 2.0
@@ -735,6 +736,7 @@ class Blast(bs.Actor):
                     hit_subtype=self.hit_subtype,
                     radius=self.radius,
                     source_player=bs.existing(self._source_player),
+                    srcnode=self.owner
                 )
             )
             if self.blast_type == 'ice':
@@ -788,6 +790,7 @@ class Bomb(bs.Actor):
             'normal',
             'sticky',
             'tnt',
+            'tntfirework',
         ):
             raise ValueError('invalid bomb type: ' + bomb_type)
         self.bomb_type = bomb_type
@@ -810,7 +813,7 @@ class Bomb(bs.Actor):
             self.blast_radius *= 0.7
         elif self.bomb_type == 'land_mine':
             self.blast_radius *= 0.7
-        elif self.bomb_type == 'tnt':
+        elif self.bomb_type in ('tnt', 'tntfirework'):
             self.blast_radius *= 1.45
 
         self._explode_callbacks: list[Callable[[Bomb, Blast], Any]] = []
@@ -878,7 +881,7 @@ class Bomb(bs.Actor):
                 },
             )
 
-        elif self.bomb_type == 'tnt':
+        elif self.bomb_type in ('tnt', 'tntfirework'):
             fuse_time = None
             self.node = bs.newnode(
                 'prop',
@@ -994,7 +997,7 @@ class Bomb(bs.Actor):
             bs.animate(self.node, 'fuse_length', {0.0: 1.0, fuse_time: 0.0})
 
         # Light the fuse!!!
-        if self.bomb_type not in ('land_mine', 'tnt'):
+        if self.bomb_type not in ('land_mine', 'tnt', 'tntfirework'):
             assert fuse_time is not None
             bs.timer(
                 fuse_time, bs.WeakCall(self.handlemessage, ExplodeMessage())

@@ -60,6 +60,11 @@
       "descriptionFullComplete": "Parried 50 times while still being alive",
       "name": "What's Sugarcoating?"
     },
+	"Fireworked": {
+      "descriptionFull": "Die to a Player's 'firework' explosion",
+      "descriptionFullComplete": "Died to a Player's 'firework' explosion",
+      "name": "Explosive Ride"
+    },
     "Boxer": {
       "description": "Win without using any bombs",
       "descriptionComplete": "Won without using any bombs",

@@ -20,6 +20,7 @@ class TitleWindow(bui.MainWindow):
         self, 
         origin_widget: bui.Widget | None = None,
         transition: str | None = 'in_right',
+        showcase_mode: bool = False
         ):
         bui.set_party_window_open(True)
         self._width = 0
@@ -34,6 +35,8 @@ class TitleWindow(bui.MainWindow):
             transition=transition,
             origin_widget=origin_widget,
         )
+        if showcase_mode:
+            return
         self._title_text = bui.textwidget(
             parent=self._root_widget,
             position=(0, -150),

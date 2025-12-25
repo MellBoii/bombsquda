@@ -109,7 +109,14 @@ class AchievementSubsystem:
             ),
             Achievement(
                 'Parrier',
-                'white',
+                'achievementParry',
+                (1, 1, 1),
+                '',
+                award=15,
+            ),
+            Achievement(
+                'Fireworked',
+                'achievementFirework',
                 (1, 1, 1),
                 '',
                 award=15,
