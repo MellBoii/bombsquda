@@ -95,6 +95,7 @@ class MusicType(Enum):
     THEFINALE = 'TheFinale'
     RUNAROUNDFINAL = 'RunaroundFinal'
     WAR = 'War'
+    WWR = 'Wwr'
     LAP0 = 'Lap0'
     LAP0H = 'Lap0H'
     LAP1 = 'Lap1'
@@ -182,6 +183,7 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
             bs.MusicType.DEFEAT: "Blues in Velvet Room - Persona 3",
             bs.MusicType.THEFINALE: "Final Destination - Super Smash Bros Melee",
             bs.MusicType.WAR: "Thousand March - Mr. Sauceman",
+            bs.MusicType.WWR: "War Without Reason - Heaven Pierce Her",
             bs.MusicType.LAP0: "It's Pizza Time! - Mr. Sauceman",
             bs.MusicType.LAP0H: "Nuclear Avalanche - Ronach",
             bs.MusicType.LAP1: "The Death I Deservioli - Mr. Sauceman",

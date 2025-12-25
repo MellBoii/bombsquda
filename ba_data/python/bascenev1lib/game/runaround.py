@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, cast, Sequence, override
 import bascenev1 as bs
 
 from bascenev1lib.actor.popuptext import PopupText
-from bascenev1lib.actor.bomb import TNTSpawner
+from bascenev1lib.actor.bomb import TNTSpawner, Bomb
 from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.actor.respawnicon import RespawnIcon
 from bascenev1lib.actor.powerupbox import PowerupBox, PowerupBoxFactory
@@ -474,15 +474,10 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
         elif self._preset in {Preset.ENDLESS, Preset.ENDLESS_TOURNAMENT}:
             self._exclude_powerups = []
             self._have_tnt = True
-
-        # Spit out a few powerups and start dropping more shortly.
-        self._drop_powerups(standard_points=True)
-        bs.timer(4.0, self._start_powerup_drops)
+            
         self.setup_low_life_warning_sound()
         self._update_scores()
-        # lets do stupid music change if we're on the last level
-        if self._preset in [Preset.UBER, Preset.UBER_EASY]:
-            bs.setmusic(bs.MusicType.RUNAROUNDFINAL)
+        
         self.earthmover = bs.NodeActor(
             bs.newnode(
                 'terrain',
@@ -542,9 +537,102 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
                 },
             )
         )
+        # lets do stupid music change if we're on the last level
+        if self._preset in [Preset.UBER, Preset.UBER_EASY]:
+            bs.setmusic(bs.MusicType.RUNAROUNDFINAL)
+            bs.timer(2.0, self._start_updating_waves)
+            self._drop_powerups(standard_points=True)
+            bs.timer(4.0, self._start_powerup_drops)
+            
+        # oh yeah, and a special effect for endless
+        elif self._preset is Preset.ENDLESS:
+            bs.setmusic(None)
+            for player in self.players:
+                def begin(p=player):
+                    # teleport a bit above on start 
+                    # so our player falls down
+                    p.actor.node.handlemessage(
+                        bs.StandMessage(
+                            (
+                                random.randint(-2, 2),
+                                5,
+                                random.randint(-2, 2)
+                            )
+                        )
+                    )
+                    # disconnect controls to prevent moving normally
+                    p.actor.disconnect_controls_from_player()
+                def lookfwd(p=player):
+                    # player looks forward
+                    p.actor.node.move_up_down = 0.1
+                    def stop():
+                        # stop so we don't just keep moving
+                        p.actor.node.move_up_down = 0
+                    bs.timer(0.2, stop)
+                def connect(p=player):
+                    p.actor.connect_controls_to_player()
+                def scream(p=player):
+                    # make the earthmover scream!!!
+                    bs.getsound('earthmover_scream').play()
+                    self.shaketimer = bs.Timer(0.040, lambda: bs.camerashake(intensity=1), repeat=True)
+                    # oh and so will our player
+                    def we_scream():
+                        random.choice(p.actor.node.fall_sounds).play(
+                            position=p.actor.node.position
+                        )
+                        p.actor.node.handlemessage('celebrate', int(700))
+                    bs.timer(1.0, we_scream)
+                # do the timers...
+                begin()
+                bs.timer(2.0, lookfwd)
+                bs.timer(3.0, scream)
+                bs.timer(4.5, connect)
+            def start():
+                # get everything started
+                self.shaketimer = None
+                bs.setmusic(bs.MusicType.WWR)
+                bs.timer(0.5, self._start_updating_waves)
+                self._drop_powerups(standard_points=True)
+                bs.timer(1.0, self._start_powerup_drops)
+                # start throwing bombs!!!!!
+                self.bomb_timer = bs.Timer(
+                    0.5,
+                    self._drop_bomb_cluster,
+                    repeat=True
+                )
+            bs.timer(5.0, start)
+            
+        # else, just start normally i guess :)
+        else:
+            bs.setmusic(bs.MusicType.MARCHING)
+            bs.timer(2.0, self._start_updating_waves)
+            self._drop_powerups(standard_points=True)
+            bs.timer(4.0, self._start_powerup_drops)
+            
+    def _drop_bomb_cluster(self) -> None:
+        # Drop several bombs in series.
+        delay = 0.0
+        for _i in range(random.randrange(1, 3)):
+            # Drop them somewhere within our bounds with velocity pointing
+            # toward the opposite side.
+            pos = (
+                7 * random.random(),
+                11,
+                random.randint(-5, 7),
+            )
+            dropdir = -1.0 if pos[0] > 0 else 1.0
+            vel = (
+                (-5.0 + random.random() * 30.0) * dropdir,
+                random.uniform(-3.066, -4.12),
+                random.randint(-4, 3),
+            )
+            self._drop_bomb(pos, vel)
 
-        bs.timer(2.0, self._start_updating_waves)
-
+    def _drop_bomb(
+        self, position: Sequence[float], velocity: Sequence[float]
+    ) -> None:
+        Bomb(position=position, velocity=velocity).autoretain()
+        
     def _handle_reached_end(self) -> None:
         spaz = bs.getcollision().opposingnode.getdelegate(SpazBot, True)
         if not spaz.is_alive():

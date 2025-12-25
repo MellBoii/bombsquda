@@ -72,6 +72,7 @@ ASSET_SOUNDTRACK_ENTRIES: dict[MusicType, AssetSoundtrackEntry] = {
     MusicType.SURVEY: AssetSoundtrackEntry('music/SURVEYPROGRAM', volume=1.0),
     MusicType.LOGOTYPE: AssetSoundtrackEntry('music/LOGOTYPE', volume=1.0, loop=False),
     MusicType.WAR: AssetSoundtrackEntry('music/warneverends', volume=1.9),
+    MusicType.WWR: AssetSoundtrackEntry('music/warwithoutreason', volume=1.0),
     MusicType.RUNAROUNDFINAL: AssetSoundtrackEntry('music/finalrunrou', volume=1.0),
     MusicType.HURRYUP: AssetSoundtrackEntry('music/hurryup', volume=1.0, loop=False),
     MusicType.COOKIN: AssetSoundtrackEntry('music/super', volume=1.4, loop=True),
