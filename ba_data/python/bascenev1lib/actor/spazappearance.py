@@ -92,37 +92,37 @@ def register_appearances() -> None:
     t.lower_leg_mesh = 'neoSpazLowerLeg'
     t.toes_mesh = 'neoSpazToes'
     t.jump_sounds = [
-        'voicelines/spaz/spazJump01',
-        'voicelines/spaz/spazJump02', 
-        'voicelines/spaz/spazJump03', 
-        'voicelines/spaz/spazJump04'
+        'voicelines/spaz/jump01',
+        'voicelines/spaz/jump02', 
+        'voicelines/spaz/jump03', 
+        'voicelines/spaz/jump04'
     ]
     t.attack_sounds = [
-        'voicelines/spaz/spazAttack01',
-        'voicelines/spaz/spazAttack02',
-        'voicelines/spaz/spazAttack03',
-        'voicelines/spaz/spazAttack04',
+        'voicelines/spaz/attack01',
+        'voicelines/spaz/attack02',
+        'voicelines/spaz/attack03',
+        'voicelines/spaz/attack04',
     ]
     t.impact_sounds = [
-        'voicelines/spaz/spazImpact01',
-        'voicelines/spaz/spazImpact02',
-        'voicelines/spaz/spazImpact03',
-        'voicelines/spaz/spazImpact04',
+        'voicelines/spaz/hurt01',
+        'voicelines/spaz/hurt02',
+        'voicelines/spaz/hurt03',
+        'voicelines/spaz/hurt04',
     ]
     t.death_sounds = [
-        'voicelines/spaz/spazDeath01', 
-        'voicelines/spaz/spazDeath02', 
-        'voicelines/spaz/spazDeath03', 
-        'voicelines/spaz/spazDeath04'
+        'voicelines/spaz/death01', 
+        'voicelines/spaz/death02', 
+        'voicelines/spaz/death03', 
+        'voicelines/spaz/death04'
     ]
-    t.pickup_sounds = ['voicelines/spaz/spazPickup01']
-    t.victory_sounds = ['voicelines/spaz/spazWin01']
-    t.gloat_sounds = ['voicelines/spaz/spazGloat01']
+    t.pickup_sounds = ['voicelines/spaz/pickup']
+    t.victory_sounds = ['voicelines/spaz/win']
+    t.gloat_sounds = ['voicelines/spaz/gloat']
     t.fall_sounds = [
-        'voicelines/spaz/spazFall01', 
-        'voicelines/spaz/spazFall02', 
-        'voicelines/spaz/spazFall03', 
-        'voicelines/spaz/spazFall04'
+        'voicelines/spaz/fall01', 
+        'voicelines/spaz/fall02', 
+        'voicelines/spaz/fall03', 
+        'voicelines/spaz/fall04'
     ]
     t.style = 'spaz'
 
