@@ -80,6 +80,7 @@ class MeteorShowerGame(bs.TeamGameActivity[Player, Team]):
         )
         if self._epic_mode:
             self.slow_motion = True
+        self.has_mell = False
 
     @override
     def on_begin(self) -> None:
@@ -93,27 +94,72 @@ class MeteorShowerGame(bs.TeamGameActivity[Player, Team]):
         if self._epic_mode:
             delay *= 0.25
         bs.timer(delay, self._decrement_meteor_time, repeat=True)
+        for player in self.players:
+            if player.actor.character == 'Mel':
+                self.has_mell = True
 
         # Kick off the first wave in a few seconds.
         delay = 3.0
         if self._epic_mode:
             delay *= 0.25
         bs.timer(delay, self._set_meteor_timer)
-        self._mf_node = bs.newnode('image', 
+        
+        # ------------------ calcs ---------------------
+        texture = (
+            'oldMell' if self.has_mell == False
+            else 'spazlingIcon'
+        )
+        ttexture = (
+            'oldMellCM' if self.has_mell == False
+            else 'spazlingIconCM'
+        )
+        tint1 = (
+            (1, 1, 1) if self.has_mell == False
+            else (0.5, 0.25, 1.0)
+        )
+        tint2 = (
+            (0, 1.5, 0) if self.has_mell == False
+            else (0.5, 0.25, 1.0)
+        )
+        msg = (
+            'im gonna fucking kill you lol!' if self.has_mell == False
+            else 'How about YOU die. Fuck you.'
+        )
+        ound = (
+            'mel01' if self.has_mell == False
+            else 'voicelines/spaz/attack03'
+        )
+        timeformsg = 50.5
+        leavetime = 52.6
+        notonscreen = 48.1
+        onscreen = 49.5
+        # ------------------ calcs -------------------
+        
+        self.mofo = bs.newnode(
+            'image', 
                 attrs={
-                'texture': bs.gettexture('melIcon'),
-                'position': (500, 50), 
-                'scale': (300, 300),
-                'opacity': 0.0,
-                'absolute_scale': True,
-                'attach': 'center'
+                    'texture': bs.gettexture(texture),
+                    'tint_color': tint1,
+                    'tint_texture': bs.gettexture(ttexture),
+                    'position': (500, 50), 
+                    'scale': (300, 300),
+                    'opacity': 0.0,
+                    'absolute_scale': True,
+                    'attach': 'center'
                 }
             )
-        bs.animate(self._mf_node, 'opacity',{48.1: 0.0, 49.5: 1.0})
-        bs.timer(50.5, lambda: bs.getsound('mel01').play())
-        bs.timer(50.5, lambda: bs.broadcastmessage('im gonna fucking kill you lol!'))
-        bs.timer(53.6, lambda: bs.getsound('swip2').play())
-        bs.timer(53.6, lambda: self._mf_node.delete())
+        bs.animate(
+            self.mofo, 'opacity', 
+            {
+                notonscreen: 1.0, 
+                onscreen: 1.0
+            }
+        )
+        self.mofo.tint2_color = tint2
+        bs.timer(timeformsg, bs.getsound(ound).play)
+        bs.timer(timeformsg, lambda: bs.broadcastmessage(msg))
+        bs.timer(leavetime, bs.getsound('swip2').play)
+        bs.timer(leavetime, self.mofo.delete)
         
         self._timer = OnScreenTimer()
         self._timer.start()
