@@ -151,7 +151,7 @@ class MeteorShowerGame(bs.TeamGameActivity[Player, Team]):
         bs.animate(
             self.mofo, 'opacity', 
             {
-                notonscreen: 1.0, 
+                notonscreen: 0.0, 
                 onscreen: 1.0
             }
         )
