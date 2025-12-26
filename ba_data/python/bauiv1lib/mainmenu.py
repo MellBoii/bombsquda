@@ -88,6 +88,11 @@ class MainMenuWindow(bui.MainWindow):
         """Pushcall a new session (our credits activity)"""
         from bascenev1lib.game.creditsrollsession import CreditsSession
         bs.pushcall(lambda: bs.new_host_session(CreditsSession))
+        
+    def _start_online_activity(self) -> None:
+        """Pushcall a new session (our online activity)"""
+        from bascenev1lib.game.online_menu import OnlineMenuSession
+        bs.pushcall(lambda: bs.new_host_session(OnlineMenuSession))
 
     @staticmethod
     def _preload_modules() -> None:
@@ -316,6 +321,11 @@ class MainMenuWindow(bui.MainWindow):
         v = button_y_offs + side_button_y_offs
 
         thistdelay = self._tdelay + td2 * self._t_delay_inc
+        DEBUG_CUSTOM_GATHER = False
+        ongather = (
+            self._start_online_activity if DEBUG_CUSTOM_GATHER
+            else self._gather_press
+        )
         self._gather_button = bui.buttonwidget(
             parent=self._root_widget,
             position=(h - side_button_width * side_button_scale * 0.5, v),
@@ -325,7 +335,7 @@ class MainMenuWindow(bui.MainWindow):
             button_type='square',
             label='',
             transition_delay=thistdelay,
-            on_activate_call=self._gather_press,
+            on_activate_call=ongather,
         )
         bui.textwidget(
             parent=self._root_widget,

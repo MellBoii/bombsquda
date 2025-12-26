@@ -40,10 +40,27 @@ def register_all_maps() -> None:
         StepRightUp,
         Courtyard,
         Rampage,
+        Nothing,
     ]:
         bs.register_map(maptype)
 
-
+class Nothing(bs.Map):
+    """
+    Return ABSOLUTELY NOTHING!
+    Useful for making game
+    activities without maps.
+    """
+    # Well kill me. We need defs, so that's
+    # technically something...
+    from bascenev1lib.mapdata import rampage as defs
+    
+    @override
+    @classmethod
+    def get_play_types(cls) -> list[str]:
+        """Return NOTHING!!!!"""
+        return []
+    name = 'Nothing'
+    
 class HockeyStadium(bs.Map):
     """Stadium map used for ice hockey games."""
 
@@ -1855,10 +1872,10 @@ class Space(bs.Map):
     @classmethod
     def on_preload(cls) -> Any:
         data: dict[str, Any] = {
-            'mesh': bs.getmesh('space'),
-            'bgmesh': bs.getmesh('space2'),
-            'collision_mesh': bs.getcollisionmesh('space'),
-            'tex': bs.gettexture('world'),
+            'mesh': bs.getmesh('spaceLevel'),
+            'bgmesh': bs.getmesh('spaceLevelBG'),
+            'collision_mesh': bs.getcollisionmesh('spaceLevelCLD'),
+            'tex': bs.gettexture('spaceLevel'),
         }
         return data
 
