@@ -194,11 +194,12 @@ class Chooser:
         sessionplayer: bascenev1.SessionPlayer,
         lobby: 'Lobby',
     ) -> None:
-        self._deek_sound = _bascenev1.getsound('deek')
-        self._click_sound = _bascenev1.getsound('click01')
-        self._punchsound = _bascenev1.getsound('swish')
-        self._swish_sound = _bascenev1.getsound('tap')
-        self._errorsound = _bascenev1.getsound('error')
+        self.movesound = _bascenev1.getsound('deek')
+        self.charsound = _bascenev1.getsound('click01')
+        self.readysound = _bascenev1.getsound('player_ready')
+        self.unreadysound = _bascenev1.getsound('player_unready')
+        self.switchsound = _bascenev1.getsound('tap')
+        self.errorsound = _bascenev1.getsound('error')
         self._mask_texture = _bascenev1.gettexture('characterIconMask')
         self._vpos = vpos
         self._lobby = weakref.ref(lobby)
@@ -608,6 +609,7 @@ class Chooser:
             return
 
         if not ready:
+            self.unreadysound.play()
             self._sessionplayer.assigninput(
                 babase.InputType.LEFT_PRESS,
                 babase.Call(self.handlemessage, ChangeMessage('team', -1)),
@@ -644,6 +646,7 @@ class Chooser:
             self._update_text()
             self._sessionplayer.setname('untitled', real=False)
         else:
+            self.readysound.play()
             self._sessionplayer.assigninput(
                 (
                     babase.InputType.LEFT_PRESS,
@@ -733,10 +736,9 @@ class Chooser:
 
         # Either force switch teams, or actually for realsies do the set-ready.
         if force_team_switch:
-            self._errorsound.play()
+            self.errorsound.play()
             self.handlemessage(ChangeMessage('team', 1))
         else:
-            self._punchsound.play()
             self._set_ready(ready)
 
     # TODO: should handle this at the engine layer so this is unnecessary.
@@ -771,7 +773,7 @@ class Chooser:
             if msg.what == 'team':
                 sessionteams = self.lobby.sessionteams
                 if len(sessionteams) > 1:
-                    self._swish_sound.play()
+                    self.switchsound.play()
                 self._selected_team_index = (
                     self._selected_team_index + msg.value
                 ) % len(sessionteams)
@@ -787,14 +789,14 @@ class Chooser:
                 else:
                     # Pick the next player profile and assign our name
                     # and character based on that.
-                    self._deek_sound.play()
+                    self.movesound.play()
                     self._profileindex = (self._profileindex + msg.value) % len(
                         self._profilenames
                     )
                     self.update_from_profile()
 
             elif msg.what == 'character':
-                self._click_sound.play()
+                self.charsound.play()
                 # update our index in our local list of characters
                 self._character_index = (
                     self._character_index + msg.value

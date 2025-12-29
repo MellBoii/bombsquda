@@ -10,6 +10,7 @@ import babase
 import _bascenev1
 from bascenev1._activity import Activity
 import bascenev1 as bs
+import random
 
 from bascenev1._player import EmptyPlayer
 from bascenev1._team import EmptyTeam
@@ -104,9 +105,13 @@ class JoinActivity(Activity[EmptyPlayer, EmptyTeam]):
         if isinstance(bs.get_foreground_host_session(), bs.CoopSession):
             sessionname = self.session.campaign_level_name
             if sessionname == 'The Finale':
-                setmusic(MusicType.CHAR_SELECT2)
+                setmusic(MusicType.CHAR_SELECT_F)
                 return
-        setmusic(MusicType.CHAR_SELECT)
+        musics = [
+            MusicType.CHAR_SELECT,
+            MusicType.CHAR_SELECT2,
+        ]
+        setmusic(random.choice(musics))
 
 
 class TransitionActivity(Activity[EmptyPlayer, EmptyTeam]):
