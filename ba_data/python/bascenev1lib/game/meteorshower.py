@@ -126,7 +126,7 @@ class MeteorShowerGame(bs.TeamGameActivity[Player, Team]):
             else 'How about YOU die. Fuck you.'
         )
         ound = (
-            'mel01' if self.has_mell == False
+            'voicelines/mel/sound1' if self.has_mell == False
             else 'voicelines/spaz/attack03'
         )
         timeformsg = 50.5

@@ -91,39 +91,14 @@ def register_appearances() -> None:
     t.upper_leg_mesh = 'neoSpazUpperLeg'
     t.lower_leg_mesh = 'neoSpazLowerLeg'
     t.toes_mesh = 'neoSpazToes'
-    t.jump_sounds = [
-        'voicelines/spaz/jump01',
-        'voicelines/spaz/jump02', 
-        'voicelines/spaz/jump03', 
-        'voicelines/spaz/jump04'
-    ]
-    t.attack_sounds = [
-        'voicelines/spaz/attack01',
-        'voicelines/spaz/attack02',
-        'voicelines/spaz/attack03',
-        'voicelines/spaz/attack04',
-    ]
-    t.impact_sounds = [
-        'voicelines/spaz/hurt01',
-        'voicelines/spaz/hurt02',
-        'voicelines/spaz/hurt03',
-        'voicelines/spaz/hurt04',
-    ]
-    t.death_sounds = [
-        'voicelines/spaz/death01', 
-        'voicelines/spaz/death02', 
-        'voicelines/spaz/death03', 
-        'voicelines/spaz/death04'
-    ]
+    t.jump_sounds = ['voicelines/spaz/jump0' + str(i + 1) + '' for i in range(4)]
+    t.attack_sounds = ['voicelines/spaz/attack0' + str(i + 1) + '' for i in range(4)]
+    t.impact_sounds = ['voicelines/spaz/hurt0' + str(i + 1) + '' for i in range(4)]
+    t.death_sounds = ['voicelines/spaz/death0' + str(i + 1) + '' for i in range(4)]
     t.pickup_sounds = ['voicelines/spaz/pickup']
     t.victory_sounds = ['voicelines/spaz/win']
     t.gloat_sounds = ['voicelines/spaz/gloat']
-    t.fall_sounds = [
-        'voicelines/spaz/fall01', 
-        'voicelines/spaz/fall02', 
-        'voicelines/spaz/fall03', 
-        'voicelines/spaz/fall04'
-    ]
+    t.fall_sounds = ['voicelines/spaz/fall0' + str(i + 1) + '' for i in range(4)]
     t.style = 'spaz'
 
     # Roaring Knight's right hand they/them #####################################
@@ -250,23 +225,15 @@ def register_appearances() -> None:
     t.upper_leg_mesh = 'melUpperLeg'
     t.lower_leg_mesh = 'melLowerLeg'
     t.toes_mesh = 'melToes'
-    mel_sounds = [
-        'mel01',
-        'mel02',
-        'mel03',
-        'mel04',
-        'mel05',
-        'mel06',
-        'mel07',
-    ]
+    mel_sounds = ['voicelines/mel/sound' + str(i + 1) + '' for i in range(7)]
     t.jump_sounds = mel_sounds
     t.attack_sounds = mel_sounds
     t.impact_sounds = mel_sounds
-    t.death_sounds = ['melDeath01']
-    t.victory_sounds = ['mel05']
-    t.gloat_sounds = ['melGloat01']
+    t.death_sounds = ['death']
+    t.victory_sounds = mel_sounds
+    t.gloat_sounds = ['voicelines/mel/gloat']
     t.pickup_sounds = mel_sounds
-    t.fall_sounds = ['melFall01', 'melFall02']
+    t.fall_sounds = ['voicelines/mel/fall' + str(i + 1) + '' for i in range(2)]
     t.style = 'mel'
     t.default_color = (1, 1, 1)
     t.default_highlight = (0, 1, 0)
@@ -391,8 +358,16 @@ def register_appearances() -> None:
     t.pickup_sounds = bear_sounds
     t.fall_sounds = ['bearFall']
     t.style = 'bear'
-    t.default_color = (0.996078431372549, 0.8372549019607842, 0.022745098039215678)
-    t.default_highlight = (0.0, 0.5686274509803921, 0.22745098039215686)
+    t.default_color = (
+        0.996078431372549, 
+        0.8372549019607842, 
+        0.022745098039215678
+    )
+    t.default_highlight = (
+        0.0, 
+        0.5686274509803921, 
+        0.22745098039215686
+    )
 
     # Prince of the Dark ###################################
     t = Appearance('Pascal')
@@ -508,13 +483,15 @@ def register_appearances() -> None:
     t.gloat_sounds = ['agentGloat']
     t.fall_sounds = ['agentFall']
     t.style = 'agent'
-    t.default_color = (0.9725490196078431,
-    0.8784313725490196,
-    0.5019607843137255
+    t.default_color = (
+        0.9725490196078431,
+        0.8784313725490196,
+        0.5019607843137255
     )
-    t.default_highlight = (0.8470588235294118,
-    0.5333333333333333,
-    0.09411764705882353
+    t.default_highlight = (
+        0.8470588235294118,
+        0.5333333333333333,
+        0.09411764705882353
     )
     
     # Noise Noise Noise Noise NOise ###################################
@@ -572,34 +549,12 @@ def register_appearances() -> None:
     t.upper_leg_mesh = 'wizardUpperLeg'
     t.lower_leg_mesh = 'wizardLowerLeg'
     t.toes_mesh = 'wizardToes'
-    t.jump_sounds = [
-        'voicelines/ocap/jump1',
-        'voicelines/ocap/jump2',
-        'voicelines/ocap/jump3',
-        'voicelines/ocap/jump4',
-    ]
-    t.attack_sounds = [
-        'voicelines/ocap/punch1',
-        'voicelines/ocap/punch2',
-        'voicelines/ocap/punch3',
-        'voicelines/ocap/punch4',
-    ]
+    t.jump_sounds = ['voicelines/ocap/jump' + str(i + 1) + '' for i in range(4)]
+    t.attack_sounds = ['voicelines/ocap/punch' + str(i + 1) + '' for i in range(4)]
     t.impact_sounds = ['voicelines/ocap/hurt1']
-    t.death_sounds = [
-        'voicelines/ocap/death1',
-        'voicelines/ocap/death2',
-    ]
-    t.pickup_sounds = [
-        'voicelines/ocap/pickup1',
-        'voicelines/ocap/pickup2',
-        'voicelines/ocap/pickup3',
-        'voicelines/ocap/pickup4',
-    ]
-    t.fall_sounds = [
-        'voicelines/ocap/fall1',
-        'voicelines/ocap/fall2',
-        'voicelines/ocap/fall3',
-    ]
+    t.death_sounds = ['voicelines/ocap/death' + str(i + 1) + '' for i in range(2)]
+    t.pickup_sounds = ['voicelines/ocap/pickup' + str(i + 1) + '' for i in range(4)]
+    t.fall_sounds = ['voicelines/ocap/fall' + str(i + 1) + '' for i in range(3)]
     t.style = 'agent'
     t.default_color = (0.2, 0.4, 1.0)
     t.default_highlight = (0.06, 0.15, 0.4)
