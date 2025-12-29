@@ -495,17 +495,32 @@ class Spaz(bs.Actor):
         ).autoretain()
         node = ourbomb.node
         
-    def getspeed(self, should_abs: bool = True):
+    def getspeed(self, 
+            should_abs: bool = True, 
+            decimals: int = 2, 
+            ignore_y: bool = True
+        ):
+        """ 
+        Gets the actor's speed
+        by calculating what's the greater
+        number in the actor's velocity.
+        shouldabs: use absolute numbers, meaning
+        we count negative numbers as a greater.
+        vx, vy, vz = self.node.velocity
+        decimals: the amount of decimals we should
+        return, for precision
+        ignore_y: whether to ignore the upwards axis
         """
-        Returns the highest number of
-        our velocity. If should_abs is true,
-        we'll get absolute values (so that
-        negative numbers count)
-        """
-        if should_abs == True:
-            return max(self.node.velocity, key=abs)
+        vx, vy, vz = self.node.velocity
+        components = (vx, vz) if ignore_y else (vx, vy, vz)
+        # absolute-ize the result if we should
+        if should_abs:
+            value = abs(max(components, key=abs))
         else:
-            return max(self.node.velocity)
+            value = max(components)
+        # yep, theres your speed!
+        return round(value, decimals)
+
         
     def trigger_starstorm(self):
         bs.getsound('starStorm').play()
@@ -2380,8 +2395,28 @@ class Spaz(bs.Actor):
                         bs.timer(0.4, reset)
                     return True
                 # If we don't have a source node, something that wasn't a spaz hit us.
-                # We can't possibly get the source node of such other spaz, so we don't hurt anyone.
                 else:
+                    if msg.bombowner:
+                        # Oh hey, we have a bomb owner! Affect them.
+                        msg.bombowner.handlemessage('impulse', 
+                                self.node.position[0], 
+                                self.node.position[1], 
+                                self.node.position[2],
+                                0, 25, 0, yforce, 0.05, 
+                                0, 0, 0, 20*400, 0
+                        )
+                        msg.bombowner.handlemessage(
+                            bs.HitMessage(
+                                pos=msg.pos,
+                                velocity=msg.velocity,
+                                magnitude=msg.magnitude * 3.0,
+                                velocity_magnitude=msg.velocity_magnitude * 3.5,
+                                radius=0,
+                                srcnode=self.node,
+                                source_player=self.source_player,
+                                force_direction=msg.force_direction,                           
+                            )
+                        )
                     # Show a flash to confirm we parried.
                     hurtiness = 3.8
                     flash_color = (1.0, 0.8, 0.4)
@@ -2848,7 +2883,7 @@ class Spaz(bs.Actor):
                 if self.frozen and (damage > 1 or self.hitpoints <= 0):
                     self.shatter()
                 elif self.hitpoints <= 0:
-                    if msg.hit_subtype == 'tntfirework' and msg.srcnode != self.node:
+                    if msg.hit_subtype == 'tntfirework' and msg.bombowner != self.node:
                         ba.app.classic.ach.award_local_achievement(
                             'Fireworked'
                         )

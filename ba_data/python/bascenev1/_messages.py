@@ -214,6 +214,7 @@ class HitMessage:
         self,
         *,
         srcnode: bascenev1.Node | None = None,
+        bombowner: bascenev1.Node | None = None,
         pos: Sequence[float] | None = None,
         velocity: Sequence[float] | None = None,
         magnitude: float = 1.0,
@@ -229,6 +230,7 @@ class HitMessage:
         """Instantiate a message with given values."""
 
         self.srcnode = srcnode
+        self.bombowner = bombowner
         self.pos = pos if pos is not None else babase.Vec3()
         self.velocity = velocity if velocity is not None else babase.Vec3()
         self.magnitude = magnitude

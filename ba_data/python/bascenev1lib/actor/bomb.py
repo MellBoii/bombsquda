@@ -736,7 +736,7 @@ class Blast(bs.Actor):
                     hit_subtype=self.hit_subtype,
                     radius=self.radius,
                     source_player=bs.existing(self._source_player),
-                    srcnode=self.owner
+                    bombowner=self.owner
                 )
             )
             if self.blast_type == 'ice':
