@@ -78,7 +78,7 @@ class TitleWindow(bui.MainWindow):
         """Close the window."""
         # no-op if we're not currently in control.
         rsfx = [
-            'voicelines/spaz/spazDeath04',
+            'voicelines/spaz/death4',
             'learnPSI',
             'punchStrong01',
             'punchStrong03',
@@ -87,7 +87,7 @@ class TitleWindow(bui.MainWindow):
             'thunder',
             'swish',
             'okitem',
-            'mel06',
+            'voicelines/mel/sound6',
             'mbmYeehaw1',
             'luigi_burning',
             'homer3',

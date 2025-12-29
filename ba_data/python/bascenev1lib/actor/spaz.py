@@ -339,6 +339,8 @@ class Spaz(bs.Actor):
         self.impulse_scale = 1.5
         self.is_nessEB = False
         self.can_starstorm = False
+        self.saved_color = self.node.color
+        self.saved_highlight = self.node.highlight
         if self.source_player: # Prevent tutorial from dying.
             def name_check():
                 if self.node.name.startswith(('Ness', 'ness')):
@@ -1389,21 +1391,26 @@ class Spaz(bs.Actor):
             bs.getsound('supertrans').play() # i'm keeping it as super trans. fuck you. die.
             self.issuper = True
             # flashing effect function
-            def start_flash_effect():
-                if not self.node.exists():
-                    return
-                yellow = (1.0, 1.0, 0.2)
-                white = (1.0, 1.0, 1.0)
-
-                def flash_cycle():
-                    if not self.node.exists():
-                        return
-                    # Swap between yellow and white
-                    self.node.color = yellow if self.node.color == white else white
-                    self.node.highlight = self.node.color
-                # run every 0.2 seconds, repeat
-                self._flash_timer = bs.Timer(0.2, flash_cycle, repeat=True)
-
+            yellow = (1, 1, 0)
+            white = (1, 1, 1)
+            if not self.node.exists():
+                return
+            flashC = bs.animate_array(self.node, 'color', 3,
+                {
+                    0.0: yellow,
+                    0.1: white,
+                    0.2: yellow
+                },
+                loop=True
+            )
+            flashH = bs.animate_array(self.node, 'highlight', 3,
+                {
+                    0.0: yellow,
+                    0.1: white,
+                    0.2: yellow
+                },
+                loop=True
+            )
             bs.camerashake(intensity=5.0)
             char_name = getattr(self, 'character', None)
             hurtiness = 4.2
@@ -1473,8 +1480,6 @@ class Spaz(bs.Actor):
                     bs.setmusic(bs.MusicType.GRAND_ROMP)
                 else:
                     bs.setmusic(bs.MusicType.COOKIN)
-            # flashy effect
-            start_flash_effect()
     
     def _activate_spongebob(self, time: int, speed: int):
         """Give this spaz the 'Hot Potato' effect."""
@@ -1617,7 +1622,7 @@ class Spaz(bs.Actor):
         if autodie == True:
             self.die(how=bs.DeathType.FALL)
         
-    def sugarcoatit(self, sound, image):
+    def sugarcoat_overlay(self, sound, image):
         """ for use when... not sugarcoating it lol """
         # sound
         bs.getsound(sound).play()
@@ -1651,7 +1656,9 @@ class Spaz(bs.Actor):
         # after a bit of delay THEN start fading
         bs.timer(0.1, _fade_step)
      
-    # Pulse green if healing    
+    # Pulse green if healing
+    # ps. started using saved_color so we
+    # don't accidentally override the player's color choice
     def pulse_green(self, intensity: float = 1.0, time: float = 0.65):
         if self.node:
             bs.animate_array(
@@ -1660,8 +1667,8 @@ class Spaz(bs.Actor):
                 3,
                 {
                     0: (0, 2*intensity, 0),
-                    time*0.8: self.node.color,
-                    time: self.node.color
+                    time*0.8: self.saved_color,
+                    time: self.saved_color
                 }
             )
             bs.animate_array(
@@ -1670,8 +1677,8 @@ class Spaz(bs.Actor):
                 3,
                 {
                     0: (0, 2*intensity, 0),
-                    time*0.8: self.node.highlight,
-                    time: self.node.highlight
+                    time*0.8: self.saved_highlight,
+                    time: self.saved_highlight
                 }
             )
             if self.earthhptext and self.earthhptext.exists():
@@ -1710,37 +1717,13 @@ class Spaz(bs.Actor):
                             time: self.node.highlight
                         }
                     )
-                    if self.earthhptext and self.earthhptext.exists():
-                        self.earthhptext.text = str(int(self.hitpoints / 10))
             pulse_red(0.65)
             return
         multi = 1.39
-        self.hitpoints = min(self.hitpoints_max, self.hitpoints + (
-
-            (10 * multi) * self.impact_scale
-            )
+        self.hitpoints = min(self.hitpoints_max, 
+            self.hitpoints + ((10 * multi) * self.impact_scale)
         )
-        if self.earthhptext and self.earthhptext.exists():
-            self.earthhptext.text = str(int(self.hitpoints / 10))
-        if self.hitpoints <= 210:
-            if self.earthmeter and self.earthmeter.exists():
-                self.earthmeter.texture = bs.gettexture('earthmetermortal')
-            if self.earthhptext and self.earthhptext.exists():
-                self.earthhptext.color = (1.0, 0.3, 0.3)
-                self.earthmetertext.color = (1.0, 0.3, 0.3)
-            if self.earthsptext and self.earthsptext.exists():
-                self.earthsptext.color = (1.0, 0.3, 0.3)
-        elif self.issuper == True:
-            if self.earthmeter and self.earthmeter.exists():
-                self.earthmeter.texture = bs.gettexture('earthmetersuper')
-        else:
-            if self.earthmeter and self.earthmeter.exists():
-                self.earthmeter.texture = bs.gettexture('earthmeter')
-            if self.earthhptext and self.earthhptext.exists():
-                self.earthhptext.color = (1.0, 1.0, 1.0)
-                self.earthmetertext.color = (1.0, 1.0, 1.0)
-            if self.earthsptext and self.earthsptext.exists():
-                self.earthsptext.color = (1.0, 1.0, 1.0)
+        self.updatemeter()
         if self.hitpoints != self.hitpoints_max:
             self.pulse_green(0.65)
     
@@ -1761,7 +1744,7 @@ class Spaz(bs.Actor):
             color=(1, 0.4, 0.4, 0.9),
             scale=1.0,
             ).autoretain()
-            bs.getsound('recordscratch').play()
+            bs.getsound('error').play()
             bs.setmusic(None)
         def text3():
             PopupText(
@@ -2320,26 +2303,31 @@ class Spaz(bs.Actor):
                     else:
                         healpoints = 480
                     self.hitpoints += healpoints
-                    self.pulse_green()
                     # ----------------- healpoints -------------------
-                    msg.srcnode.handlemessage('impulse', self.node.position[0], self.node.position[1], self.node.position[2],
-                                0, 25, 0,
-                                yforce, 0.05, 0, 0,
-                                0, 20*400, 0)
-        
-                    msg.srcnode.handlemessage('impulse', self.node.position[0], self.node.position[1], self.node.position[2],
-                                0, 25, 0,
-                                xforce, 0.05, 0, 0,
-                                v2[0]*15*2, 0, v2[2]*15*2)
-                                
-                    bs.getsound('parried').play()
+                    msg.srcnode.handlemessage(
+                        'impulse', 
+                        self.node.position[0], 
+                        self.node.position[1], 
+                        self.node.position[2],
+                        0, 25, 0, yforce, 0.05, 
+                        0, 0, 0, 20*400, 0
+                    )
+                    msg.srcnode.handlemessage(
+                        'impulse', 
+                        self.node.position[0], 
+                        self.node.position[1], 
+                        self.node.position[2],
+                        0, 25, 0, xforce, 0.05, 
+                        0, 0, v2[0]*15*2, 0, 
+                        v2[2]*15*2
+                    )        
                     self.timesparried += 1
                     self.timesparriedtotal += 1
                     # i'm not gonna sugarcoat it overlay
                     if self.timesparried >= 5:
                         bs.getsound('bellMed').play()
                         bs.getsound('dingSmall').play()
-                        self.sugarcoatit(sound='blank', image='sugarcoatparry')
+                        self.sugarcoat_overlay(sound='blank', image='sugarcoatparry')
                         
                     if self.timesparriedtotal == 49:
                         ba.app.classic.ach.award_local_achievement(
@@ -2368,7 +2356,6 @@ class Spaz(bs.Actor):
                         },
                     )
                     bs.timer(0.06, flash.delete)
-                    return True
                 # No source node? Check for bomb owner.
                 # This lets us affects people who threw a bomb to us.
                 elif msg.bombowner:
@@ -2393,7 +2380,6 @@ class Spaz(bs.Actor):
                             force_direction=msg.force_direction,                           
                         )
                     )
-                    bs.getsound('parried').play()
                     # ---------------- healpoints -------------------
                     if ba.app.config.get("squda_parrytype") == 1:
                         healpoints = 450
@@ -2402,9 +2388,7 @@ class Spaz(bs.Actor):
                     if ba.app.config.get("squda_parrytype") == 3:
                         healpoints = 150
                     self.hitpoints += healpoints
-                    self.pulse_green()
                     # ---------------- healpoints -------------------
-                    
                 # If we don't have a source node, 
                 # something that wasn't a spaz hit us.
                 else:
@@ -2438,9 +2422,7 @@ class Spaz(bs.Actor):
                     if ba.app.config.get("squda_parrytype") == 3:
                         healpoints = 150
                     self.hitpoints += healpoints
-                    self.pulse_green()
                     # ---------------- healpoints -------------------
-                    
                     # Let us parry again, and increment our times parried.
                     self.canparry2 = True
                     self.timesparried += 1
@@ -2457,23 +2439,17 @@ class Spaz(bs.Actor):
                     if self.timesparried >= 5:
                         bs.getsound('bellMed').play()
                         bs.getsound('dingSmall').play()
-                        self.sugarcoatit(sound='blank', image='sugarcoatparry')
-                        
-                    # Check for if it was a impact damage source.
-                    # Fall damage, in basic terms.
-                    if msg.hit_type == 'impact':
-                        PopupText(
-                        bs.Lstr(resource='traumaParried'),
-                        position=self.node.position,
-                        color=(1, 0.9, 0.1, 1.0),
-                        scale=1.4,
-                        ).autoretain()
-                        # Heal a bit extra.
-                        self.hitpoints += 40
-                        # Play sounds.
-                        bs.getsound('bellHigh').play()
-                        bs.getsound('orchestraHit').play()
-                    return True
+                        self.sugarcoat_overlay(sound='blank', image='sugarcoatparry')
+                bs.getsound('parried').play()
+                bs.emitfx(
+                    position=self.node.position,
+                    velocity=self.node.velocity,
+                    count=120,
+                    scale=2.0,
+                    spread=1.5,
+                    chunk_type='spark',
+                )
+                return True
                     
             # If we were recently hit, don't count this as another.
             # (so punch flurries and bomb pileups essentially count as 1 hit).
@@ -2857,13 +2833,13 @@ class Spaz(bs.Actor):
                             'Fireworked'
                         )
                     if damage >= 1000 and msg.hit_type == 'punch':
-                        self.sugarcoatit(sound='bellMed', image='sugarcoatpunch')
+                        self.sugarcoat_overlay(sound='bellMed', image='sugarcoatpunch')
                         self.die()
                     elif damage >= 1000 and msg.hit_type == 'explosion':
-                        self.sugarcoatit(sound='bellMed', image='sugarcoatbomb')
+                        self.sugarcoat_overlay(sound='bellMed', image='sugarcoatbomb')
                         self.die()
                     elif damage <= 150 and msg.hit_type == 'impact':
-                        self.sugarcoatit(sound='OUUHH', image='sugarcoatfall')
+                        self.sugarcoat_overlay(sound='OUUHH', image='sugarcoatfall')
                         self.die()
                     else:
                         if random.random() < 0.01:
@@ -3367,7 +3343,6 @@ class Spaz(bs.Actor):
                 position=self.node.position,
                 scale=1.4,
             ).autoretain()
-            self.pulse_green()
             self.updatemeter()
             
         if random.random() < 0.5 and shouldcelb == True:
@@ -3779,41 +3754,26 @@ class Spaz(bs.Actor):
                 hit_type='impact',
             )
         )
-        if self.parrying == False:
-            self.node.handlemessage('knockout', max(0.0, 50.0 * intensity))
-        else:
-            if not ba.app.config.get("squda_parrytype") == 3:
-                return
+        if self.parrying == True:
+            PopupText(
+                bs.Lstr(resource='traumaParried'),
+                position=self.node.position,
+                color=(1, 0.9, 0.1, 1.0),
+                scale=1.4,
+            ).autoretain()
+            self.hitpoints += 40
+            bs.getsound('bellHigh').play()
+            bs.getsound('orchestraHit').play()
+            self.node.handlemessage('knockout', 0)
+            return
+        self.node.handlemessage('knockout', max(0.0, 50.0 * intensity))
         sounds: Sequence[bs.Sound]
         if intensity >= 16.0 and not self._dead:
             sounds = SpazFactory.get().lobotomy
             ba.app.classic.ach.award_local_achievement(
                 'Big Fall'
             )
-            # kill our spaz (they had a huge ass fall)
-            lobotomyicon = bs.newnode(
-                'image',
-                attrs={
-                    'texture': bs.gettexture('white2'),  # lol
-                    'position': (0, 0),   # pos
-                    'fill_screen': True,
-                    'opacity': 1.0,
-                    'absolute_scale': True,
-                    'attach': 'center'
-                },
-            )
-
-            # fade image step by step
-            def _fade_step2():
-                if lobotomyicon and lobotomyicon.exists():
-                    new_opacity = lobotomyicon.opacity - 0.05
-                    if new_opacity <= 0.0:
-                        lobotomyicon.delete()
-                    else:
-                        lobotomyicon.opacity = new_opacity
-                        bs.timer(0.03, _fade_step2)  # repeat until gone
-            # after a bit of delay THEN start fading
-            bs.timer(0.1, _fade_step2)
+            self.sugarcoat_overlay(sound='blank', image='white2')
             self.shatter()
         elif intensity >= 5.0:
             sounds = SpazFactory.get().impact_sounds_harder

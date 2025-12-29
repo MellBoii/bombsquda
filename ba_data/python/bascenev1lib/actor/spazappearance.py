@@ -229,7 +229,7 @@ def register_appearances() -> None:
     t.jump_sounds = mel_sounds
     t.attack_sounds = mel_sounds
     t.impact_sounds = mel_sounds
-    t.death_sounds = ['death']
+    t.death_sounds = ['voicelines/mel/death']
     t.victory_sounds = mel_sounds
     t.gloat_sounds = ['voicelines/mel/gloat']
     t.pickup_sounds = mel_sounds
