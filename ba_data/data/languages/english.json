@@ -488,6 +488,8 @@
   "spongeChar": "${NAME} HAS ${TIME} SECONDS",
   "spongedPlayer": "${NAME} GOT SPONGED",
   "spongedChar": "${NAME} GOT SPONGED",
+  "overTime": "OVERTIME!!!",
+  "hurryUp": "Hurry up!",
   "noShield": "No shield, hardmode is on!",
   "autoText": "Auto",
   "backText": "Back",

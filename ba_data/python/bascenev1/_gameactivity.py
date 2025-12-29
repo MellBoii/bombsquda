@@ -248,6 +248,8 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         self._zoom_message_times: dict[int, float] = {}
         self.metal_players: list[PlayerSpaz] = []
         self.dancing_players: list[PlayerSpaz] = []
+        self.did_extra = False
+        self.did_overtime = False
         self.metal_sound = _bascenev1.newnode('sound', attrs={'sound': _bascenev1.getsound('metalMusic'),
                         'volume': 0.0})
         self.dancin_sound = _bascenev1.newnode('sound', attrs={'sound': _bascenev1.getsound('homeroLoop'),
@@ -1102,18 +1104,31 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
             if hasattr(bs.MusicType, fast_name):
                 fast_music = getattr(bs.MusicType, fast_name)
             else:
-                fast_music = base_music  # doesn't exist? we haven't added it yet. fallback to normal.
+                fast_music = bs.MusicType.SRB2_PINCH  # doesn't exist? we haven't added it yet. fallback to normal.
         except TypeError:
             fast_music = None
         # alright lets trigger the thing now
         if self._standard_time_limit_time <= 61 and not getattr(self, "_did_hurryup", False):
             self._did_hurryup = True
             bs.setmusic(bs.MusicType.HURRYUP)
-            bs.broadcastmessage('Hurry up!')
+            bs.broadcastmessage(babase.Lstr(resource='hurryUp'))
             if base_music == None:
                 bs.timer(2.0, lambda: bs.setmusic(None))
             else:
                 bs.timer(2.0, lambda: bs.setmusic(fast_music))
+        if self._standard_time_limit_time <= 1 and not getattr(self, "did_extra", False):
+            self.did_extra = True
+            if fast_music == bs.MusicType.SRB2_PINCH:
+                if random.random() < 0.3:
+                    self.did_overtime = True
+                    bs.broadcastmessage(babase.Lstr(resource='overTime'))
+                    self._standard_time_limit_time += 40
+                    bs.setmusic(bs.MusicType.SRB2_OVERTIME)
+                    node = self._standard_time_limit_text.node
+                    node.text = str(self._standard_time_limit_time) + 's'
+        if self.did_overtime == True:
+            node = self._standard_time_limit_text.node
+            node.text = str(self._standard_time_limit_time) + 's'
 
     def _setup_tournament_time_limit(self, duration: float) -> None:
         """
