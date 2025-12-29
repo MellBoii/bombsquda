@@ -123,6 +123,7 @@ class Spaz(bs.Actor):
         self._wiggle_count = 0
         self.wiggling = False
         self.light = None
+        self.sparkies = None
 
         self.source_player = source_player
         self._dead = False
@@ -1479,7 +1480,7 @@ class Spaz(bs.Actor):
                 elif self.character == 'Zoe':
                     bs.setmusic(bs.MusicType.GRAND_ROMP)
                 else:
-                    bs.setmusic(bs.MusicType.COOKIN)
+                    bs.setmusic(bs.MusicType.SUPER)
     
     def _activate_spongebob(self, time: int, speed: int):
         """Give this spaz the 'Hot Potato' effect."""
@@ -1845,6 +1846,17 @@ class Spaz(bs.Actor):
                 },
             )
             self.node.connectattr('position', self.light, 'position')
+        if not self.sparkies:
+            self.sparkies = bs.Timer(0.2, lambda: bs.emitfx(
+                    position=self.node.position,
+                    velocity=self.node.velocity,
+                    count=15,
+                    scale=0.6,
+                    spread=1.5,
+                    chunk_type='spark',
+                ),
+            repeat=True
+            )
         # auugghhh text
         if not self.yeehaw_text:
             mathnode = bs.newnode(
@@ -1894,6 +1906,8 @@ class Spaz(bs.Actor):
         if self.yeehaw_text:
             self.yeehaw_text.delete()
             self.yeehaw_text = None
+        if self.sparkies:
+            self.sparkies = None
     
     @override
     def handlemessage(self, msg: Any) -> Any:
@@ -2188,14 +2202,13 @@ class Spaz(bs.Actor):
                     position=self.node.position,
                 )
                 return True
-            # Check if we're parrying before doing damage.
-            # If we are... start the parry section!
-            # (psst... gummy, i didn't copy your fuckass code.. calm down..)
             if self.parrying == True:
                 # Check for source node. Most likely being punched.
                 if msg.srcnode:
                     # Get the other spaz's node.
                     otherspaz = msg.srcnode.getdelegate(bs.Actor)
+                    # If the otherspaz is parrying, do something
+                    # to prevent a infinite recursion.
                     if otherspaz.parrying == True:
                         xforce = -200
                         yforce = 400
@@ -2293,17 +2306,6 @@ class Spaz(bs.Actor):
                             force_direction=msg.force_direction,                           
                         )
                     )
-                    # ----------------- healpoints -------------------
-                    if ba.app.config.get("squda_parrytype") == 1:
-                        healpoints = 450
-                    elif ba.app.config.get("squda_parrytype") == 2:
-                        healpoints = 250
-                    elif ba.app.config.get("squda_parrytype") == 3:
-                        healpoints = 150
-                    else:
-                        healpoints = 480
-                    self.hitpoints += healpoints
-                    # ----------------- healpoints -------------------
                     msg.srcnode.handlemessage(
                         'impulse', 
                         self.node.position[0], 
@@ -2321,41 +2323,6 @@ class Spaz(bs.Actor):
                         0, 0, v2[0]*15*2, 0, 
                         v2[2]*15*2
                     )        
-                    self.timesparried += 1
-                    self.timesparriedtotal += 1
-                    # i'm not gonna sugarcoat it overlay
-                    if self.timesparried >= 5:
-                        bs.getsound('bellMed').play()
-                        bs.getsound('dingSmall').play()
-                        self.sugarcoat_overlay(sound='blank', image='sugarcoatparry')
-                        
-                    if self.timesparriedtotal == 49:
-                        ba.app.classic.ach.award_local_achievement(
-                            'Parrier'
-                        )
-                    self.canparry2 = True
-                    hurtiness = 3.8
-                    flash_color = (1.0, 0.8, 0.4)
-                    light = bs.newnode(
-                        'light',
-                        attrs={
-                            'position': self.node.position,
-                            'radius': 0.12 + hurtiness * 0.12,
-                            'intensity': 0.3 * (1.0 + 1.0 * hurtiness),
-                            'height_attenuated': False,
-                            'color': flash_color,
-                        },
-                    )
-                    bs.timer(0.06, light.delete)
-                    flash = bs.newnode(
-                        'flash',
-                        attrs={
-                            'position': self.node.position,
-                            'size': 0.17 + 0.17 * hurtiness,
-                            'color': flash_color,
-                        },
-                    )
-                    bs.timer(0.06, flash.delete)
                 # No source node? Check for bomb owner.
                 # This lets us affects people who threw a bomb to us.
                 elif msg.bombowner:
@@ -2372,7 +2339,7 @@ class Spaz(bs.Actor):
                         bs.HitMessage(
                             pos=msg.pos,
                             velocity=msg.velocity,
-                            magnitude=msg.magnitude * 3.0,
+                            magnitude=msg.magnitude * 1.5,
                             velocity_magnitude=msg.velocity_magnitude * 3.5,
                             radius=0,
                             srcnode=self.node,
@@ -2380,66 +2347,45 @@ class Spaz(bs.Actor):
                             force_direction=msg.force_direction,                           
                         )
                     )
-                    # ---------------- healpoints -------------------
-                    if ba.app.config.get("squda_parrytype") == 1:
-                        healpoints = 450
-                    if ba.app.config.get("squda_parrytype") == 2:
-                        healpoints = 250
-                    if ba.app.config.get("squda_parrytype") == 3:
-                        healpoints = 150
-                    self.hitpoints += healpoints
-                    # ---------------- healpoints -------------------
-                # If we don't have a source node, 
-                # something that wasn't a spaz hit us.
+                # ------------------------- default parry ------------------------------
+                hurtiness = 3.8
+                flash_color = (1.0, 0.8, 0.4)
+                light = bs.newnode(
+                    'light',
+                    attrs={
+                        'position': self.node.position,
+                        'radius': 0.12 + hurtiness * 0.12,
+                        'intensity': 0.3 * (1.0 + 1.0 * hurtiness),
+                        'height_attenuated': False,
+                        'color': flash_color,
+                    },
+                )
+                bs.timer(0.06, light.delete)
+                flash = bs.newnode(
+                    'flash',
+                    attrs={
+                        'position': self.node.position,
+                        'size': 0.17 + 0.17 * hurtiness,
+                        'color': flash_color,
+                    },
+                )
+                bs.timer(0.06, flash.delete)
+                # Let us parry again, and increment our times parried.
+                self.canparry2 = True
+                self.timesparried += 1
+                self.timesparriedtotal += 1
+                # ---------------- healpoints -------------------
+                if ba.app.config.get("squda_parrytype") == 1:
+                    healpoints = 450
+                if ba.app.config.get("squda_parrytype") == 2:
+                    healpoints = 250
+                if ba.app.config.get("squda_parrytype") == 3:
+                    healpoints = 150
                 else:
-                    hurtiness = 3.8
-                    flash_color = (1.0, 0.8, 0.4)
-                    light = bs.newnode(
-                        'light',
-                        attrs={
-                            'position': self.node.position,
-                            'radius': 0.12 + hurtiness * 0.12,
-                            'intensity': 0.3 * (1.0 + 1.0 * hurtiness),
-                            'height_attenuated': False,
-                            'color': flash_color,
-                        },
-                    )
-                    bs.timer(0.06, light.delete)
-                    flash = bs.newnode(
-                        'flash',
-                        attrs={
-                            'position': self.node.position,
-                            'size': 0.17 + 0.17 * hurtiness,
-                            'color': flash_color,
-                        },
-                    )
-                    bs.timer(0.06, flash.delete)
-                    # ---------------- healpoints -------------------
-                    if ba.app.config.get("squda_parrytype") == 1:
-                        healpoints = 450
-                    if ba.app.config.get("squda_parrytype") == 2:
-                        healpoints = 250
-                    if ba.app.config.get("squda_parrytype") == 3:
-                        healpoints = 150
-                    self.hitpoints += healpoints
-                    # ---------------- healpoints -------------------
-                    # Let us parry again, and increment our times parried.
-                    self.canparry2 = True
-                    self.timesparried += 1
-                    self.timesparriedtotal += 1
-                    
-                    # If we parried a total of above 49 times, grant our player a achievement.
-                    if self.timesparriedtotal == 49:
-                        ba.app.classic.ach.award_local_achievement(
-                            'Parrier'
-                        )
-                        
-                    # If we parried more than 5 times, do the funny
-                    # "I'm not gonna sugarcoat it" thing.
-                    if self.timesparried >= 5:
-                        bs.getsound('bellMed').play()
-                        bs.getsound('dingSmall').play()
-                        self.sugarcoat_overlay(sound='blank', image='sugarcoatparry')
+                    print('no parrytype config, this shouldn\'t happen')
+                self.hitpoints += healpoints
+                self.updatemeter
+                # ---------------- healpoints -------------------
                 bs.getsound('parried').play()
                 bs.emitfx(
                     position=self.node.position,
@@ -2449,8 +2395,20 @@ class Spaz(bs.Actor):
                     spread=1.5,
                     chunk_type='spark',
                 )
+                # If we parried a total of above 49 times, grant our player a achievement.
+                if self.timesparriedtotal == 49:
+                    ba.app.classic.ach.award_local_achievement(
+                        'Parrier'
+                    )
+                # If we parried more than 5 times, do the funny
+                # "I'm not gonna sugarcoat it" thing.
+                if self.timesparried >= 5:
+                    bs.getsound('bellMed').play()
+                    bs.getsound('dingSmall').play()
+                    self.sugarcoat_overlay(sound='blank', image='sugarcoatparry')
                 return True
-                    
+                # ------------------------- default parry ------------------------------
+                 
             # If we were recently hit, don't count this as another.
             # (so punch flurries and bomb pileups essentially count as 1 hit).
             local_time = int(bs.time() * 1000.0)
@@ -2877,12 +2835,14 @@ class Spaz(bs.Actor):
             if self.light:
                 self.light.delete()
                 self.light = None
+            if self.sparkies:
+                self.sparkies = None
             if self.yeehaw_text:
                 self.yeehaw_text.delete()
                 self.yeehaw_text = None
-            if self.earthmeter and not self.alreadydidanimation == True:
+            if self.earthmeter and self.alreadydidanimation != True:
                 self.earthhptext.delete()
-                self.alreadydidanimation == True
+                self.alreadydidanimation = True
                 bs.animate_array(self.earthmeter, "position", 2,{
                     0.0: (self.meterx, self.metery),
                     0.5: (self.meterx, self.metery - 500),
@@ -2895,9 +2855,9 @@ class Spaz(bs.Actor):
                     0.0: (self.meterx, self.metery + 25),
                     0.5: (self.meterx, self.metery - 500),
                 })
-                bs.timer(1.0, lambda: self.earthchar.delete())
-                bs.timer(1.0, lambda: self.earthmeter.delete())
-                bs.timer(1.0, lambda: self.earthmetertext.delete())
+                bs.timer(1.0, self.earthchar.delete)
+                bs.timer(1.0, self.earthmeter.delete)
+                bs.timer(1.0, self.earthmetertext.delete)
             if self.earthsptext and self.earthsptext.exists():
                 self.earthsptext.delete()
             if msg.immediate:
@@ -2922,7 +2882,7 @@ class Spaz(bs.Actor):
                             ),
                             color=(0.9, 0.01, 0.01)
                         )
-                    bs.timer(0.1, lambda: self.node.delete())
+                    bs.timer(0.1, self.node.delete)
                         
             elif self.node:
                 if not wasdead:
@@ -2950,7 +2910,7 @@ class Spaz(bs.Actor):
                                     resource='playerExploded', 
                                     subs=[('${NAME}', self.node.name)]
                                 ),
-                                color=(1.0, 0.2, 0.2)
+                                color=(1.0, 0.1, 0.1)
                             )
                     self.node.dead = True
                     bs.timer(6.0, self.node.delete)

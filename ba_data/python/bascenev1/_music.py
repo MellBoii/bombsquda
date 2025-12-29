@@ -89,7 +89,9 @@ class MusicType(Enum):
     FLYING = 'Flying'
     FLYING2 = 'Flying2'
     SCARY = 'Scary'
-    COOKIN = 'Cookin'
+    SUPER = 'Super'
+    SRB2_OVERTIME = 'SRB2_Overtime'
+    SRB2_PINCH = 'SRB2_Pinch'
     MARCHING = 'Marching'
     DEFEAT = 'Defeat'
     CREDITS = 'Credits'
@@ -199,7 +201,9 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
             bs.MusicType.LAP9: "Vengeance With a Pinch of Sauce - skibsthegoober2500",
             bs.MusicType.GAMBLING: "WEXECUTED (Instrumental) - Sherry",
             bs.MusicType.METALCAPTIME: "IT'S TV TIME but it's Metal Cap Theme - @secret_fan48",
-            bs.MusicType.COOKIN: "True Final Boss - Sonic Mania",
+            bs.MusicType.SUPER: "Super Sonic - Sonic Robo Blast 2",
+            bs.MusicType.SRB2_PINCH: "Hurry Up! - Sonic Robo Blast 2 Battle",
+            bs.MusicType.SRB2_OVERTIME: "OVERTIME!! - Sonic Robo Blast 2 Battle",
             bs.MusicType.RAGE: "Dr. Andonuts' Rage SSBU Mix - Frakture",
             bs.MusicType.GRAND_ROMP: "It's TV Time! - Deltarune",
             bs.MusicType.HOCKEY: "Koopa Cape - Mario Kart Wii",
