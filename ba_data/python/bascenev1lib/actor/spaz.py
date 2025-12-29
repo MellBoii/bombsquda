@@ -1427,16 +1427,7 @@ class Spaz(bs.Actor):
                 },
             )
             bs.timer(0.12, flash.delete)
-            
-            def updatehp():
-                if self.earthhptext and self.earthhptext.exists():
-                    self.earthhptext.text = str(int(self.hitpoints / 10))
-                    if self.earthmeter and self.earthmeter.exists():
-                        self.earthmeter.texture = bs.gettexture('earthmetersuper')
-                        self.earthhptext.color = (1.0, 0.9, 0.5)
-                        self.earthsptext.color = (1.0, 0.9, 0.5)
-                        self.earthmetertext.color = (1.0, 0.9, 0.5)
-            bs.timer(0.1, lambda: updatehp())
+            bs.timer(0.1, self.updatemeter)
             self.say(wave=True)
             if char_name:
                 appearances = bs.app.classic.spaz_appearances
@@ -2318,11 +2309,18 @@ class Spaz(bs.Actor):
                             force_direction=msg.force_direction,                           
                         )
                     )
-                    # Heal and pulse green.
-                    self.hitpoints += 300
+                    # ----------------- healpoints -------------------
+                    if ba.app.config.get("squda_parrytype") == 1:
+                        healpoints = 450
+                    elif ba.app.config.get("squda_parrytype") == 2:
+                        healpoints = 250
+                    elif ba.app.config.get("squda_parrytype") == 3:
+                        healpoints = 150
+                    else:
+                        healpoints = 480
+                    self.hitpoints += healpoints
                     self.pulse_green()
-                    # Launch the other player.
-                    # I don't know if this actually works yet.
+                    # ----------------- healpoints -------------------
                     msg.srcnode.handlemessage('impulse', self.node.position[0], self.node.position[1], self.node.position[2],
                                 0, 25, 0,
                                 yforce, 0.05, 0, 0,
@@ -2332,27 +2330,23 @@ class Spaz(bs.Actor):
                                 0, 25, 0,
                                 xforce, 0.05, 0, 0,
                                 v2[0]*15*2, 0, v2[2]*15*2)
-                    # Play a sound to confirm we parried, and increment our times parried.
+                                
                     bs.getsound('parried').play()
                     self.timesparried += 1
                     self.timesparriedtotal += 1
-                    # If we parried more than 5 times, do the funny
-                    # "I'm not gonna sugarcoat it" thing.
+                    # i'm not gonna sugarcoat it overlay
                     if self.timesparried >= 5:
                         bs.getsound('bellMed').play()
                         bs.getsound('dingSmall').play()
                         self.sugarcoatit(sound='blank', image='sugarcoatparry')
-                    # If we parried a total of above 49 times, grant our player a achievement.
+                        
                     if self.timesparriedtotal == 49:
                         ba.app.classic.ach.award_local_achievement(
                             'Parrier'
                         )
-                    # Let us parry again.
                     self.canparry2 = True
-                    # Set value because i'm lazy.
                     hurtiness = 3.8
                     flash_color = (1.0, 0.8, 0.4)
-                    # Flash light to confirm we parried.
                     light = bs.newnode(
                         'light',
                         attrs={
@@ -2373,76 +2367,32 @@ class Spaz(bs.Actor):
                         },
                     )
                     bs.timer(0.06, flash.delete)
-                    # Check for if it was a impact damage source.
-                    # Fall damage, in basic terms.
-                    if msg.hit_type == 'impact':
-                        # Visually show we parried impact with text.
-                        PopupText(
-                        bs.Lstr(resource='traumaParried'),
-                        position=self.node.position,
-                        color=(1, 0.9, 0.1, 1.0),
-                        scale=1.4,
-                        ).autoretain()
-                        # Play sounds.
-                        bs.getsound('bellHigh').play()
-                        bs.getsound('orchestraHit').play()
-                    # let us "counter" if parrytype is 1
-                    if ba.app.config.get("squda_parrytype") == 1:
-                        savedscale = self._punch_power_scale
-                        self._punch_power_scale = 3.0
-                        def reset():
-                            self._punch_power_scale = savedscale
-                        bs.timer(0.4, reset)
                     return True
-                # If we don't have a source node, something that wasn't a spaz hit us.
-                else:
-                    if msg.bombowner:
-                        # Oh hey, we have a bomb owner! Affect them.
-                        msg.bombowner.handlemessage('impulse', 
-                                self.node.position[0], 
-                                self.node.position[1], 
-                                self.node.position[2],
-                                0, 25, 0, yforce, 0.05, 
-                                0, 0, 0, 20*400, 0
-                        )
-                        msg.bombowner.handlemessage(
-                            bs.HitMessage(
-                                pos=msg.pos,
-                                velocity=msg.velocity,
-                                magnitude=msg.magnitude * 3.0,
-                                velocity_magnitude=msg.velocity_magnitude * 3.5,
-                                radius=0,
-                                srcnode=self.node,
-                                source_player=self.source_player,
-                                force_direction=msg.force_direction,                           
-                            )
-                        )
-                    # Show a flash to confirm we parried.
-                    hurtiness = 3.8
-                    flash_color = (1.0, 0.8, 0.4)
-                    light = bs.newnode(
-                        'light',
-                        attrs={
-                            'position': self.node.position,
-                            'radius': 0.12 + hurtiness * 0.12,
-                            'intensity': 0.3 * (1.0 + 1.0 * hurtiness),
-                            'height_attenuated': False,
-                            'color': flash_color,
-                        },
+                # No source node? Check for bomb owner.
+                # This lets us affects people who threw a bomb to us.
+                elif msg.bombowner:
+                    yforce = 45
+                    msg.bombowner.handlemessage('impulse', 
+                            self.node.position[0], 
+                            self.node.position[1], 
+                            self.node.position[2],
+                            0, 25, 0, yforce, 0.05, 
+                            0, 0, 0, 20*400, 0
                     )
-                    bs.timer(0.06, light.delete)
-                    flash = bs.newnode(
-                        'flash',
-                        attrs={
-                            'position': self.node.position,
-                            'size': 0.17 + 0.17 * hurtiness,
-                            'color': flash_color,
-                        },
+                    # hitmessage
+                    msg.bombowner.handlemessage(
+                        bs.HitMessage(
+                            pos=msg.pos,
+                            velocity=msg.velocity,
+                            magnitude=msg.magnitude * 3.0,
+                            velocity_magnitude=msg.velocity_magnitude * 3.5,
+                            radius=0,
+                            srcnode=self.node,
+                            source_player=self.source_player,
+                            force_direction=msg.force_direction,                           
+                        )
                     )
-                    bs.timer(0.06, flash.delete)
-                    # Play a sound that will also confirm we parried.
-                    bs.getsound('parried').play()
-                    # Heal and pulse green.
+                    # ---------------- healpoints -------------------
                     if ba.app.config.get("squda_parrytype") == 1:
                         healpoints = 450
                     if ba.app.config.get("squda_parrytype") == 2:
@@ -2451,39 +2401,78 @@ class Spaz(bs.Actor):
                         healpoints = 150
                     self.hitpoints += healpoints
                     self.pulse_green()
+                    # ---------------- healpoints -------------------
+                    
+                # If we don't have a source node, 
+                # something that wasn't a spaz hit us.
+                else:
+                    hurtiness = 3.8
+                    flash_color = (1.0, 0.8, 0.4)
+                    light = bs.newnode(
+                        'light',
+                        attrs={
+                            'position': self.node.position,
+                            'radius': 0.12 + hurtiness * 0.12,
+                            'intensity': 0.3 * (1.0 + 1.0 * hurtiness),
+                            'height_attenuated': False,
+                            'color': flash_color,
+                        },
+                    )
+                    bs.timer(0.06, light.delete)
+                    flash = bs.newnode(
+                        'flash',
+                        attrs={
+                            'position': self.node.position,
+                            'size': 0.17 + 0.17 * hurtiness,
+                            'color': flash_color,
+                        },
+                    )
+                    bs.timer(0.06, flash.delete)
+                    # ---------------- healpoints -------------------
+                    if ba.app.config.get("squda_parrytype") == 1:
+                        healpoints = 450
+                    if ba.app.config.get("squda_parrytype") == 2:
+                        healpoints = 250
+                    if ba.app.config.get("squda_parrytype") == 3:
+                        healpoints = 150
+                    self.hitpoints += healpoints
+                    self.pulse_green()
+                    # ---------------- healpoints -------------------
+                    
                     # Let us parry again, and increment our times parried.
-                    if not ba.app.config.get("squda_parrytype") == 3:
-                        self.canparry2 = True
+                    self.canparry2 = True
                     self.timesparried += 1
                     self.timesparriedtotal += 1
+                    
                     # If we parried a total of above 49 times, grant our player a achievement.
                     if self.timesparriedtotal == 49:
                         ba.app.classic.ach.award_local_achievement(
                             'Parrier'
                         )
+                        
                     # If we parried more than 5 times, do the funny
                     # "I'm not gonna sugarcoat it" thing.
                     if self.timesparried >= 5:
                         bs.getsound('bellMed').play()
                         bs.getsound('dingSmall').play()
                         self.sugarcoatit(sound='blank', image='sugarcoatparry')
+                        
                     # Check for if it was a impact damage source.
                     # Fall damage, in basic terms.
                     if msg.hit_type == 'impact':
-                        if not ba.app.config.get("squda_parrytype") == 3:
-                            # Visually show we parried impact with text.
-                            PopupText(
-                            bs.Lstr(resource='traumaParried'),
-                            position=self.node.position,
-                            color=(1, 0.9, 0.1, 1.0),
-                            scale=1.4,
-                            ).autoretain()
-                            # Heal a bit extra.
-                            self.hitpoints += 40
-                            # Play sounds.
-                            bs.getsound('bellHigh').play()
-                            bs.getsound('orchestraHit').play()
+                        PopupText(
+                        bs.Lstr(resource='traumaParried'),
+                        position=self.node.position,
+                        color=(1, 0.9, 0.1, 1.0),
+                        scale=1.4,
+                        ).autoretain()
+                        # Heal a bit extra.
+                        self.hitpoints += 40
+                        # Play sounds.
+                        bs.getsound('bellHigh').play()
+                        bs.getsound('orchestraHit').play()
                     return True
+                    
             # If we were recently hit, don't count this as another.
             # (so punch flurries and bomb pileups essentially count as 1 hit).
             local_time = int(bs.time() * 1000.0)
@@ -2501,29 +2490,7 @@ class Spaz(bs.Actor):
             # Reset our times parried, due to getting hurt.
             self.timesparried = 0
             if self.earthhptext and self.earthhptext.exists():
-                def updatehp():
-                    if self.earthhptext and self.earthhptext.exists():
-                        self.earthhptext.text = str(int(self.hitpoints / 10))
-                    if self.hitpoints <= 210:
-                        if self.earthmeter and self.earthmeter.exists():
-                            self.earthmeter.texture = bs.gettexture('earthmetermortal')
-                        if self.earthhptext and self.earthhptext.exists():
-                            self.earthhptext.color = (1.0, 0.3, 0.3)
-                            self.earthmetertext.color = (1.0, 0.3, 0.3)
-                        if self.earthsptext and self.earthsptext.exists():
-                            self.earthsptext.color = (1.0, 0.3, 0.3)
-                    elif self.issuper == True:
-                        if self.earthmeter and self.earthmeter.exists():
-                            self.earthmeter.texture = bs.gettexture('earthmetersuper')
-                    else:
-                        if self.earthmeter and self.earthmeter.exists():
-                            self.earthmeter.texture = bs.gettexture('earthmeter')
-                        if self.earthhptext and self.earthhptext.exists():
-                            self.earthhptext.color = (1.0, 1.0, 1.0)
-                            self.earthmetertext.color = (1.0, 1.0, 1.0)
-                        if self.earthsptext and self.earthsptext.exists():
-                            self.earthsptext.color = (1.0, 1.0, 1.0)
-                bs.timer(0.1, lambda: updatehp())
+                bs.timer(0.1, self.updatemeter)
             # Change last hit type to the message's hit type.
             self.lasthittype = msg.hit_type
             # If they've got a shield, deliver it to that instead.
@@ -3207,6 +3174,32 @@ class Spaz(bs.Actor):
             return super().handlemessage(msg)
         return None
         
+    def updatemeter(self):
+        """ 
+        update the earthbound-y
+        meter if it still exists.
+        """
+        if self.earthhptext and self.earthhptext.exists():
+            self.earthhptext.text = str(int(self.hitpoints / 10))
+        if self.hitpoints <= 210:
+            if self.earthmeter and self.earthmeter.exists():
+                self.earthmeter.texture = bs.gettexture('earthmetermortal')
+            if self.earthhptext and self.earthhptext.exists():
+                self.earthhptext.color = (1.0, 0.3, 0.3)
+                self.earthmetertext.color = (1.0, 0.3, 0.3)
+            if self.earthsptext and self.earthsptext.exists():
+                self.earthsptext.color = (1.0, 0.3, 0.3)
+        elif self.issuper == True:
+            if self.earthmeter and self.earthmeter.exists():
+                self.earthmeter.texture = bs.gettexture('earthmetersuper')
+        else:
+            if self.earthmeter and self.earthmeter.exists():
+                self.earthmeter.texture = bs.gettexture('earthmeter')
+            if self.earthhptext and self.earthhptext.exists():
+                self.earthhptext.color = (1.0, 1.0, 1.0)
+                self.earthmetertext.color = (1.0, 1.0, 1.0)
+            if self.earthsptext and self.earthsptext.exists():
+                self.earthsptext.color = (1.0, 1.0, 1.0)
     
     def say(self, 
         txt: str | None = None, 
@@ -3359,7 +3352,7 @@ class Spaz(bs.Actor):
                         self.say(bs.Lstr(resource='melDiesnt'), shouldcelb=False)
                 bs.timer(1.9, chec)
                 
-        def updatehp():
+        def hp_boost():
             if not self.node:
                 return
             self.hitpoints += 210
@@ -3373,29 +3366,10 @@ class Spaz(bs.Actor):
                 scale=1.4,
             ).autoretain()
             self.pulse_green()
-            if self.earthhptext and self.earthhptext.exists():
-                self.earthhptext.text = str(int(self.hitpoints / 10))
-            if self.hitpoints <= 210:
-                if self.earthmeter and self.earthmeter.exists():
-                    self.earthmeter.texture = bs.gettexture('earthmetermortal')
-                if self.earthhptext and self.earthhptext.exists():
-                    self.earthhptext.color = (1.0, 0.3, 0.3)
-                    self.earthmetertext.color = (1.0, 0.3, 0.3)
-                if self.earthsptext and self.earthsptext.exists():
-                    self.earthsptext.color = (1.0, 0.3, 0.3)
-            elif self.issuper == True:
-                if self.earthmeter and self.earthmeter.exists():
-                    self.earthmeter.texture = bs.gettexture('earthmetersuper')
-            else:
-                if self.earthmeter and self.earthmeter.exists():
-                    self.earthmeter.texture = bs.gettexture('earthmeter')
-                if self.earthhptext and self.earthhptext.exists():
-                    self.earthhptext.color = (1.0, 1.0, 1.0)
-                    self.earthmetertext.color = (1.0, 1.0, 1.0)
-                if self.earthsptext and self.earthsptext.exists():
-                    self.earthsptext.color = (1.0, 1.0, 1.0)
-        if random.random() < 0.42 and shouldcelb == True:
-            bs.timer(1.2, updatehp)
+            self.updatemeter()
+            
+        if random.random() < 0.5 and shouldcelb == True:
+            bs.timer(1.2, hp_boost)
 
         # Play a jump sound (random)
         random.choice(self.node.jump_sounds).play(position=self.node.position)
@@ -3430,8 +3404,7 @@ class Spaz(bs.Actor):
             self.node.billboard_cross_out = False
             self.flashing = False
         
-        # self.flashing = True
-        # eh
+        self.flashing = True
         self.node.billboard_texture = texture
         self.node.billboard_opacity = 1.0
         self.node.billboard_cross_out = crossout
