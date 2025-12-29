@@ -717,7 +717,7 @@ class Spaz(bs.Actor):
             return
         self.node.jump_pressed = False
     
-    def parry(self):
+    def attempt_parry(self):
         """
         Called upon when attempting a parry;
         Will set a value for some seconds that determines
@@ -748,7 +748,8 @@ class Spaz(bs.Actor):
         # After some seconds, let us parry again. This is our cooldown.
         bs.timer(parrycooldown, letparryagain)
         # 'Celebrate' to show we're parrying, n play a sound.
-        self.node.handlemessage('celebrate', int(100))
+        milscs = parrytime * 1000
+        self.node.handlemessage('celebrate', int(milscs))
         bs.getsound('parry').play()
 
     def on_pickup_press(self) -> None:
@@ -762,7 +763,7 @@ class Spaz(bs.Actor):
             return
         if self.canparry == True:
             # If we can parry, replace our pickup button with parrying.
-            self.parry()
+            self.attempt_parry()
             return
         if not self.node:
             return
@@ -2392,6 +2393,7 @@ class Spaz(bs.Actor):
                             force_direction=msg.force_direction,                           
                         )
                     )
+                    bs.getsound('parried').play()
                     # ---------------- healpoints -------------------
                     if ba.app.config.get("squda_parrytype") == 1:
                         healpoints = 450
