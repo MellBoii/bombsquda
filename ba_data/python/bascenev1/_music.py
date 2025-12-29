@@ -49,6 +49,7 @@ class MusicType(Enum):
     VICTORYFINAL = 'VictoryFinal'
     CHAR_SELECT = 'Char_Select'
     CHAR_SELECT2 = 'Char_Select2'
+    CHAR_SELECT_F = 'Char_Select_F'
     TUTORIAL = 'Tutorial'
     RUN_AWAY = 'Run_Away'
     MODULATINGTIME = 'ModulatingTime'
@@ -147,15 +148,16 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
             bs.MusicType.EPIC: "Nocturne no. 2 in E-Flat major, op. 9 no. 2",
             bs.MusicType.EPICFAST: "Starvation V2 - T_heonlywhitesofa",
             bs.MusicType.CHAR_SELECT: "Overworld Map - Mario Kart World",
+            bs.MusicType.CHAR_SELECT2: "Your Name, Please - EarthBound Dimensions",
+            bs.MusicType.CHAR_SELECT_F: "Sky Map - Mario Kart World",
             bs.MusicType.TUTORIAL: "Doing it Right - Mario & Luigi: Bowser's Inside Story",
             bs.MusicType.ONLINE: "Across The World - Tyron",
             bs.MusicType.D_RUNNIN: "Runnin from Evil - Doom II", 
             bs.MusicType.BUSINESS: "Porky Means Business! - EarthBound",
-            bs.MusicType.PAUSE: "As You Wish - MOTHER 3",
+            bs.MusicType.PAUSE: "Upgrade Station - Team Fortress 2",
             bs.MusicType.ELIM_DANGER: "Danger - Dr. Robotnik's Mean Bean Machine",
             bs.MusicType.ELIM_VERSUS: "2P. Versus - Dr. Robotnik's Mean Bean Machine",
             bs.MusicType.SCORES: "Result (1st Place ~ 3rd Place) - Mario Kart: Double Dash!!",
-            bs.MusicType.CHAR_SELECT2: "Sky Map - Mario Kart World",
             bs.MusicType.FLYING: "Ducktales Moon Theme meets Metal - 331Erock",
             bs.MusicType.FLYING2: "Sky Theme - Mario vs Luigi Online",
             bs.MusicType.RACE: "VS Metal Sonic - Sonic Mania",

@@ -62,6 +62,7 @@ ASSET_SOUNDTRACK_ENTRIES: dict[MusicType, AssetSoundtrackEntry] = {
     ),
     MusicType.CHAR_SELECT: AssetSoundtrackEntry('music/charSelectMusic', volume=1.0),
     MusicType.CHAR_SELECT2: AssetSoundtrackEntry('music/charSelect2', volume=1.0),
+    MusicType.CHAR_SELECT_F: AssetSoundtrackEntry('music/charSelectFinale', volume=1.0),
     MusicType.TUTORIAL: AssetSoundtrackEntry('music/tutorial', volume=1.4),
     MusicType.RUN_AWAY: AssetSoundtrackEntry('music/runAwayMusic', volume=1.0),
     MusicType.METALCAPTIME: AssetSoundtrackEntry('music/metalMusicALT', volume=2.0),
