@@ -550,7 +550,10 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
             for player in self.players:
                 def begin(p=player):
                     # teleport a bit above on start 
+                    
                     # so our player falls down
+                    if not p.actor.node.exists():
+                        return
                     p.actor.node.handlemessage(
                         bs.StandMessage(
                             (
@@ -564,14 +567,20 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
                     p.actor.disconnect_controls_from_player()
                 def lookfwd(p=player):
                     # player looks forward
+                    if not p.actor.node.exists():
+                        return
                     p.actor.node.move_up_down = 0.1
                     def stop():
                         # stop so we don't just keep moving
                         p.actor.node.move_up_down = 0
                     bs.timer(0.2, stop)
                 def connect(p=player):
+                    if not p.actor.node.exists():
+                        return
                     p.actor.connect_controls_to_player()
                 def scream(p=player):
+                    if not p.actor.node.exists():
+                        return
                     # make the earthmover scream!!!
                     bs.getsound('earthmover_scream').play()
                     self.shaketimer = bs.Timer(0.040, lambda: bs.camerashake(intensity=1), repeat=True)
