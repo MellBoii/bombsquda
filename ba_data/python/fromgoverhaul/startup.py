@@ -52,7 +52,7 @@ class Startup():
     cfg['isbombsqudaorsomething'] = None
     config.apply_and_commit()
     try:
-        cfg['playersfirsttime']
+        cfg['squda_playersfirsttime']
     except:
         print('incredibly bad fuckin error.')
         print('something went bad in fromgoverhaul\'s startup, and we couldn\t add config stuff')
@@ -88,98 +88,10 @@ class Startup():
         print(error_text)
         bs.screenmessage(
             f"An error occured:\n{error_text}", 
-            color=(1, 0.3, 0.3)
+            color=(1, 0, 0)
         )
         bui.getsound('error').play()
-        with bs.get_foreground_host_activity().context:
-            if ba.app.config.get("squda_nosugarcoats", True):
-                return
-            icon = bs.newnode(
-                'image',
-                attrs={
-                    'texture': bs.gettexture('jacking'),  # lol
-                    'position': (0, 0),   # pos
-                    'fill_screen': True,
-                    'opacity': 1.0,
-                    'absolute_scale': True,
-                    'attach': 'center'
-                },
-            )
-            # fade image step by step
-            def _fade_step():
-                if icon and icon.exists():
-                    new_opacity = icon.opacity - 0.05
-                    if new_opacity <= 0.0:
-                        icon.delete()
-                    else:
-                        icon.opacity = new_opacity
-                        bs.timer(0.03, _fade_step)  # repeat until gone
-
-            # after a bit of delay THEN start fading
-            bs.timer(0.1, _fade_step)
-        ba.app.config['squda_timeserrored'] += 1
-        def error_reset():
-            ba.app.config['squda_timeserrored'] = 0
-        bs.timer(3.0, error_reset)
-        # stop everything if we get a number exceptions so we dont get flooded
-        if ba.app.config['squda_timeserrored'] > 10:
-            newnode = bs.newnode(
-                'image', 
-                attrs={
-                    'texture': bs.gettexture('white2'),
-                    'attach': 'center',
-                    'opacity': 0.5,
-                    'fill_screen': True,
-                    'color': (0, 0, 1)
-                }
-            )
-            newnode2 = bs.newnode(
-                'text',
-                attrs={
-                    'text': f"Too many errors occured within a certain timeframe.\nMost recent error:\n{error_text}",
-                    'h_align': 'left',
-                    'v_attach': 'top',
-                    'h_attach': 'left',
-                    'position': (0, -30),
-                    'scale': 0.9,
-                    'color': (1, 1, 1),
-                    'shadow': 0.7,
-                    'flatness': 0.5,
-                },
-            )
-            newnode3 = bs.newnode(
-                'text',
-                attrs={
-                    'text': 'The game will now hang to prevent further errors.\nPlease check your console :^)',
-                    'h_align': 'left',
-                    'v_attach': 'bottom',
-                    'h_attach': 'left',
-                    'position': (5, 30),
-                    'scale': 0.9,
-                    'color': (1, 1, 1),
-                    'shadow': 0.7,
-                    'flatness': 0.5,
-                },
-            )
-            newnode4 = bs.newnode(
-                'image', 
-                attrs={
-                    'texture': bs.gettexture('error'),
-                    'absolute_scale': True,
-                    'position': (400, -130),
-                    'attach': 'center',
-                    'opacity': 1.0,
-                    'scale': (550, 550),
-                    'color': (1, 1, 1)
-                }
-            )
-            print('Too many errors occured within a certain timeframe.')
-            print('The game will now hang to prevent further errors.')
-            print('Please check any lines above for bugs :^)')
-            bs.setmusic(bs.MusicType.CRASH_HANDLER)
-            ba.apptimer(0.1, lambda: time.sleep(9999))
-            ba.apptimer(0.1, lambda: time.sleep(9999))
-
+        
     # Install the hook
     sys.excepthook = my_global_exception_hook
 
