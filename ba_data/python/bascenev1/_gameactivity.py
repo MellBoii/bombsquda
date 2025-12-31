@@ -54,8 +54,7 @@ class EmeraldActor(bs.Actor):
     ):
         super().__init__()
         self.mesh = bs.getmesh('chaosEmerald')
-        self.emerald_type = random.randint(1, 7)
-        self.texname = 'emerald' + str(self.emerald_type)
+        self.texname = self.get_fairest_emerald()
         self.tex = bs.gettexture(self.texname)
         self.material = bs.Material()
         self.material.add_actions(
@@ -81,6 +80,26 @@ class EmeraldActor(bs.Actor):
                 'materials': (self.material, SharedObjects.get().object_material),
             },
         )
+        bs.animate(self.node, 'mesh_scale', {0: 0, 0.3: 1})
+    
+    def get_fairest_emerald(self) -> str:
+        all_types = [f"emerald{i}" for i in range(1, 7)]
+
+        # count how many people have each emerald
+        counts = {e: 0 for e in all_types}
+
+        for player in self.activity.players:
+            for e in getattr(player.actor, "emeralds", []):
+                counts[e] += 1
+
+        # find the minimum that people have
+        min_count = min(counts.values())
+
+        # choose among the emeralds players have the least
+        candidates = [e for e, c in counts.items() if c == min_count]
+
+        return random.choice(candidates)  
+        
     @override
     def handlemessage(self, msg: Any) -> Any:
         assert not self.expired
@@ -317,7 +336,7 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         self.new_emerald = None
         self.emeralds = []
         self.emerald_drop_timer = bs.Timer(
-            0.5, babase.WeakCall(self.emerald_drop), repeat=True
+            1.2, babase.WeakCall(self.emerald_drop), repeat=True
         )
         self.metal_sound = _bascenev1.newnode('sound', attrs={'sound': _bascenev1.getsound('metalMusic'),
                         'volume': 0.0})

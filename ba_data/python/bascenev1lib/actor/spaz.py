@@ -2007,8 +2007,7 @@ class Spaz(bs.Actor):
                 bs.getsound('cd_alright').play()
             if msg.current not in self.emeralds:
                 self.emeralds.append(msg.current)
-                print(len(self.emeralds))
-                bs.getsound('s2_emerald').play()
+                bs.getsound('s3_blsp').play()
             else:
                 bs.getsound('player_unready').play()
             
@@ -3792,6 +3791,7 @@ class Spaz(bs.Actor):
                     'motorroach_dies', 
                     'motorroach_dies2',
                     'fpants_death',
+                    'sgsn_scream',
                 ]
                 bs.getsound(random.choice(shatter2sfx)).play(position=self.node.position)
         self.die()
