@@ -159,7 +159,7 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
             bs.MusicType.PAUSE: "Upgrade Station - Team Fortress 2",
             bs.MusicType.ELIM_DANGER: "Danger - Dr. Robotnik's Mean Bean Machine",
             bs.MusicType.ELIM_VERSUS: "2P. Versus - Dr. Robotnik's Mean Bean Machine",
-            bs.MusicType.SCORES: "Result (1st Place ~ 3rd Place) - Mario Kart: Double Dash!!",
+            bs.MusicType.SCORES: "Intermission - Sonic Robo Blast 2",
             bs.MusicType.FLYING: "Ducktales Moon Theme meets Metal - 331Erock",
             bs.MusicType.FLYING2: "Sky Theme - Mario vs Luigi Online",
             bs.MusicType.RACE: "VS Metal Sonic - Sonic Mania",
