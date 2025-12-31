@@ -241,6 +241,34 @@ class SpazFactory:
                 ('roll_sound', self.skid_sound, 2.0, 1),
             ),
         )
+        
+        # Send footing messages to spazzes so they know when they're on
+        # solid ground.
+        # Eww; this probably should just be built into the spaz node.
+        self.roller_material.add_actions(
+            conditions=('they_have_material', footing_material),
+            actions=(
+                ('message', 'our_node', 'at_connect', 'footing', 1),
+                ('message', 'our_node', 'at_disconnect', 'footing', -1),
+            ),
+        )
+
+        self.spaz_material.add_actions(
+            conditions=('they_have_material', footing_material),
+            actions=(
+                ('message', 'our_node', 'at_connect', 'footing', 1),
+                ('message', 'our_node', 'at_disconnect', 'footing', -1),
+            ),
+        )
+        from bascenev1lib.actor.spaz import FootingMessage
+
+        self.roller_material.add_actions(
+            conditions=('they_have_material', footing_material),
+            actions=(
+                ('message', 'our_node', 'at_connect', FootingMessage(1)),
+                ('message', 'our_node', 'at_disconnect', FootingMessage(-1)),
+            ),
+        )
 
         self.shield_up_sound = (
         bs.getsound('shieldUp'),

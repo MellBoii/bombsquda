@@ -18,6 +18,7 @@ from bascenev1._activity import Activity
 from bascenev1._player import PlayerInfo
 from bascenev1._messages import PlayerDiedMessage, StandMessage
 from bascenev1._score import ScoreConfig
+from bascenev1lib.gameutils import SharedObjects
 from bascenev1 import _map
 from bascenev1 import _music
 import bascenev1 as bs
@@ -36,7 +37,70 @@ if TYPE_CHECKING:
 # plugin clears type-arg declarations (which we don't require to be
 # present at runtime) but keeps parent type-args (which we sometimes use
 # at runtime).
-
+class TouchedMsg:
+    pass
+    
+class EmeraldActor(bs.Actor):
+    """
+    The actor for a chaos emerald.
+    To every actor that touches it, it gives out a
+    EmeraldMessage() with the type we have.
+    """
+    node: bs.Node
+    
+    def __init__(
+        self,
+        position: Sequence[float] = (0.0, 5.0, 0.0),
+    ):
+        super().__init__()
+        self.mesh = bs.getmesh('chaosEmerald')
+        self.emerald_type = random.randint(1, 7)
+        self.texname = 'emerald' + str(self.emerald_type)
+        self.tex = bs.gettexture(self.texname)
+        self.material = bs.Material()
+        self.material.add_actions(
+            conditions=('they_have_material', SharedObjects.get().player_material),
+            actions=(
+                ('modify_part_collision', 'collide', True),
+                ('modify_part_collision', 'physical', True),
+                ('message', 'our_node', 'at_connect', TouchedMsg()),
+            ),
+        )
+        self.node = bs.newnode(
+            'prop',
+            delegate=self,
+            attrs={
+                'body': 'box',
+                'position': position,
+                'mesh': self.mesh,
+                'light_mesh': self.mesh,
+                'shadow_size': 0.5,
+                'color_texture': self.tex,
+                'reflection': 'powerup',
+                'reflection_scale': [1.0],
+                'materials': (self.material, SharedObjects.get().object_material),
+            },
+        )
+    @override
+    def handlemessage(self, msg: Any) -> Any:
+        assert not self.expired
+        if isinstance(msg, bs.DieMessage):
+            if self.node:
+                if msg.immediate:
+                    self.node.delete()
+                else:
+                    bs.animate(self.node, 'mesh_scale', {0: 1, 0.3: 0})
+                    bs.timer(0.3, self.node.delete)
+        elif isinstance(msg, TouchedMsg):
+            toucher = bs.getcollision().opposingnode
+            isspaz = toucher.getnodetype() == 'spaz'
+            if isspaz:
+                from bascenev1lib.actor.spaz import EmeraldMessage
+                toucher.handlemessage(EmeraldMessage(self.texname))
+                self.handlemessage(bs.DieMessage())
+        elif isinstance(msg, bs.OutOfBoundsMessage):
+            self.handlemessage(bs.DieMessage(immediate=True))
+            
 
 class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
     Activity[PlayerT, TeamT]  # pylint: disable=undefined-variable
@@ -250,6 +314,11 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         self.dancing_players: list[PlayerSpaz] = []
         self.did_extra = False
         self.did_overtime = False
+        self.new_emerald = None
+        self.emeralds = []
+        self.emerald_drop_timer = bs.Timer(
+            0.5, babase.WeakCall(self.emerald_drop), repeat=True
+        )
         self.metal_sound = _bascenev1.newnode('sound', attrs={'sound': _bascenev1.getsound('metalMusic'),
                         'volume': 0.0})
         self.dancin_sound = _bascenev1.newnode('sound', attrs={'sound': _bascenev1.getsound('homeroLoop'),
@@ -602,9 +671,6 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
             # if our activity doesn't tell us to suppress the gong, play it
             if not getattr(self, "suppress_gong", False):
                 _bascenev1.timer(0.2, _bascenev1.getsound('gong').play)
-        # _bascenev1.timer(
-        #     0.2, Call(_bascenev1.playsound, _bascenev1.getsound('gong'))
-        # )
             if getattr(self, "suppress_description", False):
                 return
             # The description can be either a string or a sequence with args
@@ -672,6 +738,23 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         else:
             if self.metal_sound:
                 self.metal_sound.volume = 0.0
+    
+    def emerald_drop(self):
+        if random.random() < 0.1:
+            mp = self.map.defs.points
+            spawn_names = [
+                'ffa_spawn1',
+                'ffa_spawn2',
+                'ffa_spawn3',
+                'ffa_spawn4',
+            ]
+            points = [mp[name] for name in spawn_names if name in mp]
+            spawn = random.choice(points)
+            pos = spawn[:3]
+            self.new_emerald = EmeraldActor(
+                (pos[0], pos[1] + 2, pos[2])
+            )
+            self.emeralds.append(self.new_emerald)
 
     def dance_tick(self):
         """
@@ -943,7 +1026,7 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
                 position, angle if angle is not None else random.uniform(0, 360)
             )
         )
-        self._spawn_sound.play(1, position=spaz.node.position)
+        self._spawn_sound.play(position=spaz.node.position)
         light = _bascenev1.newnode('light', attrs={'color': light_color})
         spaz.node.connectattr('position', light, 'position')
         animate(light, 'intensity', {0: 0, 0.25: 1, 0.5: 0})
@@ -1108,7 +1191,7 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         except TypeError:
             fast_music = None
         # alright lets trigger the thing now
-        if self._standard_time_limit_time <= 61 and not getattr(self, "_did_hurryup", False):
+        if self._standard_time_limit_time <= 63 and not getattr(self, "_did_hurryup", False):
             self._did_hurryup = True
             bs.setmusic(bs.MusicType.HURRYUP)
             bs.broadcastmessage(babase.Lstr(resource='hurryUp'))
@@ -1118,14 +1201,13 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
                 bs.timer(2.0, lambda: bs.setmusic(fast_music))
         if self._standard_time_limit_time <= 1 and not getattr(self, "did_extra", False):
             self.did_extra = True
-            if fast_music == bs.MusicType.SRB2_PINCH:
-                if random.random() < 0.3:
-                    self.did_overtime = True
-                    bs.broadcastmessage(babase.Lstr(resource='overTime'))
-                    self._standard_time_limit_time += 40
-                    bs.setmusic(bs.MusicType.SRB2_OVERTIME)
-                    node = self._standard_time_limit_text.node
-                    node.text = str(self._standard_time_limit_time) + 's'
+            if random.random() < 0.6:
+                self.did_overtime = True
+                bs.broadcastmessage(babase.Lstr(resource='overTime'))
+                self._standard_time_limit_time += 60
+                bs.setmusic(bs.MusicType.SRB2_OVERTIME)
+                node = self._standard_time_limit_text.node
+                node.text = str(self._standard_time_limit_time) + 's'
         if self.did_overtime == True:
             node = self._standard_time_limit_text.node
             node.text = str(self._standard_time_limit_time) + 's'

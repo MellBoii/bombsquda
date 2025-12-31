@@ -111,7 +111,7 @@ class SharedObjects:
         if self._death_material is None:
             mat = self._death_material = bs.Material()
             mat.add_actions(
-                ('message', 'their_node', 'at_connect', bs.DieMessage())
+                ('message', 'their_node', 'at_connect', bs.OutOfBoundsMessage())
             )
         return self._death_material
 

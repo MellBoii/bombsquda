@@ -57,6 +57,24 @@ class CurseExplodeMessage:
 class BombDiedMessage:
     """A bomb has died and thus can be recycled."""
 
+class FootingMessage:
+    """
+    Gives a Message that tells
+    our actor if they're standing.
+    PS. thanks gummy for hooking this up dx
+    """
+    def __init__(self, footing):
+        self.footing = footing
+        
+class EmeraldMessage:
+    """
+    Message type for our actor
+    that tells them they got a
+    chaos emerald (part of super functionality)
+    """
+    def __init__(self, current):
+        self.current = current
+
 
 class Spaz(bs.Actor):
     """
@@ -244,6 +262,7 @@ class Spaz(bs.Actor):
         self.parrying = False
         self.canparry = False
         self.canparry2 = True
+        self.standing = False
         self.instructimage = None
         self.cansay = False
         self.lasthittype = None
@@ -335,6 +354,7 @@ class Spaz(bs.Actor):
         # Deprecated stuff.. should make these into lists.
         self.punch_callback: Callable[[Spaz], Any] | None = None
         self.pick_up_powerup_callback: Callable[[Spaz], Any] | None = None
+        self.emeralds = []
         self.flashing = False
         self._flash_timer = None
         self.impulse_scale = 1.5
@@ -673,6 +693,20 @@ class Spaz(bs.Actor):
         """
         if not self.node:
             return
+        if self.standing == False:
+            if self.issuper:
+                yforce = 120
+                self.fly_timer = bs.Timer(0.05, lambda: self.node.handlemessage(
+                        'impulse', 
+                            self.node.position[0], 
+                            self.node.position[1], 
+                            self.node.position[2],
+                            0, 25, 0,
+                            yforce, 0.05, 0, 0,
+                            0, 20*400, 0
+                        ),
+                    repeat=True
+                )
         if self.cansay == True:
             self.say(wave=True)
         if self.dashing == True:
@@ -719,6 +753,7 @@ class Spaz(bs.Actor):
         if not self.node:
             return
         self.node.jump_pressed = False
+        self.fly_timer = None
     
     def attempt_parry(self):
         """
@@ -763,6 +798,15 @@ class Spaz(bs.Actor):
         if self._roulette_active:
             # If gambling, give our item to the player.
             self.giveitem()
+            return
+        if (
+            len(self.emeralds) == 7 and
+            self.hitpoints >= 70 and
+            self.standing == False and
+            self.issuper == False
+        ):
+            self.gosuper()
+            self.emeralds = []
             return
         if self.canparry == True:
             # If we can parry, replace our pickup button with parrying.
@@ -1381,6 +1425,34 @@ class Spaz(bs.Actor):
         # apply status effect
         self.impact_scale = self.impact_scale - 0.5
         
+    def tptosafety(self):
+        mp = self.activity.map.defs.points
+        spawn_names = [
+            'ffa_spawn1',
+            'ffa_spawn2',
+            'ffa_spawn3',
+            'ffa_spawn4',
+        ]
+        points = [mp[name] for name in spawn_names if name in mp]
+        if not points:
+            print(f'{self.node.name}: I\'m super, but the activity I\'m')
+            print('on does not have any ffa spawn points. I shall now die.')
+            self.die()
+            return
+        self.node.handlemessage(
+            bs.StandMessage(random.choice(points))
+        )
+        bs.emitfx(
+            position=self.node.position,
+            velocity=self.node.velocity,
+            count=15,
+            scale=0.6,
+            spread=1.5,
+            chunk_type='spark',
+        ),
+        bs.getsound('cd_ringed').play()
+        return        
+        
     def gosuper(self, shouldntsetmusic: bool = False) -> None:
         """ 
         Called at a random chance. 
@@ -1488,9 +1560,8 @@ class Spaz(bs.Actor):
             return  # Already has one, don't stack
 
         self._has_hot_potato = True
-        self._potato_time = time  # seconds remaining
+        self.activity.spongebob_time = time  # seconds remaining
         self._potato_speed = speed
-        
         
         if self.node.name:
             self._potato_holder_text = bs.newnode(
@@ -1532,7 +1603,7 @@ class Spaz(bs.Actor):
                 attrs={
                     'text': bs.Lstr(
                         resource='spongePlayer', 
-                        subs=[('${NAME}', self.node.name)]
+                        subs=[('${NAME}', self.node.name), ('${TIME}', self.activity.spongebob_time)]
                     ),
                     'h_align': 'center',
                     'v_attach': 'top',
@@ -1549,7 +1620,7 @@ class Spaz(bs.Actor):
                 attrs={
                     'text': bs.Lstr(
                         resource='spongeChar', 
-                        subs=[('${NAME}', self.character),('${TIME}', self._potato_time)]
+                        subs=[('${NAME}', self.character),('${TIME}', self.activity.spongebob_time)]
                     ),
                     'h_align': 'center',
                     'v_attach': 'top',
@@ -1569,23 +1640,29 @@ class Spaz(bs.Actor):
                 self.spongebob_timer = None
                 return
 
-            self._potato_time -= 1
+            self.activity.spongebob_time -= 1
 
             # Update onscreen timer
             if self._potato_timer_text and self._potato_timer_text.exists():
                 if self.node.name:
                     self._potato_timer_text.text = bs.Lstr(
-                                            resource='spongePlayer', 
-                                            subs=[('${NAME}', self.node.name),('${TIME}', str(self._potato_time))]
-                                        )
+                        resource='spongePlayer', 
+                        subs=[
+                            ('${NAME}', self.node.name),
+                            ('${TIME}', str(self.activity.spongebob_time))
+                        ]
+                    )
                 else:
                     self._potato_timer_text.text = bs.Lstr(
-                                            resource='spongeChar', 
-                                            subs=[('${NAME}', self.character),('${TIME}', str(self._potato_time))]
-                                        )
+                        resource='spongePlayer', 
+                        subs=[
+                            ('${NAME}', self.character),
+                            ('${TIME}', str(self.activity.spongebob_time))
+                        ]
+                    )
 
             # Explosion
-            if self._potato_time <= 0:
+            if self.activity.spongebob_time <= 0:
                 if self._has_hot_potato == False:
                     return
                 self.firework_explode()
@@ -1915,8 +1992,27 @@ class Spaz(bs.Actor):
         # pylint: disable=too-many-statements
         # pylint: disable=too-many-branches
         assert not self.expired
-
-        if isinstance(msg, bs.PickedUpMessage):
+        
+        if isinstance(msg, FootingMessage):
+            self.standing = msg.footing == 1
+            if self.issuper:
+                self.flying = False
+                self.fly_timer = None
+                
+        if isinstance(msg, EmeraldMessage):
+            if self.issuper:
+                bs.getsound('player_unready').play()
+                return
+            if len(self.emeralds) == 7:
+                bs.getsound('cd_alright').play()
+            if msg.current not in self.emeralds:
+                self.emeralds.append(msg.current)
+                print(len(self.emeralds))
+                bs.getsound('s2_emerald').play()
+            else:
+                bs.getsound('player_unready').play()
+            
+        elif isinstance(msg, bs.PickedUpMessage):
             if self.node:
                 self.node.handlemessage('hurt_sound')
                 self.node.handlemessage('picked_up')
@@ -2148,7 +2244,7 @@ class Spaz(bs.Actor):
             elif msg.poweruptype == 'random':
                 self._activate_roulette()
             elif msg.poweruptype == 'spongebob':
-                self._activate_spongebob(10, 1)
+                self._activate_spongebob(15, 1)
             
             self.node.handlemessage('flash')
             if msg.sourcenode:
@@ -2390,10 +2486,10 @@ class Spaz(bs.Actor):
                 bs.emitfx(
                     position=self.node.position,
                     velocity=self.node.velocity,
-                    count=120,
-                    scale=2.0,
+                    count=50,
+                    scale=0.8,
                     spread=1.5,
-                    chunk_type='spark',
+                    chunk_type='ice',
                 )
                 # If we parried a total of above 49 times, grant our player a achievement.
                 if self.timesparriedtotal == 49:
@@ -2800,10 +2896,7 @@ class Spaz(bs.Actor):
                         self.sugarcoat_overlay(sound='OUUHH', image='sugarcoatfall')
                         self.die()
                     else:
-                        if random.random() < 0.01:
-                            self.gosuper()
-                            return  # prevent actual death
-                        elif random.random() < 0.25:
+                        if random.random() < 0.25:
                             self.firework_explode()
                             return # Return to prevent dying from the damage dealt before
                         self.die()
@@ -2915,6 +3008,9 @@ class Spaz(bs.Actor):
                     self.node.dead = True
                     bs.timer(6.0, self.node.delete)
         elif isinstance(msg, bs.OutOfBoundsMessage):
+            if self.issuper == True:
+                self.tptosafety()
+                return
             self.lasthittype = 'fall'
             if random.random() < 0.1:
                 self.smashkill(sound='cheer')
@@ -2940,11 +3036,10 @@ class Spaz(bs.Actor):
             self.curse_explode()
             
         elif isinstance(msg, bs.SpongebobMessage):
-            if self.activity._time_to_pass:
-                activity = self.activity
-                self._activate_spongebob(activity._time_to_pass, activity._speed)
-            else:
-                self._activate_spongebob(10, 1)
+            activity = self.activity
+            speed = 1
+            self._activate_spongebob(activity.spongebob_time, speed)
+            
         elif isinstance(msg, PunchHitMessage):
             if not self.node:
                 return None

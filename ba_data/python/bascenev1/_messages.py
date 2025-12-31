@@ -40,6 +40,7 @@ class DeathType(Enum):
 
     GENERIC = 'generic'
     OUT_OF_BOUNDS = 'out_of_bounds'
+    DEATHMAT = 'deathmat'
     IMPACT = 'impact'
     FALL = 'fall'
     REACHED_GOAL = 'reached_goal'
