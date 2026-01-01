@@ -155,6 +155,7 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
         )
         random_musicas = [
             bs.MusicType.THEFINALE,
+            bs.MusicType.FINALDESTINATION,
             bs.MusicType.WAR,
             bs.MusicType.EPIC_RACE,
             bs.MusicType.LAP4,
