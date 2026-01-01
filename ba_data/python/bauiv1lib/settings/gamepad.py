@@ -301,9 +301,7 @@ class GamepadSettingsWindow(bui.MainWindow):
 
         h_offs = 160
         dist = 70
-        distb = 70
-        d_color = (1, 1, 1)
-        d_scale = (1.0)
+        d_color = (0.4, 0.4, 0.8)
         sclx = 1.2
         scly = 0.98
         dpm = bui.Lstr(resource=f'{self._r}.pressAnyButtonOrDpadText')
@@ -312,8 +310,8 @@ class GamepadSettingsWindow(bui.MainWindow):
             pos=(h_offs, v + scly * dist),
             color=d_color,
             button='buttonUp' + self._ext,
-            texture=bui.gettexture('dpadup'),
-            scale=d_scale,
+            texture=bui.gettexture('upButton'),
+            scale=1.0,
             message=dpm,
             message2=dpm2,
         )
@@ -321,8 +319,8 @@ class GamepadSettingsWindow(bui.MainWindow):
             pos=(h_offs - sclx * dist, v),
             color=d_color,
             button='buttonLeft' + self._ext,
-            texture=bui.gettexture('dpadleft'),
-            scale=d_scale,
+            texture=bui.gettexture('leftButton'),
+            scale=1.0,
             message=dpm,
             message2=dpm2,
         )
@@ -330,8 +328,8 @@ class GamepadSettingsWindow(bui.MainWindow):
             pos=(h_offs + sclx * dist, v),
             color=d_color,
             button='buttonRight' + self._ext,
-            texture=bui.gettexture('dpadright'),
-            scale=d_scale,
+            texture=bui.gettexture('rightButton'),
+            scale=1.0,
             message=dpm,
             message2=dpm2,
         )
@@ -339,8 +337,8 @@ class GamepadSettingsWindow(bui.MainWindow):
             pos=(h_offs, v - scly * dist),
             color=d_color,
             button='buttonDown' + self._ext,
-            texture=bui.gettexture('dpaddown'),
-            scale=d_scale,
+            texture=bui.gettexture('downButton'),
+            scale=1.0,
             message=dpm,
             message2=dpm2,
         )
@@ -348,7 +346,7 @@ class GamepadSettingsWindow(bui.MainWindow):
         dpm3 = bui.Lstr(resource=f'{self._r}.ifNothingHappensTryDpadText')
         self._capture_button(
             pos=(h_offs + 130, v - 125),
-            color=(1, 1, 1),
+            color=(0.4, 0.4, 0.6),
             button='analogStickLR' + self._ext,
             maxwidth=140,
             texture=bui.gettexture('analogStick'),
@@ -357,193 +355,44 @@ class GamepadSettingsWindow(bui.MainWindow):
             message2=dpm3,
         )
 
-        if self._inputdevice.name.startswith('XInput Controller'):
-            self._capture_button(
-                pos=(self._width * 0.5, v),
-                color=(1, 1, 1),
-                button='buttonStart' + self._ext,
-                texture=bui.gettexture('buttonST'),
-                scale=1.0,
-            )
-        elif self._inputdevice.name == 'Wireless Controller':
-            self._capture_button(
-                pos=(self._width * 0.5, v),
-                color=(1, 1, 1),
-                button='buttonStart' + self._ext,
-                texture=bui.gettexture('buttonOP'),
-                scale=1.0,
-            )
-        elif self._inputdevice.name == 'PS4 Controller':
-            self._capture_button(
-                pos=(self._width * 0.5, v),
-                color=(1, 1, 1),
-                button='buttonStart' + self._ext,
-                texture=bui.gettexture('buttonOP'),
-                scale=1.0,
-            )
-        elif self._inputdevice.name == 'Xbox 360 Controller':
-            self._capture_button(
-                pos=(self._width * 0.5, v),
-                color=(1, 1, 1),
-                button='buttonStart' + self._ext,
-                texture=bui.gettexture('buttonST'),
-                scale=1.0,
-            )
-        else:
-            self._capture_button(
-                pos=(self._width * 0.5, v),
-                color=(1, 1, 1),
-                button='buttonStart' + self._ext,
-                texture=bui.gettexture('startButton'),
-                scale=1.0,
-            )
+        self._capture_button(
+            pos=(self._width * 0.5, v),
+            color=(0.4, 0.4, 0.6),
+            button='buttonStart' + self._ext,
+            texture=bui.gettexture('startButton'),
+            scale=0.7,
+        )
+
         h_offs = self._width - 160
 
-        if self._inputdevice.name.startswith('XInput Controller'):  
-            self._capture_button(
-                pos=(h_offs, v + scly * distb),
-                color=(1, 1, 1),
-                button='buttonPickUp' + self._ext,
-                texture=bui.gettexture('buttonY'),
-                scale=1.0,
-            )
-            self._capture_button(
-                pos=(h_offs - sclx * distb, v),
-                color=(1, 1, 1),
-                button='buttonPunch' + self._ext,
-                texture=bui.gettexture('buttonX'),
-                scale=1.0,
-            )
-            self._capture_button(
-                pos=(h_offs + sclx * distb, v),
-                color=(1, 1, 1),
-                button='buttonBomb' + self._ext,
-                texture=bui.gettexture('buttonB'),
-                scale=1.0,
-            )
-            self._capture_button(
-                pos=(h_offs, v - scly * distb),
-                color=(1, 1, 1),
-                button='buttonJump' + self._ext,
-                texture=bui.gettexture('buttonA'),
-                scale=1.0,
-            )
-        elif self._inputdevice.name == 'Wireless Controller':
-            self._capture_button(
-                pos=(h_offs, v + scly * distb),
-                color=(1, 1, 1),
-                button='buttonPickUp' + self._ext,
-                texture=bui.gettexture('buttonT'),
-                scale=1.0,
-            )
-            self._capture_button(
-                pos=(h_offs - sclx * distb, v),
-                color=(1, 1, 1),
-                button='buttonPunch' + self._ext,
-                texture=bui.gettexture('buttonS'),
-                scale=1.0,
-            )
-            self._capture_button(
-                pos=(h_offs + sclx * distb, v),
-                color=(1, 1, 1),
-                button='buttonBomb' + self._ext,
-                texture=bui.gettexture('buttonC'),
-                scale=1.0,
-            )
-            self._capture_button(
-                pos=(h_offs, v - scly * distb),
-                color=(1, 1, 1),
-                button='buttonJump' + self._ext,
-                texture=bui.gettexture('buttonX'),
-                scale=1.0,
-            )
-        elif self._inputdevice.name == 'PS4 Controller':
-            self._capture_button(
-                pos=(h_offs, v + scly * distb),
-                color=(1, 1, 1),
-                button='buttonPickUp' + self._ext,
-                texture=bui.gettexture('buttonT'),
-                scale=1.0,
-            )
-            self._capture_button(
-                pos=(h_offs - sclx * distb, v),
-                color=(1, 1, 1),
-                button='buttonPunch' + self._ext,
-                texture=bui.gettexture('buttonS'),
-                scale=1.0,
-            )
-            self._capture_button(
-                pos=(h_offs + sclx * distb, v),
-                color=(1, 1, 1),
-                button='buttonBomb' + self._ext,
-                texture=bui.gettexture('buttonC'),
-                scale=1.0,
-            )
-            self._capture_button(
-                pos=(h_offs, v - scly * distb),
-                color=(1, 1, 1),
-                button='buttonJump' + self._ext,
-                texture=bui.gettexture('buttonX'),
-                scale=1.0,
-            )
-        elif self._inputdevice.name == 'Xbox 360 Controller':
-            self._capture_button(
-                pos=(h_offs, v + scly * distb),
-                color=(1, 1, 1),
-                button='buttonPickUp' + self._ext,
-                texture=bui.gettexture('buttonY'),
-                scale=1.0,
-            )
-            self._capture_button(
-                pos=(h_offs - sclx * distb, v),
-                color=(1, 1, 1),
-                button='buttonPunch' + self._ext,
-                texture=bui.gettexture('buttonX'),
-                scale=1.0,
-            )
-            self._capture_button(
-                pos=(h_offs + sclx * distb, v),
-                color=(1, 1, 1),
-                button='buttonBomb' + self._ext,
-                texture=bui.gettexture('buttonB'),
-                scale=1.0,
-            )
-            self._capture_button(
-                pos=(h_offs, v - scly * distb),
-                color=(1, 1, 1),
-                button='buttonJump' + self._ext,
-                texture=bui.gettexture('buttonA'),
-                scale=1.0,
-            )
-        else:
-            self._capture_button(
-                pos=(h_offs, v + scly * distb),
-                color=(1, 1, 1),
-                button='buttonPickUp' + self._ext,
-                texture=bui.gettexture('buttonPickUp'),
-                scale=1.0,
-            )
-            self._capture_button(
-                pos=(h_offs - sclx * distb, v),
-                color=(1, 1, 1),
-                button='buttonPunch' + self._ext,
-                texture=bui.gettexture('buttonPunch'),
-                scale=1.0,
-            )
-            self._capture_button(
-                pos=(h_offs + sclx * distb, v),
-                color=(1, 1, 1),
-                button='buttonBomb' + self._ext,
-                texture=bui.gettexture('buttonBomb'),
-                scale=1.0,
-            )
-            self._capture_button(
-                pos=(h_offs, v - scly * distb),
-                color=(1, 1, 1),
-                button='buttonJump' + self._ext,
-                texture=bui.gettexture('buttonJump'),
-                scale=1.0,
-            )
+        self._capture_button(
+            pos=(h_offs, v + scly * dist),
+            color=(0.6, 0.4, 0.8),
+            button='buttonPickUp' + self._ext,
+            texture=bui.gettexture('buttonPickUp'),
+            scale=1.0,
+        )
+        self._capture_button(
+            pos=(h_offs - sclx * dist, v),
+            color=(0.7, 0.5, 0.1),
+            button='buttonPunch' + self._ext,
+            texture=bui.gettexture('buttonPunch'),
+            scale=1.0,
+        )
+        self._capture_button(
+            pos=(h_offs + sclx * dist, v),
+            color=(0.5, 0.2, 0.1),
+            button='buttonBomb' + self._ext,
+            texture=bui.gettexture('buttonBomb'),
+            scale=1.0,
+        )
+        self._capture_button(
+            pos=(h_offs, v - scly * dist),
+            color=(0.2, 0.5, 0.2),
+            button='buttonJump' + self._ext,
+            texture=bui.gettexture('buttonJump'),
+            scale=1.0,
+        )
 
         self._more_button = bui.buttonwidget(
             parent=self._root_widget,
@@ -1185,14 +1034,14 @@ class AwaitGamepadInputWindow(bui.Window):
         self._decrement_timer: bui.AppTimer | None = bui.AppTimer(
             1.0, bui.Call(self._decrement), repeat=True
         )
-        bs.capture_game_controller_input(bui.WeakCall(self._event_callback))
+        bs.capture_gamepad_input(bui.WeakCall(self._event_callback))
 
     def die(self) -> None:
         """Kill the window."""
 
         # This strong-refs us; killing it allow us to die now.
         self._decrement_timer = None
-        bs.release_game_controller_input()
+        bs.release_gamepad_input()
         if self._root_widget:
             bui.containerwidget(edit=self._root_widget, transition='out_scale')
 

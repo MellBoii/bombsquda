@@ -1876,10 +1876,15 @@ class Spaz(bs.Actor):
             'DSITROL8',
         ]
         PopupText(
-        bs.Lstr(resource='grabItem'),
-        position=self.node.position,
-        color=(1, 1, 1, 0.6),
-        scale=1.0,
+            bs.Lstr(
+                resource='grabItem', 
+                subs=[
+                    ('${GRAB}', ba.charstr(ba.SpecialChar.TOP_BUTTON))
+                ]
+            ),
+            position=self.node.position,
+            color=(1, 1, 1, 0.6),
+            scale=1.0,
         ).autoretain()
         
         def roll():
@@ -2014,13 +2019,24 @@ class Spaz(bs.Actor):
                 bs.getsound('player_unready').play()
                 bs.debprint(f'{self.node.name}: We\'re super, so not collecting a emerald.')
                 return
-            if len(self.emeralds) == 7:
-                bs.getsound('cd_alright').play()
-                bs.debprint(f'{self.node.name} got {len(self.emeralds)} emeralds.')
             if msg.current not in self.emeralds:
                 self.emeralds.append(msg.current)
                 bs.getsound('s3_blsp').play()
                 bs.debprint(f'{self.node.name} collected emerald {msg.current}.')
+            if len(self.emeralds) == 7:
+                bs.getsound('cd_alright').play()
+                bs.debprint(f'{self.node.name} got {len(self.emeralds)} emeralds.')
+                PopupText(
+                    bs.Lstr(
+                        resource='grabSuper', 
+                        subs=[
+                            ('${GRAB}', ba.charstr(ba.SpecialChar.TOP_BUTTON))
+                        ]
+                    ),
+                    position=self.node.position,
+                    color=(1, 1, 1, 0.6),
+                    scale=1.0,
+                ).autoretain()
             else:
                 bs.debprint(f'{self.node.name} tried to collect {msg.current}, but it already has it')
                 bs.getsound('player_unready').play()

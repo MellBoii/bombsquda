@@ -835,7 +835,8 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
             tip_lstr = babase.Lstr(
                 translate=('tips', tip),
                 subs=[
-                    ('${PICKUP}', babase.charstr(babase.SpecialChar.TOP_BUTTON))
+                    ('${PICKUP}', babase.charstr(babase.SpecialChar.TOP_BUTTON)),
+                    ('${A}', babase.charstr(babase.SpecialChar.OUYA_BUTTON_O)),
                 ],
             )
             base_position = (75, 50)
