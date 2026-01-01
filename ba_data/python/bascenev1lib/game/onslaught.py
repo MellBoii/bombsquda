@@ -255,7 +255,8 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
         self._throw_off_kills = 0
         self._land_mine_kills = 0
         self._tnt_kills = 0
-        self.timebeforedeath = 0
+        self.timebeforedeath = 60
+        self.time_increase = 16
     
     @override
     def on_transition_in(self) -> None:
@@ -339,16 +340,26 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
         s = seconds % 60
         return f"{m:02d}:{s:02d}"
         
+    def pizza_tick(self):
+        self.timebeforedeath -= 1
+        self.pizzatimertext.text = self._format_time(self.timebeforedeath)
+        if self.timebeforedeath <= 20:
+            self.pizzatimertext.color = (1, 0.1, 0.1)
+            bs.getsound('tick').play()
+        else:
+            self.pizzatimertext.color = (1, 1, 1)
+        if self.timebeforedeath <= 0:
+            for player in self.players:
+                player.actor.firework_explode()
+                self.tickintimer = None
+                self.thugshaketimer = None
+                
     def _show_pizzatime_sequence(self):
-        """Defines the Pizza Tower Pizza Time sequence... 
-        kinda. 
-        It's technically just a animation but shh...
-        UPDATE: now we're gonna make a timer
-        """
+        """ It's Pizza Time! """
         # Create image node
         self._pizzatime_node = bs.newnode('image', attrs={
             'texture': bs.gettexture('pizzatime1'),
-            'position': (0, 650),
+            'position': (0, -650),
             'scale': (410, 410),
             'opacity': 1.0,
             'attach': 'center'
@@ -373,18 +384,15 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
             bs.animate_array(self._pizzatime_node, 'position', 2, 
                 {
                     0.0: (x, y), 
-                    1.0: (x, y - 650), # move it down
-                    4.0: (x, y - 650), # period onscreen 
-                    7.0: (x, y + 650) # flooaaat upwards
+                    4.0: (x, y + 2000) # flooaaat upwards
                 }
             )
             # Delete after animation
-            bs.timer(7.0, self._pizzatime_node.delete)
+            bs.timer(4.0, self._pizzatime_node.delete)
         moveitboy()
-        
+  
         def pizzatimer():
             self.thugshaketimer = bs.Timer(0.040, lambda: bs.camerashake(intensity=0.1), repeat=True)
-            self.timebeforedeath = 200
             self.timer_background = bs.newnode('image', attrs={
                     'texture': bs.gettexture('windowHSmallVSmall'),
                     'position': (30, -600),
@@ -419,20 +427,8 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
                     1.0: (20, 0), # move upwards
                 }
             )
-            def tick():
-                self.timebeforedeath -= 1
-                self.pizzatimertext.text = self._format_time(self.timebeforedeath)
-                if self.timebeforedeath <= 60:
-                    self.pizzatimertext.color = (1, 0.1, 0.1)
-                else:
-                    self.pizzatimertext.color = (1, 1, 1)
-                if self.timebeforedeath <= 0:
-                    for player in self.players:
-                        player.actor.firework_explode()
-                        self.tickintimer = None
-                        self.thugshaketimer = None
-            self.tickintimer = bs.Timer(1.0, tick, repeat=True)
-        bs.timer(4.0, pizzatimer)
+            self.tickintimer = bs.Timer(1.0, self.pizza_tick, repeat=True)
+        bs.timer(3.0, pizzatimer)
 
     
     @override
@@ -1344,18 +1340,14 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
                 self.celebrate(0.5)
             bs.timer(base_delay, bs.WeakCall(self._start_next_wave))
             if self._preset in {Preset.ENDLESS, Preset.ENDLESS_TOURNAMENT}:
-                if self._wavenum == 5:
-                    for player in self.players:
-                        player.actor.gosuper(shouldntsetmusic=True)
-                    self.timebeforedeath += 20
-                if self._wavenum == 10:
-                    for player in self.players:
-                        player.actor.equip_shields()
-                    self.timebeforedeath += 20
-                self.timebeforedeath += 20
+                self.tickintimer = None
+                self.timebeforedeath += self.time_increase
+                bs.getsound('warTimerUp').play()
                 self.pizzatimertext.color = (0.1, 0.9, 0.1)
                 self.pizzatimertext.text = self._format_time(self.timebeforedeath)
-                bs.getsound('warTimerUp').play()
+                def reset():
+                    self.tickintimer = bs.Timer(1.0, self.pizza_tick, repeat=True)
+                bs.timer(0.7, reset)
             self._wavenum += 1
 
         # Check milestone every 10 waves starting at 20
@@ -1367,10 +1359,6 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
                 self._last_lap_triggered = lap_num  # Mark it as triggered
                 
                 bs.getsound("newlapsound").play()
-                if self._wavenum >= 30:
-                    self.timebeforedeath += 100
-                else:
-                    self.timebeforedeath += 200
                 
                 start_pos = (0, 700)
                 center_pos = (0, 250)  # visible position
