@@ -76,10 +76,9 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
     """Slow motion how-long-can-you-last game."""
 
     name = 'The Finale'
-    description = 'Final glorious epic slow motion battle to the death.'
+    description = 'fucking parrying simulator'
     tips = [
-        'This level never ends, but a high score here\n'
-        'will earn you eternal respect throughout the world.'
+        'traumaParryTip'
     ]
     # Announce when players die (particularly VERY important here)
     announce_player_deaths = True
