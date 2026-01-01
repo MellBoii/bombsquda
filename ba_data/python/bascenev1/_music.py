@@ -96,6 +96,7 @@ class MusicType(Enum):
     DEFEAT = 'Defeat'
     CREDITS = 'Credits'
     THEFINALE = 'TheFinale'
+    FINALDESTINATION = 'FinalDestination'
     RUNAROUNDFINAL = 'RunaroundFinal'
     WAR = 'War'
     WWR = 'Wwr'
