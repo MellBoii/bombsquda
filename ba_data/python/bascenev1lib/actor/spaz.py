@@ -2002,14 +2002,19 @@ class Spaz(bs.Actor):
         if isinstance(msg, EmeraldMessage):
             if self.issuper:
                 bs.getsound('player_unready').play()
+                bs.debprint(f'{self.node.name}: We\'re super, so not collecting a emerald.')
                 return
             if len(self.emeralds) == 7:
                 bs.getsound('cd_alright').play()
+                bs.debprint(f'{self.node.name} got {len(self.emeralds)} emeralds.')
             if msg.current not in self.emeralds:
                 self.emeralds.append(msg.current)
                 print(len(self.emeralds))
                 bs.getsound('s2_emerald').play()
+                bs.getsound('s3_blsp').play()
+                bs.debprint(f'{self.node.name} collected emerald {msg.current}.')
             else:
+                bs.debprint(f'{self.node.name} tried to collect {msg.current}, but it already has it')
                 bs.getsound('player_unready').play()
             
         elif isinstance(msg, bs.PickedUpMessage):
@@ -2484,7 +2489,10 @@ class Spaz(bs.Actor):
                 if ba.app.config.get("squda_parrytype") == 3:
                     healpoints = 150
                 else:
-                    print('no parrytype config, this shouldn\'t happen')
+                    healpoints = 250
+                    bs.debprint('no parrytype config, this shouldn\'t happen')
+                    bs.debprint('either way, we\'ll default to 250')
+                    bs.debprint(f'parrytype is {ba.app.config['squda_parrytype']} btw')
                 self.hitpoints += healpoints
                 self.updatemeter()
                 # ---------------- healpoints -------------------
