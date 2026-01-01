@@ -1389,7 +1389,18 @@ class Spaz(bs.Actor):
                 
     def remove_from_dancin(self):
         if isinstance(self.getactivity(), GameActivity):
-            self.getactivity().dancing_players.remove(self)
+            try:
+                self.getactivity().dancing_players.remove(self)
+            except: 
+                pass
+            
+    def _deactivate_metalcap(self):
+        self._has_metalcap = False
+        self.node.color = self._saved_color
+        self.node.highlight = self._saved_highlight
+        self.node.color_texture = self._saved_materials
+        self.impact_scale = self.impact_scale + 0.5
+        self.remove_from_metal_list()
 
     def _activate_metalcap(self) -> None:
         if not self.node:
@@ -1406,9 +1417,8 @@ class Spaz(bs.Actor):
             bs.setmusic(bs.MusicType.METALCAPTIME)
         else:
             if isinstance(self.getactivity(), GameActivity):
-                if ba.app.config.get("squda_disablemmusic", False):
+                if ba.app.config.get("squda_disablemmusic") == False:
                     self.getactivity().metal_players.append(self)
-            
         # play a sound
         self._metalcap_sound = bs.getsound('metalcap').play()
 
@@ -2009,8 +2019,6 @@ class Spaz(bs.Actor):
                 bs.debprint(f'{self.node.name} got {len(self.emeralds)} emeralds.')
             if msg.current not in self.emeralds:
                 self.emeralds.append(msg.current)
-                print(len(self.emeralds))
-                bs.getsound('s2_emerald').play()
                 bs.getsound('s3_blsp').play()
                 bs.debprint(f'{self.node.name} collected emerald {msg.current}.')
             else:
@@ -2434,6 +2442,37 @@ class Spaz(bs.Actor):
                 # This lets us affects people who threw a bomb to us.
                 elif msg.bombowner:
                     yforce = 45
+                    # ---------- DONT ALLOW PLAYER TEAM BOMB PARRYING!! -----------
+                    if (
+                        msg.bombowner.source_player.team is 
+                        self.source_player.team
+                    ):
+                        hurtiness = 3.8
+                        flash_color = (1.0, 0.8, 0.4)
+                        light = bs.newnode(
+                            'light',
+                            attrs={
+                                'position': self.node.position,
+                                'radius': 0.12 + hurtiness * 0.12,
+                                'intensity': 0.3 * (1.0 + 1.0 * hurtiness),
+                                'height_attenuated': False,
+                                'color': flash_color,
+                            },
+                        )
+                        flash = bs.newnode(
+                            'flash',
+                            attrs={
+                                'position': self.node.position,
+                                'size': 0.17 + 0.17 * hurtiness,
+                                'color': flash_color,
+                            },
+                        )
+                        bs.timer(0.06, light.delete)
+                        bs.timer(0.06, flash.delete)
+                        bs.getsound('parried').play()
+                        bs.getsound('player_unready').play()
+                        return
+                   # ---------- DONT ALLOW PLAYER TEAM BOMB PARRYING!! ----------- 
                     msg.bombowner.handlemessage('impulse', 
                             self.node.position[0], 
                             self.node.position[1], 
@@ -2446,12 +2485,12 @@ class Spaz(bs.Actor):
                         bs.HitMessage(
                             pos=msg.pos,
                             velocity=msg.velocity,
-                            magnitude=msg.magnitude * 1.5,
-                            velocity_magnitude=msg.velocity_magnitude * 3.5,
+                            magnitude=msg.magnitude - 1800 + random.randint(100, 250),
+                            velocity_magnitude=msg.velocity_magnitude / 2.0,
                             radius=0,
                             srcnode=self.node,
                             source_player=self.source_player,
-                            force_direction=msg.force_direction,                           
+                            force_direction=self.node.velocity,                           
                         )
                     )
                 # ------------------------- default parry ------------------------------
@@ -3022,7 +3061,7 @@ class Spaz(bs.Actor):
                     self.node.dead = True
                     bs.timer(6.0, self.node.delete)
         elif isinstance(msg, bs.OutOfBoundsMessage):
-            if self.issuper == True:
+            if self.parrying == True:
                 self.tptosafety()
                 return
             self.lasthittype = 'fall'
@@ -3961,3 +4000,4 @@ class Spaz(bs.Actor):
                 position=self.node.position,
             )
             self.node.billboard_opacity = 0.0
+            self._deactivate_metalcap()
