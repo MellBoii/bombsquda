@@ -788,7 +788,7 @@ class Spaz(bs.Actor):
         # 'Celebrate' to show we're parrying, n play a sound.
         milscs = parrytime * 1000
         self.node.handlemessage('celebrate', int(milscs))
-        bs.getsound('parry').play()
+        bs.getsound('s3_instashield').play()
 
     def on_pickup_press(self) -> None:
         """
@@ -2460,6 +2460,7 @@ class Spaz(bs.Actor):
                     yforce = 45
                     # ---------- DONT ALLOW PLAYER TEAM BOMB PARRYING!! -----------
                     if (
+                        msg.bombowner.source_player != None and
                         msg.bombowner.source_player.team is 
                         self.source_player.team
                     ):

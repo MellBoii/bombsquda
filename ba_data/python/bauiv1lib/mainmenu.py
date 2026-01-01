@@ -584,6 +584,8 @@ class MainMenuWindow(bui.MainWindow):
                 sel_name = 'Start'
             elif sel == self.boomboxbtn:
                 sel_name = 'Boombox'
+            elif sel == self._reroll_button:
+                sel_name = 'Reroll'
             elif sel == self._gather_button:
                 sel_name = 'Gather'
             elif sel == self._watch_button:
@@ -618,6 +620,8 @@ class MainMenuWindow(bui.MainWindow):
                 sel = self._how_to_play_button
             elif sel_name == 'Boombox':
                 sel = self.boomboxbtn
+            elif sel_name == 'Reroll':
+                sel = self._reroll_button
             elif sel_name == 'Gather':
                 sel = self._gather_button
             elif sel_name == 'Watch':

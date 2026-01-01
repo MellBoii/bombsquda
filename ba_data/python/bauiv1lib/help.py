@@ -670,7 +670,7 @@ class HelpWindow(bui.MainWindow):
         
     def plpwpsound(self, text: str) -> None:
         if text == 'powerupPunch':
-            bui.getsound('punchStrong03').play()
+            bui.getsound('punchSFX/punchStrong03').play()
         elif text == 'powerupShield':
             bui.getsound('shieldUp').play()
         elif text == 'powerupBomb':
@@ -692,7 +692,7 @@ class HelpWindow(bui.MainWindow):
         elif text == 'powerupMetal':
             bui.getsound('metalcap').play()
         elif text == 'powerupStrong':
-            bui.getsound('punchWeak01').play()
+            bui.getsound('punchSFX/punchWeak01').play()
         elif text == 'powerupSponge':
             bui.getsound('spongebob').play()
         elif text == 'powerupRandom':

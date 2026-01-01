@@ -120,27 +120,27 @@ class SpazFactory:
             bs.getsound('playerDeath2'),
             bs.getsound('playerDeath3')
         )
-        self.punch_sound_weak = bs.getsound('punchWeak01')
-        self.punch_sound = bs.getsound('punch01')
+        self.punch_sound_weak = bs.getsound('punchSFX/punchWeak01')
+        self.punch_sound = bs.getsound('punchSFX/punch01')
         self.punch_sound_strong = (
-            bs.getsound('punchStrong01'),
-            bs.getsound('punchStrong02'),
-            bs.getsound('punchStrong03'),
-            bs.getsound('punchStrong04'),
-            bs.getsound('punchStrong05'),
-            bs.getsound('punchStrong06'),
-            bs.getsound('punchStrong07'),
-            bs.getsound('punchStrong08'),
-            bs.getsound('punchStrong09'),
+            bs.getsound('punchSFX/punchStrong01'),
+            bs.getsound('punchSFX/punchStrong02'),
+            bs.getsound('punchSFX/punchStrong03'),
+            bs.getsound('punchSFX/punchStrong04'),
+            bs.getsound('punchSFX/punchStrong05'),
+            bs.getsound('punchSFX/punchStrong06'),
+            bs.getsound('punchSFX/punchStrong07'),
+            bs.getsound('punchSFX/punchStrong08'),
+            bs.getsound('punchSFX/punchStrong09'),
         )
-        self.punch_sound_stronger = bs.getsound('superPunch')
-        self.punch_sound_strongest = bs.getsound('punchDeath1')
+        self.punch_sound_stronger = bs.getsound('punchSFX/superPunch')
+        self.punch_sound_strongest = bs.getsound('punchSFX/punchDeath1')
         self.lobotomy = (
             bs.getsound('lobotomized'),
             bs.getsound('bananasnipe'),
             bs.getsound('owmyorgans'),
         )
-        self.swish_sound = bs.getsound('punchSwish')
+        self.swish_sound = bs.getsound('punchSFX/punchSwish')
         self.block_sound = bs.getsound('block')
         self.shatter_sound = bs.getsound('shatter')
         self.splatter_sound = bs.getsound('gibbed')
