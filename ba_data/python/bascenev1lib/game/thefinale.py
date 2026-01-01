@@ -61,6 +61,12 @@ class SpawnInfo:
 class Player(bs.Player['Team']):
     """Our player type for this game."""
 
+    def __init__(self):
+        super().__init__()
+        self.respawn_timer: bs.Timer = None
+        self.respawn_icon: object = None
+
+
 
 class Team(bs.Team[Player]):
     """Our team type for this game."""
@@ -153,6 +159,9 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
             bs.MusicType.WAR,
             bs.MusicType.EPIC_RACE,
             bs.MusicType.LAP4,
+            bs.MusicType.LAP2,
+            bs.MusicType.LAP3
+            
         ]
         bs.setmusic(random.choice(random_musicas))
         self.points_text = bs.newnode(
@@ -406,6 +415,14 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
         if isinstance(msg, bs.PlayerDiedMessage):
             player = msg.getplayer(Player)
             self.stats.player_was_killed(player)
+            # Respawn them shortly.
+            from bascenev1lib.actor.respawnicon import RespawnIcon
+            assert self.initialplayerinfos is not None
+            respawn_time = 35.0 + len(self.initialplayerinfos) * 1.5
+            player.respawn_timer = bs.Timer(
+                respawn_time, bs.Call(self.spawn_player_if_exists, player)
+            )
+            player.respawn_icon = RespawnIcon(player, respawn_time)
             bs.timer(0.1, self._checkroundover)
 
         elif isinstance(msg, bs.PlayerScoredMessage):
@@ -456,4 +473,19 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
     def _checkroundover(self) -> None:
         """End the round if conditions are met."""
         if not any(player.is_alive() for player in self.teams[0].players):
-            self.end_game()
+            if len(self.players) > 1:
+                bs.broadcastmessage('Waiting for potential respawn before end...')
+                def checkpartfuckin2():
+                    if not any(player.is_alive() for player in self.teams[0].players):
+                        bs.broadcastmessage('No one respawned before the timer. :^)')
+                        self.end_game()
+                        for player in self.players:
+                            player.respawn_timer = None
+                            player.respawn_icon = None
+                bs.timer(4.5, checkpartfuckin2)
+            else:
+                if not any(player.is_alive() for player in self.teams[0].players):
+                    self.end_game()
+                    for player in self.players:
+                        player.respawn_timer = None
+                        player.respawn_icon = None
