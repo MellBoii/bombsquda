@@ -149,7 +149,7 @@ class Spaz(bs.Actor):
             self._punch_power_scale = 1.2
         else:
             self._punch_power_scale = 1.0
-        self.fly = bs.getactivity().globalsnode.happy_thoughts_mode
+        self.fly = self.getactivity().globalsnode.happy_thoughts_mode
         if isinstance(activity, bs.GameActivity):
             self._hockey = activity.map.is_hockey
         else:
@@ -314,7 +314,7 @@ class Spaz(bs.Actor):
         self._has_hot_potato = False
         self._dropped_bomb_callbacks: list[Callable[[Spaz, bs.Actor], Any]] = []
         if self.source_player:
-            players = bs.getactivity().players
+            players = bs.getplayers()
             normalmeterx = -670
             multiplier = 150
             defaultmeterY = -270
@@ -1401,7 +1401,7 @@ class Spaz(bs.Actor):
         self._has_metalcap = True
         
         # add to the music list
-        musicis = bs.getactivity().globalsnode.music
+        musicis = self.getactivity().globalsnode.music
         if musicis == 'Grand_Romp':
             bs.setmusic(bs.MusicType.METALCAPTIME)
         else:
@@ -1459,7 +1459,7 @@ class Spaz(bs.Actor):
         Severely boosts our spaz's stats.
         """
         if self.node:
-            activity = bs.getactivity()
+            activity = self.getactivity()
             gnode = activity.globalsnode
             bs.getsound('supertrans').play() # i'm keeping it as super trans. fuck you. die.
             self.issuper = True
@@ -2007,7 +2007,8 @@ class Spaz(bs.Actor):
                 bs.getsound('cd_alright').play()
             if msg.current not in self.emeralds:
                 self.emeralds.append(msg.current)
-                bs.getsound('s3_blsp').play()
+                print(len(self.emeralds))
+                bs.getsound('s2_emerald').play()
             else:
                 bs.getsound('player_unready').play()
             
@@ -2263,6 +2264,9 @@ class Spaz(bs.Actor):
             if not self.node:
                 return None
             if self.parrying == True:
+                if self.source_player:
+                    from bascenev1lib.game.parrier import ParryMessage
+                    self.getactivity().handlemessage(ParryMessage(self.source_player.team, self.source_player))
                 return
             if self.node.invincible:
                 SpazFactory.get().block_sound.play(
@@ -2298,6 +2302,9 @@ class Spaz(bs.Actor):
                 )
                 return True
             if self.parrying == True:
+                if self.source_player:
+                    from bascenev1lib.game.parrier import ParryMessage
+                    self.getactivity().handlemessage(ParryMessage(self.source_player.team, self.source_player))
                 # Check for source node. Most likely being punched.
                 if msg.srcnode:
                     # Get the other spaz's node.
@@ -2479,7 +2486,7 @@ class Spaz(bs.Actor):
                 else:
                     print('no parrytype config, this shouldn\'t happen')
                 self.hitpoints += healpoints
-                self.updatemeter
+                self.updatemeter()
                 # ---------------- healpoints -------------------
                 bs.getsound('parried').play()
                 bs.emitfx(
@@ -2872,7 +2879,7 @@ class Spaz(bs.Actor):
                     )
 
                 # Initialize variables early
-                activity = bs.getactivity()
+                activity = self.getactivity()
                 gnode = activity.globalsnode
                 node = self.node
                 icon = None  # Default if we don't create one
@@ -2918,7 +2925,7 @@ class Spaz(bs.Actor):
             self.hitpoints = 0
             self._roulette_timer = None
             if self._has_metalcap == True:
-                musicis = bs.getactivity().globalsnode.music
+                musicis = self.getactivity().globalsnode.music
                 if musicis == 'MetalCapTime':
                     bs.setmusic(bs.MusicType.GRAND_ROMP)
                 else:
@@ -3388,6 +3395,7 @@ class Spaz(bs.Actor):
             if not self.node:
                 return
             self.hitpoints += 210
+            self.updatemeter()
             bs.getsound('cheer2').play()
             PopupText(
                 bs.Lstr(
@@ -3721,6 +3729,9 @@ class Spaz(bs.Actor):
                 ),
             ).autoretain()
             # Don't explode.
+            if self.source_player:
+                from bascenev1lib.game.parrier import ParryMessage
+                self.getactivity().handlemessage(ParryMessage(self.source_player.team, self.source_player))
             return
         if self._cursed and self.node:
             self.shatter(extreme=True)
@@ -3791,7 +3802,6 @@ class Spaz(bs.Actor):
                     'motorroach_dies', 
                     'motorroach_dies2',
                     'fpants_death',
-                    'sgsn_scream',
                 ]
                 bs.getsound(random.choice(shatter2sfx)).play(position=self.node.position)
         self.die()
@@ -3800,6 +3810,7 @@ class Spaz(bs.Actor):
     def _hit_self(self, intensity: float) -> None:
         if not self.node:
             return
+        
         pos = self.node.position
         self.handlemessage(
             bs.HitMessage(
@@ -3809,6 +3820,7 @@ class Spaz(bs.Actor):
                 hit_type='impact',
             )
         )
+
         if self.parrying == True:
             PopupText(
                 bs.Lstr(resource='traumaParried'),
@@ -3817,10 +3829,16 @@ class Spaz(bs.Actor):
                 scale=1.4,
             ).autoretain()
             self.hitpoints += 40
+            self.updatemeter()
             bs.getsound('bellHigh').play()
             bs.getsound('orchestraHit').play()
             self.node.handlemessage('knockout', 0)
+            # Dont send a message (the hitmessage above will count a point anyway)
+            #if self.source_player:
+            #    from bascenev1lib.game.parrier import ParryMessage
+            #    self.getactivity().handlemessage(ParryMessage(self.source_player.team, self.source_player))
             return
+        
         self.node.handlemessage('knockout', max(0.0, 50.0 * intensity))
         sounds: Sequence[bs.Sound]
         if intensity >= 16.0 and not self._dead:
