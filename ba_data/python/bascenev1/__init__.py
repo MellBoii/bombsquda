@@ -159,7 +159,7 @@ from bascenev1._campaign import init_campaigns, Campaign
 from bascenev1._collision import Collision, getcollision
 from bascenev1._coopgame import CoopGameActivity
 from bascenev1._coopsession import CoopSession
-from bascenev1._debug import print_live_object_warnings
+from bascenev1._debug import print_live_object_warnings, debprint
 from bascenev1._dependency import (
     Dependency,
     DependencyComponent,

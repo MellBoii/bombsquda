@@ -40,6 +40,7 @@ class Startup():
     "squda_playersfirsttime": True,
     "squda_isplayingmusic": False,
     "squda_customfont": False,
+    "squda_debugprints": False,
     "squda_timesattracted": 1,
     "squda_timeserrored": 0,
     "squda_parrytype": 2,
@@ -57,14 +58,39 @@ class Startup():
         print('incredibly bad fuckin error.')
         print('something went bad in fromgoverhaul\'s startup, and we couldn\t add config stuff')
 
-    if babase.app.classic.platform not in ['android', 'mac']:
-        if babase.app.config.get("squda_richpresence", True):
-            try:
-                babase.apptimer(1.3, RichPresence)
-            except Exception as e:
-                print(f'Unable to start rich presence: {e}')
+    if babase.app.config.get("squda_richpresence", True):
+        try:
+            babase.apptimer(1.3, RichPresence)
+        except Exception as e:
+            print(f'Unable to start rich presence: {e}')
     bui.app.config['squda_isplayingmusic'] = False
     bui.app.config['squda_timesattracted'] = 0
+    version = '2.0'
+    print(f'welcome to bombsquda v{version}!!!')
+    
+    def auto_module_import():
+        """
+        Automatically imports modules,
+        and makes them usable to the console.
+        (could possibly slow down loading, and if so
+        just disable the callable below)
+        """
+        # import le modules...
+        import sys
+        import babase as ba
+        import bascenev1 as bs
+        import bauiv1 as bui
+        # and install them to the console
+        console_globals = sys.modules['__main__'].__dict__
+        console_globals['ba'] = ba
+        console_globals['bs'] = bs
+        console_globals['bui'] = bui
+        console_globals['ga'] = bs.getactivity
+        console_globals['gp'] = bs.getplayers
+        console_globals['sm'] = bs.setmusic
+    # call it
+    auto_module_import()
+    
     def my_global_exception_hook(exc_type, exc_value, exc_traceback):
         """
         custom ass exception hook
@@ -94,6 +120,7 @@ class Startup():
         
     # Install the hook
     sys.excepthook = my_global_exception_hook
+    
 
 
 

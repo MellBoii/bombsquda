@@ -70,6 +70,7 @@ class EmeraldActor(bs.Actor):
             delegate=self,
             attrs={
                 'body': 'box',
+                'body_scale': 0.3,
                 'position': position,
                 'mesh': self.mesh,
                 'light_mesh': self.mesh,
@@ -80,25 +81,37 @@ class EmeraldActor(bs.Actor):
                 'materials': (self.material, SharedObjects.get().object_material),
             },
         )
-        bs.animate(self.node, 'mesh_scale', {0: 0, 0.3: 1})
+        bs.animate(self.node, 'mesh_scale', {0: 0, 0.5: 0.7})
     
     def get_fairest_emerald(self) -> str:
-        all_types = [f"emerald{i}" for i in range(1, 7)]
+        all_types = [f"emerald{i}" for i in range(1, 8)]
 
-        # count how many people have each emerald
+        bs.debprint(f"\n{self}: Calculating fairest emerald...")
+
+        # Initialize counts
         counts = {e: 0 for e in all_types}
 
         for player in self.activity.players:
-            for e in getattr(player.actor, "emeralds", []):
+            emeralds = getattr(player.actor, "emeralds", [])
+            bs.debprint(f"  Player {player.getname()} has: {emeralds}")
+            for e in emeralds:
                 counts[e] += 1
 
-        # find the minimum that people have
+        bs.debprint("  Ownership counts:")
+        for e, c in counts.items():
+            bs.debprint(f"    {e}: {c}")
+
         min_count = min(counts.values())
+        bs.debprint(f"  Minimum ownership count: {min_count}")
 
-        # choose among the emeralds players have the least
         candidates = [e for e, c in counts.items() if c == min_count]
+        bs.debprint(f"  Candidate emeralds: {candidates}")
 
-        return random.choice(candidates)  
+        chosen = random.choice(candidates)
+        bs.debprint(f"  >>> Selected emerald: {chosen}\n")
+
+        return chosen
+     
         
     @override
     def handlemessage(self, msg: Any) -> Any:
@@ -108,12 +121,13 @@ class EmeraldActor(bs.Actor):
                 if msg.immediate:
                     self.node.delete()
                 else:
-                    bs.animate(self.node, 'mesh_scale', {0: 1, 0.3: 0})
-                    bs.timer(0.3, self.node.delete)
+                    bs.animate(self.node, 'mesh_scale', {0: 0.7, 0.1: 0})
+                    bs.timer(0.1, self.node.delete)
         elif isinstance(msg, TouchedMsg):
             toucher = bs.getcollision().opposingnode
             isspaz = toucher.getnodetype() == 'spaz'
             if isspaz:
+                bs.debprint(f'{self}: A spaz touched us, so we\'re gonna die.')
                 from bascenev1lib.actor.spaz import EmeraldMessage
                 toucher.handlemessage(EmeraldMessage(self.texname))
                 self.handlemessage(bs.DieMessage())
@@ -759,7 +773,7 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
                 self.metal_sound.volume = 0.0
     
     def emerald_drop(self):
-        if random.random() < 0.1:
+        if random.random() < 0.15:
             mp = self.map.defs.points
             spawn_names = [
                 'ffa_spawn1',
