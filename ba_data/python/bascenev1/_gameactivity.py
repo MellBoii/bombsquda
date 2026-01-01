@@ -126,11 +126,13 @@ class EmeraldActor(bs.Actor):
         elif isinstance(msg, TouchedMsg):
             toucher = bs.getcollision().opposingnode
             isspaz = toucher.getnodetype() == 'spaz'
+            actor = toucher.getdelegate(bs.Actor)
             if isspaz:
                 bs.debprint(f'{self}: A spaz touched us, so we\'re gonna die.')
                 from bascenev1lib.actor.spaz import EmeraldMessage
                 toucher.handlemessage(EmeraldMessage(self.texname))
-                self.handlemessage(bs.DieMessage())
+                if not actor.issuper:
+                    self.handlemessage(bs.DieMessage())
         elif isinstance(msg, bs.OutOfBoundsMessage):
             self.handlemessage(bs.DieMessage(immediate=True))
             
@@ -780,6 +782,13 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
                 'ffa_spawn2',
                 'ffa_spawn3',
                 'ffa_spawn4',
+                'powerup_spawn1',
+                'powerup_spawn2',
+                'powerup_spawn3',
+                'powerup_spawn4',
+                'spawn1',
+                'spawn2',
+                'flag_default',
             ]
             points = [mp[name] for name in spawn_names if name in mp]
             spawn = random.choice(points)
