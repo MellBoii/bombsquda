@@ -87,7 +87,20 @@ class Startup():
         console_globals['bui'] = bui
         console_globals['ga'] = bs.getactivity
         console_globals['gp'] = bs.getplayers
+        console_globals['gs'] = bs.getsession
         console_globals['sm'] = bs.setmusic
+        # our "cheats"
+        def super():
+            bs.getplayers()[0].actor.gosuper()
+        def firework():
+            bs.getplayers()[0].actor.firework_explode()
+        def slowmode():
+            gnode = bs.getactivity().globalsnode
+            slow = True if gnode.slow_motion == False else False
+            gnode.slow_motion = slow
+        console_globals['GOLDENFORM'] = super
+        console_globals['NEWYEARS'] = firework
+        console_globals['SLOWDOWN'] = slowmode
     # call it
     auto_module_import()
     
