@@ -474,14 +474,21 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
         """End the round if conditions are met."""
         if not any(player.is_alive() for player in self.teams[0].players):
             if len(self.players) > 1:
-                bs.broadcastmessage('Waiting for potential respawn before end...')
+                bs.broadcastmessage( bs.Lstr(resource='clutchTimer') )
                 def checkpartfuckin2():
                     if not any(player.is_alive() for player in self.teams[0].players):
-                        bs.broadcastmessage('No one respawned before the timer. :^)')
+                        text = (
+                            bs.Lstr(resource='clutchTimerFail2')
+                            if random.random() < 0.1 else
+                            bs.Lstr(resource='clutchTimerFail')
+                        )
+                        bs.broadcastmessage(text)
                         self.end_game()
                         for player in self.players:
                             player.respawn_timer = None
                             player.respawn_icon = None
+                    else:
+                        bs.getsound('player_ready').play()
                 bs.timer(4.5, checkpartfuckin2)
             else:
                 if not any(player.is_alive() for player in self.teams[0].players):

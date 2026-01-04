@@ -237,7 +237,6 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         bs.timer(0.6, bs.getsound(random.choice(rsfx)).play, repeat=True)
         self._logo_node.texture = bs.gettexture('logoDies')
         self.splashtext.node.text = 'ow.'
-        self.modpack_name.node.text = 'no more modpack...\ntwin why.......'
 
     def _update(self) -> None:
         # pylint: disable=too-many-locals
@@ -384,7 +383,7 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
             c3name = cfgget('character2name')[0]
             c4name = cfgget('character3name')[0]
             chosen_text = bs.Lstr(
-                resource=f'splashText{random.randint(1, 117)}',
+                resource=f'splashText{random.randint(1, 141)}',
                 subs=[
                     ('${SPAZ}', c1name),
                     ('${KRIS}', c2name),

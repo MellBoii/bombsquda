@@ -9,6 +9,7 @@ from typing import override
 import random
 
 import bauiv1 as bui
+import babase as ba
 
 
 class HelpWindow(bui.MainWindow):
@@ -139,7 +140,7 @@ class HelpWindow(bui.MainWindow):
         # self._sub_width = 810 if uiscale is bui.UIScale.SMALL else 660
         self._sub_width = 660
         self._sub_height = (
-            1800
+            2100
             + bui.app.lang.get_resource(f'{self._r}.someDaysExtraSpace')
             + bui.app.lang.get_resource(
                 f'{self._r}.orPunchingSomethingExtraSpace'
@@ -188,12 +189,6 @@ class HelpWindow(bui.MainWindow):
 
         icon_size = 70
         hval2 = h - (txt_width * 0.5 + icon_size * 0.5 * icon_buffer)
-        bui.imagewidget(
-            parent=self._subcontainer,
-            size=(icon_size, icon_size),
-            position=(hval2 - 0.5 * icon_size, v - 0.45 * icon_size),
-            texture=logo_tex,
-        )
 
         app = bui.app
         assert app.classic is not None
@@ -373,19 +368,15 @@ class HelpWindow(bui.MainWindow):
         icon_size = 70
 
         hval2 = h - (txt_width * 0.5 + icon_size * 0.5 * icon_buffer)
-        bui.imagewidget(
-            parent=self._subcontainer,
-            size=(icon_size, icon_size),
-            position=(hval2 - 0.5 * icon_size, v - 0.45 * icon_size),
-            texture=logo_tex,
-        )
 
         v -= spacing * 45.0
-
+        
+        cfgget = ba.app.config.get
+        c1name = cfgget('playername')[0]
         txt_scale = 0.7
         txt = bui.Lstr(
             resource=f'{self._r}.controlsSubtitleText',
-            subs=[('${APP_NAME}', bui.Lstr(resource='titleText'))],
+            subs=[('${SPAZ}', c1name)],
         ).evaluate()
         bui.textwidget(
             parent=self._subcontainer,
@@ -415,7 +406,7 @@ class HelpWindow(bui.MainWindow):
             color=(1, 0.7, 0.3),
             selectable=False,
             enable_sound=False,
-            on_activate_call=bui.getsound('superPunch').play,
+            on_activate_call=bui.getsound('punchSFX/superPunch').play,
         )
 
         txt_scale = getres(f'{self._r}.punchInfoTextScale')
@@ -555,12 +546,6 @@ class HelpWindow(bui.MainWindow):
         )
         icon_size = 70
         hval2 = h - (txt_width * 0.5 + icon_size * 0.5 * icon_buffer)
-        bui.imagewidget(
-            parent=self._subcontainer,
-            size=(icon_size, icon_size),
-            position=(hval2 - 0.5 * icon_size, v - 0.45 * icon_size),
-            texture=logo_tex,
-        )
 
         v -= spacing * 50.0
         txt_scale = getres(f'{self._r}.powerupsSubtitleTextScale')
@@ -580,8 +565,8 @@ class HelpWindow(bui.MainWindow):
 
         v -= spacing * 1.0
 
-        mm1 = -270
-        mm2 = -215
+        mm1 = -250
+        mm2 = -205
         mm3 = 0
         icon_size = 50
         shadow_size = 80
@@ -663,7 +648,46 @@ class HelpWindow(bui.MainWindow):
                 color=paragraph,
                 v_align='center',
                 res_scale=0.5,
-            )
+            ) 
+        v -= spacing * 70
+
+        txt = bui.Lstr(resource=f'{self._r}.mechanicsText').evaluate()
+        txt_scale = 1.4
+        txt_maxwidth = 480
+        bui.textwidget(
+            parent=self._subcontainer,
+            position=(h, v),
+            size=(0, 0),
+            scale=txt_scale,
+            flatness=0.5,
+            text=txt,
+            h_align='center',
+            color=header,
+            v_align='center',
+            maxwidth=txt_maxwidth,
+        )
+        txt_width = min(
+            txt_maxwidth,
+            bui.get_string_width(txt, suppress_warning=True) * txt_scale,
+        )
+        icon_size = 70
+        hval2 = h - (txt_width * 0.5 + icon_size * 0.5 * icon_buffer)
+
+        v -= spacing * 40.0
+        txt_scale = getres(f'{self._r}.powerupsSubtitleTextScale')
+        txt = bui.Lstr(resource=f'{self._r}.mechanicsSubtitleText').evaluate()
+        bui.textwidget(
+            parent=self._subcontainer,
+            position=(h, v),
+            size=(0, 0),
+            scale=txt_scale,
+            maxwidth=self._sub_width * 0.9,
+            text=txt,
+            h_align='center',
+            color=paragraph,
+            v_align='center',
+            flatness=1.0,
+        )
 
     def _play_sound(self, text: str, num: int) -> None:
         bui.getsound(text + str(random.randint(1, num))).play()

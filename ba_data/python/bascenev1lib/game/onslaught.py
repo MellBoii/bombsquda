@@ -255,8 +255,8 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
         self._throw_off_kills = 0
         self._land_mine_kills = 0
         self._tnt_kills = 0
-        self.timebeforedeath = 60
-        self.time_increase = 16
+        self.timebeforedeath = 80
+        self.time_increase = 20
     
     @override
     def on_transition_in(self) -> None:
@@ -1932,14 +1932,21 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
             return
         if not any(player.is_alive() for player in self.teams[0].players):
             if len(self.players) > 1:
-                bs.broadcastmessage('Waiting for potential respawn before end...')
+                bs.broadcastmessage( bs.Lstr(resource='clutchTimer') )
                 def checkpartfuckin2():
                     if not any(player.is_alive() for player in self.teams[0].players):
-                        bs.broadcastmessage('No one respawned before the timer. :^)')
+                        text = (
+                            bs.Lstr(resource='clutchTimerFail2')
+                            if random.random() < 0.1 else
+                            bs.Lstr(resource='clutchTimerFail')
+                        )
+                        bs.broadcastmessage(text)
                         self.end_game()
                         for player in self.players:
                             player.respawn_timer = None
                             player.respawn_icon = None
+                    else:
+                        bs.getsound('player_ready').play()
                 bs.timer(2.0, checkpartfuckin2)
             else:
                 if not any(player.is_alive() for player in self.teams[0].players):

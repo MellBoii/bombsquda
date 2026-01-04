@@ -52,8 +52,10 @@ class Startup():
     # save changes
     cfg['isbombsqudaorsomething'] = None
     config.apply_and_commit()
+    bs.debprint('set default config stuff applied!')
     try:
         cfg['squda_playersfirsttime']
+        bs.debprint('attempting to check squda_playersfirsttime')
     except:
         print('incredibly bad fuckin error.')
         print('something went bad in fromgoverhaul\'s startup, and we couldn\t add config stuff')
@@ -101,6 +103,7 @@ class Startup():
         console_globals['GOLDENFORM'] = super
         console_globals['NEWYEARS'] = firework
         console_globals['SLOWDOWN'] = slowmode
+        bs.debprint('console globals done!')
     # call it
     auto_module_import()
     
@@ -133,6 +136,7 @@ class Startup():
         
     # Install the hook
     sys.excepthook = my_global_exception_hook
+    bs.debprint('global exception hook is ready!')
     
 
 
