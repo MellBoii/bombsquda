@@ -57,6 +57,9 @@ class EmeraldActor(bs.Actor):
         self.texname = self.get_fairest_emerald()
         self.tex = bs.gettexture(self.texname)
         self.material = bs.Material()
+        self.emeralds_die = True
+        if self.emeralds_die:
+            self.deathTimer = bs.Timer(5, self.scheduled_die_message)
         self.material.add_actions(
             conditions=('they_have_material', SharedObjects.get().player_material),
             actions=(
@@ -82,7 +85,10 @@ class EmeraldActor(bs.Actor):
             },
         )
         bs.animate(self.node, 'mesh_scale', {0: 0, 0.5: 0.7})
-    
+        
+    def scheduled_die_message(self):
+        self.handlemessage(bs.DieMessage())
+        
     def get_fairest_emerald(self) -> str:
         all_types = [f"emerald{i}" for i in range(1, 8)]
 
@@ -123,6 +129,7 @@ class EmeraldActor(bs.Actor):
                 else:
                     bs.animate(self.node, 'mesh_scale', {0: 0.7, 0.1: 0})
                     bs.timer(0.1, self.node.delete)
+                self.deathTimer = None
         elif isinstance(msg, TouchedMsg):
             toucher = bs.getcollision().opposingnode
             isspaz = toucher.getnodetype() == 'spaz'
@@ -351,9 +358,11 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         self.did_overtime = False
         self.new_emerald = None
         self.emeralds = []
-        self.emerald_drop_timer = bs.Timer(
-            1.2, babase.WeakCall(self.emerald_drop), repeat=True
-        )
+        self.allow_emeralds = True
+        if self.allow_emeralds:
+            self.emerald_drop_timer = bs.Timer(
+                1.5, babase.WeakCall(self.emerald_drop), repeat=True
+            )
         self.metal_sound = _bascenev1.newnode('sound', attrs={'sound': _bascenev1.getsound('metalMusic'),
                         'volume': 0.0})
         self.dancin_sound = _bascenev1.newnode('sound', attrs={'sound': _bascenev1.getsound('homeroLoop'),
@@ -775,7 +784,7 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
                 self.metal_sound.volume = 0.0
     
     def emerald_drop(self):
-        if random.random() < 0.15:
+        if random.random() < 0.5:
             mp = self.map.defs.points
             spawn_names = [
                 'ffa_spawn1',
