@@ -82,6 +82,24 @@ class SpazBot(Spaz):
     """
 
     character = 'Spaz'
+    """spazbots can have names now! (of course, toggeable 
+    since i believed many wouldn't like this)
+    just add whatever name here (or make a list for a class)
+    and it'll show up as a name for the bot! pretty neat, eh?"""
+    namelist = [
+        'Spazzy',
+        'SpazBot',
+        'gamer',
+        'spazito',
+        'Device',
+        'Boomer',
+        'Android589316',
+        'ultra caballero',
+        'spaz killer',
+        'i have\nline breaks!!',
+    ]
+    # if you want a single name, make this the list:
+    #namelist = ['yernamehere']
     punchiness = 0.5
     throwiness = 0.7
     static = False
@@ -103,15 +121,19 @@ class SpazBot(Spaz):
 
     def __init__(self) -> None:
         """Instantiate a spaz-bot."""
+        self.name = random.choice(self.namelist)
         super().__init__(
             color=self.color,
             highlight=self.highlight,
             character=self.character,
+            name=self.name,
             source_player=None,
             start_invincible=False,
             can_accept_powerups=False,
         )
-
+        # well dammit! we can't normally color
+        # a spazbot's name, so we do it manually
+        self.node.name_color = self.color
         # If you need to add custom behavior to a bot, set this to a callable
         # which takes one arg (the bot) and returns False if the bot's normal
         # update should be run and True if not.
@@ -131,6 +153,8 @@ class SpazBot(Spaz):
         )
         self._lead_amount = 0.5
         self._mode = 'wait'
+        # uncomment to test emerald behavior:
+        #self.emeralds = ['test0', 'test1', 'test2', 'test3', 'test4', 'test5', 'test6']
         self._charge_closing_in = False
         self._last_charge_dist = 0.0
         self._running = False
@@ -297,7 +321,13 @@ class SpazBot(Spaz):
         diff = target_pt - our_pos
         dist = diff.length()
         to_target = diff.normalized()
-
+        # oh hey, we have 7 emeralds!
+        # let's go super!!!!!!!!!!!
+        if len(self.emeralds) >= 7:
+            self.on_jump_press()
+            bs.timer(0.1, self.on_jump_release)
+            bs.timer(0.3, self.on_pickup_press)
+            bs.timer(0.4, self.on_pickup_release)
         if self._mode == 'throw':
             # We can only throw if alive and well.
             if not self._dead and not self.node.knockout:
@@ -481,6 +511,12 @@ class SpazBot(Spaz):
                 if random.random() < self.punchiness:
                     self.on_punch_press()
                     self.on_punch_release()
+                # if super, start doing parries
+                if self.issuper:
+                    if random.random() < 0.5:
+                        self.on_pickup_press()
+                        self.on_pickup_release()
+                    
 
     @override
     def on_punched(self, damage: int) -> None:
@@ -574,13 +610,21 @@ class SpazBot(Spaz):
         else:
             super().handlemessage(msg)
 
+# Are you ready to see the most UNORIGINAL NAMES!!!????
+# If not, avert your eyes and close this script IMMEDIATELY!
+# No seriously, I had zero ideas on what names to make!
+# Last chance!!!
 
 class BomberBot(SpazBot):
     """A bot that throws regular bombs and occasionally punches.
 
     category: Bot Classes
     """
-
+    namelist = [
+        'meet_the_sniper',
+        'ilovebombs',
+        'Bomber',
+    ]
     character = 'Spaz'
     punchiness = 0.3
 
@@ -598,6 +642,14 @@ class BomberBotLite(BomberBot):
     throwiness = 0.1
     charge_speed_min = 0.6
     charge_speed_max = 0.6
+    namelist = [
+        'am cool',
+        'pro',
+        'spazitto',
+        'Device',
+        'Android' + str(random.randint(13531864, 243691096)),
+        'Sparky',
+    ]
 
 
 class BomberBotStaticLite(BomberBotLite):
@@ -642,6 +694,12 @@ class LauncherBot(SpazBot):
     category: Bot Classes
     """
 
+    namelist = [
+        'Robloxian318531',
+        'Bl0xx3r',
+        '#soretro',
+        'Brickbattler',
+    ]
     character = 'Jack Morgan'
     points_mult = 3
     color = (0.30, 0.30, 0.30)
@@ -690,7 +748,12 @@ class BrawlerBot(SpazBot):
 
     category: Bot Classes
     """
-
+    namelist = [
+        'evil susie',
+        'Spaz Puncher',
+        '2tuff4u',
+        'jeff the killer',
+    ]
     character = 'Kronk'
     punchiness = 0.9
     charge_dist_max = 9999.0
@@ -743,7 +806,13 @@ class ChargerBot(SpazBot):
 
     category: Bot Classes
     """
-
+    
+    namelist = [
+        'SneakyNinja',
+        'Cliff Jumper',
+        'im so fast',
+        'Snake Shadow',
+    ]
     character = 'Snake Shadow'
     punchiness = 1.0
     run = True
@@ -760,7 +829,9 @@ class RaymanBot(SpazBot):
 
     category: Bot Classes
     """
-
+    namelist = [
+        'Rayman!',
+    ]
     character = 'Bones'
     punchiness = 1.0
     run = True
@@ -777,7 +848,12 @@ class KNIGHTBot(SpazBot):
 
     category: Bot Classes
     """
-
+    
+    namelist = [
+        'THE KNIGHT',
+        'ROARING KNIGHT',
+        'RoryNyteYT',
+    ]
     character = 'B-9000'
     punchiness = 1.0
     color = (0.0, 0.0, 0.0)
@@ -845,7 +921,13 @@ class TriggerBot(SpazBot):
 
     category: Bot Classes
     """
-
+    
+    namelist = [
+        'christopher',
+        'Kris',
+        'KrisDreemurr',
+        'evil green kris',
+    ]
     character = 'Zoe'
     punchiness = 0.75
     throwiness = 0.7
@@ -902,7 +984,14 @@ class StickyBot(SpazBot):
 
     category: Bot Classes
     """
-
+    
+    namelist = [
+        'Greencap', # 4 so 'buddiew' is rare
+        'Greencap',
+        'Greencap',
+        'green cap',
+        'buddiew',
+    ]
     character = 'Grumbledorf'
     punchiness = 0.9
     throwiness = 1.0
@@ -953,7 +1042,11 @@ class ExplodeyBot(SpazBot):
 
     category: Bot Classes
     """
-
+    namelist = [
+        'dohmer',
+        'Homer',
+        'homero simpson',
+    ]
     character = 'Homer'
     run = True
     color = (1, 1, 1)

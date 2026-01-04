@@ -174,6 +174,20 @@ class PlayerRecord:
             scale = 1.3
             delay = 0.9
             sound = stats.orchestrahitsound4
+        elif self._multi_kill_count == 6:
+            score = 80
+            name = babase.Lstr(resource='sixKillText')
+            color = (1.0, 0.5, 0.0, 1)
+            scale = 1.3
+            delay = 0.9
+            sound = stats.orchestrahitsound5
+        elif self._multi_kill_count == 7:
+            score = 80
+            name = babase.Lstr(resource='sevenKillText')
+            color = (1.0, 0.5, 0.0, 1)
+            scale = 1.3
+            delay = 0.9
+            sound = stats.orchestrahitsound6
         else:
             score = 100
             name = babase.Lstr(
@@ -287,6 +301,8 @@ class Stats:
         self.orchestrahitsound2 = _bascenev1.getsound('orchestraHit2')
         self.orchestrahitsound3 = _bascenev1.getsound('orchestraHit3')
         self.orchestrahitsound4 = _bascenev1.getsound('orchestraHit4')
+        self.orchestrahitsound5 = _bascenev1.getsound('orchestraHit5')
+        self.orchestrahitsound6 = _bascenev1.getsound('orchestraHit6')
 
     def reset(self) -> None:
         """Reset the stats instance completely."""

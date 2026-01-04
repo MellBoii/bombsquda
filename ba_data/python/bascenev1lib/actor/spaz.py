@@ -109,6 +109,7 @@ class Spaz(bs.Actor):
         *,
         color: Sequence[float] = (1.0, 1.0, 1.0),
         highlight: Sequence[float] = (0.5, 0.5, 0.5),
+        name: str = '',
         character: str = 'Spaz',
         source_player: bs.Player | None = None,
         start_invincible: bool = True,
@@ -142,6 +143,7 @@ class Spaz(bs.Actor):
         self.wiggling = False
         self.light = None
         self.sparkies = None
+        self.super_flash = None
 
         self.source_player = source_player
         self._dead = False
@@ -182,6 +184,7 @@ class Spaz(bs.Actor):
             delegate=self,
             attrs={
                 'color': color,
+                'name': name,
                 'behavior_version': 0 if demo_mode else 1,
                 'demo_mode': demo_mode,
                 'highlight': highlight,
@@ -459,6 +462,8 @@ class Spaz(bs.Actor):
         self._dropped_bomb_callbacks = []
         self.punch_callback = None
         self.pick_up_powerup_callback = None
+        self.sparkies = None
+        self.super_flash = None
 
     def add_dropped_bomb_callback(
         self, call: Callable[[Spaz, bs.Actor], Any]
@@ -873,30 +878,6 @@ class Spaz(bs.Actor):
                         0.8,
                     ),
                 )
-                if self.character == 'Jack Morgan':
-                    if self.times_slashed >= 4 and self._has_boxing_gloves == True:
-                            bs.getsound('swordlunge').play()
-                            self.NINJA_DASHES = 10
-                            self.on_jump_dash()
-                            self.times_slashed = 0
-                    else:
-                        bs.getsound('swordslash').play()
-                        if self._has_boxing_gloves == True:
-                            if self.times_slashed >= 3:
-                                PopupText(
-                                    'LUNGE READY',
-                                    position=self.node.position,
-                                    color=(1, 1, 1, 1.0),
-                                    scale=1.2,
-                                ).autoretain()
-                                bs.getsound('deek2').play()
-                            self.times_slashed += 1
-                            PopupText(
-                                str(self.times_slashed),
-                                position=self.node.position,
-                                color=(1, 1, 1, 1.0),
-                                scale=1.1,
-                            ).autoretain()
         self._turbo_filter_add_press('punch')
         
     def lvgame_explode(self) -> None:
@@ -1460,7 +1441,14 @@ class Spaz(bs.Actor):
             spread=1.5,
             chunk_type='spark',
         ),
-        bs.getsound('cd_ringed').play()
+        text = PopupText(
+            bs.Lstr(resource='oobParried'),
+            position=self.node.position,
+            color=(1, 0, 1, 0.9),
+            scale=1.0,
+        ).autoretain()
+        bs.getsound('parried').play()
+        bs.getsound('orchestraHit').play()
         return        
         
     def gosuper(self, shouldntsetmusic: bool = False) -> None:
@@ -1474,26 +1462,36 @@ class Spaz(bs.Actor):
             bs.getsound('supertrans').play() # i'm keeping it as super trans. fuck you. die.
             self.issuper = True
             # flashing effect function
-            yellow = (1, 1, 0)
-            white = (1, 1, 1)
             if not self.node.exists():
                 return
-            flashC = bs.animate_array(self.node, 'color', 3,
-                {
-                    0.0: yellow,
-                    0.1: white,
-                    0.2: yellow
-                },
-                loop=True
-            )
-            flashH = bs.animate_array(self.node, 'highlight', 3,
-                {
-                    0.0: yellow,
-                    0.1: white,
-                    0.2: yellow
-                },
-                loop=True
-            )
+            yellow = (1.5, 1.5, 0)
+            white = (1, 1, 1)
+            midtime = 0.1
+            endtime = 0.2
+            def flash_func():
+                if (
+                    not self.node
+                    or not self.is_alive()
+                    or not self.issuper
+                ):
+                    return
+                flashC = bs.animate_array(self.node, 'color', 3,
+                    {
+                        0.0: yellow,
+                        midtime: white,
+                        endtime: yellow
+                    },
+                )
+                flashH = bs.animate_array(self.node, 'highlight', 3,
+                    {
+                        0.0: yellow,
+                        midtime: white,
+                        endtime: yellow
+                    },
+                )
+            # Instead of using looped array animation,
+            # use a timer which allows us to override any color changes
+            self.super_flash = bs.Timer(endtime, flash_func, repeat=True) 
             bs.camerashake(intensity=5.0)
             char_name = getattr(self, 'character', None)
             hurtiness = 4.2
@@ -1901,6 +1899,13 @@ class Spaz(bs.Actor):
         roll()
         
     def increase_chain(self, number: int = 1):
+        # DONT INCREASE CHAINS IF
+        # THE SPAZ IS DEAD!!
+        if (
+            not self.node
+            or not self.is_alive()
+        ):
+            return
         self.yeehaws += number
         # play sounds based on our chains
         if self.yeehaws > 7:
@@ -1974,6 +1979,13 @@ class Spaz(bs.Actor):
             self.yeehaw_text.text = str(self.yeehaws)
             
     def release_chain(self):
+        # DONT RELEASE CHAINS IF
+        # THE SPAZ IS DEAD!!
+        if (
+            not self.node
+            or not self.is_alive()
+        ):
+            return
         if self.yeehaws < 1:
             return
         if self.yeehaws > 4:
@@ -2976,7 +2988,7 @@ class Spaz(bs.Actor):
             # us if its grown high enough.
             if self.hitpoints <= 0:                          
                 damage_avg = self.node.damage_smoothed * damage_scale
-                if damage_avg >= 1000:
+                if damage_avg >= 1000 * self.impulse_scale:
                     # WITHER AND DIE :fire::fire::fire::fire::fire::fire::fire:
                     self.shatter()
 
@@ -3866,6 +3878,8 @@ class Spaz(bs.Actor):
                     'motorroach_dies', 
                     'motorroach_dies2',
                     'fpants_death',
+                    'sgsn_scream',
+                    'luigi_burning',
                 ]
                 bs.getsound(random.choice(shatter2sfx)).play(position=self.node.position)
         self.die()
