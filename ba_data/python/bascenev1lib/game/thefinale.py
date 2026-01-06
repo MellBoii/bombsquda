@@ -113,7 +113,7 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
         self._alrdidach1 = False
         self._alrdidach2 = False
         self._alrdidach3 = False
-        self.easymode = bool(settings['easy_mode'])
+        self.easymode = settings['easy_mode']
 
         # For each bot type: [spawnrate, increase, d_increase]
         self._bot_spawn_types = {

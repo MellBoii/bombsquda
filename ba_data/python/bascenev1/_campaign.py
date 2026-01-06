@@ -249,7 +249,7 @@ def init_campaigns() -> None:
                 Level(
                     'The Finale',
                     gametype=TheFinaleGame,
-                    settings={'easymode': False},
+                    settings={'easy_mode': False},
                     preview_texture_name='footballStadiumPreview',
                 ),
                 Level(
