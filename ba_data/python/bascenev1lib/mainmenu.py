@@ -96,16 +96,10 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
             bs.animate(self.my_name.node, 'opacity', {2.3: 0, 3.0: 1.0})
 
         mesh = bs.getmesh('snesCourseLevel')
-        trees_mesh = bs.getmesh('kronkHand')
-        trees_texture = bs.gettexture('kronkHand')
-        bottom_mesh = bs.getmesh('kronkHand') # of course we have to use a "blank" model so it dont die...
-        color_texture = bs.gettexture('snesCourseColor')
+        cmesh = bs.getcollisionmesh('snesCourseCollide')
+        tex = bs.gettexture('snesCourseColor')
         bgtex = bs.gettexture('DSspace')
         bgmesh = bs.getmesh('DSspace')
-
-        # Load these last since most platforms don't use them.
-        vr_bottom_fill_mesh = bs.getmesh('thePadVRFillBottom')
-        vr_top_fill_mesh = bs.getmesh('thePadVRFillTop')
 
         gnode = self.globalsnode
         gnode.camera_mode = 'rotate'
@@ -115,64 +109,17 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         gnode.ambient_color = (1.06, 1.04, 1.03)
         gnode.vignette_outer = (0.68, 0.67, 0.87)
         gnode.vignette_inner = (0.83, 0.87, 0.78)
-
-        self.bottom = bs.NodeActor(
-            bs.newnode(
-                'terrain',
-                attrs={
-                    'mesh': bottom_mesh,
-                    'lighting': False,
-                    'reflection': 'soft',
-                    'reflection_scale': [0.45],
-                    'color_texture': color_texture,
-                },
-            )
-        )
-        self.vr_bottom_fill = bs.NodeActor(
-            bs.newnode(
-                'terrain',
-                attrs={
-                    'mesh': vr_bottom_fill_mesh,
-                    'lighting': False,
-                    'vr_only': True,
-                    'color_texture': color_texture,
-                },
-            )
-        )
-        self.vr_top_fill = bs.NodeActor(
-            bs.newnode(
-                'terrain',
-                attrs={
-                    'mesh': vr_top_fill_mesh,
-                    'vr_only': True,
-                    'lighting': False,
-                    'color_texture': bgtex,
-                },
-            )
-        )
         shared = SharedObjects.get()
         self.terrain = bs.NodeActor(
             bs.newnode(
                 'terrain',
                 attrs={
                     'mesh': mesh,
-                    'collision_mesh': bs.getcollisionmesh('snesCourseCollide'),
-                    'color_texture': color_texture,
+                    'collision_mesh': cmesh,
+                    'color_texture': tex,
                     'reflection': 'soft',
                     'materials': [shared.footing_material],
                     'reflection_scale': [0.3],
-                },
-            )
-        )
-        self.trees = bs.NodeActor(
-            bs.newnode(
-                'terrain',
-                attrs={
-                    'mesh': trees_mesh,
-                    'lighting': False,
-                    'reflection': 'char',
-                    'reflection_scale': [0.1],
-                    'color_texture': trees_texture,
                 },
             )
         )

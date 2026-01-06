@@ -74,6 +74,7 @@ class TitleWindow(bui.MainWindow):
             on_activate_call=self.quit_window,
         )
         bui.containerwidget(edit=self._root_widget, cancel_button=self.quit_btn)
+        
     def close(self) -> None:
         """Close the window."""
         # no-op if we're not currently in control.
@@ -104,6 +105,7 @@ class TitleWindow(bui.MainWindow):
                 origin_widget=self._root_widget,
             )
         )
+        
     def quit_window(self):
         # pylint: disable=cyclic-import
         from bauiv1lib.confirm import QuitWindow
@@ -116,6 +118,7 @@ class TitleWindow(bui.MainWindow):
         # invoking the window directly lets us scale it up from the
         # button.
         QuitWindow(origin_widget=self.quit_btn)
+        
     @override
     def get_main_window_state(self) -> bui.MainWindowState:
         # Support recreating our window for back/refresh purposes.

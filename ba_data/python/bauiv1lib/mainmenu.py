@@ -202,7 +202,7 @@ class MainMenuWindow(bui.MainWindow):
         )
 
         if not classic.did_menu_intro:
-            self._tdelay = 1.6
+            self._tdelay = 1.0
             self._t_delay_inc = 0.03
             classic.did_menu_intro = True
 
@@ -385,18 +385,19 @@ class MainMenuWindow(bui.MainWindow):
             transition_delay=thistdelay,
             on_activate_call=self._howtoplay,
         )
-        bui.widget(
-            edit=self._how_to_play_button,
-            left_widget=bui.get_special_widget('settings_button'),
-        )
         self.boomboxbtn = bui.buttonwidget(
             parent=self._root_widget,
             position=(-self._width - 10, -self._height),
             button_type='square',
             size=(180, 80),
             label='music player',
+            transition_delay=thistdelay,
             autoselect=True,
             on_activate_call=self.boombox_press
+        )
+        bui.widget(
+            edit=self.boomboxbtn,
+            down_widget=bui.get_special_widget('settings_button'),
         )
         # Play button.
         h = self._width * 0.5
@@ -416,7 +417,7 @@ class MainMenuWindow(bui.MainWindow):
             on_activate_call=self._play_press,
         )
         rr_button_scale = 1.7
-        self._reroll_button = start_button = bui.buttonwidget(
+        self._reroll_button = bui.buttonwidget(
             parent=self._root_widget,
             position=(h - 55, v - 50),
             size=(play_button_width * 0.5, play_button_height * 0.5),

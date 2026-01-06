@@ -508,6 +508,7 @@
   "bombText": "Bomb",
   "boostText": "Boost",
   "creditsText": "Vibapop - Deltarune Models\nnote.swiper - Ripping the roblox rig model\nNotCleanAgain - Roaring Knight model\nSounds from various meme \nand game sources like \nstock sounds, vine, super smash bros, \nsuper mario bros, sonic, and other stuff\nChatGPT - Making half the fuckin coding\nbecause i cant learn to code for shit irhqjhqhjq\nGummyBoiYT - Orangecap's OG model \nand overall inspiration\nand also help with coding fuckery\nMOST MUSIC CREATORS ARE CREDITED \nON EACH MUSIC FILE'S METADATA. \nSOME MUSIC NAMES AND AUTHORS\n SHOW UP IN 'NOW PLAYING'.\nI DO NOT TAKE CREDIT FOR ANY MUSIC \nINCLUDED IN THIS MODPACK WHATSOEVER.\nBOMBSQUDA'S SOUNDTRACK IS \nNOT A ORIGINAL SOUNDTRACK,\nBUT A COMPILATION OF MUSIC \nMADE FOR OTHER MEDIA.\nIF YOU ARE A CREATOR OF \nSUCH MUSIC AND IT BOTHERS YOU,\nPLEASE DM ME ON DISCORD AT @mellboii,\nAND I WILL REMOVE IT.\nWith that said...\nSpecial thanks to Lemon and GummyBoiYT\nfor being great advice givers, \nand to my friends for...\n..well, being my friends \nand all. Yeah!\nCouldn't have made this \nwithout any of 'em.\n\n\nAnd of course, ${NAME}...\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nThanks for playing",
+  "boomboxWindowText": "Welcome to the Boombox.\nThis allows you to play any of the game's music\nINCLUDING whenever in a online party. \nSelect a MusicType and press play to start.",
   "bsRemoteConfigureInAppText": "${REMOTE_APP_NAME} is configured in the app itself.",
   "buttonText": "button",
   "canWeDebugText": "Would you like ${APP_NAME} to automatically report\nbugs, crashes, and basic usage info to the developer?\n\nThis data contains no personal information and helps\nkeep the game running smoothly and bug-free.\n",
@@ -1471,7 +1472,7 @@
   "seriesWinLine1Text": "IS THE",
   "seriesWinLine2Text": "WINNER!!",
   "settingsWindow": {
-    "accountText": "i wanna delete acc",
+    "accountText": "yer account",
     "advancedText": "idk something else",
     "audioText": "game too loud",
 	"meloptions": "bombsquda stuff",

@@ -25,7 +25,6 @@ class RadioWindow(bui.Window):
         uiscale = bui.app.ui_v1.uiscale
         self._width = 700
         self._height = 350
-        self.choice2 = 'MENU'
         super().__init__(
             root_widget=bui.containerwidget(
                 size=(self._width, self._height),
@@ -41,7 +40,7 @@ class RadioWindow(bui.Window):
             autoselect=False,
             position=(self._width - 700, self._height - 80),
             size=(80, 80),
-            color=(0.7, 0.3, 0.3),
+            color=(0.65, 0.2, 0.2),
             textcolor=(1, 1, 1),
             scale=0.8,
             text_scale=1.3,
@@ -50,133 +49,45 @@ class RadioWindow(bui.Window):
             on_activate_call=self.close,
         )
         bui.containerwidget(edit=self._root_widget, cancel_button=btn)
+        
         self.popup = PopupMenu(
             parent=self._root_widget,
             position=(self._width - 500, self._height - 250),
             width=250,
             autoselect=True,
             on_value_change_call=bui.WeakCall(self._on_menu_choice),
-            # we should REALLY optimize this
-            choices = 
-
             # You're welcome
             # - gummy
+            choices = 
             [ music_type for music_type in dir(bs.MusicType) if not music_type.startswith('__')],
-            
-            #[
-              #  'MENU',
-              #  'MENU2',
-              #  'MENU3',
-              #  'MENU6',
-              #  'MENU7',
-              #  'MENU8',
-             #   'MENU9',
-            #    'MENU10',
-            #    'MENU11',
-            #    'MENU12',
-            #    'MENU13',
-            #    'MENU14',
-            #    'MENU15',
-            #    'MENU16',
-            #    'MENU17',
-            #    'MENU18',
-            #    'MENU67',
-            #    'Victory',
-            #    'VictoryFinal',
-            #    'Char_Select',
-            #    'Char_Select2',
-            #    'Char_Select_F',
-            #    'Tutorial',
-            #    'Run_Away',
-            #    'ModulatingTime',
-            #    'Onslaught2',
-            #    'Onslaught3',
-            #    'Keep_Away',
-            #    'Race',
-            #    'Gambling',
-            #    'Epic_Race',
-            #    'Scores',
-            #    'Grand_Romp',
-            #    'MetalCapTime',
-            #    'Rage',
-            #    'NoiseSuper',
-            #    'Business',
-            #    'Elim_Versus',
-            #    'Elim_Danger',
-            #    'To_The_Death',
-            #    'To_The_DeathFast',
-            #    'To_The_Death2Fast',
-            #    'To_The_Death2',
-            #    'To_The_Death3Fast',
-            #    'To_The_Death3',
-            #    'Keep_Away2',
-            #    'Chosen_One',
-            #    'Forward_March',
-            #    'Flag_Catcher',
-            #    'Survival',
-            #    'Epic',
-            #    'Online',
-            #    'Pause',
-            #    'D_RUNNIN', 
-            #    'EpicFast',
-            #    'Sports',
-            #    'Hockey',
-            #    'Football',
-            #    'Flying',
-            #    'Flying2',
-            #    'Scary',
-            #    'Super',
-            #    'SRB2_Pinch',
-            #    'SRB2_Overtime',
-            #    'Marching',
-            #    'Defeat',
-            #    'Credits',
-            #    'TheFinale',
-            #    'RunaroundFinal',
-            #    'War',
-            #    'Lap0',
-            #    'Lap1',
-            #    'Lap2',
-            #    'Lap3',
-            #    'Lap4',
-            #    'Lap5',
-            #    'Lap6',
-            #    'Lap7',
-            #    'Lap8',
-            #    'Lap9',
-            #    'SNESCourse',
-            #    'SNESCourse2',
-            #    'DS1',
-            #    'DS2',
-            #    'DS3',
-            #    'SURVEY',
-            #    'Opening',
-            #    'CRASH_HANDLER',
-            #],
             button_size=(300, 70),
         )
+        
+        # i LOOVE lstrs!
         self._title_text = bui.textwidget(
             parent=self._root_widget,
             position=(self._width * 0.5, self._height - 105),
             size=(0, 0),
             scale=1.0,
-            text='Welcome to the Boombox.\nThis allows you to play any of the game\'s music\nINCLUDING whenever in a online party. \nSelect a MusicType and press play to start.',
+            text=bs.Lstr(resource='boomboxWindowText'),
             color=(1, 1, 1),
             h_align='center',
             v_align='center',
         )
+        
         self.play_button = bui.buttonwidget(
             parent=self._root_widget,
             autoselect=False,
             position=(self._width - 440, self._height - 330),
             size=(80, 80),
-            color=(0.6, 0.3, 0.3),
+            color=(0.3, 0.6, 0.3),
             textcolor=(1, 1, 1),
             scale=0.8,
             text_scale=1.3,
             label=bui.charstr(bui.SpecialChar.PLAY_BUTTON),
             on_activate_call=self.playmusic,
         )
+        
         self.stop_button = bui.buttonwidget(
             parent=self._root_widget,
             autoselect=False,
@@ -231,6 +142,7 @@ class RadioWindow(bui.Window):
             bui.imagewidget(edit=self.animboombox, texture=bui.gettexture(tex_name))
         except:
             self._timer = None
+            
     def close(self) -> None:
         """Close the window."""
         # no-op if our underlying widget is dead or on its way out.
@@ -238,15 +150,18 @@ class RadioWindow(bui.Window):
             return
         bui.containerwidget(edit=self._root_widget, transition='out_scale')
         self._timer = None
+        
     def _on_menu_choice(self, choice: str) -> None:
         self.choice2 = choice.upper()
         if ba.app.config.get("squda_isplayingmusic", True):
             bs.localsetmusic(getattr(bs.MusicType, self.choice2))
+            
     def stopmusic(self):
         bui.imagewidget(edit=self.animboombox, opacity=0.0)
         bui.imagewidget(edit=self.normalboombox, opacity=1.0)
         bs.localsetmusic(None)
         bui.app.config['squda_isplayingmusic'] = False
+        
     def playmusic(self):
         bui.imagewidget(edit=self.animboombox, opacity=1.0)
         bui.imagewidget(edit=self.normalboombox, opacity=0.0)
