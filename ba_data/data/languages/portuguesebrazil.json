@@ -1808,7 +1808,8 @@
       "Crush ${ARG1} of your enemies.": "Esmague ${ARG1} de seus inimigos.",
       "Defeat all enemies.": "Derrote todos inimigos.",
       "Dodge the falling bombs.": "Esquive das bombas caindo.",
-      "Final glorious epic slow motion battle to the death.": "O estagio final. Sem Modo epico. Spawns mais rapidos. Ultrapasse seus limites.",
+      "Final glorious epic slow motion battle to the death.": "PORQUE ESTA TÃO LENTO AAAHHHHHH!!!",
+      "fucking parrying simulator": "simulador de aparar",
       "Gather eggs!": "Recolha os ovos!",
       "Get the flag to the enemy end zone.": "Pegue a bandeira no final da zona inimiga.",
       "How fast can you defeat the ninjas?": "Quão rápido você pode derrotar os ninjas?",
@@ -2148,7 +2149,11 @@
 	  "You can judge when a bomb is going to explode based on the\ncolor of sparks from its fuse:  yellow..orange..red..BOOM.": "uma bomba leva 4 segundos pra explodir. confia.",
 	  "You can throw bombs higher if you jump just before throwing.": "eu sou o saul goodman. sabia que você tem direitos?\n a constituição diz que sim.",
 	  "You take damage when you whack your head on things,\nso try to not whack your head on things.": "'ah mas por que eu morro do nada batendo na parede??'\ntalvez seja por causa da tua cabeça gigantesca??",
-	  "Your punches do much more damage if you are running or spinning.": "socos dependem da sua velocidade atual." 
+	  "Your punches do much more damage if you are running or spinning.": "socos dependem da sua velocidade atual." ,
+	  "theFinaleTip1": "você gosta de aparar o trauma, não é?",
+      "theFinaleTip2": "tenha certeza de matar os bots mais fracos primeiro!",
+      "theFinaleTip3": "é claro, você consegue aparar!!!!!!!!!!!!!!!",
+      "theFinaleTip4": "traga seus amigos! fazem-los SOFRER também.",
 	}
   },
   "trophiesRequiredText": "Isso necessita de pelo menos ${NUMBER} troféus.",

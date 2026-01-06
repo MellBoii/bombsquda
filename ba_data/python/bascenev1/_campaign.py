@@ -180,7 +180,7 @@ def init_campaigns() -> None:
                 Level(
                     'The Finale',
                     gametype=TheFinaleGame,
-                    settings={},
+                    settings={'easy_mode': True},
                     preview_texture_name='footballStadiumPreview',
                 ),
             ],
@@ -249,7 +249,7 @@ def init_campaigns() -> None:
                 Level(
                     'The Finale',
                     gametype=TheFinaleGame,
-                    settings={},
+                    settings={'easymode': False},
                     preview_texture_name='footballStadiumPreview',
                 ),
                 Level(
@@ -338,7 +338,7 @@ def init_campaigns() -> None:
                     displayname='The Last Stand',
                     gametype=TheLastStandGame,
                     settings={'preset': 'tournament'},
-                    preview_texture_name='footballStadiumPreview',
+                    preview_texture_name='rampagePreview',
                 ),
                 Level(
                     'Tournament Infinite Onslaught',

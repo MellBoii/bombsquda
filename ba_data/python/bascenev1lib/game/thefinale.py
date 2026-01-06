@@ -78,7 +78,10 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
     name = 'The Finale'
     description = 'fucking parrying simulator'
     tips = [
-        'traumaParryTip'
+        'theFinaleTip1',
+        'theFinaleTip2',
+        'theFinaleTip3',
+        'theFinaleTip4',
     ]
     # Announce when players die (particularly VERY important here)
     announce_player_deaths = True
@@ -110,6 +113,7 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
         self._alrdidach1 = False
         self._alrdidach2 = False
         self._alrdidach3 = False
+        self.easymode = bool(settings['easy_mode'])
 
         # For each bot type: [spawnrate, increase, d_increase]
         self._bot_spawn_types = {
@@ -191,21 +195,28 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
             self._spawn_center[2] + random.uniform(6, 3),
         )
         bs.timer(0.22, lambda: player.actor.gosuper(shouldntsetmusic=True))
+        if self.easymode == True:
+            player.actor.impact_scale = 0.7
         return self.spawn_player_spaz(player, position=pos)
 
     def _start_bot_updates(self) -> None:
-        self._bot_update_interval = 3.3 - 0.3 * (len(self.players))
+        time = (
+            4.3 if self.easymode
+            else 3.3
+        )
+        self._bot_update_interval = time - 0.3 * (len(self.players))
+        self._bot_update_timer = bs.Timer(
+            self._bot_update_interval, bs.WeakCall(self._update_bots)
+        )
         self._update_bots()
-        self._update_bots()
-        self._update_bots()
+        if not self.easymode:
+            self._update_bots()
+            self._update_bots()
         if len(self.players) > 2:
             self._update_bots()
             self._update_bots()
         if len(self.players) > 3:
             self._update_bots()
-        self._bot_update_timer = bs.Timer(
-            self._bot_update_interval, bs.WeakCall(self._update_bots)
-        )
 
     def _drop_powerup(self, index: int, poweruptype: str | None = None) -> None:
         if poweruptype is None:
@@ -461,7 +472,7 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
         # (Pylint bug?) pylint: disable=missing-function-docstring
         if self._score >= 1500: # 1500 by default, 15 if you're testing
             bs.setmusic(bs.MusicType.VICTORYFINAL, continuous=True)
-            bs.pushcall(bs.WeakCall(self.do_end, 'victory', delay=5.5))   
+            bs.pushcall(bs.WeakCall(self.do_end, 'victory', delay=5.5))
         else:
             assert self._bots is not None
             self._bots.final_celebrate()
