@@ -1006,7 +1006,15 @@
     "someDaysText": "Tem dias que você só quer bater em algo. Ou então explodir coisas.",
     "titleText": "Ajuda do ${APP_NAME}",
     "toGetTheMostText": "Para aproveitar ao máximo este jogo, você precisará de:",
-    "welcomeText": "Bem-vindo ao ${APP_NAME}!"
+    "welcomeText": "Bem-vindo ao ${APP_NAME}!",
+	"mechanicsText": "Mecanicas",
+	"mechanicsSubtitleText": "coisas legais que podem acontecer ou ser feitas!",
+	"mechanicsChargeTitle": "Cargas de 'YEEHAW'",
+	"mechanicsChargeText": "Quando você socar um inimigo com \nvelocidade ou força suficiente, você ouvira 'IIIHAA!' e\nhavera um número encima de você. Isto indica você \ntem um multiplicador, e continuara aumentando\ntoda vez que você socar com velocidade suficiente. Se você dar\num soco normal, o inimigo leva\no mesmo dano so que multiplicado com o número\nde cargas que você ganhou.",
+	"mechanicsSuperTitle": "Forma Super",
+	"mechanicsSuperText": "Esmeraldas do Caos aparecem aleatoriamente \npelo mapa e desaparecem depois de um tempo. Se você \nconseguir coletar todos, poderá desbloquear \nsua forma SUPER quando apertar o botão de \nagarrar após pular! Isso não só lhe dará um pouco de vida \ne um escudo, como também permitirá \nrealizar 2 novos movimentos, como voar e;",
+	"mechanicsParryTitle": "Aparar",
+	"mechanicsParryText": "Sempre que possível, você pode pressionar\no botão de agarrar para tentar aparar. Se executado no momento certo, \nisso pode impedirá que você seja atingido por\nQUALQUER COISA! Bombas, \nsocos, pancadas na cabeça, até mesmo quedas do mapa!"
   },
   "holdAnyButtonText": "<aperte qualquer botão>",
   "holdAnyKeyText": "<aperte qualquer tecla>",

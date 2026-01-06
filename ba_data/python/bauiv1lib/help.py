@@ -140,7 +140,7 @@ class HelpWindow(bui.MainWindow):
         # self._sub_width = 810 if uiscale is bui.UIScale.SMALL else 660
         self._sub_width = 660
         self._sub_height = (
-            2100
+            2550
             + bui.app.lang.get_resource(f'{self._r}.someDaysExtraSpace')
             + bui.app.lang.get_resource(
                 f'{self._r}.orPunchingSomethingExtraSpace'
@@ -649,7 +649,7 @@ class HelpWindow(bui.MainWindow):
                 v_align='center',
                 res_scale=0.5,
             ) 
-        v -= spacing * 70
+        v -= spacing * 80
 
         txt = bui.Lstr(resource=f'{self._r}.mechanicsText').evaluate()
         txt_scale = 1.4
@@ -665,17 +665,19 @@ class HelpWindow(bui.MainWindow):
             color=header,
             v_align='center',
             maxwidth=txt_maxwidth,
-        )
-        txt_width = min(
-            txt_maxwidth,
-            bui.get_string_width(txt, suppress_warning=True) * txt_scale,
-        )
-        icon_size = 70
-        hval2 = h - (txt_width * 0.5 + icon_size * 0.5 * icon_buffer)
-
+        )   
         v -= spacing * 40.0
         txt_scale = getres(f'{self._r}.powerupsSubtitleTextScale')
         txt = bui.Lstr(resource=f'{self._r}.mechanicsSubtitleText').evaluate()
+        tex = bui.gettexture('circleZigZag')
+        scale = 40
+        yfuckoffs = 20
+        txt_width = min(
+            txt_maxwidth,
+            bui.get_string_width(txt, suppress_warning=True) * txt_scale,
+        )     
+        hval2 = h - (txt_width * 0.4)
+        hval3 = h - (txt_width - 440)
         bui.textwidget(
             parent=self._subcontainer,
             position=(h, v),
@@ -688,6 +690,119 @@ class HelpWindow(bui.MainWindow):
             v_align='center',
             flatness=1.0,
         )
+        bui.imagewidget(
+            parent=self._subcontainer,
+            size=(scale, scale),
+            position=(hval2, v + yfuckoffs),
+            texture=tex,
+            color=(1, 1, 1),
+            opacity=1.0,
+        )
+        bui.imagewidget(
+            parent=self._subcontainer,
+            size=(scale, scale),
+            position=(hval3, v + yfuckoffs),
+            texture=tex,
+            color=(1, 1, 1),
+            opacity=1.0,
+        )
+        
+        v -= spacing * 40.0
+        txt_scale = getres(f'{self._r}.powerupsSubtitleTextScale') + 0.2
+        txt = bui.Lstr(resource=f'{self._r}.mechanicsChargeTitle').evaluate()
+        bui.textwidget(
+            parent=self._subcontainer,
+            position=(h, v),
+            size=(0, 0),
+            scale=txt_scale,
+            flatness=0.5,
+            text=txt,
+            h_align='center',
+            color=header,
+            v_align='center',
+            maxwidth=txt_maxwidth,
+        )
+        
+        v -= spacing * 120.0
+        txt_scale = getres(f'{self._r}.powerupsSubtitleTextScale') 
+        txt = bui.Lstr(resource=f'{self._r}.mechanicsChargeText').evaluate()
+        bui.textwidget(
+            parent=self._subcontainer,
+            position=(h, v),
+            size=(0, 0),
+            scale=txt_scale,
+            maxwidth=self._sub_width * 0.9,
+            text=txt,
+            h_align='center',
+            color=paragraph,
+            v_align='center',
+            flatness=1.0,
+        )
+        
+        v -= spacing * 122.0
+        txt_scale = getres(f'{self._r}.powerupsSubtitleTextScale') + 0.2
+        txt = bui.Lstr(resource=f'{self._r}.mechanicsSuperTitle').evaluate()
+        bui.textwidget(
+            parent=self._subcontainer,
+            position=(h, v),
+            size=(0, 0),
+            scale=txt_scale,
+            flatness=0.5,
+            text=txt,
+            h_align='center',
+            color=header,
+            v_align='center',
+            maxwidth=txt_maxwidth,
+        )
+        
+        v -= spacing * 110.0
+        txt_scale = getres(f'{self._r}.powerupsSubtitleTextScale') 
+        txt = bui.Lstr(resource=f'{self._r}.mechanicsSuperText').evaluate()
+        bui.textwidget(
+            parent=self._subcontainer,
+            position=(h, v),
+            size=(0, 0),
+            scale=txt_scale,
+            maxwidth=self._sub_width * 0.9,
+            text=txt,
+            h_align='center',
+            color=paragraph,
+            v_align='center',
+            flatness=1.0,
+        )
+        
+        v -= spacing * 110.0
+        txt_scale = getres(f'{self._r}.powerupsSubtitleTextScale') + 0.2
+        txt = bui.Lstr(resource=f'{self._r}.mechanicsParryTitle').evaluate()
+        bui.textwidget(
+            parent=self._subcontainer,
+            position=(h, v),
+            size=(0, 0),
+            scale=txt_scale,
+            flatness=0.5,
+            text=txt,
+            h_align='center',
+            color=header,
+            v_align='center',
+            maxwidth=txt_maxwidth,
+        )
+        
+        v -= spacing * 70.0
+        txt_scale = getres(f'{self._r}.powerupsSubtitleTextScale') 
+        txt = bui.Lstr(resource=f'{self._r}.mechanicsParryText').evaluate()
+        bui.textwidget(
+            parent=self._subcontainer,
+            position=(h, v),
+            size=(0, 0),
+            scale=txt_scale,
+            maxwidth=self._sub_width * 0.9,
+            text=txt,
+            h_align='center',
+            color=paragraph,
+            v_align='center',
+            flatness=1.0,
+        )
+
 
     def _play_sound(self, text: str, num: int) -> None:
         bui.getsound(text + str(random.randint(1, num))).play()
