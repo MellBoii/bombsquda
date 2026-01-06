@@ -188,16 +188,16 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
     @override
     def spawn_player(self, player: Player) -> bs.Actor:
         # (Pylint bug?) pylint: disable=missing-function-docstring
-
         pos = (
             self._spawn_center[0] + random.uniform(4, 4),
             self._spawn_center[1],
             self._spawn_center[2] + random.uniform(6, 3),
         )
-        bs.timer(0.22, lambda: player.actor.gosuper(shouldntsetmusic=True))
+        spaz = self.spawn_player_spaz(player, position=pos)
+        bs.timer(0.22, lambda: spaz.gosuper(shouldntsetmusic=True))
         if self.easymode == True:
-            player.actor.impact_scale = 0.7
-        return self.spawn_player_spaz(player, position=pos)
+            spaz.impact_scale = 0.7
+        return 
 
     def _start_bot_updates(self) -> None:
         time = (
