@@ -1956,27 +1956,29 @@ class Spaz(bs.Actor):
             )
         # auugghhh text
         if not self.yeehaw_text:
+            yoff = 0.3
             mathnode = bs.newnode(
                 'math',
                 owner=self.node,
-                attrs={'input1': (0, 1.4, 0), 'operation': 'add'},
+                attrs={'input1': (0, 1.4 + yoff, 0), 'operation': 'add'},
             )
             self.node.connectattr('torso_position', mathnode, 'input2')
             self.yeehaw_text = bs.newnode(
                 'text',
                 owner=self.node,
                 attrs={
-                    'text': str(self.yeehaws),
+                    'text': f'*{str(self.yeehaws)}*',
                     'in_world': True,
                     'shadow': 1.0,
                     'flatness': 1.0,
-                    'scale': 0.02,
+                    'scale': 0.01,
+                    'color': (0.9, 0.9, 1),
                     'h_align': 'center',
                 },
             )
             mathnode.connectattr('output', self.yeehaw_text, 'position')
         else:
-            self.yeehaw_text.text = str(self.yeehaws)
+            self.yeehaw_text.text = f'*{str(self.yeehaws)}*'
             
     def release_chain(self):
         # DONT RELEASE CHAINS IF
@@ -2582,8 +2584,7 @@ class Spaz(bs.Actor):
                 # "I'm not gonna sugarcoat it" thing.
                 if self.timesparried >= 5:
                     bs.getsound('bellMed').play()
-                    bs.getsound('dingSmall').play()
-                    self.sugarcoat_overlay(sound='blank', image='sugarcoatparry')
+                    self.sugarcoat_overlay(sound='dingSmall', image='sugarcoatparry')
                 return True
                 # ------------------------- default parry ------------------------------
                  
@@ -3924,7 +3925,7 @@ class Spaz(bs.Actor):
             ba.app.classic.ach.award_local_achievement(
                 'Big Fall'
             )
-            self.sugarcoat_overlay(sound='blank', image='white2')
+            self.sugarcoat_overlay(sound='block', image='white2')
             self.shatter()
         elif intensity >= 5.0:
             sounds = SpazFactory.get().impact_sounds_harder

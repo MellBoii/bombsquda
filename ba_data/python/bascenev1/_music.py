@@ -346,16 +346,16 @@ def setmusic(musictype: MusicType | None, continuous: bool = False) -> None:
     
     # Check if we have a activity.
     try:
-        gnode = _bascenev1.getactivity().globalsnode
-    # If we get a activity not found error here, perhaps we're being used in UI context.
-    # We'll use get_foreground_host_activity instead.
-    # This should also clear the way for using music in UI, instead of resorting to activity-context.
+        activity = bs.getactivity()
+        gnode = activity.globalsnode
+    # Use foreground host activity instead.
     except babase._error.ActivityNotFoundError:
-        gnode = bs.get_foreground_host_activity().globalsnode
+        activity = bs.get_foreground_host_activity()
+        gnode = activity.globalsnode
     gnode.music_continuous = continuous
     gnode.music = '' if musictype is None else musictype.value
     gnode.music_count += 1
-    if ba.app.config.get("squda_nosugarcoats", False):
+    with activity.context:
         ba.apptimer(0.1, lambda: show_music_now_playing(music_type=musictype))
     
 def localsetmusic(musictype: MusicType | None, continuous: bool = False) -> None:

@@ -155,6 +155,8 @@ class SpazBot(Spaz):
         self._mode = 'wait'
         # uncomment to test emerald behavior:
         #self.emeralds = ['test0', 'test1', 'test2', 'test3', 'test4', 'test5', 'test6']
+        # or:
+        #self.canparry = True
         self._charge_closing_in = False
         self._last_charge_dist = 0.0
         self._running = False
@@ -511,8 +513,8 @@ class SpazBot(Spaz):
                 if random.random() < self.punchiness:
                     self.on_punch_press()
                     self.on_punch_release()
-                # if super, start doing parries
-                if self.issuper:
+                # if we can, start doing parries
+                if self.canparry:
                     if random.random() < 0.5:
                         self.on_pickup_press()
                         self.on_pickup_release()
