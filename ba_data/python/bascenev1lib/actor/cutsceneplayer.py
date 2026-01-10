@@ -45,7 +45,7 @@ class CutscenePlayer:
             'texture': tex,
             'absolute_scale': True,
             'position': (0, 0),
-            'scale': (1000, 720),
+            'scale': (1000, 500),
             'opacity': 1.0
         })
 

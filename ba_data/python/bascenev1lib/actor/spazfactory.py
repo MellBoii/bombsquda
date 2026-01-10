@@ -137,7 +137,6 @@ class SpazFactory:
         self.punch_sound_strongest = bs.getsound('punchSFX/punchDeath1')
         self.lobotomy = (
             bs.getsound('lobotomized'),
-            bs.getsound('bananasnipe'),
             bs.getsound('owmyorgans'),
         )
         self.swish_sound = bs.getsound('punchSFX/punchSwish')

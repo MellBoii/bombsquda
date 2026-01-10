@@ -268,7 +268,7 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
         if isinstance(bs.get_foreground_host_session(), bs.CoopSession):
             sessionname = self.session.campaign_level_name
             if sessionname == 'The Finale':
-                from bascenev1lib.game.creditsrollsession import CreditsSession
+                from bascenev1lib.creditsroll import CreditsSession
                 bs.pushcall(lambda: bs.new_host_session(CreditsSession))
                 return
         bui.containerwidget(edit=self._root_ui, transition='out_left')

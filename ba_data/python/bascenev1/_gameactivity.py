@@ -87,6 +87,8 @@ class EmeraldActor(bs.Actor):
         bs.animate(self.node, 'mesh_scale', {0: 0, 0.5: 0.7})
         
     def scheduled_die_message(self):
+        if not self.node:
+            return
         self.handlemessage(bs.DieMessage())
         
     def get_fairest_emerald(self) -> str:
@@ -117,7 +119,27 @@ class EmeraldActor(bs.Actor):
         bs.debprint(f"  >>> Selected emerald: {chosen}\n")
 
         return chosen
-     
+    
+    def _handle_hit(self, msg: bs.HitMessage) -> None:
+        if msg.hit_type == 'explosion':
+            bs.debprint(f'{self} was hit by a explosion, so it will die now')
+            self.scheduled_die_message()
+        self.node.handlemessage(
+            'impulse',
+            msg.pos[0],
+            msg.pos[1],
+            msg.pos[2],
+            msg.velocity[0],
+            msg.velocity[1],
+            msg.velocity[2],
+            msg.magnitude,
+            msg.velocity_magnitude,
+            msg.radius,
+            0,
+            msg.velocity[0],
+            msg.velocity[1],
+            msg.velocity[2],
+        )
         
     @override
     def handlemessage(self, msg: Any) -> Any:
@@ -131,9 +153,13 @@ class EmeraldActor(bs.Actor):
                     bs.timer(0.1, self.node.delete)
                 self.deathTimer = None
         elif isinstance(msg, TouchedMsg):
+            if not self.node:
+                return
             toucher = bs.getcollision().opposingnode
             isspaz = toucher.getnodetype() == 'spaz'
             actor = toucher.getdelegate(bs.Actor)
+            if not toucher:
+                return
             if isspaz:
                 bs.debprint(f'{self}: A spaz touched us, so we\'re gonna die.')
                 from bascenev1lib.actor.spaz import EmeraldMessage
@@ -142,6 +168,8 @@ class EmeraldActor(bs.Actor):
                     self.handlemessage(bs.DieMessage())
         elif isinstance(msg, bs.OutOfBoundsMessage):
             self.handlemessage(bs.DieMessage(immediate=True))
+        elif isinstance(msg, bs.HitMessage):
+            self._handle_hit(msg)
             
 
 class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
@@ -359,10 +387,9 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         self.new_emerald = None
         self.emeralds = []
         self.allow_emeralds = True
-        if self.allow_emeralds:
-            self.emerald_drop_timer = bs.Timer(
-                1.5, babase.WeakCall(self.emerald_drop), repeat=True
-            )
+        self.emerald_drop_timer = bs.Timer(
+            1.5, babase.WeakCall(self.emerald_drop), repeat=True
+        )
         self.metal_sound = _bascenev1.newnode('sound', attrs={'sound': _bascenev1.getsound('metalMusic'),
                         'volume': 0.0})
         self.dancin_sound = _bascenev1.newnode('sound', attrs={'sound': _bascenev1.getsound('homeroLoop'),
@@ -784,6 +811,8 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
                 self.metal_sound.volume = 0.0
     
     def emerald_drop(self):
+        if not self.allow_emeralds:
+            return
         if random.random() < 0.5:
             mp = self.map.defs.points
             spawn_names = [
@@ -1019,7 +1048,11 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         :meth:`spawn_player_spaz()`.
         """
         assert player  # Dead references should never be passed as args.
-
+        # tell every player to refresh their meter
+        # in the case of player overriding
+        for otherplayer in self.players:
+            if otherplayer.actor:
+                otherplayer.actor.refresh_earth_meter()
         return self.spawn_player_spaz(player)
 
     def spawn_player_spaz(

@@ -86,8 +86,8 @@ class MainMenuWindow(bui.MainWindow):
 
     def _start_credits_activity(self) -> None:
         """Pushcall a new session (our credits activity)"""
-        from bascenev1lib.game.creditsrollsession import CreditsSession
-        bs.pushcall(lambda: bs.new_host_session(CreditsSession))
+        from bascenev1lib.creditsroll import CreditsSession as sesh
+        bs.pushcall(lambda: bs.new_host_session(sesh))
         
     def _start_online_activity(self) -> None:
         """Pushcall a new session (our online activity)"""
@@ -552,18 +552,6 @@ class MainMenuWindow(bui.MainWindow):
             TitleWindow(
                 origin_widget=self._root_widget,
             )
-        )
-
-    def _credits(self) -> None:
-        # pylint: disable=cyclic-import
-        from bauiv1lib.credits import CreditsWindow
-
-        # no-op if we're not currently in control.
-        if not self.main_window_has_control():
-            return
-
-        self.main_window_replace(
-            CreditsWindow(origin_widget=self._credits_button),
         )
 
     def _howtoplay(self) -> None:

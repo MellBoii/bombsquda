@@ -1,6 +1,6 @@
 # Released under the MIT License. See LICENSE for details.
 #
-"""DeathMatch game and support classes."""
+"""Parriers gamemode."""
 
 # ba_meta require api 9
 # (see https://ballistica.net/wiki/meta-tag-system)
@@ -44,8 +44,8 @@ class ParryMessage:
         self.player = player
 
 # ba_meta export bascenev1.GameActivity
-class DeathMatchGame(bs.TeamGameActivity[Player, Team]):
-    """A game type based on acquiring kills."""
+class ParriersGame(bs.TeamGameActivity[Player, Team]):
+    """A gametype based on the Parrying mechanic"""
 
     name = 'Parriers'
     description = 'Parry stuff a lot'

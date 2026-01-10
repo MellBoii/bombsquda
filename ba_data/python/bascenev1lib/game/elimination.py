@@ -162,7 +162,7 @@ class Icon(bs.Actor):
             player = self._player()
             lives = player.lives if player else 0
             if lives == 0:
-                bs.getsound('luigi_burning').play()
+                bs.getsound('screams/scream' + str(i + 1) + '' for i in range(9)).play()
                 ImageJumper.jump_image(self.node)
                 bs.timer(0.6, self.update_for_lives)
 

@@ -256,9 +256,11 @@ class SpawnSpaz:
         position: Sequence[float],
         *,
         color: Sequence[float] = (1.0, 1.0, 1.0),
+        highlight: Sequence[float] = (1.0, 1.0, 1.0),
         make_current: bool = False,
         relative_to: int | None = None,
-        name: str | bs.Lstr = '',
+        name: str | bs.Lstr = 'Newbie',
+        character: str = 'Spaz',
         flash: bool = True,
         angle: float = 0.0,
     ):
@@ -268,6 +270,8 @@ class SpawnSpaz:
         self._color = color
         self._relative_to = relative_to
         self._name = name
+        self._character = character
+        self._highlight = highlight
         self._flash = flash
         self._angle = angle
 
@@ -293,6 +297,8 @@ class SpawnSpaz:
 
         s = a.spazzes[self._num] = Spaz(
             color=self._color,
+            highlight=self._highlight,
+            character=self._character,
             start_invincible=self._flash,
             demo_mode=True,
         )

@@ -939,22 +939,15 @@ class SNESBattleCourse1(bs.Map):
         
 class CREDITS(bs.Map):
     """A map made to work with the credits."""
-
     # noinspection PyUnresolvedReferences
+    name = 'CREDITS'
     from bascenev1lib.mapdata import the_pad as defs
-
-    name = 'Not The Pad Lmfao'
-
+    
     @override
     @classmethod
     def get_play_types(cls) -> list[str]:
-        """Return valid play types for this map."""
-        return ['credits']
-
-    @override
-    @classmethod
-    def get_preview_texture_name(cls) -> str:
-        return 'thePadPreview'
+        """Return NNNNNNNNNOTHING!! AGAIN!!!"""
+        return []
 
     @override
     @classmethod
@@ -970,7 +963,6 @@ class CREDITS(bs.Map):
             'vr_fill_mound_mesh': bs.getmesh('thePadVRFillMound'),
             'vr_fill_mound_tex': bs.gettexture('vrFillMound'),
         }
-        # fixme should chop this into vr/non-vr sections for efficiency
         return data
 
     def __init__(self) -> None:
@@ -1001,14 +993,6 @@ class CREDITS(bs.Map):
                 'lighting': False,
                 'background': True,
                 'color_texture': self.preloaddata['bgtex'],
-            },
-        )
-        self.railing = bs.newnode(
-            'terrain',
-            attrs={
-                'collision_mesh': self.preloaddata['railing_collision_mesh'],
-                'materials': [shared.railing_material],
-                'bumper': True,
             },
         )
         bs.newnode(

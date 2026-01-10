@@ -403,7 +403,8 @@ class MelWindow(bui.MainWindow):
             os.rename(textures + 'fontBigALT.dds', textures + 'fontBig.dds')
             os.rename(textures + 'oldefont.dds', textures + 'fontALT0.dds')
             os.rename(textures + 'oldefont2.dds', textures + 'fontBigALT.dds')
-            bs.screenmessage('its done blud restart the game!!')
+            bs.screenmessage('doing media reload to apply change...')
+            bui.app.classic.run_media_reload_benchmark()
         if val == False:
             if platform not in ['windows', 'linux']:
                 bs.screenmessage('twinny. this clearly renames files. it doesnt work on non-windows.')
@@ -416,7 +417,8 @@ class MelWindow(bui.MainWindow):
             os.rename(textures + 'fontBigALT.dds', textures + 'fontBig.dds')
             os.rename(textures + 'oldefont.dds', textures + 'fontALT0.dds')
             os.rename(textures + 'oldefont2.dds', textures + 'fontBigALT.dds')
-            bs.screenmessage('its done blud restart the game!!')
+            bs.screenmessage('doing media reload to apply change...')
+            bui.app.classic.run_media_reload_benchmark()
 
     def changegambling(self, val: str) -> None:
         cfg = bui.app.config

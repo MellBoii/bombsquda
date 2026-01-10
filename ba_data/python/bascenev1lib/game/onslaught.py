@@ -949,36 +949,45 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
 
             self._music_timer = bs.Timer(30.0, lambda: bs.setmusic(self.chosen_music))
             self._wave_timer = bs.Timer(30.0, self._start_updating_waves)
-            self._input_timer = bs.Timer(30.0, lambda: self.givebackinput())
+            self._input_timer = bs.Timer(30.0, self.givebackinput)
+
+            self._enable_cutscene_skip()
+            
+        elif self._preset in {Preset.ROOKIE, Preset.ROOKIE_EASY}:
+            bs.setmusic(bs.MusicType.CUTSCENE2)
+
+            self.cutscene_player = CutscenePlayer(
+                cutscene_id=2,
+                frame_delays=[2.0, 0.9, 2.1, 2.1, 3.1, 1.4, 2.1, 2.1],
+                fade_duration=0.5
+            )
+            self._tp_timer = bs.Timer(15.7, self.rookie_teleport)
+            self._wave_timer = bs.Timer(18.7, self._start_updating_waves)
+            self._input_timer = bs.Timer(18.0, self.givebackinput)
+            self._music_timer = bs.Timer(18.0, lambda: bs.setmusic(self.chosen_music))
 
             self._enable_cutscene_skip()
 
         else:
             bs.timer(3.0, self._start_updating_waves)
-            
+    def rookie_teleport(self):
+        for player in self.players:
+            def begin(p=player):
+                if not p.actor.node.exists():
+                    return
+                p.actor.node.handlemessage(
+                    bs.StandMessage(
+                        (
+                            random.randint(-1, 1),
+                            10,
+                            random.randint(-1, 1)
+                        )
+                    )
+                )
+            begin()
     def givebackinput(self):
         for player in self.players:
-            player.assigninput(bs.InputType.UP_DOWN, player.actor.on_move_up_down)
-            player.assigninput(bs.InputType.LEFT_RIGHT, player.actor.on_move_left_right)
-            player.assigninput(
-                bs.InputType.HOLD_POSITION_PRESS, player.actor.on_hold_position_press
-            )
-            player.assigninput(
-                bs.InputType.HOLD_POSITION_RELEASE,
-                player.actor.on_hold_position_release,
-            )
-            intp = bs.InputType
-            player.assigninput(intp.JUMP_PRESS, player.actor.on_jump_press)
-            player.assigninput(intp.JUMP_RELEASE, player.actor.on_jump_release)
-            player.assigninput(intp.PICK_UP_PRESS, player.actor.on_pickup_press)
-            player.assigninput(intp.PICK_UP_RELEASE, player.actor.on_pickup_release)
-            player.assigninput(intp.PUNCH_PRESS, player.actor.on_punch_press)
-            player.assigninput(intp.PUNCH_RELEASE, player.actor.on_punch_release)
-            player.assigninput(intp.BOMB_PRESS, player.actor.on_bomb_press)
-            player.assigninput(intp.BOMB_RELEASE, player.actor.on_bomb_release)
-            player.assigninput(intp.RUN, player.actor.on_run)
-            player.assigninput(intp.FLY_PRESS, player.actor.on_fly_press)
-            player.assigninput(intp.FLY_RELEASE, player.actor.on_fly_release)
+            player.actor.connect_controls_to_player()
     
     def _skip_cutscene(self, *args, **kwargs):
         # Only skip once
@@ -986,15 +995,12 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
             return
         self._cutscene_skipped = True
 
-
-        # Stop cutscene music and timers
-        try:
-            self._music_timer = None
-            self._wave_timer = None
-            self._input_timer = None
-        except:
-            pass
-
+        self._music_timer = None
+        self._wave_timer = None
+        self._input_timer = None
+        self._tp_timer = None
+        if self._preset in {Preset.ROOKIE, Preset.ROOKIE_EASY}:
+            self.rookie_teleport()
         # Delete cutscene
         if hasattr(self, 'cutscene_player'):
             self.cutscene_player.stop()

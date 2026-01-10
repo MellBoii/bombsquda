@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, cast
 import babase
 
 import _bascenev1
+import bascenev1 as bs
 from bascenev1._messages import DeathType, DieMessage
 
 if TYPE_CHECKING:
@@ -115,7 +116,13 @@ class Player[TeamT: bascenev1.Team]:
         try:
             # If they still have an actor, kill it.
             if self.actor:
-                self.actor.lvgame_explode()
+                self.actor.die(how=bs.DeathType.LEFT_GAME)
+                bs.broadcastmessage(
+                    babase.Lstr(
+                        resource='playerLeftText',
+                        subs=[('${PLAYER}', self.getname(full=True))],
+                    )
+                )
             self.actor = None
         except Exception:
             logging.exception('Error killing actor on leave for %s.', self)

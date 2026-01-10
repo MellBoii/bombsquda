@@ -336,7 +336,7 @@ def register_appearances() -> None:
     t.color_texture = 'bearColor'
     t.color_mask_texture = 'bearColorMask'
     t.icon_texture = 'bearIcon'
-    t.earthportrait = 'bowser'
+    t.earthportrait = 'bowserbound'
     t.icon_mask_texture = 'bearIconColorMask'
     t.head_mesh = 'bearHead'
     t.torso_mesh = 'bearTorso'
@@ -494,12 +494,13 @@ def register_appearances() -> None:
         0.09411764705882353
     )
     
-    # Noise Noise Noise Noise NOise ###################################
+    # homero doh homero cerveza ###################################
     t = Appearance('Homer')
     t.color_texture = 'theSimpsonColor'
     t.color_mask_texture = 'theSimpsonColorMask'
     t.icon_texture = 'tsHomerIconColor'
     t.icon_mask_texture = 'tsHomerIconColorMask'
+    t.earthportrait = 'homerbound'
     t.head_mesh = 'tsHomerHead'
     t.torso_mesh = 'tsHomerTorso'
     t.pelvis_mesh = 'none'

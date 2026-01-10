@@ -55,6 +55,7 @@ class MusicType(Enum):
     MODULATINGTIME = 'ModulatingTime'
     HURRYUP = 'HURRYUP'
     CUTSCENE1 = 'Cutscene1'
+    CUTSCENE2 = 'Cutscene2'
     ONSLAUGHT = 'Onslaught'
     ONSLAUGHT2 = 'Onslaught2'
     KEEP_AWAY = 'Keep_Away'
@@ -132,6 +133,7 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
         excluded_types = [
             None,
             bs.MusicType.CUTSCENE1,
+            bs.MusicType.CUTSCENE2,
             bs.MusicType.HURRYUP,
         ]
         
@@ -182,7 +184,7 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
             bs.MusicType.MENU17: "Pollyanna Rock My World - Furries in a blender",
             bs.MusicType.MENU18: "Wii Theme but it's September - Mr Rock",
             bs.MusicType.MENU67: "what the fuck is this",
-            bs.MusicType.CREDITS: "Staff Roll - Mario Kart DS",
+            bs.MusicType.CREDITS: "Sonic Mania Unused Credits - Tee Lopes",
             bs.MusicType.SNESCOURSE: "SNES Battle Course - Mario Kart World",
             bs.MusicType.SNESCOURSE2: "Battle Course - Super Mario Kart",
             bs.MusicType.DEFEAT: "Blues in Velvet Room - Persona 3",

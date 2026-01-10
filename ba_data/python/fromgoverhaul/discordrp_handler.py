@@ -8,7 +8,7 @@ import bascenev1 as bs
 from bascenev1lib.mainmenu import MainMenuActivity
 from bascenev1._activitytypes import JoinActivity
 from bascenev1._gameactivity import GameActivity
-from bascenev1lib.game.creditsroll import CreditsActivity
+from bascenev1lib.creditsroll import CreditsActivity
 from bascenev1lib.game.thefinale import TheFinaleGame
 from bascenev1lib.game.onslaught import Preset
 import bauiv1 as bui
@@ -79,7 +79,7 @@ class RichPresence:
                     self.presence.set(
                     {  
                         
-                        "details": 'lookin around in the menu..',
+                        "details": 'l👀king around the menu..',
                         "assets": {
                             "large_image": "logo",
 
