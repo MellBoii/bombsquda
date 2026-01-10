@@ -21,8 +21,8 @@ from bascenev1lib.actor.playerspaz import PlayerSpaz
 from bascenev1lib.actor.bomb import TNTSpawner
 from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.actor.powerupbox import PowerupBoxFactory, PowerupBox
-# Sadly, ralsiebot was removed due to being a fUCKING NUISANCE.
-# And a note to SoK; never add ice bots to a modpack ever. They suck.
+# Fuck it, ralsieBot is back. If we want hard...
+# ..we GET HARD. 
 from bascenev1lib.actor.spazbot import (
     SpazBotSet,
     SpazBotDiedMessage,
@@ -40,7 +40,9 @@ from bascenev1lib.actor.spazbot import (
     ExplodeyBot,
     KNIGHTBot,
     RaymanBot,
-    LauncherBot
+    LauncherBot,
+    ralsieBot,
+    MelisoBot,
 )
 
 if TYPE_CHECKING:
@@ -132,6 +134,8 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
             KNIGHTBot: SpawnInfo(0.00, 0.01, 0.01),
             StickyBot: SpawnInfo(0.10, 0.03, 0.001),
             ExplodeyBot: SpawnInfo(0.10, 0.02, 0.002),
+            ralsieBot: SpawnInfo(0.10, 0.04, 0.002),
+            MelisoBot: SpawnInfo(0.07, 0.03, 0.002),
         }
 
     @override
