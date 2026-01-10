@@ -92,6 +92,7 @@ class EmeraldActor(bs.Actor):
         self.handlemessage(bs.DieMessage())
         
     def get_fairest_emerald(self) -> str:
+        from bascenev1lib.actor.spaz import Spaz
         all_types = [f"emerald{i}" for i in range(1, 8)]
 
         bs.debprint(f"\n{self}: Calculating fairest emerald...")
@@ -99,11 +100,19 @@ class EmeraldActor(bs.Actor):
         # Initialize counts
         counts = {e: 0 for e in all_types}
 
-        for player in self.activity.players:
-            emeralds = getattr(player.actor, "emeralds", [])
-            bs.debprint(f"  Player {player.getname()} has: {emeralds}")
+        # Count emeralds from *all* spazzes in the activity
+        for node in bs.getnodes():
+            actor = node.getdelegate(Spaz)
+            
+            if not actor:
+                continue
+
+            emeralds = getattr(actor, "emeralds", [])
+            bs.debprint(f"  Spaz {actor} has: {emeralds}")
+
             for e in emeralds:
-                counts[e] += 1
+                if e in counts:
+                    counts[e] += 1
 
         bs.debprint("  Ownership counts:")
         for e, c in counts.items():
@@ -119,6 +128,7 @@ class EmeraldActor(bs.Actor):
         bs.debprint(f"  >>> Selected emerald: {chosen}\n")
 
         return chosen
+
     
     def _handle_hit(self, msg: bs.HitMessage) -> None:
         if msg.hit_type == 'explosion':
@@ -387,8 +397,23 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         self.new_emerald = None
         self.emeralds = []
         self.allow_emeralds = True
+        # significantly boost emerald drop
+        # chance in coop (so bots get a chance, and
+        # so do players)
+        self.emerald_time = (
+            0.9 if isinstance(
+                bs.get_foreground_host_session(), 
+                bs.CoopSession
+            ) else 1.0
+        )
+        self.emerald_chance = (
+            0.5 if isinstance(
+                bs.get_foreground_host_session(), 
+                bs.CoopSession
+            ) else 0.35
+        )
         self.emerald_drop_timer = bs.Timer(
-            1.5, babase.WeakCall(self.emerald_drop), repeat=True
+            self.emerald_time, babase.WeakCall(self.emerald_drop), repeat=True
         )
         self.metal_sound = _bascenev1.newnode('sound', attrs={'sound': _bascenev1.getsound('metalMusic'),
                         'volume': 0.0})
@@ -813,7 +838,7 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
     def emerald_drop(self):
         if not self.allow_emeralds:
             return
-        if random.random() < 0.5:
+        if random.random() < self.emerald_chance:
             mp = self.map.defs.points
             spawn_names = [
                 'ffa_spawn1',

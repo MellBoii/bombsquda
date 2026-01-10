@@ -12,6 +12,8 @@ from typing import TYPE_CHECKING, override
 
 import bascenev1 as bs
 from bascenev1lib.actor.spaz import Spaz
+from bascenev1lib.actor.bomb import Bomb
+from bascenev1._gameactivity import EmeraldActor
 
 if TYPE_CHECKING:
     from typing import Any, Sequence, Callable
@@ -116,6 +118,11 @@ class SpazBot(Spaz):
     default_bomb_type = 'normal'
     default_bomb_count = 3
     start_cursed = False
+    start_super = False
+    chainer = False
+    # bots start with 2 emeralds
+    # so they rival other players.
+    forced_emeralds = 2
     color = DEFAULT_BOT_COLOR
     highlight = DEFAULT_BOT_HIGHLIGHT
 
@@ -151,6 +158,7 @@ class SpazBot(Spaz):
         self._charge_speed = 0.5 * (
             self.charge_speed_min + self.charge_speed_max
         )
+        self.chainRepeater = None
         self._lead_amount = 0.5
         self._mode = 'wait'
         # uncomment to test emerald behavior:
@@ -172,9 +180,20 @@ class SpazBot(Spaz):
         self._pickup_cooldown = 0
         self._fly_cooldown = 0
         self._bomb_cooldown = 0
-
+        # bot class specific shi :3
+        count = getattr(self, "forced_emeralds", None)
         if self.start_cursed:
             self.curse()
+        if self.start_super:
+            self.gosuper()
+        if self.chainer:
+            self.increase_chain()
+            self.chainRepeater = bs.Timer(
+                1.5, self.increase_chain,
+                repeat=True
+            )
+        if count is not None:
+            self.emeralds = [f'emerald{i}' for i in range(1, count + 1)]
 
     @property
     def map(self) -> bs.Map:
@@ -217,6 +236,74 @@ class SpazBot(Spaz):
     def set_player_points(self, pts: list[tuple[bs.Vec3, bs.Vec3]]) -> None:
         """Provide the spaz-bot with the locations of its enemies."""
         self._player_pts = pts
+        
+    def _get_nearest_live_bomb(self):
+        nearest = None
+        nearest_dist = 9999.0
+        our_pos = bs.Vec3(self.node.position[0], 0, self.node.position[2])
+
+        for node in bs.getnodes():
+            bomb = node.getdelegate(Bomb)
+            if not bomb:
+                continue
+
+            # Ignore bombs we own
+            if bomb.owner is self:
+                continue
+
+            if not node.exists():
+                continue
+
+            pos = bs.Vec3(node.position[0], 0, node.position[2])
+            dist = (pos - our_pos).length()
+
+            if dist < nearest_dist:
+                nearest_dist = dist
+                nearest = bomb
+
+        return nearest, nearest_dist
+
+    def _get_nearest_player_spaz(self):
+        nearest = None
+        nearest_dist = 9999.0
+        our_pos = bs.Vec3(self.node.position[0], 0, self.node.position[2])
+
+        for player in self.activity.players:
+            spaz = player.actor
+            if not spaz or spaz is self or spaz._dead:
+                continue
+
+            pos = bs.Vec3(spaz.node.position[0], 0, spaz.node.position[2])
+            dist = (pos - our_pos).length()
+
+            if dist < nearest_dist:
+                nearest_dist = dist
+                nearest = spaz
+
+        return nearest, nearest_dist
+        
+    def _get_nearest_emerald(self):
+        nearest = None
+        nearest_dist = 9999.0
+        our_pos = bs.Vec3(self.node.position[0], 0, self.node.position[2])
+
+        for node in bs.getnodes():
+            actor = node.getdelegate(EmeraldActor)
+
+            if not actor:
+                continue  # Not an emerald actor
+
+            if not node.exists():
+                continue
+
+            pos = bs.Vec3(node.position[0], 0, node.position[2])
+            dist = (pos - our_pos).length()
+
+            if dist < nearest_dist:
+                nearest_dist = dist
+                nearest = actor
+
+        return nearest, nearest_dist
 
     def update_ai(self) -> None:
         """Should be called periodically to update the spaz' AI."""
@@ -234,10 +321,73 @@ class SpazBot(Spaz):
         pos = self.node.position
         our_pos = bs.Vec3(pos[0], 0, pos[2])
         can_attack = True
+        force_target = False
+        target_is_emerald = False
+        we_chase_emeralds = True
 
         target_pt_raw: bs.Vec3 | None
         target_vel: bs.Vec3 | None
+        # don't gaf if we're super already. >B)
+        if self.issuper:
+            we_chase_emeralds = False
+        if we_chase_emeralds:
+            # save coords
+            emerald, edist = self._get_nearest_emerald()
+            threat, tdist = self._get_nearest_player_spaz()
+            bomb, bdist = self._get_nearest_live_bomb()
 
+            defending = False
+            if emerald and edist < 5.5 and bomb and bdist < 3.5:
+                # dargh- a bomb is close to us! run!!
+                # quick note, i just love how spazbots
+                # scurry away like scared creepers xd
+                bomb_pos = bs.Vec3(*bomb.node.position)
+                diff = our_pos - bomb_pos
+                diff = bs.Vec3(diff.x, 0, diff.z)
+                away = diff.normalized()
+
+                self._mode = 'flee'
+                self.node.run = 1.0
+                self.node.move_left_right = away.x
+                self.node.move_up_down = -away.z
+                # if we holdin something, probably
+                # our bomb; let go of it and run off.
+                if self.node.hold_node:
+                    self.node.pickup_pressed = True
+                    self.node.pickup_pressed = False
+                return
+                
+            if threat:
+                # player is too close to US!
+                if tdist < 2.5:
+                    defending = True
+
+                # player is too close to EMERALD!
+                if emerald and (bs.Vec3(*emerald.node.position) - 
+                                bs.Vec3(threat.node.position[0],0,threat.node.position[2])).length() < 2.5:
+                    defending = True
+
+            # no one? let's chase that emerald!
+            if emerald and edist < 5.0 and not defending:
+                target_pt_raw = bs.Vec3(*emerald.node.position)
+                target_vel = bs.Vec3(0, 0, 0)
+                can_attack = False
+                force_target = True
+                target_is_emerald = True
+                self.node.run = 1.0
+                if self.node.hold_node:
+                    self.node.pickup_pressed = True
+                    self.node.pickup_pressed = False
+
+            elif defending and threat:
+                # ooh, here's the part where we get pretty
+                # real; defend if a threat is nearby!!!
+                target_pt_raw = bs.Vec3(*threat.node.position)
+                target_vel = bs.Vec3(0, 0, 0)
+                can_attack = True
+                force_target = True
+                target_is_emerald = False
+            
         # If we're a flag-bearer, we're pretty simple-minded - just walk
         # towards the flag and try to pick it up.
         if self.target_flag:
@@ -289,7 +439,8 @@ class SpazBot(Spaz):
                 self.node.pickup_pressed = False
                 return
 
-        target_pt_raw, target_vel = self._get_target_player_pt()
+        if not force_target:
+            target_pt_raw, target_vel = self._get_target_player_pt()
 
         if target_pt_raw is None:
             # Use default target if we've got one.
@@ -323,8 +474,8 @@ class SpazBot(Spaz):
         diff = target_pt - our_pos
         dist = diff.length()
         to_target = diff.normalized()
-        # oh hey, we have 7 emeralds!
-        # let's go super!!!!!!!!!!!
+        # oh, we have all the emeralds.
+        # even tho its rare to achieve them, we will go super >:3
         if len(self.emeralds) >= 7:
             self.on_jump_press()
             bs.timer(0.1, self.on_jump_release)
@@ -438,7 +589,7 @@ class SpazBot(Spaz):
                     self._charge_closing_in = False
                 self._last_charge_dist = dist
 
-            # If we have a clean shot, throw!
+            # make some  room im boutta shoot this idiot >:3
             if (
                 self.throw_dist_min <= dist < self.throw_dist_max
                 and random.random() < self.throwiness
@@ -455,15 +606,17 @@ class SpazBot(Spaz):
                     1.0 / self.throw_rate
                 ) * (0.8 + 1.3 * random.random())
 
-            # If we're static, always charge (which for us means barely move).
+            # always wait when static
             elif self.static:
                 self._mode = 'wait'
 
-            # If we're too close to charge (and aren't in the middle of an
-            # existing charge) run away.
-            elif dist < self.charge_dist_min and not self._charge_closing_in:
-                # ..unless we're near an edge, in which case we've got no
-                # choice but to charge.
+            # too close and not charging? run away :(
+            elif (
+                dist < self.charge_dist_min
+                and not self._charge_closing_in
+                and not target_is_emerald
+            ):
+                # unless, well... we're near a edge. we can't really run away.
                 if self.map.is_point_near_edge(our_pos, self._running):
                     if self._mode != 'charge':
                         self._mode = 'charge'
@@ -473,8 +626,9 @@ class SpazBot(Spaz):
                 else:
                     self._mode = 'flee'
 
-            # We're within charging distance, backed against an edge,
-            # or farther than our max throw distance.. chaaarge!
+            # we're close enough to charge and
+            # backed up against a cliff or too far to
+            # throw... charge!!!! >:o
             elif (
                 dist < self.charge_dist_max
                 or dist > self.throw_dist_max
@@ -486,15 +640,16 @@ class SpazBot(Spaz):
                     self._charge_closing_in = True
                     self._last_charge_dist = dist
 
-            # We're too close to throw but too far to charge - either run
-            # away or just chill if we're near an edge.
-            elif dist < self.throw_dist_min:
+            # well dang! we're too close to throw but too far
+            # to charge, so we just run away or standby
+            elif dist < self.throw_dist_min and not target_is_emerald:
                 # Charge if either we're within charge range or
                 # cant retreat to throw.
                 self._mode = 'flee'
 
-            # Do some awesome jumps if we're running.
+            # do some real cool jumps if we runnin :D
             # FIXME: pylint: disable=too-many-boolean-expressions
+            # love some fixmes hahahaha
             if (
                 self._running
                 and 1.2 < dist < 2.2
@@ -508,12 +663,12 @@ class SpazBot(Spaz):
                 self.node.jump_pressed = True
                 self.node.jump_pressed = False
 
-            # Throw punches when real close.
+            # start punching if close!!!
             if dist < (1.6 if self._running else 1.2) and can_attack:
                 if random.random() < self.punchiness:
                     self.on_punch_press()
                     self.on_punch_release()
-                # if we can, start doing parries
+                # parry dem bitches if we can >:/
                 if self.canparry:
                     if random.random() < 0.5:
                         self.on_pickup_press()
@@ -843,6 +998,7 @@ class RaymanBot(SpazBot):
     charge_speed_max = 1.0
     throw_dist_min = 9999
     throw_dist_max = 9999
+    chainer = True
     points_mult = 2
 
 class KNIGHTBot(SpazBot):
@@ -872,6 +1028,10 @@ class KNIGHTBot(SpazBot):
     default_bomb_type = 'impact'
     points_mult = 5
     default_shields_stronger = True
+    # knight starts WITH 5 EMERALDS
+    # so they are objectively more powerful
+    # than other classes
+    forced_emeralds = 5
 
 
 class BouncyBot(SpazBot):
@@ -988,15 +1148,25 @@ class StickyBot(SpazBot):
     """
     
     namelist = [
-        'Greencap', # 4 so 'buddiew' is rare
-        'Greencap',
-        'Greencap',
-        'green cap',
+        'Orangecap', # 4 so 'buddiew' is rare
+        'Orange Cap',
+        'Orangecap',
+        'orang cap',
         'buddiew',
     ]
     character = 'Grumbledorf'
     punchiness = 0.9
     throwiness = 1.0
+    color = (
+        0.8745098039215686, 
+        0.44313725490196076, 
+        0.14901960784313725
+    )
+    highlight = (
+        0.4627450980392157,
+        0.25882352941176473,
+        0.5411764705882353
+    )
     run = True
     charge_dist_min = 4.0
     charge_dist_max = 10.0
@@ -1009,6 +1179,37 @@ class StickyBot(SpazBot):
     default_bomb_count = 3
     points_mult = 3
 
+class MelisoBot(StickyBot):
+    """Separate version of StickyBot, who is less
+    crazy and has different character n name.
+
+    category: Bot Classes
+    """
+    
+    namelist = [
+        'Meliso Clone', 
+        'Meliso Clone',
+        'Meliso Clone',
+        'Meliso Clone',
+        'Meliso Clone', # 5 so names below are rare
+        'Mell',
+        'melito pelito',
+    ]
+    character = 'Mel'
+    color = (0.8, 0.8, 0.8)
+    highlight = (0, 0.7, 0)
+    punchiness = 0.5
+    throwiness = 1.0
+    run = False
+    throw_dist_min = 4.0
+    throw_dist_max = 25.0
+    throw_rate = 3.0
+    default_bomb_type = 'sticky'
+    default_bomb_count = 4
+    points_mult = 3
+    # 1 emerald, cuz fuck you
+    force_emeralds = 1
+
 class ralsieBot(SpazBot):
     """ralsei who runs and fucking kills you (with ice too)
 
@@ -1016,6 +1217,14 @@ class ralsieBot(SpazBot):
     """
 
     character = 'Pascal'
+    namelist = [
+        'evil fucking ralsei',
+        'darkprinceralsei',
+        'Ralsei',
+        'thatfuckinicebotihate',
+    ]
+    color = (0.2, 0.8, 0.3)
+    highlight = (0.9, 0, 0.4)
     punchiness = 0.8
     throwiness = 0.3
     run = True
@@ -1028,7 +1237,7 @@ class ralsieBot(SpazBot):
     throw_rate = 2.0
     default_bomb_type = 'ice'
     default_bomb_count = 1
-    points_mult = 2
+    points_mult = 3
 
 class StickyBotStatic(StickyBot):
     """A crazy bot who throws sticky-bombs but generally stays in one place.
