@@ -479,6 +479,7 @@
   "traumaParried": "TRAUMA PARRIED!!",
   "curseParried": "CURSE PARRIED!!",
   "oobParried": "OUT OF BOUNDS\nPARRIED!!!",
+  "shatterParried": "SHATTERING\nPARRIED!!",
   "playerDied": "${NAME} got hurt and collapsed...",
   "playerExploded": "${NAME} shattered into pieces...",
   "playerDeleted": "${NAME} was deleted without trace...",
