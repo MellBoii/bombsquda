@@ -402,13 +402,13 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         # so do players)
         self.emerald_time = (
             0.9 if isinstance(
-                bs.get_foreground_host_session(), 
+                self.session, 
                 bs.CoopSession
             ) else 1.0
         )
         self.emerald_chance = (
             0.5 if isinstance(
-                bs.get_foreground_host_session(), 
+                self.session, 
                 bs.CoopSession
             ) else 0.35
         )
