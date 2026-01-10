@@ -37,7 +37,7 @@ If everything looks fine, i'll accept the merge. :)</p>
 </p>
 <p>Yes, actually!<br>
 GummyBoiYT - Snake Shadow's character, Ninjageon and Metal Music's code, and Orangecap's old model.<br>
-Buddie - Orangecap's character. Not the model, just the character. :^)<br>
+Buddie - Suggested the idea for the Hot Spongetato Gamemode, and made Orangecap's character. Not the model, just the character. :^)<br>
 Lemon - Voice-acted Mell and also gave some great ideas like the spongebob powerup<br>
 Various sources - Sounds, music, and everything. There's WAY too many sources to list, so you're better off just searching for em.<br>
 Mell - The original sound pack, BombSquad 21st century edition and making this entire modpack.</p>
