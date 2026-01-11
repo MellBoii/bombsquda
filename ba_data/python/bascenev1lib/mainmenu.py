@@ -184,6 +184,26 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         bs.timer(0.6, bs.getsound(random.choice(rsfx)).play, repeat=True)
         self._logo_node.texture = bs.gettexture('logoDies')
         self.splashtext.node.text = 'ow.'
+    
+    def reroll_stuff(self):
+        self.menu_music()
+        random.seed(time.time())
+        cfgget = ba.app.config.get
+        c1name = cfgget('playername')[0]
+        c2name = cfgget('character1name')[0]
+        c3name = cfgget('character2name')[0]
+        c4name = cfgget('character3name')[0]
+        assert self.splashtext.node
+        bs.animate(self.splashtext.node, 'opacity', {0.0: 0, 0.6: 1.0})
+        self.splashtext.node.text = bs.Lstr(
+            resource=f'splashText{random.randint(1, 141)}',
+            subs=[
+                ('${SPAZ}', c1name),
+                ('${KRIS}', c2name),
+                ('${SS}', c3name),
+                ('${NOOB}', c4name)
+            ],
+        )
 
     def _update(self) -> None:
         # pylint: disable=too-many-locals
@@ -637,103 +657,13 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
             cmb.connectattr('output', logo.node, 'scale')
             
     import bascenev1 as bs
-
-    def play_lyrics(self):
-        """Plays a timed sequence of lyrics onscreen."""
-
-        # Define lyrics as (text, delay_in_seconds)
-        lyrics = [
-            ("PAPA CERDITO", 2.5),
-            ("VS", 1.5),
-            ("BEBE GEORGE", 1.3),
-            ("QUE LA BATALLA COMENCE", 1.5),
-            ("Bebé George te estás pasando de la raya", 2.0),
-            ("No eres rapero así que vámonos a casa", 2.2),
-            ("Cada día estás peor educado", 2.5),
-            ("La culpa es de tu madre por haberte malcriado", 2.3),
-            ("Quieres competir conmigo y me das risa", 2.2),
-            ("No sabes que en la experiencia no se improvisa", 2.1),
-            ("No me vas a ganar lo siento", 2.5),
-            ("Soy el mejor rapero de todos los tiempos", 2.2),
-            ("¿Crees que puedes ganar? Me das risa", 2.3),
-            ("No pudiste ganarle ni a Peppa tu hermanita", 2.1),
-            ("Cometiste un error queriendo batallar", 2.4),
-            ("Soy tu padre y llevo tipo haciendo rap", 2.0),
-            ("Nunca he perdido una batalla", 2.3),
-            ("Tú tienes varias batallas y cero ganadas", 2.0),
-            ("Así que bebé George guárdame respeto", 2.7),
-            ("Soy tu padre y te recuerdo que yo te mantengo", 2.0),
-            ("A las batallas de rap llegaste tarde", 3.0),
-            ("Sigo en victo no me importa quien venga a enfrentarme", 2.2),
-            ("Ya seas tú, Peppa o mi madre", 2.2),
-            ("Siempre es lo mismo voy a derrotarles", 2.2),
-            ("Le ganó a Peppa y a cualquiera que me enfrente", 2.2),
-            ("Tengo más talento y eso es evidente ", 2.2),
-            ("Una batalla más y voy a ganarte", 2.2),
-            ("Ya soy grande mira no uso pañales", 2.2),
-            ("Tú me mantienes y tienes razón", 2.2),
-            ("Pero piénsalo un segundo, es tu obligación", 2.2),
-            ("Eres viejo y no tienes experiencia", 2.2),
-            ("Porque tus neuronas parecen que están muertas", 2.1),
-            ("Tienes el cráneo hueco", 2.2),
-            ("Te olvidaron en la repartición de cerebro", 2.2),
-            ("Préstame atención señor barriga", 2.2),
-            ("En esta batalla te di una paliza", 2.2),
-        ]
-
-        start_time = 0.0
-        fade_time = 2.0
-
-        for text, delay in lyrics:
-            # For each lyric, create a timer with cumulative time
-            start_time += delay
-
-            def make_text_fn(t=text):
-                try:
-                    # Create and show the lyric
-                    node = bs.newnode(
-                        'text',
-                        attrs={
-                            'text': t,
-                            'position': (0, -50),
-                            'scale': 1.2,
-                            'color': (1, 1, 1),
-                            'h_align': 'center',
-                            'v_attach': 'center',
-                        },
-                    )
-
-                    # Fade out smoothly
-                    bs.animate(node, 'opacity', {0.0: 1.0, fade_time: 0.0})
-                    bs.timer(fade_time + 0.2, node.delete)
-
-                except Exception as e:
-                    print(f"Lyrics error: {e}")
-
-            # Schedule it
-            bs.timer(start_time, make_text_fn)
+    
     def menu_music(self) -> None:
         assert bs.app.classic is not None
-        music_choices = [
-            bs.MusicType.MENU,
-            bs.MusicType.MENU2,
-            bs.MusicType.MENU6,
-            bs.MusicType.MENU7,
-            bs.MusicType.MENU8,
-            bs.MusicType.MENU9,
-            bs.MusicType.MENU10,
-            bs.MusicType.MENU11,
-            bs.MusicType.MENU12,
-            bs.MusicType.MENU13,
-            bs.MusicType.MENU14,
-            bs.MusicType.MENU15,
-            bs.MusicType.MENU16,
-            bs.MusicType.MENU17,
-            bs.MusicType.MENU18,
-            bs.MusicType.MENU67,
-        ]
+        music_choices = ['MENU' + str(i + 1) for i in range(17)]
+        music_choices.append('MENU67')
         self.chosen_music = random.choice(music_choices)
-        bs.setmusic(self.chosen_music)
+        bs.setmusic(getattr(bs.MusicType, self.chosen_music))
         
     def _start_preloads(self) -> None:
         # FIXME: The func that calls us back doesn't save/restore state

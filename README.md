@@ -4,22 +4,29 @@
         <img src="ba_data/textures2/title.png">
     </picture>
 </p>
-<p>The repository for BombSquda, a stupid modpack for BombSquad.<br>
-This repository was made primarily to allow anyone to edit the code.</p>
+<p>
+The repository for BombSquda, a stupid modpack for BombSquad. BombSquad can be found in https://ballistica.net<br>
+This repository was made primarily to allow anyone to edit the code, or make changes might like.<br>
+If you want 'stable' releases, they can be found in gamebanana.com/mods/618317.<br>
+And, other than this, the gamebanana is also the main page for BombSquda, despite this one being frequently updated.
+</p>
 
-## What the fuuuhhh is BombSquda bro???
+## What the hell is BombSquda???
 <p align="center">
     <picture>
         <img src="ba_data/textures2/about.png">
     </picture>
 </p>
-<p>BombSquda (formerly known as BombSquda; Mell's stupid Modpack) 
+<p>
+BombSquda (Mell's stupid Modpack) 
 is a modpack for BombSquad that adds a lot of changes to vanilla 
 assets and gameplay, adds ~3 new powerups, 
 buncha gameplay mechanics, a LOT of randomization, 
-and 1 (yes, ONE) new coop level.</p>
+and 1 (yes, ONE) new coop level. In short, basically "what would bombsquad
+look and feel like if it was a shitpost?"
+</p>
 
-## So how can I help develop... and.. stuff??
+## So how can I help develop and/or add features?
 <p align="center">
     <picture>
         <img src="ba_data/textures2/howdoi.png">
@@ -27,7 +34,10 @@ and 1 (yes, ONE) new coop level.</p>
 </p>
 <p>Download Github Desktop and clone the repository, 
 make changes to some files, commit and push your changes, then make a pull request. 
-If everything looks fine, i'll accept the merge. :)</p>
+If everything looks fine, i'll accept the merge. :)
+All kinds of additions are accepted! As long as it isn't something that could potentially break the game.<br>
+(oh, and if you can, try helping with translations)
+</p>
 
 ## Anyone helped make this? Credits and such?
 <p align="center">
@@ -42,4 +52,4 @@ Lemon - Voice-acted Mell and also gave some great ideas like the spongebob power
 Various sources - Sounds, music, and everything. There's WAY too many sources to list, so you're better off just searching for em.<br>
 
 ## Why does this modpack suck?
-<p>Yes</p>
+<p>play it first brocito :rage:</p>

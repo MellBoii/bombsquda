@@ -50,6 +50,7 @@ class RadioWindow(bui.Window):
         )
         bui.containerwidget(edit=self._root_widget, cancel_button=btn)
         
+        musics = [music_type for music_type in dir(bs.MusicType) if not music_type.startswith('__')]
         self.popup = PopupMenu(
             parent=self._root_widget,
             position=(self._width - 500, self._height - 250),
@@ -58,10 +59,10 @@ class RadioWindow(bui.Window):
             on_value_change_call=bui.WeakCall(self._on_menu_choice),
             # You're welcome
             # - gummy
-            choices = 
-            [ music_type for music_type in dir(bs.MusicType) if not music_type.startswith('__')],
+            choices = musics,
             button_size=(300, 70),
         )
+        self.choice2 = musics[0]
         
         # i LOOVE lstrs!
         self._title_text = bui.textwidget(

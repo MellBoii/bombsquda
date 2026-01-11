@@ -12,6 +12,7 @@ import bascenev1 as bs
 import _babase
 import babase as ba
 import bauiv1
+import fromgoverhaul.startup as startup
 
 if TYPE_CHECKING:
     from typing import Any, Callable
@@ -264,7 +265,7 @@ class MainMenuWindow(bui.MainWindow):
             flatness=1.0,
             color=(1, 1, 1, 0.7),
             text=(
-                f'BombSquda v2.0\nBombSquad Version {app.env.engine_version}\nBombSquad is copyright of Eric Froemling.'
+                f'BombSquda v{startup.BOMBSQUDA_VERSION}\nBombSquad v{app.env.engine_version}\nBombSquad is copyright of Eric Froemling.'
             ),
             h_align='center',
             v_align='center',
@@ -666,4 +667,4 @@ class MainMenuWindow(bui.MainWindow):
     def _reroll_press(self) -> None:
         gfha = bs.get_foreground_host_activity()
         with gfha.context:
-            gfha.menu_music()
+            gfha.reroll_stuff()

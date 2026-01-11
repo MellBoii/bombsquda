@@ -12,10 +12,10 @@ import bascenev1 as bs
 import babase
 import bauiv1 as bui
 import babase as ba
+import fromgoverhaul.mell_lyriclist as lyrics
 
 if TYPE_CHECKING:
     pass
-
 
 class MusicType(Enum):
     """Types of music available to play in-game.
@@ -28,9 +28,11 @@ class MusicType(Enum):
     # ok lesson learned dont rename default music so it doesnt break vanilla online-play
     # perhaps should add music for when playing online?? seems cool audibly
     # also, don't rename the other names. they'll break if you pause and upnause.
-    MENU = 'MENU'
+    MENU1 = 'MENU1'
     MENU2 = 'MENU2'
     MENU3 = 'MENU3'
+    MENU4 = 'MENU4'
+    MENU5 = 'MENU5'
     MENU6 = 'MENU6'
     MENU7 = 'MENU7'
     MENU8 = 'MENU8'
@@ -43,7 +45,6 @@ class MusicType(Enum):
     MENU15 = 'MENU15'
     MENU16 = 'MENU16'
     MENU17 = 'MENU17'
-    MENU18 = 'MENU18'
     MENU67 = 'MENU67'
     VICTORY = 'Victory'
     VICTORYFINAL = 'VictoryFinal'
@@ -85,12 +86,12 @@ class MusicType(Enum):
     D_RUNNIN = 'D_RUNNIN' # <- if you get the reference to what this is, you already know why its here.
     EPICFAST = 'EpicFast' # otherwise, it's used as the default music if there is a broken one
     SPORTS = 'Sports'
-    HOCKEY = 'Hockey'
     FOOTBALL = 'Football'
     FLYING = 'Flying'
     FLYING2 = 'Flying2'
     SCARY = 'Scary'
     SUPER = 'Super'
+    FEEL_THE_FURY = 'Feel_The_Fury'
     SRB2_OVERTIME = 'SRB2_Overtime'
     SRB2_PINCH = 'SRB2_Pinch'
     MARCHING = 'Marching'
@@ -167,22 +168,23 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
             bs.MusicType.FLYING2: "Sky Theme - Mario vs Luigi Online",
             bs.MusicType.RACE: "VS Metal Sonic - Sonic Mania",
             bs.MusicType.EPIC_RACE: "Final Boss - Sonic Mania",
-            bs.MusicType.MENU: "Artistic Mindset - Spamton123",
+            bs.MusicType.MENU1: "Artistic Mindset - Spamton123",
             bs.MusicType.MENU2: "Super Mario Kart Title Remastered",
             bs.MusicType.MENU3: "Mario vs Luigi 2.0 Title Theme Remix - Goldyber",
-            bs.MusicType.MENU6: "Cascade Zone Act 2 (Track B) - Bomb Boy",
-            bs.MusicType.MENU7: "Mario vs Luigi 2.0 Title Theme",
-            bs.MusicType.MENU8: "Mario Kart: Double Dash!! Title Theme",
-            bs.MusicType.MENU9: "Start your Engines - CTGP-7",
-            bs.MusicType.MENU10: "The Great Strategy - badliz",
-            bs.MusicType.MENU11: "Title Theme -  Mario Kart 7",
-            bs.MusicType.MENU12: "Friends no More x Papá Cerdito vs Bebé George",
-            bs.MusicType.MENU13: "Title Theme - Super Mario Kart",
-            bs.MusicType.MENU14: "Title Theme - Mario Kart 64",
-            bs.MusicType.MENU15: "Title Theme - Dr. Robotnik's Mean Bean Machine",
-            bs.MusicType.MENU16: "Pizza Deluxe - POST ELVIS",
-            bs.MusicType.MENU17: "Pollyanna Rock My World - Furries in a blender",
-            bs.MusicType.MENU18: "Wii Theme but it's September - Mr Rock",
+            bs.MusicType.MENU4: "Cascade Zone Act 2 (Track B) - Bomb Boy",
+            bs.MusicType.MENU5: "Mario vs Luigi 2.0 Title Theme",
+            bs.MusicType.MENU6: "Mario Kart: Double Dash!! Title Theme",
+            bs.MusicType.MENU7: "Start your Engines - CTGP-7",
+            bs.MusicType.MENU8: "The Great Strategy - badliz",
+            bs.MusicType.MENU9: "Title Theme -  Mario Kart 7",
+            bs.MusicType.MENU10: "Friends no More x Papá Cerdito vs Bebé George",
+            bs.MusicType.MENU11: "Title Theme - Super Mario Kart",
+            bs.MusicType.MENU12: "Title Theme - Mario Kart 64",
+            bs.MusicType.MENU13: "Title Theme - Dr. Robotnik's Mean Bean Machine",
+            bs.MusicType.MENU14: "Pizza Deluxe - POST ELVIS",
+            bs.MusicType.MENU15: "Pollyanna Rock My World - Furries in a blender",
+            bs.MusicType.MENU16: "Wii Theme but it's September - Mr Rock",
+            bs.MusicType.MENU17: "The Final Fight - Sonic 3D Blast",
             bs.MusicType.MENU67: "what the fuck is this",
             bs.MusicType.CREDITS: "Sonic Mania Unused Credits - Tee Lopes",
             bs.MusicType.SNESCOURSE: "SNES Battle Course - Mario Kart World",
@@ -210,9 +212,8 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
             bs.MusicType.SRB2_OVERTIME: "OVERTIME!! - Sonic Robo Blast 2 Battle",
             bs.MusicType.RAGE: "Dr. Andonuts' Rage SSBU Mix - Frakture",
             bs.MusicType.GRAND_ROMP: "It's TV Time! - Deltarune",
-            bs.MusicType.HOCKEY: "Koopa Cape - Mario Kart Wii",
-            bs.MusicType.FOOTBALL: "Koopa Cape - Mario Kart Wii",
-            bs.MusicType.SPORTS: "Koopa Cape - Mario Kart Wii",
+            bs.MusicType.SPORTS: "Opening Movie (Beta Mix) - Eek! The Cat",
+            bs.MusicType.FOOTBALL: "GOLF CENTRAL - Uncanny Cat Golf",
             bs.MusicType.VICTORY: "Stars and Stripes Forever (Metal Rock Remix) - Blue Claw Philharmonic",
             bs.MusicType.VICTORYFINAL: "Stars and Stripes Forever (Metal Rock Remix, Longer) - Blue Claw Philharmonic",
             bs.MusicType.ONSLAUGHT: "Ruder Buster - Deltarune",
@@ -235,6 +236,7 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
             bs.MusicType.OPENING: "Opening Credits - Bound to the Dark World",
             bs.MusicType.CHOSEN_ONE: "Tough Guy Alert! - M&L Bowser's Inside Story - GaMetal Cover",
             bs.MusicType.RUN_AWAY: "Tough Guy Alert! - M&L Bowser's Inside Story - GaMetal Cover",
+            bs.MusicType.FEEL_THE_FURY: "Feel The Fury - ThatGuyRamon",
             bs.MusicType.SCARY: "???",
         }
         # Get the music name from the list above.
@@ -326,7 +328,7 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
             img.rotatetimer = bs.Timer(0.01, add_one, repeat=True)
             bs.timer(7.0, do_delete)
 
-def setmusic(musictype: MusicType | None, continuous: bool = False) -> None:
+def setmusic(musictype: MusicType | None, continuous: bool = False, show_playing: bool = True) -> None:
     """Set the app to play (or stop playing) a certain type of music.
 
     This function will handle loading and playing sound assets as
@@ -357,7 +359,34 @@ def setmusic(musictype: MusicType | None, continuous: bool = False) -> None:
     gnode.music_continuous = continuous
     gnode.music = '' if musictype is None else musictype.value
     gnode.music_count += 1
+    # Ensure activity has lyric storage
+    if not hasattr(activity, '_lyric_player'):
+        activity._lyric_player = None
+
+    # Stop any existing lyric player
+    if activity._lyric_player:
+        bs.debprint('[LyricPlayer] stopping previous instance')
+        activity._lyric_player.stop()
+        activity._lyric_player = None
+
+    # Start lyrics if needed
+    if musictype == bs.MusicType.FEEL_THE_FURY:
+        lp = LyricPlayer(
+            lyrics.FEEL_THE_FURY,
+            loop=True,
+            song_length=213,
+            offset=-1.20,
+        )
+        activity._lyric_player = lp
+        lp.play()
+
     with activity.context:
+        # Don't show game-set music if the player
+        # is using the boombox
+        if ba.app.config.get("squda_isplayingmusic"):
+            return
+        if not show_playing:
+            return
         ba.apptimer(0.1, lambda: show_music_now_playing(music_type=musictype))
     
 def localsetmusic(musictype: MusicType | None, continuous: bool = False) -> None:
@@ -384,3 +413,98 @@ def getmusic():
     gets the current playing music
     """
     return getattr(bs.MusicType, bs.get_foreground_host_activity().globalsnode.music.upper())
+
+def test_musicnames():
+    """
+    this plays all music types that are in bs.MusicType.
+    refrain from using this unless you wanna test 
+    if the Now Playing is missing any musictypes
+    """
+    list = [getattr(bs.MusicType, music_type) for music_type in 
+    dir(bs.MusicType) if not music_type.startswith('__')]
+    for musictype in list:
+        bs.setmusic(musictype)
+
+class LyricPlayer:
+    """Plays a timed sequence of lyrics onscreen."""
+
+    def __init__(
+        self,
+        lyric_list: list[tuple[str, float]],
+        *,
+        pos=(0, 60),
+        color=(1, 1, 1),
+        v_attach='bottom',
+        scale=1.2,
+        song_length: float | None = None,
+        loop: bool = False,
+        offset: float = 0.0,
+    ):
+        bs.debprint("[LyricPlayer] __init__")
+
+        self.lyrics = lyric_list
+        self.pos = pos
+        self.color = color
+        self.v_attach = v_attach
+        self.scale = scale
+        self.song_length = song_length
+        self.loop = loop
+        self.offset = offset
+        self._start_time: float | None = None
+
+        self._timers: list[bs.Timer] = []
+        self._running = False
+
+    def play(self):
+        bs.debprint("[LyricPlayer] play()")
+
+        self.stop()
+        self._running = True
+
+        self._start_time = bs.apptime()   # <-- anchor
+        fade_time = 2.0
+
+        for text, t in self.lyrics:
+            scheduled_time = max(0.0, t + self.offset)
+            delay = max(0.0, self._start_time + scheduled_time - bs.apptime())
+
+            bs.debprint(f"[LyricPlayer] scheduling in {delay:.3f}s: {text}")
+
+            def make_fn(msg=text):
+                if not self._running:
+                    return
+
+                bs.debprint(f"[LyricPlayer] showing lyric: {msg}")
+
+                node = bs.newnode(
+                    'text',
+                    attrs={
+                        'text': msg,
+                        'position': self.pos,
+                        'scale': self.scale,
+                        'color': self.color,
+                        'h_align': 'center',
+                        'v_attach': self.v_attach,
+                    },
+                )
+
+                bs.animate(node, 'opacity', {0.0: 1.0, fade_time: 0.0})
+                bs.timer(fade_time + 0.2, node.delete)
+
+            self._timers.append(bs.Timer(delay, make_fn))
+
+        if self.loop and self.song_length:
+            loop_delay = max(0.0, self._start_time + self.song_length + self.offset - bs.apptime())
+            self._timers.append(bs.Timer(loop_delay, self._restart))
+
+    def _restart(self):
+        if not self._running:
+            return
+        self._start_time = bs.apptime()
+        self.play()
+
+    def stop(self):
+        if self._running:
+            bs.debprint("[LyricPlayer] stop()")
+        self._running = False
+        self._timers.clear()

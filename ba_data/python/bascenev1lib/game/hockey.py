@@ -233,7 +233,7 @@ class HockeyGame(bs.TeamGameActivity[Player, Team]):
         self._epic_mode = bool(settings['Epic Mode'])
         self.slow_motion = self._epic_mode
         self.default_music = (
-            bs.MusicType.EPIC if self._epic_mode else bs.MusicType.HOCKEY
+            bs.MusicType.EPIC if self._epic_mode else bs.MusicType.SPORTS
         )
 
     @override

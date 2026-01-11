@@ -309,6 +309,7 @@ class Spaz(bs.Actor):
         self._last_hit_time: int | None = None
         self._num_times_hit = 0
         self._bomb_held = False
+        self.shield_hitpoints = 0
         if self.default_shields:
             self.equip_shields()
         if self.default_shields_stronger:
@@ -323,6 +324,8 @@ class Spaz(bs.Actor):
         self.punch_callback: Callable[[Spaz], Any] | None = None
         self.pick_up_powerup_callback: Callable[[Spaz], Any] | None = None
         self.emeralds = []
+        self.emeralds_indicator = None
+        self.update_emerald_indicator()
         self.flashing = False
         self._flash_timer = None
         self.impulse_scale = 1.5
@@ -354,6 +357,10 @@ class Spaz(bs.Actor):
         # Update HP number
         if self.earthhptext and self.earthhptext.exists():
             self.earthhptext.text = str(int(self.hitpoints / 10))
+        
+        # Update SP number
+        if self.earthsptext and self.earthsptext.exists():
+            self.earthsptext.text = str(int(self.shield_hitpoints / 10))
 
         # Determine visual state
         low_hp = self.hitpoints <= 210
@@ -441,6 +448,16 @@ class Spaz(bs.Actor):
             'shadow': 0.7,
             'flatness': 0.6,
         })
+        self.earthsptext = bs.newnode('text', attrs={
+            'text': '0',
+            'h_align': 'center',
+            'position': (self.meterx + 18, self.metery - 53),
+            'scale': 0.9,
+            'color': (1, 1, 1),
+            'shadow': 0.7,
+            'flatness': 0.6,
+        })
+    
     
     def refresh_earth_meter(self):
         self.set_meter_position()
@@ -449,6 +466,7 @@ class Spaz(bs.Actor):
             self.earthchar,
             self.earthmeter,
             self.earthmetertext,
+            self.earthsptext,
             self.earthhptext
         ]
 
@@ -460,6 +478,9 @@ class Spaz(bs.Actor):
 
         if self.earthhptext and self.earthhptext.exists():
             self.earthhptext.position = (self.meterx + 18, self.metery - 16)
+        
+        if self.earthsptext and self.earthsptext.exists():
+            self.earthsptext.position = (self.meterx + 18, self.metery - 53)
             
     def play_meter_death_animation(self):
         from bascenev1lib.actor.nodejumper import ImageJumper
@@ -468,7 +489,12 @@ class Spaz(bs.Actor):
 
         self.alreadydidanimation = True
 
-        for node in (self.earthchar, self.earthmeter, self.earthmetertext):
+        for node in (
+            self.earthchar, 
+            self.earthmeter, 
+            self.earthmetertext, 
+            self.earthsptext
+        ):
             if node and node.exists():
                 ImageJumper.jump_image(node, 420, 70, -1500)
         if self.earthhptext and self.earthhptext.exists():
@@ -739,12 +765,12 @@ class Spaz(bs.Actor):
             self.canparry2 = True
         if ba.app.config.get("squda_parrytype") == 3:
             parrytime = 0.3
-            parrycooldown = 0.8
+            parrycooldown = 0.7
         if ba.app.config.get("squda_parrytype") == 2:
             parrytime = 0.2
             parrycooldown = 0.6
         if ba.app.config.get("squda_parrytype") == 1:
-            parrytime = 0.1
+            parrytime = 0.15
             parrycooldown = 0.4
         # Close our parry timeframe after our chosen second(s).
         bs.timer(parrytime, stopparry)
@@ -753,7 +779,15 @@ class Spaz(bs.Actor):
         # 'Celebrate' to show we're parrying, n play a sound.
         milscs = parrytime * 1000
         self.node.handlemessage('celebrate', int(milscs))
-        bs.getsound('s3_instashield').play()
+        self.parryshield = bs.newnode(
+            'shield',
+            owner=self.node,
+            attrs={'color': (0, 0.5, 1), 'radius': 1.0},
+        )
+        self.node.connectattr('position_center', self.parryshield, 'position')
+        bs.animate(self.parryshield, 'radius', {parrytime: 1.0, parrytime + 0.2: 0.0})
+        bs.timer(parrytime + 0.3, self.parryshield.delete)
+        bs.getsound('attempt_parry').play()
 
     def on_pickup_press(self) -> None:
         """
@@ -772,6 +806,7 @@ class Spaz(bs.Actor):
         ):
             self.gosuper()
             self.emeralds = []
+            self.update_emerald_indicator()
             return
         if self.canparry == True:
             # If we can parry, replace our pickup button with parrying.
@@ -1145,8 +1180,6 @@ class Spaz(bs.Actor):
         if not self.node:
             logging.exception('Can\'t equip shields; no node.')
             return
-        if self.earthsptext and self.earthsptext.exists():
-            self.earthsptext.delete()
         # Prevent players from getting shields if they're on hardmode
         # (so that it's not cheesable)
         if ba.app.config.get("squda_spazhardmode", True) and not self.source_player == None:
@@ -1164,7 +1197,7 @@ class Spaz(bs.Actor):
             self.shield = bs.newnode(
                 'shield',
                 owner=self.node,
-                attrs={'color': (0.3, 0.2, 2.0), 'radius': 1.3},
+                attrs={'color': self.node.color, 'radius': 1.3},
             )
             self.node.connectattr('position_center', self.shield, 'position')
         self.shield_hitpoints = self.shield_hitpoints_max = 1000
@@ -1181,29 +1214,6 @@ class Spaz(bs.Actor):
             )
             # So user can see the decay.
             self.shield.always_show_health_bar = True
-        if self.earthmeter and self.earthmeter.exists():
-            self.earthsptext = bs.newnode(
-                'text',
-                attrs={
-                    'text': str(int(self.shield_hitpoints / 10)),
-                    'h_align': 'center',
-                    'position': (self.meterx + 18, self.metery - 53),
-                    'scale': 0.9,
-                    'color': (1, 1, 1),
-                    'shadow': 0.7,
-                    'flatness': 0.6,
-                },
-            )
-            def updatesp():
-                if self.earthsptext and self.earthsptext.exists():
-                    self.earthsptext.text = str(int(self.shield_hitpoints / 10))
-                    if self.issuper == True:
-                        self.earthsptext.color = (1.0, 0.9, 0.5)
-                if self.shield_hitpoints <= 0:
-                    if self.earthsptext and self.earthsptext.exists():
-                        self.earthsptext.delete()
-                        self.shpoints_timer = None
-            self.shpoints_timer = bs.Timer(0.1, updatesp, repeat=True)
         
     
     def equip_shields_stronger(self, decay: bool = False) -> None:
@@ -1258,8 +1268,10 @@ class Spaz(bs.Actor):
                     1.0,
                     position=self.node.position,
                 )
+            self.updatemeter()
         else:
             self.shield_decay_timer = None
+            self.updatemeter()
 
     def remove_from_metal_list(self):
         if isinstance(self.getactivity(), GameActivity):
@@ -1298,7 +1310,7 @@ class Spaz(bs.Actor):
             bs.setmusic(bs.MusicType.METALCAPTIME)
         else:
             if isinstance(self.getactivity(), GameActivity):
-                if ba.app.config.get("squda_disablemmusic") == False:
+                if not ba.app.config.get("squda_disablemmusic"):
                     self.getactivity().metal_players.append(self)
         # play a sound
         self._metalcap_sound = bs.getsound('metalcap').play()
@@ -1461,6 +1473,8 @@ class Spaz(bs.Actor):
                     bs.setmusic(bs.MusicType.NOISESUPER)
                 elif self.character == 'Zoe':
                     bs.setmusic(bs.MusicType.GRAND_ROMP)
+                elif self.character == 'Kronk':
+                    bs.setmusic(bs.MusicType.FEEL_THE_FURY)
                 else:
                     bs.setmusic(bs.MusicType.SUPER)
     
@@ -1980,6 +1994,8 @@ class Spaz(bs.Actor):
             bs.debprint('either way, we\'ll default to 250')
             bs.debprint(f'parrytype is {ba.app.config['squda_parrytype']} btw')
         self.hitpoints += healpoints
+        if self.shield:
+            self.shield_hitpoints += healpoints / 1.5
         self.updatemeter()
         # ---------------- healpoints -------------------
         bs.getsound('parried').play()
@@ -2001,6 +2017,55 @@ class Spaz(bs.Actor):
         if self.timesparried >= 5:
             bs.getsound('bellMed').play()
             self.sugarcoat_overlay(sound='dingSmall', image='sugarcoatparry')
+    
+    def _get_emerald_text(self) -> str:
+        chars = []
+        EMERALD_GLYPHS = {
+            'emerald1': ba.SpecialChar.FLAG_UNITED_STATES, # blue
+            'emerald2': ba.SpecialChar.FLAG_MEXICO, # green
+            'emerald3': ba.SpecialChar.FLAG_GERMANY, # white
+            'emerald4': ba.SpecialChar.FLAG_BRAZIL, # yellow/orange
+            'emerald5': ba.SpecialChar.FLAG_RUSSIA, # red
+            'emerald6': ba.SpecialChar.FLAG_CHINA, # cyan
+            'emerald7': ba.SpecialChar.FLAG_UNITED_KINGDOM, # purple/pink
+        }
+        for name in sorted(self.emeralds):
+            glyph = EMERALD_GLYPHS.get(name)
+            if glyph:
+                chars.append(ba.charstr(glyph))
+        return ''.join(chars)
+        
+    def update_emerald_indicator(self):
+        text = self._get_emerald_text()
+
+        if not self.emeralds_indicator:
+            yoff = 0.1
+            mathnode = bs.newnode(
+                'math',
+                owner=self.node,
+                attrs={'input1': (0, 1.3 + yoff, 0), 'operation': 'add'},
+            )
+            self.node.connectattr('torso_position', mathnode, 'input2')
+
+            self.emeralds_indicator = bs.newnode(
+                'text',
+                owner=self.node,
+                attrs={
+                    'text': text,
+                    'in_world': True,
+                    'shadow': 1.0,
+                    'flatness': 1.0,
+                    'scale': 0.025,
+                    'color': (1, 1, 1),
+                    'h_align': 'center',
+                },
+            )
+
+            mathnode.connectattr('output', self.emeralds_indicator, 'position')
+
+        else:
+            self.emeralds_indicator.text = text
+
     @override
     def handlemessage(self, msg: Any) -> Any:
         # pylint: disable=too-many-return-statements
@@ -2037,6 +2102,7 @@ class Spaz(bs.Actor):
             else:
                 bs.debprint(f'{self.node.name} tried to collect {msg.current}, but it already has it')
                 bs.getsound('player_unready').play()
+            self.update_emerald_indicator()
             
         elif isinstance(msg, bs.PickedUpMessage):
             if self.node:
@@ -2929,10 +2995,11 @@ class Spaz(bs.Actor):
                 if musicis == 'MetalCapTime':
                     bs.setmusic(bs.MusicType.GRAND_ROMP)
                 else:
-                    if ba.app.config.get("squda_disablemmusic", False):
+                    if not ba.app.config.get("squda_disablemmusic"):
                         self.remove_from_metal_list()
             if self.prev_music:
                 bs.setmusic(getattr(bs.MusicType, self.prev_music))
+                self.prev_music = None
             if self.light:
                 self.light.delete()
                 self.light = None
@@ -2997,6 +3064,8 @@ class Spaz(bs.Actor):
                             )
                     self.node.dead = True
                     bs.timer(6.0, self.node.delete)
+                    self.emeralds = []
+                    self.update_emerald_indicator()
         elif isinstance(msg, bs.OutOfBoundsMessage):
             if self.parrying == True:
                 self.tptosafety()
@@ -3449,12 +3518,12 @@ class Spaz(bs.Actor):
         if not self.character == 'Robot':
             raise TypeError('This should only be called on an Bombgeon SS player.')
         
-        if self.NINJA_DASHES == 2:
+        if self.dashes == 4:
             return
 
         self.flash(time=1, texture=bs.gettexture('buttonJump'), crossout=False)
         
-        self.NINJA_DASHES += 1
+        self.dashes += 1
         
     def on_jump_dash(self):
         """ 
@@ -3705,7 +3774,6 @@ class Spaz(bs.Actor):
         """Break the poor spaz into little bits."""
         if self.shattered:
             return
-        self.shattered = True
         if self.parrying:
             self.mpa()
             PopupText(
@@ -3715,6 +3783,7 @@ class Spaz(bs.Actor):
                 scale=1.4,
             ).autoretain()
             return
+        self.shattered = True
         assert self.node
         if self.frozen:
             # Momentary flash of light.
@@ -3758,7 +3827,7 @@ class Spaz(bs.Actor):
             sounds = ['gibbed', 'gibbed2']
             bs.getsound(random.choice(sounds)).play(position=self.node.position)
             if random.random() < 0.4:
-                shatter2sfx = ['screams/scream' + str(i + 1) + '' for i in range(9)]
+                shatter2sfx = ['screams/scream' + str(i + 1) + '' for i in range(10)]
                 bs.getsound(random.choice(shatter2sfx)).play(position=self.node.position)
             else:
                 random.choice(self.node.fall_sounds).play(position=self.node.position)

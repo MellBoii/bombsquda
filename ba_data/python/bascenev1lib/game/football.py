@@ -173,8 +173,10 @@ class FootballTeamGame(bs.TeamGameActivity[Player, Team]):
         self._time_limit = float(settings['Time Limit'])
         self._epic_mode = bool(settings['Epic Mode'])
         self.slow_motion = self._epic_mode
+        musicas = [bs.MusicType.SPORTS, bs.MusicType.FOOTBALL]
         self.default_music = (
-            bs.MusicType.EPIC if self._epic_mode else bs.MusicType.FOOTBALL
+            bs.MusicType.EPIC if self._epic_mode 
+            else random.choice(musicas)
         )
 
     @override
@@ -402,8 +404,6 @@ class FootballCoopGame(bs.CoopGameActivity[Player, Team]):
         scoretype=bs.ScoreType.MILLISECONDS, version='B'
     )
 
-    default_music = bs.MusicType.FOOTBALL
-
     # FIXME: Need to update co-op games to use getscoreconfig.
     @override
     def get_score_type(self) -> str:
@@ -476,6 +476,8 @@ class FootballCoopGame(bs.CoopGameActivity[Player, Team]):
         self._time_text_timer: bs.Timer | None = None
         self._flag_respawn_light: bs.Actor | None = None
         self._flag: FootballFlag | None = None
+        musicas = [bs.MusicType.SPORTS, bs.MusicType.FOOTBALL]
+        self.default_music = random.choice(musicas)
 
     @override
     def on_transition_in(self) -> None:

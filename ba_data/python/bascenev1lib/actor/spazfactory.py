@@ -132,6 +132,9 @@ class SpazFactory:
             bs.getsound('punchSFX/punchStrong07'),
             bs.getsound('punchSFX/punchStrong08'),
             bs.getsound('punchSFX/punchStrong09'),
+            bs.getsound('punchSFX/punchStrong10'),
+            bs.getsound('punchSFX/punchStrong11'),
+            bs.getsound('punchSFX/punchStrong12'),
         )
         self.punch_sound_stronger = bs.getsound('punchSFX/superPunch')
         self.punch_sound_strongest = bs.getsound('punchSFX/punchDeath1')

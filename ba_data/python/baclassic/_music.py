@@ -37,14 +37,16 @@ class AssetSoundtrackEntry:
 
 # What gets played by default for our different music types:
 ASSET_SOUNDTRACK_ENTRIES: dict[MusicType, AssetSoundtrackEntry] = {
-    MusicType.MENU: AssetSoundtrackEntry('music/menuMusic'),
+    MusicType.MENU1: AssetSoundtrackEntry('music/menuMusic'),
     MusicType.MENU2: AssetSoundtrackEntry('music/menuMusic2'),
     MusicType.MENU3: AssetSoundtrackEntry('music/menuMusic3'),
+    MusicType.MENU4: AssetSoundtrackEntry('music/menuMusic4'),
+    MusicType.MENU5: AssetSoundtrackEntry('music/menuMusic5'),
     MusicType.MENU6: AssetSoundtrackEntry('music/menuMusic6'),
     MusicType.MENU7: AssetSoundtrackEntry('music/menuMusic7'),
-    MusicType.MENU8: AssetSoundtrackEntry('music/menuMusic8'),
+    MusicType.MENU8: AssetSoundtrackEntry('music/menuMusic8'), 
     MusicType.MENU9: AssetSoundtrackEntry('music/menuMusic9'),
-    MusicType.MENU10: AssetSoundtrackEntry('music/menuMusic10'), 
+    MusicType.MENU10: AssetSoundtrackEntry('music/menuMusic10'),
     MusicType.MENU11: AssetSoundtrackEntry('music/menuMusic11'),
     MusicType.MENU12: AssetSoundtrackEntry('music/menuMusic12'),
     MusicType.MENU13: AssetSoundtrackEntry('music/menuMusic13'),
@@ -52,7 +54,6 @@ ASSET_SOUNDTRACK_ENTRIES: dict[MusicType, AssetSoundtrackEntry] = {
     MusicType.MENU15: AssetSoundtrackEntry('music/menuMusic15'),
     MusicType.MENU16: AssetSoundtrackEntry('music/menuMusic16'),
     MusicType.MENU17: AssetSoundtrackEntry('music/menuMusic17'),
-    MusicType.MENU18: AssetSoundtrackEntry('music/menuMusic18'),
     MusicType.MENU67: AssetSoundtrackEntry('music/stupidfuckingmenu'), 
     MusicType.VICTORY: AssetSoundtrackEntry(
         'music/victoryMusic', volume=1.2, loop=False
@@ -71,6 +72,7 @@ ASSET_SOUNDTRACK_ENTRIES: dict[MusicType, AssetSoundtrackEntry] = {
     MusicType.FINALDESTINATION: AssetSoundtrackEntry('music/finaldestination', volume=2.1),
     MusicType.THEFINALE: AssetSoundtrackEntry('music/bis_finale', volume=2.1),
     MusicType.NOISESUPER: AssetSoundtrackEntry('music/noisexpectancy', volume=1.0),
+    MusicType.FEEL_THE_FURY: AssetSoundtrackEntry('music/feel_the_fury', volume=1.0),
     MusicType.SURVEY: AssetSoundtrackEntry('music/SURVEYPROGRAM', volume=1.0),
     MusicType.LOGOTYPE: AssetSoundtrackEntry('music/LOGOTYPE', volume=1.0, loop=False),
     MusicType.WAR: AssetSoundtrackEntry('music/warneverends', volume=1.9),
@@ -122,8 +124,7 @@ ASSET_SOUNDTRACK_ENTRIES: dict[MusicType, AssetSoundtrackEntry] = {
     MusicType.EPIC: AssetSoundtrackEntry('music/slowEpicMusic', volume=1.2),
     MusicType.EPICFAST: AssetSoundtrackEntry('music/fastEpicMusic'),
     MusicType.SPORTS: AssetSoundtrackEntry('music/sportsMusic', volume=0.8),
-    MusicType.HOCKEY: AssetSoundtrackEntry('music/sportsMusic', volume=0.8),
-    MusicType.FOOTBALL: AssetSoundtrackEntry('music/sportsMusic', volume=0.8),
+    MusicType.FOOTBALL: AssetSoundtrackEntry('music/footballMusic', volume=0.8),
     MusicType.ELIM_DANGER: AssetSoundtrackEntry('music/danger_mbm'),
     MusicType.ELIM_VERSUS: AssetSoundtrackEntry('music/versus_mbm'),
     MusicType.FLYING: AssetSoundtrackEntry('music/flyingMusic', volume=0.8),
@@ -537,3 +538,39 @@ def do_play_music(*args: Any, **keywds: Any) -> None:
     """A passthrough used by the C++ layer."""
     assert babase.app.classic is not None
     babase.app.classic.music.do_play_music(*args, **keywds)
+
+# PS. DO NOT USE THIS UNLESS YOU'RE EITHER
+# A MASOCHIST OR YOU HAVE A NASA PC.
+# i tested this earlier so it was easier
+# to preload music, but even if it does work
+# it makes the game straight up start lagging
+# i'm only leaving this here incase there's a fix for it
+def preload_all_music():
+    import bascenev1 as bs
+
+    bs.debprint('[MusicPreloader] Starting preload...')
+
+    total = 0
+    failed = 0
+
+    for mtype, entry in ASSET_SOUNDTRACK_ENTRIES.items():
+        try:
+            asset = entry.assetname
+
+            bs.debprint(f'[MusicPreloader] {mtype.value} -> {asset}')
+
+            sound = bs.getsound(asset)
+
+            # Warm buffer silently
+            try:
+                sound.play(volume=0.0)
+            except Exception:
+                pass
+
+            total += 1
+        except Exception as e:
+            failed += 1
+            bs.debprint(f'[MusicPreloader] FAILED {mtype.value}: {e}')
+
+    bs.debprint(f'[MusicPreloader] Done. Loaded={total} Failed={failed}')
+

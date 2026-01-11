@@ -169,6 +169,10 @@ class EmeraldActor(bs.Actor):
             isspaz = toucher.getnodetype() == 'spaz'
             actor = toucher.getdelegate(bs.Actor)
             if not toucher:
+                bs.debprint(f'{self}: no toucher')
+                return
+            if not actor:
+                bs.debprint(f'{self}: no toucher')
                 return
             if isspaz:
                 bs.debprint(f'{self}: A spaz touched us, so we\'re gonna die.')
@@ -397,6 +401,7 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         self.new_emerald = None
         self.emeralds = []
         self.allow_emeralds = True
+        self.lp = None
         # significantly boost emerald drop
         # chance in coop (so bots get a chance, and
         # so do players)
@@ -1230,6 +1235,43 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         self._standard_time_limit_text_input.node.connectattr(
             'output', self._standard_time_limit_text.node, 'text'
         )
+    # -- use these for determining if we should use overtime;
+    # kinda broken tho -----------------------------------
+    # def _is_team_match_dominating(self, lead_ratio=2.0):
+        # scores = []
+        # for team in self.teams:
+            # if team.score is not None:
+                # scores.append(team.score)
+
+        # if len(scores) < 2:
+            # return False
+
+        # scores.sort(reverse=True)
+        # return scores[0] >= scores[1] * lead_ratio
+    
+    # def _is_ffa_runaway(self, lead=10):
+        # players = self.players
+        # if len(players) < 2:
+            # return False
+
+        # scores = sorted(
+            # (p.score for p in players if p.score is not None),
+            # reverse=True
+        # )
+
+        # return scores[0] - scores[1] >= lead
+    
+    # def _should_trigger_overtime(self):
+        # # FFA
+        # if hasattr(self, 'players') and len(self.players) > 2:
+            # if self._is_ffa_runaway():
+                # return True
+        # # Team games
+        # if hasattr(self, 'teams') and len(self.teams) > 1:
+            # if self._is_team_match_dominating():
+                # return True
+
+        # return False
 
     def _standard_time_limit_tick(self) -> None:
         from bascenev1._gameutils import animate

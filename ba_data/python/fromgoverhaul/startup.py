@@ -1,6 +1,7 @@
 import bascenev1 as bs
 import babase
 import babase as ba
+import baclassic as bsc
 import os
 import bauiv1 as bui
 import time
@@ -13,8 +14,11 @@ import sys
 import traceback
 import datetime
 import bascenev1 as bs
+BOMBSQUDA_VERSION = 2.1
+BOMBSQUDA_VDATE = '1/11/2026' 
 
 class Startup():
+    print(f'welcome to bombsquda v{BOMBSQUDA_VERSION}, updated as of {BOMBSQUDA_VDATE}.')
     # very important stuff that needs to be set on startup
     _last_error_time = None
     _recent_error = False
@@ -25,25 +29,25 @@ class Startup():
     # made by temp in the 'bombarmy' discussion in the discord server.
     config = bs.app.config
     conflist = {
-    "squda_parryalways": False,
-    "squda_richpresence": False,
-    "squda_spazfuckedup": False,
-    "squda_spazhardmode": False,
-    "squda_unlockedmel": False,
-    "squda_noisepolution": False,
-    "squda_canopencredits": False,
-    "squda_dontdomarioman": False,
-    "squda_dontshutdown": False,
-    "squda_enablemeter": False,
-    "squda_gamblingmode": False,
-    "squda_nosugarcoats": False,
-    "squda_playersfirsttime": True,
-    "squda_isplayingmusic": False,
-    "squda_customfont": False,
-    "squda_debugprints": False,
-    "squda_timesattracted": 1,
-    "squda_timeserrored": 0,
-    "squda_parrytype": 2,
+        "squda_parryalways": False,
+        "squda_richpresence": False,
+        "squda_spazfuckedup": False,
+        "squda_spazhardmode": False,
+        "squda_unlockedmel": False,
+        "squda_noisepolution": False,
+        "squda_canopencredits": False,
+        "squda_dontdomarioman": False,
+        "squda_dontshutdown": False,
+        "squda_enablemeter": False,
+        "squda_gamblingmode": False,
+        "squda_nosugarcoats": False,
+        "squda_playersfirsttime": True,
+        "squda_isplayingmusic": False,
+        "squda_customfont": False,
+        "squda_debugprints": False,
+        "squda_timesattracted": 1,
+        "squda_timeserrored": 0,
+        "squda_parrytype": 2,
     }
     # "setdefault" to create config settings
     # won't affect already existing ones.
@@ -67,8 +71,7 @@ class Startup():
             print(f'Unable to start rich presence: {e}')
     bui.app.config['squda_isplayingmusic'] = False
     bui.app.config['squda_timesattracted'] = 0
-    version = '2.0'
-    print(f'welcome to bombsquda v{version}!!!')
+    bs.debprint('config stuff is done')
     
     def auto_module_import():
         """
@@ -137,6 +140,7 @@ class Startup():
     # Install the hook
     sys.excepthook = my_global_exception_hook
     bs.debprint('global exception hook is ready!')
+    bs.debprint('everything should be good to go :3')
     
 
 

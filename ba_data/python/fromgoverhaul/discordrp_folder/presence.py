@@ -3,6 +3,7 @@ import os
 import socket
 import struct
 import sys
+import bascenev1
 
 from abc import ABC, abstractmethod
 from enum import IntEnum
@@ -67,9 +68,9 @@ class Presence:
         self._socket: _Socket = (
             _WindowsSocket() if sys.platform == "win32" else _UnixSocket()
         )
-        print('Discord RPC is up and runnin\'!')
         # Send a handshake request
         self._handshake()
+        bascenev1.debprint('Discord RPC is functioning.')
 
     def set(self, activity: Optional[dict[str, Any]]) -> None:
         """

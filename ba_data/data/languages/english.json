@@ -1467,6 +1467,7 @@
   "scoreChallengesText": "Score Challenges",
   "scoreListUnavailableText": "Score list unavailable.",
   "scoreText": "Score",
+  "scoreAvgText": "Score Average",
   "scoreUnits": {
     "millisecondsText": "Milliseconds",
     "pointsText": "Points",

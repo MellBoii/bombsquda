@@ -136,7 +136,7 @@ class SpazBot(Spaz):
             name=self.name,
             source_player=None,
             start_invincible=False,
-            can_accept_powerups=False,
+            can_accept_powerups=True,
         )
         # well dammit! we can't normally color
         # a spazbot's name, so we do it manually
@@ -194,6 +194,7 @@ class SpazBot(Spaz):
             )
         if count is not None:
             self.emeralds = [f'emerald{i}' for i in range(1, count + 1)]
+            self.update_emerald_indicator()
 
     @property
     def map(self) -> bs.Map:

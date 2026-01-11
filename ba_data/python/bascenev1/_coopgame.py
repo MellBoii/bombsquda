@@ -28,7 +28,7 @@ if TYPE_CHECKING:
 # at runtime).
 
 
-class CoopGameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
+class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
     GameActivity[PlayerT, TeamT]  # pylint: disable=undefined-variable
 ):
     """Base class for cooperative-mode games."""
