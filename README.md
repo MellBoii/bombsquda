@@ -7,7 +7,7 @@
 <p>
 The repository for BombSquda, a stupid modpack for BombSquad. BombSquad can be found in https://ballistica.net<br>
 This repository was made primarily to allow anyone to edit the code, or make changes might like.<br>
-If you want 'stable' releases, they can be found in gamebanana.com/mods/618317.<br>
+If you want 'stable' releases, they can be found in https://gamebanana.com/mods/618317.<br>
 And, other than this, the gamebanana is also the main page for BombSquda, despite this one being frequently updated.
 </p>
 
