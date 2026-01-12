@@ -3153,7 +3153,7 @@ class Spaz(bs.Actor):
                         bs.HitMessage(
                             pos=ppos,
                             velocity=vel,
-                            magnitude=punch_power * punch_momentum_angular * 110.0 * self.yeehaws * self.yeehaws,
+                            magnitude=punchmag * self.yeehaws * self.yeehaws,
                             velocity_magnitude=punch_power * 40,
                             radius=0,
                             srcnode=self.node,
@@ -3175,7 +3175,7 @@ class Spaz(bs.Actor):
                         bs.HitMessage(
                             pos=ppos,
                             velocity=vel,
-                            magnitude=punch_power * punch_momentum_angular * 110.0,
+                            magnitude=punchmag,
                             velocity_magnitude=punch_power * 40,
                             radius=0,
                             srcnode=self.node,

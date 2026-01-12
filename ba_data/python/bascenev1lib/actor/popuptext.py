@@ -98,9 +98,9 @@ class PopupText(bs.Actor):
                 self._combine,
                 'input' + str(i),
                 {
-                    0.13 * lifespan: color[i],
-                    0.18 * lifespan: 4.0 * color[i],
-                    0.22 * lifespan: color[i],
+                    0.13: color[i],
+                    0.18: 4.0 * color[i],
+                    0.22: color[i],
                 },
             )
         bs.animate(
