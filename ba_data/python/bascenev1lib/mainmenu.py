@@ -662,8 +662,9 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         assert bs.app.classic is not None
         music_choices = ['MENU' + str(i + 1) for i in range(17)]
         music_choices.append('MENU67')
-        self.chosen_music = random.choice(music_choices)
-        bs.setmusic(getattr(bs.MusicType, self.chosen_music))
+        chosen = random.choice(music_choices)
+        self.chosen_music = getattr(bs.MusicType, chosen)
+        bs.setmusic(self.chosen_music)
         
     def _start_preloads(self) -> None:
         # FIXME: The func that calls us back doesn't save/restore state

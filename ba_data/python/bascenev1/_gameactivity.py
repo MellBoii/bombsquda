@@ -1014,6 +1014,7 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
             return
         else:
             super().end_game()
+            
     def respawn_player(
         self, player: PlayerT, respawn_time: float | None = None
     ) -> None:

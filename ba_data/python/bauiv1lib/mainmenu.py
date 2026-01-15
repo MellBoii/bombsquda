@@ -12,7 +12,7 @@ import bascenev1 as bs
 import _babase
 import babase as ba
 import bauiv1
-import fromgoverhaul.startup as startup
+import fromgoverhaul.mell_resources as mell
 
 if TYPE_CHECKING:
     from typing import Any, Callable
@@ -66,6 +66,7 @@ class MainMenuWindow(bui.MainWindow):
         self._watch_button: bui.Widget | None = None
         self._how_to_play_button: bui.Widget | None = None
         self._credits_button: bui.Widget | None = None
+        self.DEBUG_CUSTOM_GATHER = False
 
         self._refresh()
 
@@ -265,7 +266,7 @@ class MainMenuWindow(bui.MainWindow):
             flatness=1.0,
             color=(1, 1, 1, 0.7),
             text=(
-                f'BombSquda v{startup.BOMBSQUDA_VERSION}\nBombSquad v{app.env.engine_version}\nBombSquad is copyright of Eric Froemling.'
+                f'BombSquda v{mell.version}\nBombSquad v{app.env.engine_version}\nBombSquad is copyright of Eric Froemling.'
             ),
             h_align='center',
             v_align='center',
@@ -322,9 +323,8 @@ class MainMenuWindow(bui.MainWindow):
         v = button_y_offs + side_button_y_offs
 
         thistdelay = self._tdelay + td2 * self._t_delay_inc
-        DEBUG_CUSTOM_GATHER = False
         ongather = (
-            self._start_online_activity if DEBUG_CUSTOM_GATHER
+            self._start_online_activity if self.DEBUG_CUSTOM_GATHER
             else self._gather_press
         )
         self._gather_button = bui.buttonwidget(

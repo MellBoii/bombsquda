@@ -121,6 +121,12 @@ class MultiTeamSession(Session):
             add_resolved_type=True,
             name='default teams' if self.use_teams else 'default ffa',
         )
+        self._custom_menu_ui = [
+            {
+                'label': babase.Lstr(resource='nextGameText'),
+                'call': babase.WeakCall(self.restart),
+            }
+        ]
 
         if not playlist_resolved:
             raise RuntimeError('Playlist contains no valid games.')
@@ -167,6 +173,10 @@ class MultiTeamSession(Session):
     @override
     def on_team_join(self, team: bascenev1.SessionTeam) -> None:
         team.customdata['previous_score'] = team.customdata['score'] = 0
+        
+    @override
+    def get_custom_menu_entries(self) -> list[dict[str, Any]]:
+        return self._custom_menu_ui
 
     def get_max_players(self) -> int:
         """Return max number of Players allowed to join the game at once."""
@@ -182,7 +192,28 @@ class MultiTeamSession(Session):
             self._next_game_spec['resolved_type'],
             self._next_game_spec['settings'],
         )
+        
+    def restart(self) -> None:
+        """Restart the current game activity."""
 
+        # Tell the current activity to end with a 'restart' outcome.
+        # We use 'force' so that we apply even if end has already been called
+        # (but is in its delay period).
+
+        # Make an exception if there's no players left. Otherwise this
+        # can override the default session end that occurs in that case.
+        if not self.sessionplayers:
+            return
+
+        # This method may get called from the UI context so make sure we
+        # explicitly run in the activity's context.
+        activity = self.getactivity()
+        if activity is not None and not activity.expired:
+            activity.can_show_ad_on_death = True
+            from bascenev1._activitytypes import TransitionActivity
+            with self.context:
+                self.setactivity(_bascenev1.newactivity(TransitionActivity))
+                
     @override
     def on_activity_end(
         self, activity: bascenev1.Activity, results: Any
@@ -197,7 +228,6 @@ class MultiTeamSession(Session):
             JoinActivity,
             ScoreScreenActivity,
         )
-
         # If we have a tutorial to show, that's the first thing we do no
         # matter what.
         if self._tutorial_activity_instance is not None:
@@ -249,8 +279,6 @@ class MultiTeamSession(Session):
 
             # Now flip the current activity.
             self.setactivity(next_game)
-
-        # If we're leaving a round, go to the score screen.
         else:
             self._switch_to_score_screen(results)
 

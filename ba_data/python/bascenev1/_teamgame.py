@@ -153,6 +153,14 @@ class TeamGameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         # Announce win (but only for the first finish() call)
         # (also don't announce in co-op sessions; we leave that up to them).
         session = self.session
+        if (
+            isinstance(results, dict)
+            and 'outcome' in results
+            and results['outcome'] == 'restart'
+        ):
+            delay = 0.0
+            super().end(results, delay=delay, force=force)
+            return
         if not isinstance(session, CoopSession):
             do_announce = not self.has_ended()
             super().end(results, delay=3.5 + announce_delay, force=force)

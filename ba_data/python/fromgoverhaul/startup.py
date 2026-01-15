@@ -14,11 +14,10 @@ import sys
 import traceback
 import datetime
 import bascenev1 as bs
-BOMBSQUDA_VERSION = 2.1
-BOMBSQUDA_VDATE = '1/11/2026' 
+import fromgoverhaul.mell_resources as mell
 
 class Startup():
-    print(f'welcome to bombsquda v{BOMBSQUDA_VERSION}, updated as of {BOMBSQUDA_VDATE}.')
+    print(f'welcome to bombsquda v{mell.version}, updated as of {mell.update_date}.')
     # very important stuff that needs to be set on startup
     _last_error_time = None
     _recent_error = False
@@ -40,6 +39,7 @@ class Startup():
         "squda_dontshutdown": False,
         "squda_enablemeter": False,
         "squda_gamblingmode": False,
+        "squda_speedrunner": False,
         "squda_nosugarcoats": False,
         "squda_playersfirsttime": True,
         "squda_isplayingmusic": False,
@@ -72,7 +72,7 @@ class Startup():
     bui.app.config['squda_isplayingmusic'] = False
     bui.app.config['squda_timesattracted'] = 0
     bs.debprint('config stuff is done')
-    
+        
     def auto_module_import():
         """
         Automatically imports modules,
@@ -103,9 +103,22 @@ class Startup():
             gnode = bs.getactivity().globalsnode
             slow = True if gnode.slow_motion == False else False
             gnode.slow_motion = slow
+        def killbots():
+            try:
+                for bot in bs.getactivity()._bots.get_living_bots(): 
+                    bot.shatter(extreme=True, force_scream=True)
+                bs.getsound('explosion01').play()
+            except AttributeError:
+                bs.screenmessage('Try this again in coop...')
+                print('Try this again in coop...')
+                bs.getsound('error').play()
+        def wither_and_die():
+            bs.getsound('WITHERANDDIE').play()
+            bs.timer(0.6, killbots)
         console_globals['GOLDENFORM'] = super
         console_globals['NEWYEARS'] = firework
         console_globals['SLOWDOWN'] = slowmode
+        console_globals['WITHERANDDIE'] = wither_and_die
         bs.debprint('console globals done!')
     # call it
     auto_module_import()

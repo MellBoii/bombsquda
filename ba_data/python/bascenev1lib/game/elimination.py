@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, override
 
 import bascenev1 as bs
 import random
+import fromgoverhaul.mell_resources as mell
 
 from bascenev1lib.actor.spazfactory import SpazFactory
 from bascenev1lib.actor.scoreboard import Scoreboard
@@ -162,7 +163,7 @@ class Icon(bs.Actor):
             player = self._player()
             lives = player.lives if player else 0
             if lives == 0:
-                list = ['screams/scream' + str(i + 1) + '' for i in range(10)]
+                list = mell.screams
                 bs.getsound(random.choice(list)).play()
                 ImageJumper.jump_image(self.node)
                 bs.timer(0.6, self.update_for_lives)

@@ -561,12 +561,6 @@ def preload_all_music():
 
             sound = bs.getsound(asset)
 
-            # Warm buffer silently
-            try:
-                sound.play(volume=0.0)
-            except Exception:
-                pass
-
             total += 1
         except Exception as e:
             failed += 1

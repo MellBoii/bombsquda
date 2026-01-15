@@ -26,6 +26,7 @@ from bascenev1lib.actor.bomb import Bomb, Blast
 from bascenev1lib.actor.powerupbox import PowerupBoxFactory, PowerupBox
 from bascenev1lib.actor.spazfactory import SpazFactory
 from bascenev1lib.gameutils import SharedObjects
+import fromgoverhaul.mell_resources as mell
 import babase as ba
 
 
@@ -788,6 +789,28 @@ class Spaz(bs.Actor):
         bs.animate(self.parryshield, 'radius', {parrytime: 1.0, parrytime + 0.2: 0.0})
         bs.timer(parrytime + 0.3, self.parryshield.delete)
         bs.getsound('attempt_parry').play()
+    
+    def impulse(self, x: float = 0, y: float = 0):
+        if not self.node:
+            return
+        v = self.node.velocity
+        if x != 0:
+            self.node.handlemessage('impulse', 
+                self.node.position[0], 
+                self.node.position[1], 
+                self.node.position[2],
+                0, 25, 0, x, 0.05, 0, 0,
+                v[0]*15*2, 0, v[2]*15*2
+            )
+        if y != 0:
+            self.node.handlemessage('impulse', 
+                self.node.position[0], 
+                self.node.position[1], 
+                self.node.position[2],
+                0, 25, 0,
+                y, 0.05, 0, 0,
+                0, 20*400, 0
+            )
 
     def on_pickup_press(self) -> None:
         """
@@ -887,37 +910,31 @@ class Spaz(bs.Actor):
         launched up, and snd2 is the sound played
         when exploding.
         """
-        if self.node:
-            bs.getsound(snd1).play()
-            yforce = 240
-            savedY = self.node.position[1]
-            def actualexplode():
-                bomb.Bomb(position=self.node.position, bomb_type='tntfirework').explode()
-                self.shatter()
-                bs.getsound(snd2).play(position=self.node.position)
-                if on_die_call:
-                    bs.Call(on_die_call)()
-            # Check if we're a little above where we once were,
-            # and if we are, trigger our actual 'firework' explosion.
-            def chkifexplo():
-                if self.node.position[1] >= savedY + 5:
-                    self.letimer = None
-                    self.letimer2 = None
-                    actualexplode()
-            # Constantly give us a upwards impulse.
-            self.letimer = bs.Timer(0.01, lambda: self.node.handlemessage(
-                    'impulse', 
-                        self.node.position[0], 
-                        self.node.position[1], 
-                        self.node.position[2],
-                        0, 25, 0,
-                        yforce, 0.05, 0, 0,
-                        0, 20*400, 0
-                    ),
-                repeat=True
-            )
-            # Keep checking if we can explode.
-            self.letimer2 = bs.Timer(0.1, chkifexplo, repeat=True)
+        if not self.node:
+            return
+        bs.getsound(snd1).play()
+        yforce = 240
+        savedY = self.node.position[1]
+        def actualexplode():
+            if not self.node:
+                self.explotimer = None
+                return
+            self.explotimer = None
+            bomb.Bomb(position=self.node.position, bomb_type='tntfirework').explode()
+            self.shatter()
+            bs.getsound(snd2).play(position=self.node.position)
+            if on_die_call:
+                bs.Call(on_die_call)()
+        # Check if we're a little above where we once were,
+        # and if we are, trigger our actual 'firework' explosion.
+        def do_impulse_stuff():
+            if not self.node:
+                self.letimer = None
+                return
+            if self.node.position[1] >= savedY + 5:
+                actualexplode()
+            self.impulse(0, 150)
+        self.explotimer = bs.Timer(0.01, do_impulse_stuff, repeat=True)
 
     def _safe_play_sound(self, sound: bs.Sound, volume: float) -> None:
         """Plays a sound at our position if we exist."""
@@ -3537,16 +3554,7 @@ class Spaz(bs.Actor):
                 xforce = 55
                 yforce = 2
                 for _ in range(50):
-                    v = self.node.velocity
-                    self.node.handlemessage('impulse', self.node.position[0], self.node.position[1], self.node.position[2],
-                                            0, 25, 0,
-                                            yforce, 0.05, 0, 0,
-                                            0, 20*400, 0)
-                    
-                    self.node.handlemessage('impulse', self.node.position[0], self.node.position[1], self.node.position[2],
-                                            0, 25, 0,
-                                            xforce, 0.05, 0, 0,
-                                            v[0]*15*2, 0, v[2]*15*2)
+                    self.impulse(xforce, yforce)
                 def sparkies():
                             if self.node.exists():
                                 bs.emitfx(position=self.node.position,
@@ -3559,9 +3567,6 @@ class Spaz(bs.Actor):
                                     count=5,
                                     scale=1.0,
                                     spread=0.1)
-                def nolongerdashing():
-                    self.dashing = False
-                bs.timer(0.8, nolongerdashing)
                 bs.timer(0.01,ba.Call(sparkies))
                 bs.timer(0.1,ba.Call(sparkies))
                 bs.timer(0.2,ba.Call(sparkies))
@@ -3580,66 +3585,66 @@ class Spaz(bs.Actor):
                 explode_sound = self.explode_sounds[random.randrange(len(self.explode_sounds))]
             
                 explosion = bs.newnode(
-            'explosion',
-            attrs={
-                'position': pos,
-                'velocity': vel,
-                'radius': 1,
-                'big': False,
-            },
-        )
+                    'explosion',
+                    attrs={
+                        'position': pos,
+                        'velocity': vel,
+                        'radius': 1,
+                        'big': False,
+                    },
+                )
                 # Make a scorch that fades over time.
                 scorch = bs.newnode(
-            'scorch',
-            attrs={
-                'position': pos,
-                'size': 1,
-                'big': False,
-            },
-        )
+                    'scorch',
+                    attrs={
+                        'position': pos,
+                        'size': 1,
+                        'big': False,
+                    },
+                )
 
                 bs.animate(scorch, 'presence', {3.000: 1, 13.000: 0})
                 bs.timer(13.0, scorch.delete)
                 lcolor = (1, 0.3, 0.1)
                 light = bs.newnode(
-            'light',
-            attrs={
-                'position': pos,
-                'volume_intensity_scale': 10.0,
-                'color': lcolor,
-            },
-        )
+                    'light',
+                    attrs={
+                        'position': pos,
+                        'volume_intensity_scale': 10.0,
+                        'color': lcolor,
+                    },
+                )
 
                 scl = random.uniform(0.6, 0.9)
                 scorch_radius = light_radius = 1
 
                 iscale = 1.6
                 bs.animate(
-            light,
-            'intensity',
-            {
-                0: 2.0 * iscale,
-                scl * 0.02: 0.1 * iscale,
-                scl * 0.025: 0.2 * iscale,
-                scl * 0.05: 17.0 * iscale,
-                scl * 0.06: 5.0 * iscale,
-                scl * 0.08: 4.0 * iscale,
-                scl * 0.2: 0.6 * iscale,
-                scl * 2.0: 0.00 * iscale,
-                scl * 3.0: 0.0,
-            },
-        )
+                    light,
+                    'intensity',
+                    {
+                        0: 2.0 * iscale,
+                        scl * 0.02: 0.1 * iscale,
+                        scl * 0.025: 0.2 * iscale,
+                        scl * 0.05: 17.0 * iscale,
+                        scl * 0.06: 5.0 * iscale,
+                        scl * 0.08: 4.0 * iscale,
+                        scl * 0.2: 0.6 * iscale,
+                        scl * 2.0: 0.00 * iscale,
+                        scl * 3.0: 0.0,
+                    },
+                )
                 bs.animate(
-            light,
-            'radius',
-            {
-                0: light_radius * 0.2,
-                scl * 0.05: light_radius * 0.55,
-                scl * 0.1: light_radius * 0.3,
-                scl * 0.3: light_radius * 0.15,
-                scl * 1.0: light_radius * 0.05,
-            },
-        )
+                    light,
+                    'radius',
+                    {
+                        0: light_radius * 0.2,
+                        scl * 0.05: light_radius * 0.55,
+                        scl * 0.1: light_radius * 0.3,
+                        scl * 0.3: light_radius * 0.15,
+                        scl * 1.0: light_radius * 0.05,
+                    },
+                )
                 bs.timer(scl * 3.0, light.delete)
 
                 lpos = light.position
@@ -3770,7 +3775,7 @@ class Spaz(bs.Actor):
                 ).autoretain()
             self._cursed = False
 
-    def shatter(self, extreme: bool = False) -> None:
+    def shatter(self, extreme: bool = False, force_scream: bool = False) -> None:
         """Break the poor spaz into little bits."""
         if self.shattered:
             return
@@ -3826,8 +3831,8 @@ class Spaz(bs.Actor):
         else:
             sounds = ['gibbed', 'gibbed2']
             bs.getsound(random.choice(sounds)).play(position=self.node.position)
-            if random.random() < 0.4:
-                shatter2sfx = ['screams/scream' + str(i + 1) + '' for i in range(10)]
+            if random.random() < 0.4 or force_scream:
+                shatter2sfx = mell.screams
                 bs.getsound(random.choice(shatter2sfx)).play(position=self.node.position)
             else:
                 random.choice(self.node.fall_sounds).play(position=self.node.position)

@@ -24,6 +24,7 @@ from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.actor.respawnicon import RespawnIcon
 from bascenev1lib.actor.powerupbox import PowerupBox, PowerupBoxFactory
 from bascenev1lib.gameutils import SharedObjects
+from bascenev1lib.actor.playerspaz import PlayerSpaz
 from bascenev1lib.actor.spazbot import (
     SpazBotSet,
     SpazBot,
@@ -508,8 +509,6 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
                 'image',
                 attrs={
                     'texture': self._heart_tex,
-                    'mesh_opaque': self._heart_mesh_opaque,
-                    'mesh_transparent': self._heart_mesh_transparent,
                     'attach': 'topRight',
                     'scale': (90, 90),
                     'position': (-110 + l_offs, -50),
@@ -643,8 +642,15 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
         Bomb(position=position, velocity=velocity).autoretain()
         
     def _handle_reached_end(self) -> None:
-        spaz = bs.getcollision().opposingnode.getdelegate(SpazBot, True)
-        if not spaz.is_alive():
+        spaz = bs.getcollision().opposingnode.getdelegate(SpazBot)
+        playerspaz = bs.getcollision().opposingnode.getdelegate(PlayerSpaz)
+        if playerspaz:
+            playerspaz.impulse(-300, 50)
+            bs.timer(0.01, lambda: playerspaz.impulse(-500, 50))
+            bs.timer(0.001, lambda: playerspaz.impulse(-500, 50))
+            bs.getsound('bombDrop02').play()
+            return
+        if not spaz or not spaz.is_alive():
             return  # Ignore bodies flying in.
 
         self._flawless = False
@@ -671,10 +677,8 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
                 self._lives_hbtime = bs.Timer(
                     hbtime, lambda: self.heart_dyin(True, hbtime), repeat=True
                 )
-                self.heart_dyin(True)
             else:
                 self._lives_hbtime = None
-                self.heart_dyin(False)
 
             assert self._lives_text is not None
             assert self._lives_text.node

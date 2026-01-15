@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING, override
 
 import bascenev1 as bs
 
-from bascenev1lib.actor.bomb import TNTSpawner, Blast
+from bascenev1lib.actor.bomb import TNTSpawner, Bomb
 from bascenev1lib.actor.playerspaz import PlayerSpaz
 from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.actor.respawnicon import RespawnIcon
@@ -96,8 +96,8 @@ class Team(bs.Team[Player]):
 class FootballTeamGame2(bs.TeamGameActivity[Player, Team]):
     """Football game for teams mode."""
 
-    name = 'Football But The Flag Fucking Explodes'
-    description = 'Get the flag to the enemy end zone. Just make sure not to die xd'
+    name = 'football2name'
+    description = 'football2desc'
     available_settings = [
         bs.IntSetting(
             'Score to Win',
@@ -262,8 +262,7 @@ class FootballTeamGame2(bs.TeamGameActivity[Player, Team]):
                 team.score += 7
                 self._flag.scored = True
                 if self._flag and self._flag.node:
-                    bs.emitfx(position=self._flag.node.position, count=20, scale=1.0, spread=0.5, emit_type='tendrils')
-                    Blast(position=self._flag.node.position).autoretain()
+                    Bomb(position=self._flag.node.position, bomb_type='normal').explode()
                 for player in team.players:
                     if player.actor:
                         player.actor.handlemessage(bs.CelebrateMessage(2.0))
@@ -277,18 +276,14 @@ class FootballTeamGame2(bs.TeamGameActivity[Player, Team]):
                         if other_team is not team:
                             for other_player in other_team.players:
                                 if other_player.actor and other_player.actor.is_alive():
-                                    other_player.actor.handlemessage(bs.HitMessage(
-                                        source_player=other_player,
-                                        magnitude=1000.0,
-                                        velocity_magnitude=0.0,
-                                        radius=0.0,
-                                        force_direction=(1, 1, 1)
-                                    ))
-                    self.end_game()
+                                    Bomb(
+                                        position=other_player.actor.node.position, 
+                                        bomb_type='tnt'
+                                    ).explode()
                     self.end_game()
         self._score_sound.play()
         self._cheer_sound.play()
-        bs.timer(1.0, self._kill_flag)
+        bs.timer(1.5, self._kill_flag)
         light = bs.newnode(
             'light',
             attrs={
@@ -298,7 +293,7 @@ class FootballTeamGame2(bs.TeamGameActivity[Player, Team]):
             },
         )
         bs.animate(light, 'intensity', {0.0: 0, 0.5: 1, 1.0: 0}, loop=True)
-        bs.timer(1.0, light.delete)
+        bs.timer(1.5, light.delete)
         bs.cameraflash(duration=10.0)
         self._update_scoreboard()
     def end_game(self) -> None:

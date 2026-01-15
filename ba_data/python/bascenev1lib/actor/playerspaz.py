@@ -159,7 +159,7 @@ class PlayerSpaz(Spaz):
             player.assigninput(intp.FLY_RELEASE, self.on_fly_release)
 
         self._connected_to_player = player
-
+       
     def disconnect_controls_from_player(self) -> None:
         """
         Completely sever any previously connected

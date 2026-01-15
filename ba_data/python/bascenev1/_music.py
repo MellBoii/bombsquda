@@ -12,7 +12,7 @@ import bascenev1 as bs
 import babase
 import bauiv1 as bui
 import babase as ba
-import fromgoverhaul.mell_lyriclist as lyrics
+import fromgoverhaul.mell_resources as mell
 
 if TYPE_CHECKING:
     pass
@@ -140,9 +140,6 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
         
         if music_type in excluded_types:
             return
-
-        # Define a list of display names for each type
-        # Here you should put music names and artists.
         music_names = {
             # bs.MusicType.MUSICTYPE: "musictitleandartistmaybe",
             bs.MusicType.TO_THE_DEATH: "Daniel Bautista - Intro",
@@ -239,9 +236,9 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
             bs.MusicType.FEEL_THE_FURY: "Feel The Fury - ThatGuyRamon",
             bs.MusicType.SCARY: "???",
         }
-        # Get the music name from the list above.
+        # Get the music name from the list.
         # If we don't get any, tell the player it's either unknown
-        # or will be added later down the line. Laziness kills the mellboii.
+        # or will be added later down the line. Laziness kills the mellboii. 
         name = music_names.get(music_type, ba.Lstr(resource='npUnknownMusic'))
         if music_type not in music_names:
             print(f'QUICK NOTE: {music_type} is missing from the music popup list.')
@@ -372,7 +369,7 @@ def setmusic(musictype: MusicType | None, continuous: bool = False, show_playing
     # Start lyrics if needed
     if musictype == bs.MusicType.FEEL_THE_FURY:
         lp = LyricPlayer(
-            lyrics.FEEL_THE_FURY,
+            mell.FEEL_THE_FURY,
             loop=True,
             song_length=213,
             offset=-1.20,

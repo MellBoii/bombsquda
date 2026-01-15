@@ -13,6 +13,11 @@ from bascenev1._gameactivity import GameActivity
 import bascenev1 as bs
 import random
 import babase as ba
+import json
+import urllib.request
+import urllib.parse
+# access this if you want; it's a public server!
+SERVER = "https://bombsquda-leaderboard.tailc76b25.ts.net/"
 
 if TYPE_CHECKING:
     from typing import Sequence
@@ -69,17 +74,150 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
             _bascenev1.timer(
                 3.8, babase.WeakCall(self._show_remaining_achievements)
             )
-
+        # set speedrun mode if we should
+        self.speedrun_mode = False
+        self.speedrun_time = 0
+        if ba.app.config.get("squda_speedrunner") == True:
+            self.speedrun_mode = True
+            cfg = ba.app.config
+            # config prefix and stuff
+            self.speedrun_prefix = self._get_coop_level_name() + '_squdaPB'
+            self.personal_best = cfg.get(self.speedrun_prefix)
+            if self.personal_best == None:
+                self.personal_best = 9999
+            self.start_speedrun_timer()
         # Preload achievement images in case we get some.
         _bascenev1.timer(2.0, babase.WeakCall(self._preload_achievements))
         # if they have gambling on, convince them to PROOOBABLY turn it off
-        if ba.app.config.get("gamblingmode", True):
+        if ba.app.config.get("squda_gamblingmode", True):
             if random.random() < 0.2:
                 for player in self.players:
                     if player.actor:
                         bs.timer(8.0, player.actor._activate_roulette, repeat=True)
                         bs.timer(6.0, player.actor._activate_roulette)
                         bs.timer(0.5, player.actor.tellfucked)
+                        
+    # better not to mess around here...
+    def http_post(self, path: str, payload: dict):
+        data = json.dumps(payload).encode()
+        req = urllib.request.Request(
+            SERVER + path,
+            data=data,
+            headers={'Content-Type': 'application/json'}
+        )
+        with urllib.request.urlopen(req, timeout=2) as resp:
+            return json.loads(resp.read().decode())
+    # nor here
+    def http_get(self, path: str):
+        safe_path = urllib.parse.quote(path)
+        with urllib.request.urlopen(SERVER + safe_path, timeout=2) as resp:
+            return json.loads(resp.read().decode())
+
+            
+    def submit_pb(self):
+        payload = {
+            "level": self.speedrun_prefix,
+            "player": self.players[0].getname(),
+            "time": self.speedrun_time
+        }
+        try:
+            self.http_post("/submit", payload)
+            bs.debprint('suuucccccesss!!!!!')
+        except Exception as e:
+            bs.screenmessage("Failed to upload PB.", color=(1, 0, 0))
+            bs.getsound('error')
+            print(f'exception occured while uploading PB: {e}')
+    
+    def fetch_leaderboard(self):
+        try:
+            data = self.http_get(f"/get/{self.speedrun_prefix}")
+            return data
+        except Exception as e:
+            print(f'exception occured while fetching leaderboard: {e}')
+            return {}
+            
+    def format_time(self, t: float) -> str:
+        h = int(t // 3600)
+        m = int((t % 3600) // 60)
+        s = int(t % 60)
+        ms = int((t - int(t)) * 1000)
+        
+        if t == 9999:
+            return "99:99:999"
+        if h > 0:
+            return f"{h:02}:{m:02}:{s:02}:{ms:03}"
+        else:
+            return f"{m:02}:{s:02}:{ms:03}"
+            
+    def start_speedrun_timer(self):
+        # add a lil background to make it nice
+        self.speedrun_timer_bg = bs.newnode(
+            'image', 
+            attrs={
+                'texture': bs.gettexture('black'),
+                'absolute_scale': True,
+                'position': (635, 0),
+                'scale': (450, 150),
+                'attach': 'bottomCenter',
+                'opacity': 0.5,
+                'color': (1, 1, 1),
+            }
+        )
+        # make the timer
+        self.speedrun_timer = bs.newnode(
+            'text',
+            attrs={
+                'v_attach': 'bottom',
+                'h_attach': 'right',
+                'h_align': 'right',
+                'position': (-20, 10),
+                'scale': 1.6,
+                'text': self.format_time(self.speedrun_time),
+            },
+        )
+        # show personal best
+        self.personal_best_text = bs.newnode(
+            'text',
+            attrs={
+                'text': bs.Lstr(
+                    resource='speedrunPB', 
+                    subs=[
+                        ('${TIME}', self.format_time(self.personal_best))
+                    ]
+                ),
+                'v_attach': 'bottom',
+                'h_attach': 'right',
+                'h_align': 'right',
+                'position': (0, 110),
+                'scale': 1.0,
+            },
+        )
+        self.new_record_text = bs.newnode(
+            'text',
+            attrs={
+                'text': bs.Lstr(resource='newRecord'),
+                'v_attach': 'bottom',
+                'h_attach': 'right',
+                'h_align': 'center',
+                'position': (-110, 50),
+                'color': (1, 1, 0),
+                'opacity': 0.0,
+                'scale': 1.1
+            },
+        )
+        # do ticks
+        def tick():
+            self.speedrun_time += 0.01
+            if self.speedrun_timer:
+                self.speedrun_timer.text = self.format_time(self.speedrun_time)
+            if self.speedrun_time == self.personal_best:
+                # if our time got over the PB, scream in agony and
+                # set the timer color to red because we lost the personal best.
+                bs.getsound('playerDeath').play()
+                self.speedrun_timer.color = (1, 0, 0)
+        # ACTUAL timer
+        self.speedrun_timer_tick = bs.Timer(0.001, tick, repeat=True)    
+
 
     # FIXME: this is now redundant with activityutils.getscoreconfig();
     #  need to kill this.
@@ -278,3 +416,32 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
             )
         if self._life_warning_beep is not None and not should_beep:
             self._life_warning_beep = None
+    @override
+    def end(
+        self, results: Any = None, delay: float = 0.0, force: bool = False
+    ) -> None:
+        if self.speedrun_mode:
+            if results and results['outcome'] == 'victory':
+                # Stop the timer and ask if it's a new record.
+                self.speedrun_timer_tick = None
+                is_new_record = self.speedrun_time < self.personal_best
+                # Whoo, got a new record! Let's set the time to 
+                # our config and tell the player they got a new personal best.
+                if is_new_record:
+                    bs.getsound('cashRegister').play()
+                    bs.getsound('ding').play()
+                    self.speedrun_timer.color = (0, 1, 0)
+                    self.personal_best_text.color = (0.7, 0.7, 0.7)
+                    bs.animate_array(self.new_record_text, 'color', 3,
+                        {
+                            0: (1, 1, 0),
+                            0.1: (1, 1, 1),
+                            0.2: (1, 1, 0),
+                        },
+                    loop=True
+                    )
+                    self.new_record_text.opacity = 1.0
+                    cfg = ba.app.config
+                    cfg[self.speedrun_prefix] = self.speedrun_time
+                    self.submit_pb()
+        super().end(results, delay, force)

@@ -516,6 +516,7 @@ class CoopSession(Session):
             # go from there.
             if outcome == 'restart':
                 # This will pop up back in the same round.
+                # THIS IS WHAT RESTARTS THE LEVEL
                 self.setactivity(_bascenev1.newactivity(TransitionActivity))
             else:
                 self.setactivity(

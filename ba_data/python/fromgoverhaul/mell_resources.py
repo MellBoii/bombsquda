@@ -1,3 +1,7 @@
+""" 
+Common-ish resources that are either 
+too long or should be easier to edit here 
+"""
 FEEL_THE_FURY = [
     ("C'mon, bring it!", 12.33),
     ('How are you him? Can you please explain it?', 27.29),
@@ -58,3 +62,6 @@ FEEL_THE_FURY = [
     ('Oh, oh', 201.02),
     ('Can you feel the fury?', 206.45),
 ]
+screams = ['screams/scream' + str(i + 1) + '' for i in range(10)]
+version = '2.1'
+update_date = '1/13/2026'

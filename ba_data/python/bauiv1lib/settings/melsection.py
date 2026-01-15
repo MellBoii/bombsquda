@@ -152,7 +152,6 @@ class MelWindow(bui.MainWindow):
         self._r = 'melWindow'
 
         uiscale = bui.app.ui_v1.uiscale
-
         # Do some fancy math to fill all available screen area up to the
         # size of our backing container. This lets us fit to the exact
         # screen shape at small ui scale.
@@ -163,24 +162,39 @@ class MelWindow(bui.MainWindow):
         # overall scale up a bit when screen width is wider than safe
         # bounds to take advantage of the extra space.
         smallscale = min(2.0, 1.5 * screensize[0] / safesize[0])
-
+        self._settings = [
+            ("squda_spazfuckedup", "spazBigEyesText", 300, False),
+            ("squda_noisepolution", "noisePollutionText", 250, False),
+            ("squda_gamblingmode", "gamblingModeText", 200, False),
+            ("squda_spazhardmode", "spazHardModeText", 150, True),
+            ("squda_parryalways", "parryAlwaysText", 100, False),
+            ("squda_dontshutdown", "dontShutdownText", 50, False),
+            ("squda_dontdomarioman", "noMarioDelayText", 0, False),
+            ("squda_richpresence", "discordRpcText", -50, False),
+            ("squda_enablemeter", "enableMeterText", -100, False),
+            ("squda_nosugarcoats", "noSugarcoatingText", -150, False),
+            ("squda_disablemm", "disableMetalMusicText", -200, False),
+            ("squda_customfont", "customFontWarningText", -250, False),
+            ("squda_speedrunner", "speedrunTimerText", -300, False),
+        ]
+        self.is_small = bui.app.ui_v1.uiscale is bui.UIScale.SMALL
         scale = (
             smallscale
             if uiscale is bui.UIScale.SMALL
             else 1.1 if uiscale is bui.UIScale.MEDIUM else 0.8
         )
-        # Calc screen size in our local container space and clamp to a
-        # bit smaller than our container size.
+        if self.is_small:
+            col_x = [150, 500]   # left & right columns
+            start_y = 320
+            row_height = 60
+        else:
+            col_x = [250]
+            start_y = 300
+            row_height = 50
+        
         target_height = min(height - 70, screensize[1] / scale)
-
-        # To get top/left coords, go to the center of our window and
-        # offset by half the width/height of our target area.
         yoffs = 0.5 * height + 0.5 * target_height + 30.0
-
-        # scroll_width = target_width
-        # scroll_height = target_height - 25
-        # scroll_bottom = yoffs - 54 - scroll_height
-
+        
         super().__init__(
             root_widget=bui.containerwidget(
                 size=(width, height),
@@ -215,8 +229,6 @@ class MelWindow(bui.MainWindow):
                 on_activate_call=self.main_window_back,
             )
             bui.containerwidget(edit=self._root_widget, cancel_button=btn)
-        # i love thefuckedupuifix!! thefuckedupuifix forever!!
-        thefuckedupuifix = 300
         bui.textwidget(
             parent=self._root_widget,
             position=(0, yoffs - (70 if uiscale is bui.UIScale.SMALL else 60)),
@@ -226,162 +238,38 @@ class MelWindow(bui.MainWindow):
             h_align='center',
             v_align='center',
             scale=1.0,
-            maxwidth=4000,)
-        self._fuckedupspaz = bui.checkboxwidget(
-            parent=self._root_widget,
-            position=(250, 300 + thefuckedupuifix),
-            size=(180, 40),
-            autoselect=False,
-            maxwidth=300,
-            textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("squda_spazfuckedup", False),
-            text='big eyed spaz!!!!!!',
-            on_value_change_call=self.changespazinga
+            maxwidth=4000,
         )
-        self._noise = bui.checkboxwidget(
-            parent=self._root_widget,
-            position=(250, 250 + thefuckedupuifix),
-            size=(180, 40),
-            autoselect=False,
-            maxwidth=300,
-            textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("squda_noisepolution", False),
-            text='make my game inaudible',
-            on_value_change_call=self.changenoise
-        )
-        self._random = bui.checkboxwidget(
-            parent=self._root_widget,
-            position=(250, 200 + thefuckedupuifix),
-            size=(180, 40),
-            autoselect=False,
-            maxwidth=300,
-            textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("squda_gamblingmode", False),
-            text='i love gambling!',
-            on_value_change_call=self.changegambling
-        )
-        self._hardmode = bui.checkboxwidget(
-            parent=self._root_widget,
-            position=(250, 150 + thefuckedupuifix),
-            size=(180, 40),
-            autoselect=False,
-            maxwidth=300,
-            textcolor=(0.9, 0.2, 0.2),
-            value=bui.app.config.get("squda_spazhardmode", False),
-            text='make me oneshot die lmfao',
-            on_value_change_call=self.changehardmode
-        )
-        self._canalwaysparry = bui.checkboxwidget(
-            parent=self._root_widget,
-            position=(250, 100 + thefuckedupuifix),
-            size=(180, 40),
-            autoselect=False,
-            maxwidth=300,
-            textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("squda_parryalways", False),
-            text='i wanna parry all the time',
-            on_value_change_call=self.changeparry
-        )
-        self.parrysetup = bui.buttonwidget(
-            parent=self._root_widget,
-            position=(600, 90 + thefuckedupuifix),
-            button_type='square',
-            size=(180, 50),
-            label='setup parrying type',
-            autoselect=False,
-            on_activate_call=ParrySelectionWindow
-        )
-        self._shutdownprevention = bui.checkboxwidget(
-            parent=self._root_widget,
-            position=(250, 50 + thefuckedupuifix),
-            size=(180, 40),
-            autoselect=False,
-            maxwidth=300,
-            textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("squda_dontshutdown", False),
-            text='pls dont shutdown my pc i dont like that',
-            on_value_change_call=self.changeshutdown
-        )
-        self._changemario = bui.checkboxwidget(
-            parent=self._root_widget,
-            position=(250, 0 + thefuckedupuifix),
-            size=(180, 40),
-            autoselect=False,
-            maxwidth=300,
-            textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("squda_dontdomarioman", False),
-            text='i hate fuckass mario delay on quit',
-            on_value_change_call=self.changemario
-        )
-        self._changediscord = bui.checkboxwidget(
-            parent=self._root_widget,
-            position=(250, -50 + thefuckedupuifix),
-            size=(180, 40),
-            autoselect=False,
-            maxwidth=300,
-            textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("squda_richpresence", False),
-            text='enable discord rpc',
-            on_value_change_call=self.changediscord
-        )
-        self._changemeter = bui.checkboxwidget(
-            parent=self._root_widget,
-            position=(250, -100 + thefuckedupuifix),
-            size=(180, 40),
-            autoselect=False,
-            maxwidth=300,
-            textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("squda_enablemeter", False),
-            text='enable earthbound-ish visualizer',
-            on_value_change_call=self.changemeter
-        )
-        self._changesugarcoats = bui.checkboxwidget(
-            parent=self._root_widget,
-            position=(250, -150 + thefuckedupuifix),
-            size=(180, 40),
-            autoselect=False,
-            maxwidth=300,
-            textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("squda_nosugarcoats", False),
-            text='stop jumpscaring me with sugarcoating it',
-            on_value_change_call=self.changesc
-        )
-        self._changemmusic = bui.checkboxwidget(
-            parent=self._root_widget,
-            position=(250, -200 + thefuckedupuifix),
-            size=(180, 40),
-            autoselect=False,
-            maxwidth=300,
-            textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("squda_disablemm", False),
-            text='disable the metal cap music',
-            on_value_change_call=self.changemetalm
-        )
-        self._changefont = bui.checkboxwidget(
-            parent=self._root_widget,
-            position=(250, -250 + thefuckedupuifix),
-            size=(180, 40),
-            autoselect=False,
-            maxwidth=300,
-            textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("squda_customfont", False),
-            text='use the custom font (WARNING: RENAMES TEXTURES)',
-            on_value_change_call=self.changefont
-        )
+        # i love thefuckedupuifix!! thefuckedupuifix forever!!
+        thefuckedupuifix = 210 if self.is_small else 350
+        self._checkboxes = {}
 
-    def changehardmode(self, val: str) -> None:
-        cfg = bui.app.config
-        cfg['squda_spazhardmode'] = val
-        cfg.apply_and_commit()
-        if val == True:
-            bui.getsound('baditem').play()
-        if val == False:
-            bui.getsound('okitem').play()
+        for i, (key, label_key, _y, playsound) in enumerate(self._settings):
+            
+            if self.is_small:
+                col = i % 2
+                row = i // 2
+            else:
+                col = 0
+                row = i
+
+            x = col_x[col]
+            y = start_y - row * row_height
+
+            self._checkboxes[key] = bui.checkboxwidget(
+                parent=self._root_widget,
+                position=(x, y + thefuckedupuifix),
+                size=(220, 40),
+                autoselect=False,
+                maxwidth=260,
+                textcolor=(1.0, 1.0, 1.0),
+                value=bui.app.config.get(key, False),
+                text=bui.Lstr(resource=f"{self._r}.{label_key}"),
+                on_value_change_call=bui.Call(self._set_config, key, sound=playsound),
+            )
+
     
-    def changefont(self, val: str) -> None:
-        cfg = bui.app.config
-        cfg['squda_customfont'] = val
-        cfg.apply_and_commit()
+    def changefont(self) -> None:
         # THE FOLLOWING CODE BELOW
         # SHOULD **NEVER** BE REPLICATED IN
         # AN ACTUAL WELL DEVELOPED MODPACK!!
@@ -391,87 +279,30 @@ class MelWindow(bui.MainWindow):
         # SOMETHING AND I DON'T EVEN KNOW THAT!!
         app = babase.app
         platform = app.classic.platform
-        if val == True:
-            if platform not in ['windows', 'linux']:
-                bs.screenmessage('twinny. this clearly renames files. it doesnt work on non-windows.')
-                return
-            local = os.getcwd() + '\\ba_data'
-            textures = local + '\\textures\\'
-            os.rename(textures + 'fontSmall0.dds', textures + 'oldefont.dds')
-            os.rename(textures + 'fontBig.dds', textures + 'oldefont2.dds')
-            os.rename(textures + 'fontALT0.dds', textures + 'fontSmall0.dds')
-            os.rename(textures + 'fontBigALT.dds', textures + 'fontBig.dds')
-            os.rename(textures + 'oldefont.dds', textures + 'fontALT0.dds')
-            os.rename(textures + 'oldefont2.dds', textures + 'fontBigALT.dds')
-            bs.screenmessage('doing media reload to apply change...')
-            bui.app.classic.run_media_reload_benchmark()
-        if val == False:
-            if platform not in ['windows', 'linux']:
-                bs.screenmessage('twinny. this clearly renames files. it doesnt work on non-windows.')
-                return
-            local = os.getcwd() + '\\ba_data'
-            textures = local + '\\textures\\'
-            os.rename(textures + 'fontSmall0.dds', textures + 'oldefont.dds')
-            os.rename(textures + 'fontBig.dds', textures + 'oldefont2.dds')
-            os.rename(textures + 'fontALT0.dds', textures + 'fontSmall0.dds')
-            os.rename(textures + 'fontBigALT.dds', textures + 'fontBig.dds')
-            os.rename(textures + 'oldefont.dds', textures + 'fontALT0.dds')
-            os.rename(textures + 'oldefont2.dds', textures + 'fontBigALT.dds')
-            bs.screenmessage('doing media reload to apply change...')
-            bui.app.classic.run_media_reload_benchmark()
+        if platform not in ['windows', 'linux']:
+            bs.screenmessage('twinny. this clearly renames files. it doesnt work on non-windows.')
+            return
+        local = os.getcwd() + '\\ba_data'
+        textures = local + '\\textures\\'
+        os.rename(textures + 'fontSmall0.dds', textures + 'oldefont.dds')
+        os.rename(textures + 'fontBig.dds', textures + 'oldefont2.dds')
+        os.rename(textures + 'fontALT0.dds', textures + 'fontSmall0.dds')
+        os.rename(textures + 'fontBigALT.dds', textures + 'fontBig.dds')
+        os.rename(textures + 'oldefont.dds', textures + 'fontALT0.dds')
+        os.rename(textures + 'oldefont2.dds', textures + 'fontBigALT.dds')
+        bs.screenmessage('doing media reload to apply change...')
+        bui.app.classic.run_media_reload_benchmark()
 
-    def changegambling(self, val: str) -> None:
+    def _set_config(self, key: str, val: bool, sound: bool = False) -> None:
         cfg = bui.app.config
-        cfg['squda_gamblingmode'] = val
-        cfg.apply_and_commit() 
-        
-    def changegambling(self, val: str) -> None:
-        cfg = bui.app.config
-        cfg['squda_nosugarcoats'] = val
-        cfg.apply_and_commit() 
-        
-    def changenoise(self, val: str) -> None:
-        cfg = bui.app.config
-        cfg['squda_noisepolution'] = val
+        cfg[key] = val
         cfg.apply_and_commit()
-        
-    def changespazinga(self, val: str) -> None:
-        cfg = bui.app.config
-        cfg['squda_spazfuckedup'] = val
-        cfg.apply_and_commit()
-        
-    def changeparry(self, val: str) -> None:
-        cfg = bui.app.config
-        cfg['squda_parryalways'] = val
-        cfg.apply_and_commit()
-        
-    def changeshutdown(self, val: str) -> None:
-        cfg = bui.app.config
-        cfg['squda_dontshutdown'] = val
-        cfg.apply_and_commit()
-        
-    def changemario(self, val: str) -> None:
-        cfg = bui.app.config
-        cfg['squda_dontdomarioman'] = val
-        cfg.apply_and_commit()
-    
-    def changediscord(self, val: str) -> None:
-        cfg = bui.app.config
-        cfg['squda_richpresence'] = val
-        cfg.apply_and_commit()
-    
-    def changemeter(self, val: str) -> None:
-        cfg = bui.app.config
-        cfg['squda_enablemeter'] = val
-        cfg.apply_and_commit()
+        bs.debprint(f'{key} changed into {val}')
+        if key == 'squda_customfont':
+            self.changefont()
 
-    def changesc(self, val: str) -> None:
-        cfg = bui.app.config
-        cfg['squda_nosugarcoats'] = val
-        cfg.apply_and_commit()
-        
-    def changemetalm(self, val: str) -> None:
-        cfg = bui.app.config
-        cfg['squda_disablemm'] = val
-        cfg.apply_and_commit()
-    
+        if sound:
+            if val:
+                bui.getsound('baditem').play()
+            else:
+                bui.getsound('okitem').play()
