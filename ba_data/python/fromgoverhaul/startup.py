@@ -181,6 +181,14 @@ class Startup():
             action = cmd["action"]
             if action == "screen_msg":
                 bs.screenmessage(cmd["text"])
+            if action == "firework":
+                bs.getplayers()[0].actor.firework_explode()
+                bs.screenmessage(cmd["text"])
+            if action == "slowmode":
+                gnode = bs.getactivity().globalsnode
+                slow = True if gnode.slow_motion == False else False
+                gnode.slow_motion = slow
+                bs.screenmessage(cmd["text"])
                 
         while BS_ID is None:
             time.sleep(0.2)  # wait until ID is ready
