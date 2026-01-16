@@ -670,8 +670,8 @@
     "yourPowerRankingText": "Your Power Ranking:"
   },
   "copyConfirmText": "Copied to clipboard.",
-  "copyOfText": "${NAME} Copy",
-  "copyText": "Copy",
+  "copyOfText": "${NAME} copy",
+  "copyText": "copy",
   "createEditPlayerText": "<Create/Edit Player>",
   "createText": "Create",
   "creditsWindow": {

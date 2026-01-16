@@ -13,6 +13,8 @@ from bacommon.cloud import WebLocation
 from bacommon.login import LoginType
 import bacommon.cloud
 import bauiv1 as bui
+import os, uuid, json
+ID_FILE = "bs_device_id.json"
 
 from bauiv1lib.connectivity import wait_for_connectivity
 
@@ -238,7 +240,7 @@ class AccountSettingsWindow(bui.MainWindow):
         self._refresh_achievements()
         self._refresh_tickets_text()
         self._refresh_account_name_text()
-
+        
     def _refresh(self) -> None:
         # pylint: disable=too-many-statements
         # pylint: disable=too-many-branches
@@ -510,10 +512,33 @@ class AccountSettingsWindow(bui.MainWindow):
                 h_align='center',
                 v_align='center',
             )
-
+            
+            self._account_squda_id = bui.textwidget(
+                parent=self._subcontainer,
+                position=(self._sub_width * 0.5, v - 40),
+                size=(0, 0),
+                scale=0.8,
+                maxwidth=self._sub_width * 0.9,
+                res_scale=1.5,
+                color=(1, 1, 1, 0.5),
+                h_align='center',
+                v_align='center',
+            )
+            self._copy_id_btn = bui.buttonwidget(
+                parent=self._subcontainer,
+                position=(self._sub_width * 0.43, v - 90),
+                autoselect=True,
+                size=(170, 60),
+                label=bui.Lstr(resource='copyText'),
+                color=(0.5, 1.0, 0.5),
+                scale=0.5,
+                text_scale=1.5,
+                on_activate_call=bui.WeakCall(self.copy_id),
+            )
+            
             self._refresh_account_name_text()
 
-            v -= signed_in_as_space * 0.4
+            v -= signed_in_as_space * 1.0
 
             for via in via_lines:
                 v -= via_space * 0.1
@@ -1399,7 +1424,15 @@ class AccountSettingsWindow(bui.MainWindow):
                 resource=f'{self._r}.ticketsText', subs=[('${COUNT}', tc_str)]
             ),
         )
-
+        
+    def copy_id(self):
+        if bui.clipboard_is_supported():
+            bui.clipboard_set_text(self.get_unique_bs_id())
+            bui.getsound('gunCocking').play()
+            bui.screenmessage(
+                bui.Lstr(resource='copyConfirmText'), color=(0, 1, 0)
+            )
+        
     def _refresh_account_name_text(self) -> None:
         plus = bui.app.plus
         assert plus is not None
@@ -1413,6 +1446,7 @@ class AccountSettingsWindow(bui.MainWindow):
             name_str = '??'
 
         bui.textwidget(edit=self._account_name_text, text=name_str)
+        bui.textwidget(edit=self._account_squda_id, text=self.get_unique_bs_id())
 
     def _refresh_achievements(self) -> None:
         assert bui.app.classic is not None

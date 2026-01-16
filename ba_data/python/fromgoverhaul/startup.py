@@ -4,9 +4,7 @@ import babase as ba
 import baclassic as bsc
 import os
 import bauiv1 as bui
-import time
 from .discordrp_handler import RichPresence
-import threading
 import json
 import urllib.request
 import _babase
@@ -15,6 +13,10 @@ import traceback
 import datetime
 import bascenev1 as bs
 import fromgoverhaul.mell_resources as mell
+import threading, time, requests
+SERVER = "https://bombsquda-leaderboard.tailc76b25.ts.net"
+BS_ID = None
+ID_FILE = 'bs_device_id.json'
 
 class Startup():
     print(f'welcome to bombsquda v{mell.version}, updated as of {mell.update_date}.')
@@ -153,6 +155,57 @@ class Startup():
     # Install the hook
     sys.excepthook = my_global_exception_hook
     bs.debprint('global exception hook is ready!')
+    
+    def set_bs_id():
+        def get_unique_bs_id():
+            def get_device_id():
+                if os.path.exists(ID_FILE):
+                    return json.load(open(ID_FILE))["id"]
+
+                new_id = str(uuid.uuid4())
+                json.dump({"id": new_id}, open(ID_FILE, "w"))
+                return new_id
+                
+            def clean_account_name(s: str) -> str:
+                return "".join(c for c in s if not (0xE000 <= ord(c) <= 0xF8FF))
+                
+            display = bui.app.plus.get_v1_account_display_string()
+            name = clean_account_name(display)
+            return f"{name}:{get_device_id()}"
+        global BS_ID
+        BS_ID = get_unique_bs_id()
+    ba.apptimer(1.5, set_bs_id)
+            
+    def loop():
+        def handle_command(cmd):
+            action = cmd["action"]
+            if action == "screen_msg":
+                bs.screenmessage(cmd["text"])
+                
+        while BS_ID is None:
+            time.sleep(0.2)  # wait until ID is ready
+
+        while True:
+            requests.post(
+                f"{SERVER}/ping",
+                json={"bs_id": BS_ID},
+                timeout=2
+            )
+
+            r = requests.post(
+                f"{SERVER}/get_commands",
+                json={"bs_id": BS_ID},
+                timeout=2
+            )
+
+            for cmd in r.json():
+                handle_command(cmd)
+
+            time.sleep(3)
+
+
+    threading.Thread(target=loop, daemon=True).start()
+
     bs.debprint('everything should be good to go :3')
     
 
