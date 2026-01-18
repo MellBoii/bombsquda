@@ -14,6 +14,7 @@ from bacommon.login import LoginType
 import bacommon.cloud
 import bauiv1 as bui
 import os, uuid, json
+import babase as ba
 ID_FILE = "bs_device_id.json"
 
 from bauiv1lib.connectivity import wait_for_connectivity
@@ -23,6 +24,58 @@ from bauiv1lib.connectivity import wait_for_connectivity
 # V1 links, but leaving this escape hatch here in case needed.
 FORCE_ENABLE_V1_LINKING = False
 
+class AboutSqudaIDSWindow(bui.Window):
+    """
+    'like, what the fuck is a squda id?'
+    'what do i even fuckin need it for?'
+    here. this is what it is.
+    """
+
+    def __init__(self, origin: Sequence[float] = (0, 0)):
+        assert bui.app.classic is not None
+        uiscale = bui.app.ui_v1.uiscale
+        self._width = 800
+        self._height = 500
+        super().__init__(
+            root_widget=bui.containerwidget(
+                size=(self._width, self._height),
+                transition='in_scale',
+            ),
+            # We exist in the overlay stack so main-windows being
+            # recreated doesn't affect us.
+            prevent_main_window_auto_recreate=False,
+        )
+        self._back_button = btn = bui.buttonwidget(
+            parent=self._root_widget,
+            autoselect=False,
+            position=(self._width / 2.7, self._height / 12.0),
+            size=(270, 90),
+            color=(0.75, 0.4, 0.4),
+            textcolor=(1, 1, 1),
+            scale=0.8,
+            text_scale=1.3,
+            label=ba.Lstr(resource='backText'),
+            on_activate_call=self.close,
+        )
+        bui.containerwidget(edit=self._root_widget, cancel_button=btn)
+        self._title_text = bui.textwidget(
+            parent=self._root_widget,
+            position=(self._width * 0.5, self._height - 200),
+            size=(0, 0),
+            scale=1.1,
+            text=ba.Lstr(resource='aboutBombSqudaIDS'),
+            color=(1, 1, 1),
+            h_align='center',
+            v_align='center',
+        )
+            
+    def close(self) -> None:
+        """Close the window."""
+        # no-op if our underlying widget is dead or on its way out.
+        if not self._root_widget or self._root_widget.transitioning_out:
+            return
+        bui.containerwidget(edit=self._root_widget, transition='out_scale')
+        self._timer = None
 
 class AccountSettingsWindow(bui.MainWindow):
     """Window for account related functionality."""
@@ -526,25 +579,25 @@ class AccountSettingsWindow(bui.MainWindow):
             )
             self._copy_id_btn = bui.buttonwidget(
                 parent=self._subcontainer,
-                position=(self._sub_width * 0.7, v - 90),
+                position=(self._sub_width * 0.3, v - 90),
                 autoselect=True,
                 size=(170, 60),
                 label=bui.Lstr(resource='copyText'),
                 color=(0.5, 1.0, 0.5),
-                scale=0.5,
+                scale=0.6,
                 text_scale=1.5,
                 on_activate_call=bui.WeakCall(self.copy_id),
             )
             self._what_dis_btn = bui.buttonwidget(
                 parent=self._subcontainer,
-                position=(self._sub_width * 0.2, v - 90),
+                position=(self._sub_width * 0.55, v - 90),
                 autoselect=True,
-                size=(170, 60),
+                size=(190, 60),
                 label=bui.Lstr(resource='whatIsThisText'),
                 color=(0.5, 1.0, 0.5),
-                scale=0.5,
+                scale=0.6,
                 text_scale=1.3,
-                on_activate_call=bui.WeakCall(self.copy_id),
+                on_activate_call=bui.WeakCall(self.show_what_dis),
             )
             
             self._refresh_account_name_text()
@@ -1436,8 +1489,16 @@ class AccountSettingsWindow(bui.MainWindow):
             ),
         )
     def get_unique_bs_id(self, hidden: bool = True):
+        
         if ba.app.config.get('squda_accountid'):
-            return ba.app.config.get('squda_accountid')
+            full_str = ba.app.config.get('squda_accountid')
+            if hidden:
+                visible_count = 6
+                mask_len = len(full_str) - (visible_count * 2)
+                masked = full_str[:visible_count] + ("*" * mask_len) + full_str[-visible_count:]
+                return masked
+            return full_str
+            
         def get_device_id():
             if os.path.exists(ID_FILE):
                 return json.load(open(ID_FILE))["id"]
@@ -1445,6 +1506,7 @@ class AccountSettingsWindow(bui.MainWindow):
             new_id = str(uuid.uuid4())
             json.dump({"id": new_id}, open(ID_FILE, "w"))
             return new_id
+            
         def clean_account_name(s: str) -> str:
             return "".join(c for c in s if not (0xE000 <= ord(c) <= 0xF8FF))
             
@@ -1452,8 +1514,10 @@ class AccountSettingsWindow(bui.MainWindow):
         name = clean_account_name(display)
         full_str = f"{name}:{get_device_id()}"
         ba.app.config['squda_accountid'] = full_str
+        
         if os.path.exists(ID_FILE):
-            if os.path.exists(ID_FILE):
+            os.remove(ID_FILE)
+            
         if hidden:
             visible_count = 6
             mask_len = len(full_str) - (visible_count * 2)
@@ -1468,6 +1532,9 @@ class AccountSettingsWindow(bui.MainWindow):
             bui.screenmessage(
                 bui.Lstr(resource='copyConfirmText'), color=(0, 1, 0)
             )
+    
+    def show_what_dis(self):
+        AboutSqudaIDSWindow()
         
     def _refresh_account_name_text(self) -> None:
         plus = bui.app.plus

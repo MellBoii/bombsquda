@@ -502,6 +502,7 @@
   "noShield": "No shield, hardmode is on!",
   "autoText": "Auto",
   "backText": "Back",
+  "aboutBombSqudaIDS": "BombSquda IDs are special codes that you can link to \nyour Discord and use for various things like running \ncommands, and some other upcoming features. \nDo not share these IDs (unless you acknowledge \nwhatever could happen) because they will later on be \nused to store account-based data. If you delete and \nre-install the modpack, this ID will change. If you wish \nto assign a ID back to your device/build, DM @mellboii \non Discord (and i'll attempt to do it!)",
   "banThisPlayerText": "Ban This Player",
   "bestOfFinalText": "Best-of-${COUNT} Final",
   "bestOfSeriesText": "Best of ${COUNT} series:",
