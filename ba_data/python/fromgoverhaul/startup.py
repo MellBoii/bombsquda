@@ -14,9 +14,11 @@ import datetime
 import bascenev1 as bs
 import fromgoverhaul.mell_resources as mell
 import threading, time, requests
+import uuid
 SERVER = "https://bombsquda-leaderboard.tailc76b25.ts.net"
 BS_ID = None
 ID_FILE = 'bs_device_id.json'
+current_activity = None
 
 class Startup():
     print(f'welcome to bombsquda v{mell.version}, updated as of {mell.update_date}.')
@@ -158,6 +160,8 @@ class Startup():
     
     def set_bs_id():
         def get_unique_bs_id():
+            if ba.app.config.get('squda_accountid'):
+                return ba.app.config.get('squda_accountid')
             def get_device_id():
                 if os.path.exists(ID_FILE):
                     return json.load(open(ID_FILE))["id"]
@@ -171,25 +175,63 @@ class Startup():
                 
             display = bui.app.plus.get_v1_account_display_string()
             name = clean_account_name(display)
-            return f"{name}:{get_device_id()}"
+            full_str = f"{name}:{get_device_id()}"
+            ba.app.config['squda_accountid'] = full_str
+            if os.path.exists(ID_FILE):
+                os.remove(ID_FILE)
+            return full_str
         global BS_ID
         BS_ID = get_unique_bs_id()
     ba.apptimer(1.5, set_bs_id)
-            
+        
     def loop():
+        def run_in_activity(fn):
+            def _wrapped():
+                act = bs.get_foreground_host_activity()
+                if act is None:
+                    return
+                with act.context:
+                    fn(act)
+            ba.pushcall(_wrapped, from_other_thread=True)
+            
+        def cmd_screen_msg(text):
+            bs.screenmessage(text)
+            
+        def cmd_firework(text):
+            def _do(act):
+                if not act.players:
+                    return
+                player = act.players[0]
+                if player.actor:
+                    player.actor.firework_explode()
+                bs.screenmessage(text)
+
+            run_in_activity(_do)
+            
+        def cmd_slowmode(text):
+            def _do(act):
+                gnode = act.globalsnode
+                gnode.slow_motion = not gnode.slow_motion
+                bs.screenmessage(text)
+
+            run_in_activity(_do)
+
+
         def handle_command(cmd):
             action = cmd["action"]
+
             if action == "screen_msg":
-                bs.screenmessage(cmd["text"])
-            if action == "firework":
-                bs.getplayers()[0].actor.firework_explode()
-                bs.screenmessage(cmd["text"])
-            if action == "slowmode":
-                gnode = bs.getactivity().globalsnode
-                slow = True if gnode.slow_motion == False else False
-                gnode.slow_motion = slow
-                bs.screenmessage(cmd["text"])
-                
+                ba.pushcall(
+                    lambda: bs.screenmessage(cmd["text"]),
+                    from_other_thread=True
+                )
+
+            elif action == "firework":
+                cmd_firework(cmd["text"])
+
+            elif action == "slowmode":
+                cmd_slowmode(cmd["text"])
+            
         while BS_ID is None:
             time.sleep(0.2)  # wait until ID is ready
 
@@ -199,7 +241,6 @@ class Startup():
                 json={"bs_id": BS_ID},
                 timeout=2
             )
-
             r = requests.post(
                 f"{SERVER}/get_commands",
                 json={"bs_id": BS_ID},

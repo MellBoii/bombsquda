@@ -526,13 +526,24 @@ class AccountSettingsWindow(bui.MainWindow):
             )
             self._copy_id_btn = bui.buttonwidget(
                 parent=self._subcontainer,
-                position=(self._sub_width * 0.43, v - 90),
+                position=(self._sub_width * 0.7, v - 90),
                 autoselect=True,
                 size=(170, 60),
                 label=bui.Lstr(resource='copyText'),
                 color=(0.5, 1.0, 0.5),
                 scale=0.5,
                 text_scale=1.5,
+                on_activate_call=bui.WeakCall(self.copy_id),
+            )
+            self._what_dis_btn = bui.buttonwidget(
+                parent=self._subcontainer,
+                position=(self._sub_width * 0.2, v - 90),
+                autoselect=True,
+                size=(170, 60),
+                label=bui.Lstr(resource='whatIsThisText'),
+                color=(0.5, 1.0, 0.5),
+                scale=0.5,
+                text_scale=1.3,
                 on_activate_call=bui.WeakCall(self.copy_id),
             )
             
@@ -1424,10 +1435,35 @@ class AccountSettingsWindow(bui.MainWindow):
                 resource=f'{self._r}.ticketsText', subs=[('${COUNT}', tc_str)]
             ),
         )
+    def get_unique_bs_id(self, hidden: bool = True):
+        if ba.app.config.get('squda_accountid'):
+            return ba.app.config.get('squda_accountid')
+        def get_device_id():
+            if os.path.exists(ID_FILE):
+                return json.load(open(ID_FILE))["id"]
+
+            new_id = str(uuid.uuid4())
+            json.dump({"id": new_id}, open(ID_FILE, "w"))
+            return new_id
+        def clean_account_name(s: str) -> str:
+            return "".join(c for c in s if not (0xE000 <= ord(c) <= 0xF8FF))
+            
+        display = bui.app.plus.get_v1_account_display_string()
+        name = clean_account_name(display)
+        full_str = f"{name}:{get_device_id()}"
+        ba.app.config['squda_accountid'] = full_str
+        if os.path.exists(ID_FILE):
+            if os.path.exists(ID_FILE):
+        if hidden:
+            visible_count = 6
+            mask_len = len(full_str) - (visible_count * 2)
+            masked = full_str[:visible_count] + ("*" * mask_len) + full_str[-visible_count:]
+            return masked
+        return full_str
         
     def copy_id(self):
         if bui.clipboard_is_supported():
-            bui.clipboard_set_text(self.get_unique_bs_id())
+            bui.clipboard_set_text(self.get_unique_bs_id(hidden=False))
             bui.getsound('gunCocking').play()
             bui.screenmessage(
                 bui.Lstr(resource='copyConfirmText'), color=(0, 1, 0)
