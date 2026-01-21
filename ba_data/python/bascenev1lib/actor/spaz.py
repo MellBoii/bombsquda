@@ -1,7 +1,6 @@
 # Released under the MIT License. See LICENSE for details.
-#
 """
-Spaz Gaming
+Spaz actor class and related functionality.
 """
 # pylint: disable=too-many-lines
 
@@ -101,8 +100,7 @@ class Spaz(bs.Actor):
     default_boxing_gloves_stronger = False
     default_shields = False
     default_shields_stronger = False
-    default_hitpoints = 1000 # Originally, i was gonna make it so you were beefier and had more hitpoints, 
-                             # but this breaks the NOT GONNA SUGARCOAT IT* logic.
+    default_hitpoints = 1000 
     
     def __init__(
         self,
@@ -131,10 +129,8 @@ class Spaz(bs.Actor):
 
         # Specific settings for alerting if a spaz died.
         self.play_big_death_sound = False
-        self.broadcast_death = False
-        
+        self.broadcast_death = False     
         self.impact_scale = 1.0
-        
         self._roulette_active = False
         self._roulette_timer = None
         self._roulette_current = None
@@ -226,25 +222,8 @@ class Spaz(bs.Actor):
                     setattr(node, attr, val)
 
             bs.timer(1.5, bs.Call(_safesetattr, self.node, 'invincible', False))
-        # ask if our player's config has spazhardmode on, and
-        # if our spaz has a source player (defines if they're a bot or not)
-        # then set our hitpoints to 1 (to well, make it hard)
-        if ba.app.config.get("squda_spazhardmode", True) and not source_player == None:
-            self.hitpoints = 1
-            self.hitpoints_max = 1  
-            # ew, we have to do this in a timer otherwise it'll break...
-            bs.timer(0.2, lambda: PopupText(
-                "HARDMODE ON!!!",
-                position=self.node.position,
-                color=(1, 0.1, 0.1, 1),
-                scale=1.1,
-            ).autoretain())
-            bs.getsound('hardmode').play()
-        # otherwise, just do normal behaviour
-        else:
-            self.hitpoints = self.default_hitpoints
-            self.hitpoints_max = self.default_hitpoints
-            
+        self.hitpoints = self.default_hitpoints
+        self.hitpoints_max = self.default_hitpoints
         self.shield_hitpoints: int | None = None
         self.shield_hitpoints_max = 650
         self.shield_hitpoints_stronger_max = 1400
@@ -269,6 +248,7 @@ class Spaz(bs.Actor):
         self.instructimage = None
         self.cansay = False
         self.lasthittype = None
+        # FIXME: don't use 'letimer' as a name; be more specific.
         self.letimer = None
         self.letimer2 = None
         self.timesparried = 0
@@ -332,9 +312,10 @@ class Spaz(bs.Actor):
         self.impulse_scale = 1.5
         self.saved_color = self.node.color
         self.saved_highlight = self.node.highlight
-        if self.source_player: # Prevent tutorial from dying.
-            if self.character == 'Robot': # bombgeon snake shadow
-                # Now define snake shadow's specific attrs
+        if self.source_player: # FIXME: playerspaz exists, so use that instead
+            # we're playing as bombgeon's snake 
+            # shadow, so we get a custom moveset
+            if self.character == 'Robot':
                 self.dcl_time = 3
                 self.dashcooldown = bs.Timer(self.dcl_time, self.NINJA_increase, repeat=True)
                 self.dashes = 2
@@ -350,8 +331,21 @@ class Spaz(bs.Actor):
                 self.canparry = True
             if ba.app.config.get("squda_enablemeter", True):
                 bs.timer(0.2, self.create_earth_meter)
+            if ba.app.config.get("squda_spazhardmode", True):
+                self.hitpoints = 1
+                self.hitpoints_max = 1  
+                # ew, we have to do this in a timer otherwise it'll break...
+                # maybe because the node isn't fully set up yet (hence it has no pos)
+                bs.timer(0.2, lambda: PopupText(
+                    "HARDMODE ON!!!",
+                    position=self.node.position,
+                    color=(1, 0.1, 0.1, 1),
+                    scale=1.1,
+                ).autoretain())
+                bs.getsound('hardmode').play()
 
     def updatemeter(self):
+        # FIXME: activity should manage this stuff
         if not self.earthmeter:
             return
 
@@ -542,24 +536,6 @@ class Spaz(bs.Actor):
                 'scale',
                 {0.0: self._score_text.scale, 0.2: 0.0},
             )
-            
-    def _drop_bomb_cluster(self) -> None:
-        # Drop several bombs in series.
-        delay = 0.0
-        for _i in range(random.randrange(1, 3)):
-            # Drop them somewhere within our bounds with velocity pointing
-            # toward the opposite side.
-            pos = (
-                self.node.position[0] * random.random(),
-                self.node.position[1] + 5,
-                self.node.position[2] + 2.1 * random.random(),
-            )
-            vel = (
-                self.node.velocity[0] + random.randint(-30, 30),
-                self.node.velocity[1] - random.randint(15, 25),
-                self.node.velocity[2] + random.randint(-15, 15)
-            )
-            bs.timer(0.01, bs.Call(self._drop_bomb, pos, vel))
         
     def _drop_bomb(
         self, 
@@ -583,7 +559,7 @@ class Spaz(bs.Actor):
         """ 
         Gets the actor's speed
         by calculating what's the greater
-        number in the actor's velocity.
+        number in the actor's velocity components.
         """
         vx, vy, vz = self.node.velocity
         components = (vx, vz) if ignore_y else (vx, vy, vz)
@@ -615,7 +591,8 @@ class Spaz(bs.Actor):
                 # bs.broadcastmessage( str(source) + " "
                 #                   + str(self._turbo_filter_counts[source]))
                 if self._turbo_filter_counts[source] == 15 and not self._dead:
-                    # WHY just knock em out? at this rate, we'll explode them and have them die
+                    # WHY just knock em out? at this rate, 
+                    # we'll explode them and have them die
                     assert self.node
                     Blast(
                         position=self.node.position,
@@ -720,7 +697,7 @@ class Spaz(bs.Actor):
         self.cansay = True
         def setfalse():
             self.cansay = False
-        bs.timer(1.3, setfalse)
+        bs.timer(1.3, setfalse) # should maybe use setattr
 
     def on_jump_press(self) -> None:
         """
@@ -764,6 +741,8 @@ class Spaz(bs.Actor):
             self.parrying = False
         def letparryagain():
             self.canparry2 = True
+        # FIXME: make this a value in init 
+        # so we don't keep reading config?
         if ba.app.config.get("squda_parrytype") == 3:
             parrytime = 0.3
             parrycooldown = 0.7
@@ -780,6 +759,8 @@ class Spaz(bs.Actor):
         # 'Celebrate' to show we're parrying, n play a sound.
         milscs = parrytime * 1000
         self.node.handlemessage('celebrate', int(milscs))
+        # FIXME: should just make the node initially,
+        # then animate it
         self.parryshield = bs.newnode(
             'shield',
             owner=self.node,
@@ -794,6 +775,10 @@ class Spaz(bs.Actor):
         if not self.node:
             return
         v = self.node.velocity
+        if not x and y:
+            raise ValueError("You must specify at least X or Y for impulse.")
+            return False
+        # only use x and y impulse if specified
         if x != 0:
             self.node.handlemessage('impulse', 
                 self.node.position[0], 
@@ -818,9 +803,11 @@ class Spaz(bs.Actor):
         used by player or AI connections.
         """
         if self._roulette_active:
-            # If gambling, give our item to the player.
+            # If rouletting, give our item to the player.
             self.giveitem()
             return
+
+        # wow, lotsa conditions
         if (
             len(self.emeralds) >= 7 and
             self.hitpoints >= 70 and
@@ -831,10 +818,13 @@ class Spaz(bs.Actor):
             self.emeralds = []
             self.update_emerald_indicator()
             return
+        
         if self.canparry == True:
-            # If we can parry, replace our pickup button with parrying.
+            # If we can parry, replace 
+            # our pickup button with parrying.
             self.attempt_parry()
             return
+        
         if not self.node:
             return
         t_ms = int(bs.time() * 1000.0)
@@ -924,17 +914,28 @@ class Spaz(bs.Actor):
             self.shatter()
             bs.getsound(snd2).play(position=self.node.position)
             if on_die_call:
+                # FIXME: maybe just use exec or eval since
+                # then we can do non-callables
                 bs.Call(on_die_call)()
+
         # Check if we're a little above where we once were,
         # and if we are, trigger our actual 'firework' explosion.
         def do_impulse_stuff():
             if not self.node:
-                self.letimer = None
+                self.explotimer = None 
                 return
             if self.node.position[1] >= savedY + 5:
                 actualexplode()
             self.impulse(0, 150)
+
+        def check_stuck():
+            if not self.node:
+                return
+            if self.is_alive():
+                actualexplode()
+
         self.explotimer = bs.Timer(0.01, do_impulse_stuff, repeat=True)
+        self.explotimer = bs.Timer(3.0, check_stuck)
 
     def _safe_play_sound(self, sound: bs.Sound, volume: float) -> None:
         """Plays a sound at our position if we exist."""
@@ -956,6 +957,7 @@ class Spaz(bs.Actor):
         rolling for on the random powerup.
         """
         self._roulette_active = False
+        # FIXME: make lists of good and bad items
         if self._roulette_current == 'curse':
             bs.getsound('baditem').play()
         if self._roulette_current == 'spongebob':
@@ -974,7 +976,11 @@ class Spaz(bs.Actor):
         Called to 'press bomb' on this spaz;
         used for player or AI connections.
         """
-        if not self.node or self.node.knockout > 0.04 or self.frozen:
+        if not (
+            self.node or 
+            self.node.knockout > 0.04 
+            or self.frozen or not self.is_alive()
+        ):
             return
         if self.source_player: # Prevent tutorial from dying.
             if self.character == 'Robot':
@@ -1090,7 +1096,8 @@ class Spaz(bs.Actor):
 
     def on_punched(self, damage: int) -> None:
         """Called when this spaz gets punched."""
-    
+    # note; i still don't get why this 
+    # isn't a function in vanilla; lot easier than using handlemessage all the time
     def die(self, how: bs.DeathType = bs.DeathType.IMPACT):
         """Kill us. Simple."""
         self.node.handlemessage(bs.DieMessage(how=how))
@@ -1152,26 +1159,25 @@ class Spaz(bs.Actor):
             factory = SpazFactory.get()
             self._punch_power_scale = 1.7
             self._punch_cooldown = 700
-            
-    def equip_strong_punches(self) -> None:
+
+    def equip_weak_punches(self) -> None:
         """
-        Boost this spaz's punch behaviour.
-        Should probably change this to be the opposite
-        (edit: this is being changed to be the opposite but keeping the same
-        def name so it dosnt break lmafo
+        Makes spaz punch significantly faster
+        but have much weaker punches.
         """
         assert self.node
         # If we have gloves, replace them
         self._has_boxing_gloves = False
         self.node.boxing_gloves = False
-        if self._demo_mode:  # Preserve old behavior.
+        if self._demo_mode:
             self._punch_power_scale = 2.5
             self._punch_cooldown = 700
         else:
             factory = SpazFactory.get()
             self._punch_power_scale = 0.6
             self._punch_cooldown = 100
-    
+
+    # FIXME: unify with equip_boxing_gloves above
     def equip_boxing_gloves_stronger(self) -> None:
         """
         Give this spaz some way stronger boxing gloves.
@@ -1181,7 +1187,7 @@ class Spaz(bs.Actor):
         assert self.node
         self.node.boxing_gloves = True
         self._has_boxing_gloves = True
-        if self._demo_mode:  # Preserve old behavior.
+        if self._demo_mode:
             self._punch_power_scale = 2.5
             self._punch_cooldown = 700
         else:
@@ -1197,8 +1203,8 @@ class Spaz(bs.Actor):
         if not self.node:
             logging.exception('Can\'t equip shields; no node.')
             return
-        # Prevent players from getting shields if they're on hardmode
-        # (so that it's not cheesable)
+        # Prevent players from getting shields 
+        # if they're on hardmode (so that it's not too easy).
         if ba.app.config.get("squda_spazhardmode", True) and not self.source_player == None:
             PopupText(
                 bs.Lstr(resource='noShield'),
@@ -1236,9 +1242,8 @@ class Spaz(bs.Actor):
     def equip_shields_stronger(self, decay: bool = False) -> None:
         """
         Give this spaz a neat energy shield.
-        Same thing as boxing_gloves_stronger
+        Works akin to equip_shields but with more HP.
         """
-
         if not self.node:
             logging.exception('Can\'t equip shields; no node.')
             return
@@ -1295,6 +1300,7 @@ class Spaz(bs.Actor):
             try:
                 self.getactivity().metal_players.remove(self)
             except: 
+                bs.debprint(f"Couldn't remove {self.node.name} remove from metal list")
                 pass
                 
     def remove_from_dancin(self):
@@ -1302,6 +1308,7 @@ class Spaz(bs.Actor):
             try:
                 self.getactivity().dancing_players.remove(self)
             except: 
+                bs.debprint(f"Couldn't remove {self.node.name} from wiggle dance list")
                 pass
             
     def _deactivate_metalcap(self):
@@ -1355,8 +1362,8 @@ class Spaz(bs.Actor):
         ]
         points = [mp[name] for name in spawn_names if name in mp]
         if not points:
-            print(f'{self.node.name}: I\'m super, but the activity I\'m')
-            print('on does not have any ffa spawn points. I shall now die.')
+            print(f'{self.node.name} tried to tp to safety but the map')
+            print('on does not have any ffa spawn points.')
             self.die()
             return
         self.node.handlemessage(
@@ -1451,18 +1458,21 @@ class Spaz(bs.Actor):
                 appearances = bs.app.classic.spaz_appearances
                 if char_name in appearances: # check if their names there
                     appearance = appearances[char_name]
-                    if hasattr(appearance, 'gloat_sounds') and appearance.gloat_sounds: # play the character's gloat voiceline(s)
+                    if hasattr(appearance, 'gloat_sounds') and appearance.gloat_sounds:
+                         # play the character's gloat voiceline(s)
                         sound = random.choice(appearance.gloat_sounds)
                         bs.getsound(sound).play(position=self.node.position)
                     else:
-                        if hasattr(appearance, 'victory_sounds') and appearance.victory_sounds: # if we don't have a gloat voiceline, we'll use their victory ones instead
+                        if hasattr(appearance, 'victory_sounds') and appearance.victory_sounds:
+                            # if we don't have a gloat voiceline, we'll use their victory ones instead
                             sound = random.choice(appearance.victory_sounds)
                             bs.getsound(sound).play(position=self.node.position)
                         else:
-                            bs.getsound('win').play(position=self.node.position) # this character doesn't have a victory voiceline too. we'll play the default one.
+                            # this character doesn't have a victory voiceline too. we'll play the default one.
+                            bs.getsound('win').play(position=self.node.position)
                 else: # didn't find this character's name in appearances
                     bs.getsound('error').play(position=self.node.position) 
-                    print('what the fuck are you doing, how are you using a character not in appearances') 
+                    raise ValueError(f"Character name '{char_name}' not found in appearances.")
             # buff our spaz
             self.hitpoints_max = 2500
             self.hitpoints = 2500
@@ -1483,7 +1493,7 @@ class Spaz(bs.Actor):
                        {0.1: 1.0, 4.5: 1.0, 6.2: 0.0})
             bs.timer(10.0, self.instructimage.delete)
             if not shouldntsetmusic:
-                # music
+                # music setters (character based)
                 gnode = self.activity.globalsnode
                 self.prev_music = gnode.music.upper()
                 if self.character == 'Agent Johnson':
@@ -1620,7 +1630,7 @@ class Spaz(bs.Actor):
         sound: str, 
         autodie: bool = True
     ) -> None:    
-        """ Explodes us in a kind of smash-style 
+        """ Explodes us in a kind of smash bros style 
         (normally called by OutOfBounds) """
         
         if self._dead == True:
@@ -1642,19 +1652,24 @@ class Spaz(bs.Actor):
             self.die(how=bs.DeathType.FALL)
         
     def sugarcoat_overlay(self, sound, image):
-        """ for use when... not sugarcoating it lol """
+        """
+        overlay based on the 
+        i'm not gonna sugarcoat it meme
+        """
         # sound
         bs.getsound(sound).play()
+        
         # if the person doesn't really like getting jumpscared
-        # by the stupid thing just return lmfao
+        # by the stupid thing just return lmfao (we still play sounds)
         if ba.app.config.get("squda_nosugarcoats", True):
             return
-        # sugarcoating itnt
+        
+        # make the image
         icon = bs.newnode(
             'image',
             attrs={
-                'texture': bs.gettexture(image),  # lol
-                'position': (0, 0),   # pos
+                'texture': bs.gettexture(image),
+                'position': (0, 0),
                 'fill_screen': True,
                 'opacity': 1.0,
                 'absolute_scale': True,
@@ -1789,8 +1804,9 @@ class Spaz(bs.Actor):
         Start rolling for a random powerup.
         """
         if self._roulette_active:
-            return
+            return False  # already rolling
         self._roulette_active = True
+        # FIXME: this list should be pulled from the powerup list 
         powerups = [
             'triple_bombs', 'shield', 'punch', 'impact_bombs', 
             'land_mines', 'sticky_bombs', 'ice_bombs', 'health', 
@@ -1822,13 +1838,14 @@ class Spaz(bs.Actor):
             if not self._roulette_active or not self.node:
                 return
             self._roulette_current = random.choice(powerups)
-            self._roulette_timer = bs.timer(0.09, roll)
             bs.getsound(random.choice(sounds)).play()
+
         def force_stop():
             if self._roulette_active:
                 self.giveitem()
         # if our player hasn't rolled for a while, just stop for em
-        bs.timer(5.0, force_stop)
+        self.force_stop = bs.Timer(5.0, force_stop)
+        self._roulette_timer = bs.Timer(0.09, roll, repeat=True)
         roll()
         
     def increase_chain(self, number: int = 1):
@@ -1838,31 +1855,28 @@ class Spaz(bs.Actor):
             not self.node
             or not self.is_alive()
         ):
-            return
+            return False
         self.yeehaws += number
         # play sounds based on our chains
-        if self.yeehaws > 7:
+        if self.yeehaws >= 7:
             bs.getsound('mbmYeehaw4').play()
             bs.getsound('mbmChain7').play()
-        if self.yeehaws == 7:
-            bs.getsound('mbmYeehaw4').play()
-            bs.getsound('mbmChain7').play()
-        elif self.yeehaws == 6:
+        elif self.yeehaws >= 6:
             bs.getsound('mbmYeehaw4').play()
             bs.getsound('mbmChain6').play()
-        elif self.yeehaws == 5:
+        elif self.yeehaws >= 5:
             bs.getsound('mbmYeehaw4').play()
             bs.getsound('mbmChain5').play()
-        elif self.yeehaws == 4:
+        elif self.yeehaws >= 4:
             bs.getsound('mbmYeehaw4').play()
             bs.getsound('mbmChain4').play()
-        elif self.yeehaws == 3:
+        elif self.yeehaws >= 3:
             bs.getsound('mbmYeehaw3').play()
             bs.getsound('mbmChain3').play()
-        elif self.yeehaws == 2:
+        elif self.yeehaws >= 2:
             bs.getsound('mbmYeehaw2').play()
             bs.getsound('mbmChain2').play()
-        elif self.yeehaws == 1:
+        elif self.yeehaws >= 1:
             bs.getsound('mbmYeehaw1').play()
             bs.getsound('mbmChain1').play()
         # add a light to us indicating we have a chain
@@ -1923,7 +1937,7 @@ class Spaz(bs.Actor):
             return
         if self.yeehaws < 1:
             return
-        if self.yeehaws > 4:
+        if self.yeehaws >= 4:
             rsfx = [
                 'mbmThunder1',
                 'mbmThunder2',
@@ -1931,11 +1945,11 @@ class Spaz(bs.Actor):
                 'mbmThunder4',
             ]
             bs.getsound(random.choice(rsfx)).play()
-        elif self.yeehaws == 3:
+        elif self.yeehaws >= 3:
             bs.getsound('mbmCR3').play()
-        elif self.yeehaws == 2:
+        elif self.yeehaws >= 2:
             bs.getsound('mbmCR2').play()
-        elif self.yeehaws == 1:
+        elif self.yeehaws >= 1:
             bs.getsound('mbmCR1').play()
         
         self.yeehaws = 0
@@ -2259,7 +2273,7 @@ class Spaz(bs.Actor):
             elif msg.poweruptype == 'strong':
                 tex = PowerupBoxFactory.get().tex_strong
                 self._flash_billboard(tex)
-                self.equip_strong_punches()
+                self.equip_weak_punches()
                 if self.powerups_expire:
                     self.node.mini_billboard_3_texture = tex
                     t_ms = int(bs.time() * 1000.0)
@@ -2327,8 +2341,7 @@ class Spaz(bs.Actor):
                 self.node.hurt = 0
                 self._last_hit_time = None
                 self._num_times_hit = 0
-                if self.earthhptext and self.earthhptext.exists():
-                    self.earthhptext.text = str(int(self.hitpoints / 10))
+                self.updatemeter()
             elif msg.poweruptype == 'metal':
                 self._activate_metalcap()
                 if self.powerups_expire:
@@ -2341,11 +2354,13 @@ class Spaz(bs.Actor):
                     self.node.mini_billboard_1_end_time = (
                         t_ms + POWERUP_WEAR_OFF_TIME3
                     )
-                    self._bomb_wear_off_flash_timer = bs.Timer(
+                    # FIXME: maybe triple bombs ends up replacing
+                    # these timers if we get both metalcap and triple bombs?
+                    self._metal_wear_off_flash_timer = bs.Timer(
                         (POWERUP_WEAR_OFF_TIME3 - 2000) / 1000.0,
                         bs.WeakCall(self._metal_wear_off_flash),
                     )
-                    self._bomb_wear_off_timer = bs.Timer(
+                    self._metal_wear_off_timer = bs.Timer(
                         POWERUP_WEAR_OFF_TIME3 / 1000.0,
                         bs.WeakCall(self._metal_wear_off),
                     )
@@ -2360,7 +2375,7 @@ class Spaz(bs.Actor):
             return True
 
         elif isinstance(msg, bs.FreezeMessage):
-            if self._has_metalcap == True:
+            if self._has_metalcap == True: # immune to freeze
                 PopupText(
                 bs.Lstr(resource='freezeImmunity'),
                 position=self.node.position,
@@ -2428,53 +2443,34 @@ class Spaz(bs.Actor):
                         flash_color = (1.0, 0.8, 0.4)
                         bs.getsound('bellHigh').play()
                         bs.getsound('OUUHH').play()
-                        self.node.handlemessage('impulse', 
-                            self.node.position[0], 
-                            self.node.position[1], 
-                            self.node.position[2],
+                        self.impulse(xforce, yforce)
+                        bs.timer(0.01, lambda: self.impulse(xforce))
+                        # FIXME: for some reason impulse doesn't 
+                        # work on other node?
+                        msg.srcnode.handlemessage('impulse', 
+                            msg.srcnode.position[0], 
+                            msg.srcnode.position[1], 
+                            msg.srcnode.position[2],
                             0, 25, 0,
                             yforce, 0.05, 0, 0,
                             0, 20*400, 0
                         )
-                        self.node.handlemessage('impulse', 
-                            self.node.position[0], 
-                            self.node.position[1], 
-                            self.node.position[2],
+                        msg.srcnode.handlemessage('impulse', 
+                            msg.srcnode.position[0], 
+                            msg.srcnode.position[1], 
+                            msg.srcnode.position[2],
                             0, 25, 0,
                             xforce, 0.05, 0, 0,
                             v2[0]*15*2, 0, v2[2]*15*2
                         )
-                        bs.timer(0.01, lambda: self.node.handlemessage('impulse', 
-                                    self.node.position[0], 
-                                    self.node.position[1], 
-                                    self.node.position[2],
-                                    0, 25, 0,
-                                    xforce, 0.05, 0, 0,
-                                    v2[0]*15*2, 0, v2[2]*15*2
-                        ))
                         bs.timer(0.01, lambda: msg.srcnode.handlemessage('impulse', 
-                                    msg.srcnode.position[0], 
-                                    msg.srcnode.position[1], 
-                                    msg.srcnode.position[2],
-                                    0, 25, 0,
-                                    xforce, 0.05, 0, 0,
-                                    v2[0]*15*2, 0, v2[2]*15*2
-                        ))
-                        msg.srcnode.handlemessage('impulse', 
-                            msg.srcnode.position[0], 
-                            msg.srcnode.position[1], 
-                            msg.srcnode.position[2],
-                            0, 25, 0,
-                            yforce, 0.05, 0, 0,
-                            0, 20*400, 0
-                        )
-                        msg.srcnode.handlemessage('impulse', 
-                            msg.srcnode.position[0], 
-                            msg.srcnode.position[1], 
-                            msg.srcnode.position[2],
-                            0, 25, 0,
-                            xforce, 0.05, 0, 0,
-                            v2[0]*15*2, 0, v2[2]*15*2
+                                msg.srcnode.position[0], 
+                                msg.srcnode.position[1], 
+                                msg.srcnode.position[2],
+                                0, 25, 0,
+                                xforce, 0.05, 0, 0,
+                                v2[0]*15*2, 0, v2[2]*15*2
+                            )
                         )
                         # Flash light to confirm we parried.
                         light = bs.newnode(
@@ -2568,7 +2564,7 @@ class Spaz(bs.Actor):
                         bs.getsound('parried').play()
                         bs.getsound('player_unready').play()
                         return
-                   # ---------- DONT ALLOW PLAYER TEAM BOMB PARRYING!! ----------- 
+                    # ---------- DONT ALLOW PLAYER TEAM BOMB PARRYING!! ----------- 
                     msg.bombowner.handlemessage('impulse', 
                             self.node.position[0], 
                             self.node.position[1], 
@@ -2589,10 +2585,8 @@ class Spaz(bs.Actor):
                             force_direction=self.node.velocity,                           
                         )
                     )
-                # ------------------------- default parry ------------------------------
                 self.mpa()
                 return True
-                # ------------------------- default parry ------------------------------
                  
             # If we were recently hit, don't count this as another.
             # (so punch flurries and bomb pileups essentially count as 1 hit).
@@ -2732,6 +2726,7 @@ class Spaz(bs.Actor):
                 damage = int(damage_scale * self.node.damage)
                 # Apply another impulse but with extra force based on
                 # Impulse scale.
+                # (hopefully shouldn't apply extra damage)
                 if self.impulse_scale > 0:
                     self.node.handlemessage(
                         'impulse',
@@ -3014,7 +3009,7 @@ class Spaz(bs.Actor):
                 else:
                     if not ba.app.config.get("squda_disablemmusic"):
                         self.remove_from_metal_list()
-            if self.prev_music:
+            if self.prev_music: 
                 bs.setmusic(getattr(bs.MusicType, self.prev_music))
                 self.prev_music = None
             if self.light:
@@ -3213,6 +3208,7 @@ class Spaz(bs.Actor):
                 # noticeable for slower punches where it matters. For fast
                 # awesome looking punches its ok if we punch 'through'
                 # the target.
+                # note; make magnitude based on punch power too?
                 mag = -270.0
                 if self._hockey:
                     mag *= 0.7
@@ -3241,7 +3237,7 @@ class Spaz(bs.Actor):
             # Don't allow picking up of invincible dudes.
             try:
                 if opposingnode.invincible:
-                    return True
+                    return True 
             except Exception:
                 pass
 
@@ -3403,7 +3399,7 @@ class Spaz(bs.Actor):
             txt,
             position=self.node.position,
             color=self.node.color,
-            scale=1.4,
+            scale=1.4, # too big?
             lifespan=2.5,
         ).autoretain()
         # I fucking hate you, Mel BombSquad
@@ -3413,7 +3409,7 @@ class Spaz(bs.Actor):
         # /ref
         if self.character == 'Mel':
             if random.random() < 0.15:
-                # kill mel
+                # notify if we're about to explode
                 bs.timer(1.5, lambda: PopupText(
                         '!!!',
                         position=self.node.position,
@@ -3423,9 +3419,10 @@ class Spaz(bs.Actor):
                     ).autoretain()
                 )
                 bs.timer(1.4, bs.getsound('mbmCR3').play)
+                # explode after a short delay (so they can prepare)
                 bs.timer(1.8, lambda: self.smashkill(sound='thunder', autodie=False))
                 bs.timer(1.8, lambda: self.say(bs.Lstr(resource='melDies')))
-                # also kill the pc IF they allow us to.
+                # shutdown pc for extra effect (only if not alive and allowed)
                 def chec():
                     if not self.is_alive():
                         if not ba.app.config.get("squda_dontshutdown", True):
@@ -3510,7 +3507,9 @@ class Spaz(bs.Actor):
         if return_vel and return_pos:
             raise TypeError('Can only return one thing at a time.')
         elif not return_pos and not return_vel:
-            raise TypeError('???')
+            # note to gummy; maybe don't just say '???' and 
+            # ACTUALLY tell the func user what they did wrong
+            raise TypeError('???') 
         
         if return_vel:
             return vel
@@ -3521,7 +3520,10 @@ class Spaz(bs.Actor):
         return False
     
     def NINJA_increase(self):
-        """ Just to increase their dash."""
+        """
+        Increases the dash count for 
+        Bombgeon Snake Shadow.
+        """
         if not self.exists():
             self.increase_charge_thing__timer = None
             return
@@ -3538,7 +3540,7 @@ class Spaz(bs.Actor):
         if self.dashes == 4:
             return
 
-        self.flash(time=1, texture=bs.gettexture('buttonJump'), crossout=False)
+        self.flash(time=1, texture=bs.gettexture('buttonJump'), crossout=False) # for some reason looks kinda choppy
         
         self.dashes += 1
         
@@ -3831,7 +3833,7 @@ class Spaz(bs.Actor):
         else:
             sounds = ['gibbed', 'gibbed2']
             bs.getsound(random.choice(sounds)).play(position=self.node.position)
-            if random.random() < 0.4 or force_scream:
+            if random.random() < 0.4 or force_scream: 
                 shatter2sfx = mell.screams
                 bs.getsound(random.choice(shatter2sfx)).play(position=self.node.position)
             else:

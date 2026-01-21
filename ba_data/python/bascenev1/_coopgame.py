@@ -16,7 +16,7 @@ import babase as ba
 import json
 import urllib.request
 import urllib.parse
-# access this if you want; it's a public server!
+# FIXME: add to mell_resources later (and all other refences to this)
 SERVER = "https://bombsquda-leaderboard.tailc76b25.ts.net/"
 
 if TYPE_CHECKING:
@@ -86,6 +86,7 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
             if self.personal_best == None:
                 self.personal_best = 9999
             self.start_speedrun_timer()
+
         # Preload achievement images in case we get some.
         _bascenev1.timer(2.0, babase.WeakCall(self._preload_achievements))
         # if they have gambling on, convince them to PROOOBABLY turn it off
@@ -122,7 +123,7 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
         }
         try:
             self.http_post("/submit", payload)
-            bs.debprint('suuucccccesss!!!!!')
+            bs.debprint('personal best uploaded successfully')
         except Exception as e:
             bs.screenmessage("Failed to upload PB.", color=(1, 0, 0))
             bs.getsound('error')
@@ -143,7 +144,7 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
         ms = int((t - int(t)) * 1000)
         
         if t == 9999:
-            return "99:99:999"
+            return "99:99:999" # ???
         if h > 0:
             return f"{h:02}:{m:02}:{s:02}:{ms:03}"
         else:
@@ -216,6 +217,7 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
                 bs.getsound('playerDeath').play()
                 self.speedrun_timer.color = (1, 0, 0)
         # ACTUAL timer
+        # FIXME: use bs.time and some calcs for accuracy instead of this jank
         self.speedrun_timer_tick = bs.Timer(0.001, tick, repeat=True)    
 
 
@@ -443,5 +445,7 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
                     self.new_record_text.opacity = 1.0
                     cfg = ba.app.config
                     cfg[self.speedrun_prefix] = self.speedrun_time
+                    # note; since we save to config, we should also
+                    # schedule uploads for later if it fails here.
                     self.submit_pb()
         super().end(results, delay, force)

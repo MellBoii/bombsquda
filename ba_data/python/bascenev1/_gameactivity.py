@@ -101,6 +101,7 @@ class EmeraldActor(bs.Actor):
         counts = {e: 0 for e in all_types}
 
         # Count emeralds from *all* spazzes in the activity
+        # (not just players; bots too)
         for node in bs.getnodes():
             actor = node.getdelegate(Spaz)
             
@@ -131,9 +132,10 @@ class EmeraldActor(bs.Actor):
 
     
     def _handle_hit(self, msg: bs.HitMessage) -> None:
-        if msg.hit_type == 'explosion':
+        if msg.hit_type == 'explosion': # exploded? just die
             bs.debprint(f'{self} was hit by a explosion, so it will die now')
             self.scheduled_die_message()
+        # likely hit by a punch; apply impulse
         self.node.handlemessage(
             'impulse',
             msg.pos[0],
@@ -178,7 +180,7 @@ class EmeraldActor(bs.Actor):
                 bs.debprint(f'{self}: A spaz touched us, so we\'re gonna die.')
                 from bascenev1lib.actor.spaz import EmeraldMessage
                 toucher.handlemessage(EmeraldMessage(self.texname))
-                if not actor.issuper:
+                if not actor.issuper: # FIXME: make the spaz tell us if we should die?
                     self.handlemessage(bs.DieMessage())
         elif isinstance(msg, bs.OutOfBoundsMessage):
             self.handlemessage(bs.DieMessage(immediate=True))
@@ -860,12 +862,17 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
             ]
             points = [mp[name] for name in spawn_names if name in mp]
             spawn = random.choice(points)
-            pos = spawn[:3]
+            # FIXME: usually spawn is a box, 
+            # so why spawn at pos[0],pos[1],pos[2]?
+            # this also forces us to add a bit to y 
+            # to get it above the ground >:/
+            pos = spawn[:3] 
             self.new_emerald = EmeraldActor(
                 (pos[0], pos[1] + 2, pos[2])
             )
             self.emeralds.append(self.new_emerald)
-
+            
+    # FIXME: unify this and metal_tick
     def dance_tick(self):
         """
         tick for wiggle dance
