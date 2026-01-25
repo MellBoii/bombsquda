@@ -15,10 +15,20 @@ import bascenev1 as bs
 import fromgoverhaul.mell_resources as mell
 import threading, time, requests
 import uuid
-SERVER = "https://bombsquda-leaderboard.tailc76b25.ts.net"
+from efro.util import strip_exception_tracebacks
+SERVER = mell.server
 BS_ID = None
 ID_FILE = 'bs_device_id.json'
 current_activity = None
+
+class stupid_attribute_holder:
+    # basically we're gonna tell this 
+    # fucker "here hold these attributes"
+    def __init__(self):
+        self._connection_failed_logged = False
+        self._connection_success_logged = False
+    def __dict__(self):
+        return {}
 
 class Startup():
     print(f'welcome to bombsquda v{mell.version}, updated as of {mell.update_date}.')
@@ -183,8 +193,11 @@ class Startup():
         global BS_ID
         BS_ID = get_unique_bs_id()
     ba.apptimer(1.5, set_bs_id)
-        
+
     def loop():
+        session = requests.Session()
+        session.timeout = 2
+        loopt = stupid_attribute_holder()
         def run_in_activity(fn):
             def _wrapped():
                 act = bs.get_foreground_host_activity()
@@ -236,21 +249,35 @@ class Startup():
             time.sleep(0.2)  # wait until ID is ready
 
         while True:
-            requests.post(
-                f"{SERVER}/ping",
-                json={"bs_id": BS_ID},
-                timeout=2
-            )
-            r = requests.post(
-                f"{SERVER}/get_commands",
-                json={"bs_id": BS_ID},
-                timeout=2
-            )
+            try:
+                session.post(
+                    f"{SERVER}/ping",
+                    json={"bs_id": BS_ID}
+                )
+                r = session.post(
+                    f"{SERVER}/get_commands",
+                    json={"bs_id": BS_ID}
+                )
 
-            for cmd in r.json():
-                handle_command(cmd)
-
-            time.sleep(3)
+                for cmd in r.json():
+                    handle_command(cmd)
+                if not loopt._connection_success_logged:
+                    print('Connection to the BombSquda server established successfully.')
+                    loopt._connection_success_logged = True
+                time.sleep(3)
+            except requests.exceptions.RequestException as e:
+                bs.debprint(f"Server connection failed: {e}")
+                if not loopt._connection_failed_logged:
+                    print(
+                        (
+                            'WARNING: Connection to the BombSquda server failed.\nThings like '
+                            'uploading personal bests, getting commands from Discord and such will not work.'
+                            '\nThis could be due to network issues or the server being offline.'
+                        )
+                    )
+                    loopt._connection_failed_logged = True
+                strip_exception_tracebacks(e)
+                time.sleep(10)
 
 
     threading.Thread(target=loop, daemon=True).start()

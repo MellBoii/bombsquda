@@ -86,8 +86,8 @@ ASSET_SOUNDTRACK_ENTRIES: dict[MusicType, AssetSoundtrackEntry] = {
     MusicType.KEEP_AWAY2: AssetSoundtrackEntry('music/keepAway2', volume=1.0),
     MusicType.RACE: AssetSoundtrackEntry('music/raceMusic', volume=1.0),
     MusicType.GAMBLING: AssetSoundtrackEntry('music/gamblingMusic', volume=1.0),
-    MusicType.CUTSCENE1: AssetSoundtrackEntry('music/cutscene1'),
-    MusicType.CUTSCENE2: AssetSoundtrackEntry('music/cutscene2'),
+    MusicType.CUTSCENE1: AssetSoundtrackEntry('music/cutscene1', loop=False),
+    MusicType.CUTSCENE2: AssetSoundtrackEntry('music/cutscene2', loop=False),
     MusicType.EPIC_RACE: AssetSoundtrackEntry('music/slowRaceMusic', volume=1.0),
     MusicType.SCORES: AssetSoundtrackEntry(
         'music/scoresEpicMusic', volume=1.0, loop=True

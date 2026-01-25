@@ -147,6 +147,7 @@ class DevConsoleSubsystem:
             DevConsoleTabUI,
             DevConsoleTabLogging,
             DevConsoleTabTest,
+            BombSqudaUtilsTab,
         )
 
         #: All tabs in the dev-console. Add your own stuff here via
@@ -156,6 +157,7 @@ class DevConsoleSubsystem:
             DevConsoleTabEntry('AppModes', DevConsoleTabAppModes),
             DevConsoleTabEntry('UI', DevConsoleTabUI),
             DevConsoleTabEntry('Logging', DevConsoleTabLogging),
+            DevConsoleTabEntry('BombSquda', BombSqudaUtilsTab),
         ]
         if os.environ.get('BA_DEV_CONSOLE_TEST_TAB', '0') == '1':
             self.tabs.append(DevConsoleTabEntry('Test', DevConsoleTabTest))

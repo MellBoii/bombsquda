@@ -10,14 +10,14 @@ import babase
 
 import _bascenev1
 from bascenev1._gameactivity import GameActivity
+import fromgoverhaul.mell_resources as mell
 import bascenev1 as bs
 import random
 import babase as ba
 import json
 import urllib.request
 import urllib.parse
-# FIXME: add to mell_resources later (and all other refences to this)
-SERVER = "https://bombsquda-leaderboard.tailc76b25.ts.net/"
+SERVER = mell.server
 
 if TYPE_CHECKING:
     from typing import Sequence
@@ -124,9 +124,10 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
         try:
             self.http_post("/submit", payload)
             bs.debprint('personal best uploaded successfully')
+            bs.getsound('dingSmall').play()
         except Exception as e:
             bs.screenmessage("Failed to upload PB.", color=(1, 0, 0))
-            bs.getsound('error')
+            bs.getsound('error').play()
             print(f'exception occured while uploading PB: {e}')
     
     def fetch_leaderboard(self):

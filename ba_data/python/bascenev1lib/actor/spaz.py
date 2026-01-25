@@ -165,6 +165,10 @@ class Spaz(bs.Actor):
         self.issuper = False
         self.dashing = False
         self.prev_music = None
+        self.force_stop_timer = None
+        self.explotimer = None
+        self.wiggledancetimer = None
+        self.parryshield = None
 
         if can_accept_powerups:
             pam = PowerupBoxFactory.get().powerup_accept_material
@@ -510,6 +514,51 @@ class Spaz(bs.Actor):
         self.pick_up_powerup_callback = None
         self.sparkies = None
         self.super_flash = None
+
+        # Clean up timers to prevent leaks
+        timers_to_clear = [
+            self.shield_decay_timer,
+            self._boxing_gloves_wear_off_timer,
+            self._boxing_gloves_wear_off_flash_timer,
+            self._bomb_wear_off_timer,
+            self._bomb_wear_off_flash_timer,
+            self._multi_bomb_wear_off_timer,
+            self._multi_bomb_wear_off_flash_timer,
+            self._curse_timer,
+            self._score_text_hide_timer,
+            self._roulette_timer,
+            self.force_stop_timer,
+            self.letimer,
+            self.letimer2,
+            self.explotimer,
+            self.wiggledancetimer,
+            self._flash_timer,
+            self.spongebob_timer,
+            getattr(self, 'dashcooldown', None),
+            getattr(self, 'pasheal_timer', None),
+        ]
+        for timer in timers_to_clear:
+            if timer is not None:
+                timer = None
+
+        # Clean up nodes
+        nodes_to_delete = [
+            self.shield,
+            self._score_text,
+            self.emeralds_indicator,
+            self.earthchar,
+            self.earthmeter,
+            self.earthmetertext,
+            self.earthsptext,
+            self.earthhptext,
+            self.light,
+            self.yeehaw_text,
+            self.parryshield,
+            self.instructimage,
+        ]
+        for node in nodes_to_delete:
+            if node is not None and node.exists():
+                node.delete()
 
     def add_dropped_bomb_callback(
         self, call: Callable[[Spaz, bs.Actor], Any]
@@ -1844,7 +1893,7 @@ class Spaz(bs.Actor):
             if self._roulette_active:
                 self.giveitem()
         # if our player hasn't rolled for a while, just stop for em
-        self.force_stop = bs.Timer(5.0, force_stop)
+        self.force_stop_timer = bs.Timer(5.0, force_stop)
         self._roulette_timer = bs.Timer(0.09, roll, repeat=True)
         roll()
         

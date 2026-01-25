@@ -4,6 +4,7 @@ import socket
 import struct
 import sys
 import bascenev1
+import bascenev1 as bs # double import, but oh well
 
 from abc import ABC, abstractmethod
 from enum import IntEnum
@@ -90,7 +91,11 @@ class Presence:
         self._send(payload, _OpCode.FRAME)
 
         # Check for errors
-        reply = self._read()
+        try:
+            reply = self._read()
+        except AttributeError:
+            bs.debprint('Discord RPC socket has no buffer; cannot read data from it.')
+            return
         if reply.get("evt") != "ERROR":
             return
 
@@ -124,8 +129,16 @@ class Presence:
 
     def _handshake(self) -> None:
         self._send({"v": 1, "client_id": self.client_id}, _OpCode.HANDSHAKE)
-        payload = self._read()
-
+        try:
+            payload = self._read()
+        except AttributeError:
+            bs.debprint('Discord RPC socket has no buffer; cannot read data from it.')
+            payload = None
+            return
+        
+        if payload is None:
+            return
+        
         if payload.get("evt") != "READY":
             if payload["code"] == INVALID_PAYLOAD:
                 raise ClientIDError()
@@ -256,8 +269,11 @@ class _WindowsSocket(_Socket):
         return self._buffer.read(size)
 
     def _write(self, data: bytes) -> None:
-        self._buffer.write(data)
-        self._buffer.flush()
+        try:
+            self._buffer.write(data)
+            self._buffer.flush()
+        except AttributeError:
+            bs.debprint('Discord IPC socket has no buffer; cannot write data to it.')
 
     def _close(self) -> None:
         self._buffer.close()

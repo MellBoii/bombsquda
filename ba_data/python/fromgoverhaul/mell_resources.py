@@ -63,5 +63,6 @@ FEEL_THE_FURY = [
     ('Can you feel the fury?', 206.45),
 ]
 screams = ['screams/scream' + str(i + 1) + '' for i in range(10)]
+server = "https://bombsquda-leaderboard.tailc76b25.ts.net"
 version = '2.1'
 update_date = '1/13/2026'

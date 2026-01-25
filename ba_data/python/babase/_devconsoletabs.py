@@ -10,6 +10,10 @@ from functools import partial
 from typing import TYPE_CHECKING, override
 
 import _babase
+import babase as ba
+import urllib.request
+import threading, time, requests
+import fromgoverhaul.mell_resources as mellres
 
 from babase._logging import description_for_logger
 from babase._devconsole import DevConsoleTab
@@ -112,6 +116,83 @@ class DevConsoleTabAppModes(DevConsoleTab):
         _babase.apptimer(0.1, self.request_refresh)
 
 
+class BombSqudaUtilsTab(DevConsoleTab):
+    """Tab to debug/test stuff related to the modpack."""
+
+    @override
+    def refresh(self) -> None:
+        debug_prints = ba.app.config.get('squda_debugprints')
+        xoff = 140
+        self.text(
+            'This tab allows you to debug some info that might be useful.',
+            scale=0.8,
+            pos=(self.width * -0.2, 100),
+            h_align='left',
+            v_align='center',
+        )
+        self.button(
+            'Debug Prints: ON' if debug_prints else 'Debug Prints: OFF',
+            pos=(self.width * -0.1 + xoff, 15), 
+            size=(200, 40),
+            label_scale=0.8,
+            call=self.toggle_debug_prints,
+            style='bright' if debug_prints else 'normal',
+        )
+        self.button(
+            'Ping Server',
+            pos=(self.width * -0.3 + xoff, 15), 
+            size=(200, 40),
+            label_scale=0.8,
+            call=self.test_server,
+            style='normal',
+        )
+
+    def toggle_debug_prints(self) -> None:
+        ba.app.config['squda_debugprints'] = not ba.app.config.get(
+            'squda_debugprints', False
+        )
+        ba.app.config.commit()
+        global debug_prints
+        debug_prints = ba.app.config['squda_debugprints']
+        self.request_refresh()
+
+    def test_server(self):
+        import bascenev1 as bs
+        def get_unique_bs_id():
+            if ba.app.config.get('squda_accountid'):
+                return ba.app.config.get('squda_accountid')
+            def get_device_id():
+                if os.path.exists(ID_FILE):
+                    return json.load(open(ID_FILE))["id"]
+
+                new_id = str(uuid.uuid4())
+                json.dump({"id": new_id}, open(ID_FILE, "w"))
+                return new_id
+                
+            def clean_account_name(s: str) -> str:
+                return "".join(c for c in s if not (0xE000 <= ord(c) <= 0xF8FF))
+                
+            display = bui.app.plus.get_v1_account_display_string()
+            name = clean_account_name(display)
+            full_str = f"{name}:{get_device_id()}"
+            ba.app.config['squda_accountid'] = full_str
+            if os.path.exists(ID_FILE):
+                os.remove(ID_FILE)
+            return full_str
+        BS_ID = get_unique_bs_id()
+        try:
+            session = requests.Session()
+            session.timeout = 2
+            poster = session.post(
+                f"{mellres.server}/ping",
+                json={"bs_id": BS_ID}
+            )
+            latency = response.elapsed.total_seconds()
+            bs.screenmessage(f'Connection was a success!\nLatency = {latency}')
+        except requests.exceptions.RequestException as e:
+            bs.screenmessage(f'Connection failed. See console for more details.')
+            print(e)
+
 class DevConsoleTabUI(DevConsoleTab):
     """Tab to debug/test UI stuff."""
 
@@ -135,7 +216,7 @@ class DevConsoleTabUI(DevConsoleTab):
         self.button(
             'Virtual Safe Area ON' if ui_overlay else 'Virtual Safe Area OFF',
             pos=(xoffs + 10, yoffs + 10),
-            size=(200, 30),
+            size=(200, 70),
             label_scale=0.6,
             call=self.toggle_ui_overlay,
             style='bright' if ui_overlay else 'normal',
@@ -171,7 +252,6 @@ class DevConsoleTabUI(DevConsoleTab):
             not _babase.get_draw_virtual_safe_area_bounds()
         )
         self.request_refresh()
-
 
 class Table[T]:
     """Used to show controls for arbitrarily large data in a grid form."""
