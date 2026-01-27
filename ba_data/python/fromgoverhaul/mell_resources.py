@@ -1,7 +1,9 @@
 """ 
 Common-ish resources that are either 
-too long or should be easier to edit here 
+too long or should be easier to edit here.
+It has stuff like lyrics, the server address, and such.
 """
+# Lyrics for Feel The Fury
 FEEL_THE_FURY = [
     ("C'mon, bring it!", 12.33),
     ('How are you him? Can you please explain it?', 27.29),

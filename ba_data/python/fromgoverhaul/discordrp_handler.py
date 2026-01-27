@@ -1,6 +1,34 @@
-# Discord RPC handling or something
-# idk im not a discorderdeveoloper
-# again thanks to gummy for the peak code
+"""
+discordrp_handler.py
+This module provides integration with Discord Rich Presence for the BombSquad game,
+allowing the game to update the player's Discord status based on their in-game activity.
+Classes:
+    RichPresence:
+        Handles the connection to Discord Rich Presence and updates the player's status
+        according to the current game state (menu, gameplay, online, replay, credits, etc.).
+        Attributes:
+            presence (Presence): The Discord Presence object for communication.
+            mode (str): The current mode/state of the game (e.g., 'menu', 'gameplay').
+            _r (str): Internal label for Rich Presence.
+            starting_time (int): Timestamp when the current mode started.
+            map (str or None): The current map name.
+            last_mode (str or None): The previous mode/state.
+        Methods:
+            __init__():
+                Initializes the RichPresence object and starts the update timer.
+            update():
+                Updates the Discord Rich Presence status based on the current game state.
+                Handles different modes such as menu, gameplay, online, replay, credits, etc.
+                Sets appropriate details, images, timestamps, and party information.
+            check():
+                Checks the current game state and updates the mode accordingly.
+                Resets the starting time when the mode changes.
+                Schedules the next update.
+Globals:
+    portal_id (str): The Discord application ID for Rich Presence.
+    maps (dict): A mapping from in-game map names to their corresponding image keys for Discord.
+"""
+
 import time
 from fromgoverhaul.discordrp_folder import Presence
 import babase

@@ -672,7 +672,7 @@ class Blast(bs.Actor):
             },
         )
         if self.blast_type == 'ice':
-            scorch.color = (1, 1, 1.5)
+            scorch.color = (0.4, 0.9, 1.8)
 
         bs.animate(scorch, 'presence', {3.000: 1, 13.000: 0})
         bs.timer(13.0, scorch.delete)
