@@ -1507,7 +1507,8 @@
     "noSugarcoatingText": "stop jumpscaring me with sugarcoating it",
     "disableMetalMusicText": "disable the metal cap music",
     "customFontWarningText": "use the custom font (WARNING: RENAMES TEXTURES)",
-    "speedrunTimerText": "speedrun timer in coop levels"
+    "speedrunTimerText": "speedrun timer in coop levels",
+    "enableBloodText": "enable blood (not hyperrealistic)"
   },
   "SURVEYWindow": {
     "titleText": "SURVEY PROGRAM"

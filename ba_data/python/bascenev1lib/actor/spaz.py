@@ -24,6 +24,7 @@ from bascenev1._gameactivity import GameActivity
 from bascenev1lib.actor.bomb import Bomb, Blast
 from bascenev1lib.actor.powerupbox import PowerupBoxFactory, PowerupBox
 from bascenev1lib.actor.spazfactory import SpazFactory
+from bascenev1lib.actor.particles import BloodParticle, ConfettiParticle
 from bascenev1lib.gameutils import SharedObjects
 import fromgoverhaul.mell_resources as mell
 import babase as ba
@@ -58,18 +59,18 @@ class BombDiedMessage:
 
 class FootingMessage:
     """
-    Gives a Message that tells
-    our actor if they're standing.
-    PS. thanks gummy for hooking this up dx
+    Message class representing the footing state of an actor.
+    Attributes:
+        footing: The current footing state of the actor.
     """
     def __init__(self, footing):
         self.footing = footing
         
 class EmeraldMessage:
     """
-    Message type for our actor
-    that tells them they got a
-    chaos emerald (part of super functionality)
+    Message for emerald-related events or state changes.
+    Attributes:
+        current: The current emerald value or state.
     """
     def __init__(self, current):
         self.current = current
@@ -290,6 +291,7 @@ class Spaz(bs.Actor):
         self.alreadydidanimation = False
         self.frozen = False
         self.shattered = False
+        self.hexploded = False
         self._has_metalcap = False
         self._last_hit_time: int | None = None
         self._num_times_hit = 0
@@ -605,10 +607,20 @@ class Spaz(bs.Actor):
             decimals: int = 2, 
             ignore_y: bool = True
         ):
-        """ 
-        Gets the actor's speed
-        by calculating what's the greater
-        number in the actor's velocity components.
+        """
+        Calculate the speed of the actor based on velocity components.
+
+        Args:
+            should_abs (bool, optional): If True, returns the absolute value of the 
+                maximum velocity component. Defaults to True.
+            decimals (int, optional): Number of decimal places to round the result to. 
+                Defaults to 2.
+            ignore_y (bool, optional): If True, ignores the Y-axis velocity component 
+                and only considers X and Z. If False, considers all three components 
+                (X, Y, Z). Defaults to True.
+
+        Returns:
+            float: The speed rounded to the specified number of decimal places.
         """
         vx, vy, vz = self.node.velocity
         components = (vx, vz) if ignore_y else (vx, vy, vz)
@@ -820,11 +832,13 @@ class Spaz(bs.Actor):
         bs.timer(parrytime + 0.3, self.parryshield.delete)
         bs.getsound('attempt_parry').play()
     
-    def impulse(self, x: float = 0, y: float = 0):
+    def impulse(self, x: float | int = 0, y: float | int = 0):
         if not self.node:
             return
         v = self.node.velocity
-        if not x and y:
+        x = x
+        y = y
+        if x == 0 and y == 0:
             raise ValueError("You must specify at least X or Y for impulse.")
             return False
         # only use x and y impulse if specified
@@ -943,11 +957,19 @@ class Spaz(bs.Actor):
         snd2: str = 'retired',
     ) -> None:
         """
-        Throw our actor into the 
-        air and explode em.
-        snd1 is the sound played when being 
-        launched up, and snd2 is the sound played
-        when exploding.
+        Trigger a firework explosion effect on the actor.
+        This method launches the actor upward and detonates it when it reaches
+        a certain height, creating a firework explosion. If the actor gets stuck
+        (doesn't reach the required height), it will explode after a timeout.
+        Args:
+            on_die_call (Callable, optional): A callback function to execute when
+                the explosion occurs. Defaults to None.
+            snd1 (str, optional): The sound effect to play at the start of the
+                firework sequence. Defaults to 'wackyplatform'.
+            snd2 (str, optional): The sound effect to play when the explosion
+                detonates. Defaults to 'retired'.
+        Returns:
+            None
         """
         if not self.node:
             return
@@ -975,7 +997,7 @@ class Spaz(bs.Actor):
                 return
             if self.node.position[1] >= savedY + 5:
                 actualexplode()
-            self.impulse(0, 150)
+            self.impulse(y=120)
 
         def check_stuck():
             if not self.node:
@@ -984,7 +1006,7 @@ class Spaz(bs.Actor):
                 actualexplode()
 
         self.explotimer = bs.Timer(0.01, do_impulse_stuff, repeat=True)
-        self.explotimer = bs.Timer(3.0, check_stuck)
+        self.stuck_timer = bs.Timer(2.0, check_stuck)
 
     def _safe_play_sound(self, sound: bs.Sound, volume: float) -> None:
         """Plays a sound at our position if we exist."""
@@ -2208,7 +2230,7 @@ class Spaz(bs.Actor):
                     ).autoretain()
                 )
                 bs.timer(0.001, lambda: bs.getsound('bananasnipe').play(position=self.node.position))
-                bs.timer(0.001, self.shatter)
+                bs.timer(0.001, self.explode_head)
             else:
                 bs.timer(0.001, bs.WeakCall(self._hit_self, msg.intensity))
 
@@ -3825,6 +3847,52 @@ class Spaz(bs.Actor):
                     ),
                 ).autoretain()
             self._cursed = False
+    
+    def explode_head(self):
+        """'Explode' the Spaz's head in a gruesome way."""
+        if not self.node or self.hexploded:
+            return
+        pos = self.node.position
+        bloody = ba.app.config.get("squda_blood")
+        self.node.head_mesh = bs.getmesh('none')
+        particle_type = BloodParticle if bloody else ConfettiParticle 
+        sound = 'gibbed' if bloody else 'party_blower'
+        bs.getsound(sound).play(position=pos)
+        self.impulse(y=150)
+        self.die()
+        for _ in range(15):
+            offset_x = random.uniform(-0.5, 0.5)
+            offset_z = random.uniform(-0.5, 0.5)
+            offset_y = random.uniform(0, 0.5)
+            particle_pos = (pos[0] + offset_x, pos[1] + offset_y, pos[2] + offset_z)
+            particle = particle_type(position=particle_pos)
+            particle.autoretain()
+            dir_x = offset_x
+            dir_z = offset_z
+            dir_y = 1.4
+            length = (dir_x**2 + dir_y**2 + dir_z**2)**0.5
+            if length > 0:
+                dir_x /= length
+                dir_y /= length
+                dir_z /= length
+            force = 1.5
+            particle.node.handlemessage(
+                'impulse',
+                particle_pos[0],
+                particle_pos[1],
+                particle_pos[2],
+                0,
+                0,
+                0,
+                force,
+                force,
+                0,
+                0,
+                dir_x,
+                dir_y,
+                dir_z,
+            )
+        self.hexploded = True
 
     def shatter(self, extreme: bool = False, force_scream: bool = False) -> None:
         """Break the poor spaz into little bits."""
@@ -3888,6 +3956,45 @@ class Spaz(bs.Actor):
             else:
                 random.choice(self.node.fall_sounds).play(position=self.node.position)
         self.die()
+        if extreme:
+            from bascenev1lib.actor.particles import BloodParticle, ConfettiParticle
+            bloody = ba.app.config.get("squda_blood")
+            particle_type = BloodParticle if bloody else ConfettiParticle 
+            pos = self.node.position    
+            if not bloody:
+                bs.getsound('party_').play(position=pos)
+            for _ in range(15):
+                offset_x = random.uniform(-0.5, 0.5)
+                offset_z = random.uniform(-0.5, 0.5)
+                offset_y = random.uniform(0, 0.5)
+                particle_pos = (pos[0] + offset_x, pos[1] + offset_y, pos[2] + offset_z)
+                particle = particle_type(position=particle_pos)
+                particle.autoretain()
+                dir_x = offset_x
+                dir_z = offset_z
+                dir_y = 1.4
+                length = (dir_x**2 + dir_y**2 + dir_z**2)**0.5
+                if length > 0:
+                    dir_x /= length
+                    dir_y /= length
+                    dir_z /= length
+                force = 1.5
+                particle.node.handlemessage(
+                    'impulse',
+                    particle_pos[0],
+                    particle_pos[1],
+                    particle_pos[2],
+                    0,
+                    0,
+                    0,
+                    force,
+                    force,
+                    0,
+                    0,
+                    dir_x,
+                    dir_y,
+                    dir_z,
+                )
         self.node.shattered = 2 if extreme else 1
 
     def _hit_self(self, intensity: float) -> None:

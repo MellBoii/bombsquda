@@ -99,7 +99,7 @@ def register_appearances() -> None:
     t.victory_sounds = ['voicelines/spaz/win']
     t.gloat_sounds = ['voicelines/spaz/gloat']
     t.fall_sounds = ['voicelines/spaz/fall0' + str(i + 1) + '' for i in range(4)]
-    t.style = 'spaz'
+    t.style = 'agent'
 
     # Roaring Knight's right hand they/them #####################################
     t = Appearance('Zoe')

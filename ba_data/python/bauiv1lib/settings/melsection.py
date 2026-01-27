@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, override
+from typing import TYPE_CHECKING, Sequence, override
 import logging
 
 import bauiv1 as bui
@@ -176,6 +176,7 @@ class MelWindow(bui.MainWindow):
             ("squda_disablemm", "disableMetalMusicText", -200, False),
             ("squda_customfont", "customFontWarningText", -250, False),
             ("squda_speedrunner", "speedrunTimerText", -300, False),
+            ("squda_blood", "enableBloodText", -350, False),
         ]
         self.is_small = bui.app.ui_v1.uiscale is bui.UIScale.SMALL
         scale = (

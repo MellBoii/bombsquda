@@ -7,7 +7,7 @@ import bauiv1 as bui
 from .discordrp_handler import RichPresence
 import json
 import urllib.request
-import _babase
+import _babase # type: ignore
 import sys
 import traceback
 import datetime
@@ -59,6 +59,7 @@ class Startup():
         "squda_isplayingmusic": False,
         "squda_customfont": False,
         "squda_debugprints": False,
+        "squda_blood": True,
         "squda_timesattracted": 1,
         "squda_timeserrored": 0,
         "squda_parrytype": 2,
@@ -80,7 +81,7 @@ class Startup():
 
     if babase.app.config.get("squda_richpresence", True):
         try:
-            babase.apptimer(1.3, RichPresence)
+            babase.apptimer(1.8, RichPresence)
         except Exception as e:
             print(f'Unable to start rich presence: {e}')
     bui.app.config['squda_isplayingmusic'] = False
