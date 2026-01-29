@@ -66,6 +66,8 @@ def print_live_object_warnings(
     for actor in actors:
         babase.app.classic.printed_live_object_warning = True
         print(f'ERROR: Actor found {when}: {actor}')
-def debprint(text: str = ''):
+        
+def debprint(text):
+    """Prints ONLY if we have debug prints on."""
     if babase.app.config.get("squda_debugprints", True):
         print(text)
