@@ -189,10 +189,10 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         self.menu_music()
         random.seed(time.time())
         cfgget = ba.app.config.get
-        c1name = cfgget('playername')[0]
-        c2name = cfgget('character1name')[0]
-        c3name = cfgget('character2name')[0]
-        c4name = cfgget('character3name')[0]
+        c1name = cfgget('squda_ch1name')
+        c2name = cfgget('squda_ch2name')
+        c3name = cfgget('squda_ch3name')
+        c4name = cfgget('squda_ch4name')
         assert self.splashtext.node
         bs.animate(self.splashtext.node, 'opacity', {0.0: 0, 0.6: 1.0})
         self.splashtext.node.text = bs.Lstr(
@@ -345,10 +345,10 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
             )
             random.seed(time.time())
             cfgget = ba.app.config.get
-            c1name = cfgget('playername')[0]
-            c2name = cfgget('character1name')[0]
-            c3name = cfgget('character2name')[0]
-            c4name = cfgget('character3name')[0]
+            c1name = cfgget('squda_ch1name')
+            c2name = cfgget('squda_ch2name')
+            c3name = cfgget('squda_ch3name')
+            c4name = cfgget('squda_ch4name')
             chosen_text = bs.Lstr(
                 resource=f'splashText{random.randint(1, 141)}',
                 subs=[
@@ -1002,10 +1002,10 @@ class MainMenuSession(bs.Session):
 
         super().__init__([self._activity_deps])
         self._locked = False
-        if ba.app.config.get("squda_playersfirsttime", True):
-            self.setactivity(bs.newactivity(SURVEYActivity))
-        else:
+        if not ba.app.config.get("squda_playersfirsttime"):
             self.setactivity(bs.newactivity(MainMenuActivity))
+            return
+        self.setactivity(bs.newactivity(SURVEYActivity))
 
     @override
     def on_activity_end(self, activity: bs.Activity, results: Any) -> None:

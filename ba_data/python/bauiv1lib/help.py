@@ -372,7 +372,7 @@ class HelpWindow(bui.MainWindow):
         v -= spacing * 45.0
         
         cfgget = ba.app.config.get
-        c1name = cfgget('playername')[0]
+        c1name = cfgget('squda_ch1name')
         txt_scale = 0.7
         txt = bui.Lstr(
             resource=f'{self._r}.controlsSubtitleText',

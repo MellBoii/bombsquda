@@ -1,10 +1,8 @@
-# Released under the MIT License. See LICENSE for details.
-#
-"""Setup for 'first timer's."""
+"""Script that contains a setup for first time players."""
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, override, cast
+from typing import TYPE_CHECKING, Sequence, override, cast
 import logging
 
 import bauiv1 as bui
@@ -15,1179 +13,357 @@ import babase as ba
 if TYPE_CHECKING:
     from typing import Callable
     
+SURVEY_STEPS = [
+    dict(
+        prompt="It's your first time here, so let's start.\nChoose your space marine's name.",
+        texture="spazbound",
+        cfg="squda_ch1name",
+    ),
+    dict(
+        prompt="Now, name this knight.",
+        texture="krisbound",
+        cfg="squda_ch2name",
+    ),
+    dict(
+        prompt="Name the ninja.",
+        texture="snakebound",
+        cfg="squda_ch3name",
+    ),
+    dict(
+        prompt="And finally, choose the last one's name.",
+        texture="noobbound",
+        cfg="squda_ch4name",
+    ),
+]
     
-class SURVEYWindow(bui.MainWindow):
-    """For selecting your options."""
-
-    def __init__(
-        self,
-        transition: str | None = 'in_right',
-        origin_widget: bui.Widget | None = None,
-    ):
-        # pylint: disable=too-many-locals
-
+class BaseSurveyWindow(bui.MainWindow):
+    def __init__(self, *, height=670, transition='in_right', origin_widget=None):
         bui.set_analytics_screen('SURVEYWindow')
-        assert bui.app.classic is not None
         uiscale = bui.app.ui_v1.uiscale
+
         width = 1000 if uiscale is bui.UIScale.SMALL else 800
-        height = 670
-        self._r = 'SURVEYWindow'
-
-        uiscale = bui.app.ui_v1.uiscale
-
-        # Do some fancy math to fill all available screen area up to the
-        # size of our backing container. This lets us fit to the exact
-        # screen shape at small ui scale.
         screensize = bui.get_virtual_screen_size()
         safesize = bui.get_virtual_safe_area_size()
 
-        # We're a generally widescreen shaped window, so bump our
-        # overall scale up a bit when screen width is wider than safe
-        # bounds to take advantage of the extra space.
         smallscale = min(2.0, 1.5 * screensize[0] / safesize[0])
-
-        scale = (
-            smallscale
-            if uiscale is bui.UIScale.SMALL
-            else 1.1 if uiscale is bui.UIScale.MEDIUM else 0.8
-        )
-        # Calc screen size in our local container space and clamp to a
-        # bit smaller than our container size.
+        scale = smallscale if uiscale is bui.UIScale.SMALL else 1.1 if uiscale is bui.UIScale.MEDIUM else 0.8
         target_height = min(height - 70, screensize[1] / scale)
-
-        # To get top/left coords, go to the center of our window and
-        # offset by half the width/height of our target area.
-        yoffs = 0.5 * height + 0.5 * target_height + 30.0
-
-        # scroll_width = target_width
-        # scroll_height = target_height - 25
-        # scroll_bottom = yoffs - 54 - scroll_height
+        self._yoffs = 0.5 * height + 0.5 * target_height + 30.0
+        self._width = width
+        self._height = height
 
         super().__init__(
             root_widget=bui.containerwidget(
                 size=(width, height),
-                toolbar_visibility=(
-                    'menu_minimal'
-                    if uiscale is bui.UIScale.SMALL
-                    else 'menu_full'
-                ),
                 scale=scale,
             ),
             transition=transition,
             origin_widget=origin_widget,
-            # We're affected by screen size only at small ui-scale.
             refresh_on_screen_size_changes=uiscale is bui.UIScale.SMALL,
         )
-        self.titletext = bui.textwidget(
-            parent=self._root_widget,
-            position=(0, yoffs - (70 if uiscale is bui.UIScale.SMALL else 60)),
-            size=(width, 25),
-            text=bui.Lstr(resource=f'{self._r}.titleText'),
-            color=bui.app.ui_v1.title_color,
-            h_align='center',
-            v_align='center',
-            scale=1.0,
-            maxwidth=4000,)
-        self.choosename = bui.textwidget(
-            parent=self._root_widget,
-            text='It\'s your first time around here. \nBefore we move on..\nChoose (YOUR) space marine\'s name.',
-            position=(250, height - 220),
-            maxwidth=400,
-            size=(300, 200),
-            h_align='center',
-            v_align='center',
-            color=(0.7, 0.9, 0.7, 1.0),
-        )
-        self.charactertex = bui.imagewidget(
-            parent=self._root_widget,
-            position=(300, height - 380),
-            size=(220, 220),
-            texture=bui.gettexture('spazbound'),
-            color=(1, 1, 1),
-        )
-        self._text_field = bui.textwidget(
-            parent=self._root_widget,
-            position=(150, height - 500),
-            autoselect=True,
-            size=(width - 270, 55),
-            v_align='center',
-            editable=True,
-            maxwidth=width - 175,
-        )
-        self.btn = bui.buttonwidget(
-            parent=self._root_widget,
-            position=(370, height - 600),
-            size=(80, 70),
-            autoselect=True,
-            enable_sound=False,
-            label='OK',
-            on_activate_call=self.closeit,
-        )
-    @override
-    def get_main_window_state(self) -> bui.MainWindowState:
-        # Support recreating our window for back/refresh purposes.
-        cls = type(self)
-        return bui.BasicMainWindowState(
-            create_call=lambda transition, origin_widget: cls(
-                transition=transition, origin_widget=origin_widget
-            )
-        )
-            
-    def closeit(self):
-        self.changename()
-        # no-op if we're not in control.
-        if not self.main_window_has_control():
-            return
 
-        self.main_window_replace(
-            SURVEYWindow2(origin_widget=self._root_widget)
-        )
-        bui.getsound('okdesuka').play()
-    def changename(self) -> None:
-        cfg = bui.app.config
-        cfg['playername'] = cast(str,
-            bui.textwidget(query=self._text_field),
-        ),
-        cfg.apply_and_commit()
-        
-class SURVEYWindow2(bui.MainWindow):
-    """For selecting your options."""
-
-    def __init__(
-        self,
-        transition: str | None = 'in_right',
-        origin_widget: bui.Widget | None = None,
-    ):
-        # pylint: disable=too-many-locals
-
-        bui.set_analytics_screen('SURVEYWindow')
-        assert bui.app.classic is not None
-        uiscale = bui.app.ui_v1.uiscale
-        width = 1000 if uiscale is bui.UIScale.SMALL else 800
-        height = 670
-        self._r = 'SURVEYWindow'
-
-        uiscale = bui.app.ui_v1.uiscale
-
-        # Do some fancy math to fill all available screen area up to the
-        # size of our backing container. This lets us fit to the exact
-        # screen shape at small ui scale.
-        screensize = bui.get_virtual_screen_size()
-        safesize = bui.get_virtual_safe_area_size()
-
-        # We're a generally widescreen shaped window, so bump our
-        # overall scale up a bit when screen width is wider than safe
-        # bounds to take advantage of the extra space.
-        smallscale = min(2.0, 1.5 * screensize[0] / safesize[0])
-
-        scale = (
-            smallscale
-            if uiscale is bui.UIScale.SMALL
-            else 1.1 if uiscale is bui.UIScale.MEDIUM else 0.8
-        )
-        # Calc screen size in our local container space and clamp to a
-        # bit smaller than our container size.
-        target_height = min(height - 70, screensize[1] / scale)
-
-        # To get top/left coords, go to the center of our window and
-        # offset by half the width/height of our target area.
-        yoffs = 0.5 * height + 0.5 * target_height + 30.0
-
-        # scroll_width = target_width
-        # scroll_height = target_height - 25
-        # scroll_bottom = yoffs - 54 - scroll_height
-
-        super().__init__(
-            root_widget=bui.containerwidget(
-                size=(width, height),
-                toolbar_visibility=(
-                    'menu_minimal'
-                    if uiscale is bui.UIScale.SMALL
-                    else 'menu_full'
-                ),
-                scale=scale,
-            ),
-            transition=transition,
-            origin_widget=origin_widget,
-            # We're affected by screen size only at small ui-scale.
-            refresh_on_screen_size_changes=uiscale is bui.UIScale.SMALL,
-        )
-        self.titletext = bui.textwidget(
-            parent=self._root_widget,
-            position=(0, yoffs - (70 if uiscale is bui.UIScale.SMALL else 60)),
-            size=(width, 25),
-            text=bui.Lstr(resource=f'{self._r}.titleText'),
-            color=bui.app.ui_v1.title_color,
-            h_align='center',
-            v_align='center',
-            scale=1.0,
-            maxwidth=4000,)
-        self.choosename = bui.textwidget(
-            parent=self._root_widget,
-            text='Now, name this knight.',
-            position=(250, height - 200),
-            maxwidth=400,
-            size=(300, 200),
-            h_align='center',
-            v_align='center',
-            color=(0.7, 0.9, 0.7, 1.0),
-        )
-        self.charactertex = bui.imagewidget(
-            parent=self._root_widget,
-            position=(300, height - 380),
-            size=(220, 220),
-            texture=bui.gettexture('krisbound'),
-            color=(1, 1, 1),
-        )
-        self._text_field = bui.textwidget(
-            parent=self._root_widget,
-            position=(150, height - 500),
-            autoselect=True,
-            size=(width - 270, 55),
-            v_align='center',
-            editable=True,
-            maxwidth=width - 175,
-        )
-        self.btn = bui.buttonwidget(
-            parent=self._root_widget,
-            position=(370, height - 600),
-            size=(80, 70),
-            autoselect=True,
-            enable_sound=False,
-            label='OK',
-            on_activate_call=self.closeit,
-        )
-        
-    @override
-    def get_main_window_state(self) -> bui.MainWindowState:
-        # Support recreating our window for back/refresh purposes.
-        cls = type(self)
-        return bui.BasicMainWindowState(
-            create_call=lambda transition, origin_widget: cls(
-                transition=transition, origin_widget=origin_widget
-            )
-        )
-            
-    def closeit(self):
-        self.changename()
-        # no-op if we're not in control.
-        if not self.main_window_has_control():
-            return
-
-        self.main_window_replace(
-            SURVEYWindow3(origin_widget=self._root_widget)
-        )
-        bui.getsound('okdesuka').play()
-        
-    def changename(self) -> None:
-        cfg = bui.app.config
-        cfg['character1name'] = cast(str,
-            bui.textwidget(query=self._text_field),
-        ),
-        cfg.apply_and_commit()
-        
-class SURVEYWindow3(bui.MainWindow):
-    """For selecting your options."""
-
-    def __init__(
-        self,
-        transition: str | None = 'in_right',
-        origin_widget: bui.Widget | None = None,
-    ):
-        # pylint: disable=too-many-locals
-
-        bui.set_analytics_screen('SURVEYWindow')
-        assert bui.app.classic is not None
-        uiscale = bui.app.ui_v1.uiscale
-        width = 1000 if uiscale is bui.UIScale.SMALL else 800
-        height = 670
-        self._r = 'SURVEYWindow'
-
-        uiscale = bui.app.ui_v1.uiscale
-
-        # Do some fancy math to fill all available screen area up to the
-        # size of our backing container. This lets us fit to the exact
-        # screen shape at small ui scale.
-        screensize = bui.get_virtual_screen_size()
-        safesize = bui.get_virtual_safe_area_size()
-
-        # We're a generally widescreen shaped window, so bump our
-        # overall scale up a bit when screen width is wider than safe
-        # bounds to take advantage of the extra space.
-        smallscale = min(2.0, 1.5 * screensize[0] / safesize[0])
-
-        scale = (
-            smallscale
-            if uiscale is bui.UIScale.SMALL
-            else 1.1 if uiscale is bui.UIScale.MEDIUM else 0.8
-        )
-        # Calc screen size in our local container space and clamp to a
-        # bit smaller than our container size.
-        target_height = min(height - 70, screensize[1] / scale)
-
-        # To get top/left coords, go to the center of our window and
-        # offset by half the width/height of our target area.
-        yoffs = 0.5 * height + 0.5 * target_height + 30.0
-
-        # scroll_width = target_width
-        # scroll_height = target_height - 25
-        # scroll_bottom = yoffs - 54 - scroll_height
-
-        super().__init__(
-            root_widget=bui.containerwidget(
-                size=(width, height),
-                toolbar_visibility=(
-                    'menu_minimal'
-                    if uiscale is bui.UIScale.SMALL
-                    else 'menu_full'
-                ),
-                scale=scale,
-            ),
-            transition=transition,
-            origin_widget=origin_widget,
-            # We're affected by screen size only at small ui-scale.
-            refresh_on_screen_size_changes=uiscale is bui.UIScale.SMALL,
-        )
-        self.titletext = bui.textwidget(
-            parent=self._root_widget,
-            position=(0, yoffs - (70 if uiscale is bui.UIScale.SMALL else 60)),
-            size=(width, 25),
-            text=bui.Lstr(resource=f'{self._r}.titleText'),
-            color=bui.app.ui_v1.title_color,
-            h_align='center',
-            v_align='center',
-            scale=1.0,
-            maxwidth=4000,)
-        self.choosename = bui.textwidget(
-            parent=self._root_widget,
-            text='Name the ninja.',
-            position=(250, height - 200),
-            maxwidth=400,
-            size=(300, 200),
-            h_align='center',
-            v_align='center',
-            color=(0.7, 0.9, 0.7, 1.0),
-        )
-        self.charactertex = bui.imagewidget(
-            parent=self._root_widget,
-            position=(300, height - 380),
-            size=(220, 220),
-            texture=bui.gettexture('snakebound'),
-            color=(1, 1, 1),
-        )
-        self._text_field = bui.textwidget(
-            parent=self._root_widget,
-            position=(150, height - 500),
-            autoselect=True,
-            size=(width - 270, 55),
-            v_align='center',
-            editable=True,
-            maxwidth=width - 175,
-        )
-        self.btn = bui.buttonwidget(
-            parent=self._root_widget,
-            position=(370, height - 600),
-            size=(80, 70),
-            autoselect=True,
-            enable_sound=False,
-            label='OK',
-            on_activate_call=self.closeit,
-        )
-        
-    @override
-    def get_main_window_state(self) -> bui.MainWindowState:
-        # Support recreating our window for back/refresh purposes.
-        cls = type(self)
-        return bui.BasicMainWindowState(
-            create_call=lambda transition, origin_widget: cls(
-                transition=transition, origin_widget=origin_widget
-            )
-        )
-            
-    def closeit(self):
-        self.changename()
-        # no-op if we're not in control.
-        if not self.main_window_has_control():
-            return
-
-        self.main_window_replace(
-            SURVEYWindow4(origin_widget=self._root_widget)
-        )
-        bui.getsound('okdesuka').play()
-        
-    def changename(self) -> None:
-        cfg = bui.app.config
-        cfg['character2name'] = cast(str,
-            bui.textwidget(query=self._text_field),
-        ),
-        cfg.apply_and_commit()
-        
-class SURVEYWindow4(bui.MainWindow):
-    """For selecting your options."""
-
-    def __init__(
-        self,
-        transition: str | None = 'in_right',
-        origin_widget: bui.Widget | None = None,
-    ):
-        # pylint: disable=too-many-locals
-
-        bui.set_analytics_screen('SURVEYWindow')
-        assert bui.app.classic is not None
-        uiscale = bui.app.ui_v1.uiscale
-        width = 1000 if uiscale is bui.UIScale.SMALL else 800
-        height = 670
-        self._r = 'SURVEYWindow'
-
-        uiscale = bui.app.ui_v1.uiscale
-
-        # Do some fancy math to fill all available screen area up to the
-        # size of our backing container. This lets us fit to the exact
-        # screen shape at small ui scale.
-        screensize = bui.get_virtual_screen_size()
-        safesize = bui.get_virtual_safe_area_size()
-
-        # We're a generally widescreen shaped window, so bump our
-        # overall scale up a bit when screen width is wider than safe
-        # bounds to take advantage of the extra space.
-        smallscale = min(2.0, 1.5 * screensize[0] / safesize[0])
-
-        scale = (
-            smallscale
-            if uiscale is bui.UIScale.SMALL
-            else 1.1 if uiscale is bui.UIScale.MEDIUM else 0.8
-        )
-        # Calc screen size in our local container space and clamp to a
-        # bit smaller than our container size.
-        target_height = min(height - 70, screensize[1] / scale)
-
-        # To get top/left coords, go to the center of our window and
-        # offset by half the width/height of our target area.
-        yoffs = 0.5 * height + 0.5 * target_height + 30.0
-
-        # scroll_width = target_width
-        # scroll_height = target_height - 25
-        # scroll_bottom = yoffs - 54 - scroll_height
-
-        super().__init__(
-            root_widget=bui.containerwidget(
-                size=(width, height),
-                toolbar_visibility=(
-                    'menu_minimal'
-                    if uiscale is bui.UIScale.SMALL
-                    else 'menu_full'
-                ),
-                scale=scale,
-            ),
-            transition=transition,
-            origin_widget=origin_widget,
-            # We're affected by screen size only at small ui-scale.
-            refresh_on_screen_size_changes=uiscale is bui.UIScale.SMALL,
-        )
-        self.titletext = bui.textwidget(
-            parent=self._root_widget,
-            position=(0, yoffs - (70 if uiscale is bui.UIScale.SMALL else 60)),
-            size=(width, 25),
-            text=bui.Lstr(resource=f'{self._r}.titleText'),
-            color=bui.app.ui_v1.title_color,
-            h_align='center',
-            v_align='center',
-            scale=1.0,
-            maxwidth=4000,)
-        self.choosename = bui.textwidget(
-            parent=self._root_widget,
-            text='And finally, choose the \nlast yellow one\'s name.',
-            position=(250, height - 200),
-            maxwidth=400,
-            size=(300, 200),
-            h_align='center',
-            v_align='center',
-            color=(0.7, 0.9, 0.7, 1.0),
-        )
-        self.charactertex = bui.imagewidget(
-            parent=self._root_widget,
-            position=(300, height - 380),
-            size=(220, 220),
-            texture=bui.gettexture('noobbound'),
-            color=(1, 1, 1),
-        )
-        self._text_field = bui.textwidget(
-            parent=self._root_widget,
-            position=(150, height - 500),
-            autoselect=True,
-            size=(width - 270, 55),
-            v_align='center',
-            editable=True,
-            maxwidth=width - 175,
-        )
-        self.btn = bui.buttonwidget(
-            parent=self._root_widget,
-            position=(370, height - 600),
-            size=(80, 70),
-            autoselect=True,
-            enable_sound = False,
-            label='OK',
-            on_activate_call=self.closeit,
-        )
-        
-    @override
-    def get_main_window_state(self) -> bui.MainWindowState:
-        # Support recreating our window for back/refresh purposes.
-        cls = type(self)
-        return bui.BasicMainWindowState(
-            create_call=lambda transition, origin_widget: cls(
-                transition=transition, origin_widget=origin_widget
-            )
-        )
-            
-    def closeit(self):
-        self.changename()
-        # no-op if we're not in control.
-        if not self.main_window_has_control():
-            return
-
-        self.main_window_replace(
-            SURVEYWindow5(origin_widget=self._root_widget)
-        )
-        bui.getsound('okdesuka').play()
-        
-    def changename(self) -> None:
-        cfg = bui.app.config
-        cfg['character3name'] = cast(str,
-            bui.textwidget(query=self._text_field),
-        ),
-        cfg.apply_and_commit()
-
-class SURVEYWindow5(bui.MainWindow):
-    """For selecting your options."""
-
-    def __init__(
-        self,
-        transition: str | None = 'in_right',
-        origin_widget: bui.Widget | None = None,
-    ):
-        # pylint: disable=too-many-locals
-
-        bui.set_analytics_screen('SURVEYWindow')
-        assert bui.app.classic is not None
-        uiscale = bui.app.ui_v1.uiscale
-        width = 1000 if uiscale is bui.UIScale.SMALL else 800
-        height = 350
-        self._r = 'SURVEYWindow'
-
-        uiscale = bui.app.ui_v1.uiscale
-
-        # Do some fancy math to fill all available screen area up to the
-        # size of our backing container. This lets us fit to the exact
-        # screen shape at small ui scale.
-        screensize = bui.get_virtual_screen_size()
-        safesize = bui.get_virtual_safe_area_size()
-
-        # We're a generally widescreen shaped window, so bump our
-        # overall scale up a bit when screen width is wider than safe
-        # bounds to take advantage of the extra space.
-        smallscale = min(2.0, 1.5 * screensize[0] / safesize[0])
-
-        scale = (
-            smallscale
-            if uiscale is bui.UIScale.SMALL
-            else 1.1 if uiscale is bui.UIScale.MEDIUM else 0.8
-        )
-        # Calc screen size in our local container space and clamp to a
-        # bit smaller than our container size.
-        target_height = min(height - 70, screensize[1] / scale)
-
-        # To get top/left coords, go to the center of our window and
-        # offset by half the width/height of our target area.
-        yoffs = 0.5 * height + 0.5 * target_height + 30.0
-
-        # scroll_width = target_width
-        # scroll_height = target_height - 25
-        # scroll_bottom = yoffs - 54 - scroll_height
-
-        super().__init__(
-            root_widget=bui.containerwidget(
-                size=(width, height),
-                toolbar_visibility=(
-                    'menu_minimal'
-                    if uiscale is bui.UIScale.SMALL
-                    else 'menu_full'
-                ),
-                scale=scale,
-            ),
-            transition=transition,
-            origin_widget=origin_widget,
-            # We're affected by screen size only at small ui-scale.
-            refresh_on_screen_size_changes=uiscale is bui.UIScale.SMALL,
-        )
-        self.titletext = bui.textwidget(
-            parent=self._root_widget,
-            position=(0, yoffs - (70 if uiscale is bui.UIScale.SMALL else 60)),
-            size=(width, 25),
-            text=bui.Lstr(resource=f'{self._r}.titleText'),
-            color=bui.app.ui_v1.title_color,
-            h_align='center',
-            v_align='center',
-            scale=1.0,
-            maxwidth=4000,)
-        self.choosename = bui.textwidget(
-            parent=self._root_widget,
-            text='Now, please select your settings.',
-            position=(250, height - 200),
-            maxwidth=400,
-            size=(300, 200),
-            h_align='center',
-            v_align='center',
-            color=(0.7, 0.9, 0.7, 1.0),
-        )
-        self.btn = bui.buttonwidget(
-            parent=self._root_widget,
-            position=(350, height - 250),
-            size=(80, 70),
-            autoselect=True,
-            label='OK',
-            on_activate_call=self.closeit,
-        )
-        
-    @override
-    def get_main_window_state(self) -> bui.MainWindowState:
-        # Support recreating our window for back/refresh purposes.
-        cls = type(self)
-        return bui.BasicMainWindowState(
-            create_call=lambda transition, origin_widget: cls(
-                transition=transition, origin_widget=origin_widget
-            )
-        )
-            
-    def closeit(self):
-        # no-op if we're not in control.
-        if not self.main_window_has_control():
-            return
-
-        self.main_window_replace(
-            ALTBombSqudaSettings(origin_widget=self._root_widget)
-        )
-         
-        
-class ALTBombSqudaSettings(bui.MainWindow):
-    """Window for selecting BombSquda settings."""
-
-    def __init__(
-        self,
-        transition: str | None = 'in_right',
-        origin_widget: bui.Widget | None = None,
-    ):
-        # pylint: disable=too-many-locals
-
-        bui.set_analytics_screen('BombSquda Settings')
-        assert bui.app.classic is not None
-        uiscale = bui.app.ui_v1.uiscale
-        width = 1000 if uiscale is bui.UIScale.SMALL else 800
-        height = 750
-        self._r = 'melWindow'
-
-        uiscale = bui.app.ui_v1.uiscale
-
-        # Do some fancy math to fill all available screen area up to the
-        # size of our backing container. This lets us fit to the exact
-        # screen shape at small ui scale.
-        screensize = bui.get_virtual_screen_size()
-        safesize = bui.get_virtual_safe_area_size()
-
-        # We're a generally widescreen shaped window, so bump our
-        # overall scale up a bit when screen width is wider than safe
-        # bounds to take advantage of the extra space.
-        smallscale = min(2.0, 1.5 * screensize[0] / safesize[0])
-
-        scale = (
-            smallscale
-            if uiscale is bui.UIScale.SMALL
-            else 1.1 if uiscale is bui.UIScale.MEDIUM else 0.8
-        )
-        # Calc screen size in our local container space and clamp to a
-        # bit smaller than our container size.
-        target_height = min(height - 70, screensize[1] / scale)
-
-        # To get top/left coords, go to the center of our window and
-        # offset by half the width/height of our target area.
-        yoffs = 0.5 * height + 0.5 * target_height + 30.0
-
-        # scroll_width = target_width
-        # scroll_height = target_height - 25
-        # scroll_bottom = yoffs - 54 - scroll_height
-
-        super().__init__(
-            root_widget=bui.containerwidget(
-                size=(width, height),
-                toolbar_visibility=(
-                    'menu_minimal'
-                    if uiscale is bui.UIScale.SMALL
-                    else 'menu_full'
-                ),
-                scale=scale,
-            ),
-            transition=transition,
-            origin_widget=origin_widget,
-            # We're affected by screen size only at small ui-scale.
-            refresh_on_screen_size_changes=uiscale is bui.UIScale.SMALL,
-        )
-        thefuckedupuifix = 270
         bui.textwidget(
             parent=self._root_widget,
-            position=(0, yoffs - (70 if uiscale is bui.UIScale.SMALL else 60)),
+            position=(15, self._yoffs - (70 if uiscale is bui.UIScale.SMALL else 60)),
             size=(width, 25),
-            text=bui.Lstr(resource=f'{self._r}.titleText'),
+            text=bui.Lstr(resource='SURVEYWindow.titleText'),
             color=bui.app.ui_v1.title_color,
             h_align='center',
             v_align='center',
-            scale=1.0,
-            maxwidth=4000,)
-        self._fuckedupspaz = bui.checkboxwidget(
-            parent=self._root_widget,
-            position=(250, 300 + thefuckedupuifix),
-            size=(180, 40),
-            autoselect=False,
-            maxwidth=300,
-            textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("squda_spazfuckedup", False),
-            text='Make my Spaz have a weird texture',
-            on_value_change_call=self.changespazinga
         )
-        self._noise = bui.checkboxwidget(
-            parent=self._root_widget,
-            position=(250, 250 + thefuckedupuifix),
-            size=(180, 40),
-            autoselect=False,
-            maxwidth=300,
-            textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("squda_noisepolution", False),
-            text='Make the gameplay too loud',
-            on_value_change_call=self.changenoise
+    @override
+    def get_main_window_state(self):
+        raise RuntimeError(
+            f'{type(self).__name__} must override get_main_window_state()'
         )
-        self._random = bui.checkboxwidget(
-            parent=self._root_widget,
-            position=(250, 200 + thefuckedupuifix),
-            size=(180, 40),
-            autoselect=False,
-            maxwidth=300,
-            textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("squda_gamblingmode", False),
-            text='Make every powerup the random-based one',
-            on_value_change_call=self.changegambling
+
+class NameSurveyWindow(BaseSurveyWindow):
+    @staticmethod
+    def _create(t, o, step_index):
+        return NameSurveyWindow(
+            transition=t,
+            origin_widget=o,
+            step_index=step_index,
         )
-        self._hardmode = bui.checkboxwidget(
+
+    def __init__(self, *, step_index: int, **kw):
+        super().__init__(**kw)
+
+        self._step_index = step_index
+        self.step = SURVEY_STEPS[step_index]
+        self.key = self.step["cfg"]
+        uiscale = bui.app.ui_v1.uiscale
+        xoffs = 15
+        self.prompt = bui.textwidget(
             parent=self._root_widget,
-            position=(250, 150 + thefuckedupuifix),
-            size=(180, 40),
-            autoselect=False,
-            maxwidth=300,
-            textcolor=(0.9, 0.2, 0.2),
-            value=bui.app.config.get("squda_spazhardmode", False),
-            text='Make me die even with one hit',
-            on_value_change_call=self.changehardmode
-        )
-        self._canalwaysparry = bui.checkboxwidget(
-            parent=self._root_widget,
-            position=(250, 100 + thefuckedupuifix),
-            size=(180, 40),
-            autoselect=False,
-            maxwidth=300,
-            textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("squda_parryalways", False),
-            text='Make me parry whenever i want',
-            on_value_change_call=self.changeparry
-        )
-        self._shutdownprevention = bui.checkboxwidget(
-            parent=self._root_widget,
-            position=(250, 50 + thefuckedupuifix),
-            size=(180, 40),
-            autoselect=False,
-            maxwidth=300,
-            textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("squda_dontshutdown", False),
-            text='Do not shutdown my device',
-            on_value_change_call=self.changeshutdown
-        )
-        self._changemario = bui.checkboxwidget(
-            parent=self._root_widget,
-            position=(250, 0 + thefuckedupuifix),
-            size=(180, 40),
-            autoselect=False,
-            maxwidth=300,
-            textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("squda_dontdomarioman", False),
-            text='Do not delay upon attempting to quit the game',
-            on_value_change_call=self.changemario
-        )
-        self._changediscord = bui.checkboxwidget(
-            parent=self._root_widget,
-            position=(250, -50 + thefuckedupuifix),
-            size=(180, 40),
-            autoselect=False,
-            maxwidth=300,
-            textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("squda_richpresence", False),
-            text='Show people on Discord if i\'m playing',
-            on_value_change_call=self.changediscord
-        )
-        self._changemeter = bui.checkboxwidget(
-            parent=self._root_widget,
-            position=(250, -100 + thefuckedupuifix),
-            size=(180, 40),
-            autoselect=False,
-            maxwidth=300,
-            textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("squda_enablemeter", False),
-            text='Enable the EarthBound Stat Meter',
-            on_value_change_call=self.changemeter
-        )
-        self._changesugsgcaottgshshs = bui.checkboxwidget(
-            parent=self._root_widget,
-            position=(250, -150 + thefuckedupuifix),
-            size=(180, 40),
-            autoselect=False,
-            maxwidth=300,
-            textcolor=(1.0, 1.0, 1.0),
-            value=bui.app.config.get("squda_enablemeter", False),
-            text='No "not gonna sugarcoat it" popups',
-            on_value_change_call=self.changemeter
-        )
-        self.choosename = bui.textwidget(
-            parent=self._root_widget,
-            text='You may always change these \nlater down the line.',
-            position=(250, height - 80),
-            maxwidth=400,
+            text=self.step["prompt"],
+            position=(self._width * 0.32 + xoffs, self._height - 220),
             size=(300, 200),
             h_align='center',
             v_align='center',
             color=(0.7, 0.9, 0.7, 1.0),
         )
-        self.btn = bui.buttonwidget(
+
+        self.image = bui.imagewidget(
             parent=self._root_widget,
-            position=(370, height - 700),
-            size=(80, 70),
+            position=(self._width * 0.35 + xoffs, self._height - 380),
+            size=(220, 220),
+            texture=bui.gettexture(self.step["texture"]),
+        )
+
+        self._text_field = txt =  bui.textwidget(
+            parent=self._root_widget,
+            position=(self._width / 5.0, self._height - 470),
+            size=(self._width - 270, 45),
+            editable=True,
             autoselect=True,
+        )
+        bui.textwidget(
+            parent=self._root_widget,
+            position=(self._width / 5.5, self._height - 510),
+            size=(self._width - 400, 45),
+            text="Confirm changes by pressing RETURN or the OK button.",
+            scale=0.7,
+            color=bui.app.ui_v1.title_color
+        )
+        self.ok_btn = bui.buttonwidget(
+            parent=self._root_widget,
+            position=(370, self._height - 600),
+            size=(80, 70),
             label='OK',
-            on_activate_call=self.closeit,
+            on_activate_call=self._on_ok,
+            enable_sound=False,
         )
-        
-    def closeit(self):
-        # no-op if we're not in control.
+        if self._step_index > 0:
+            self._back_button = btn = bui.buttonwidget(
+                parent=self._root_widget,
+                autoselect=True,
+                position=(self._width / 15.0, self._height - 50),
+                size=(80, 80),
+                scale=1.0,
+                text_scale=1.2,
+                enable_sound=False,
+                label=bui.charstr(bui.SpecialChar.BACK),
+                button_type='backSmall',
+                on_activate_call=self.on_back,
+            )
+            bui.containerwidget(edit=self._root_widget, cancel_button=btn)
+        bui.textwidget(edit=txt, on_return_press_call=lambda: self._on_ok('survey_ok2'))
+
+    def _on_ok(self, sound: str = 'survey_ok'):
         if not self.main_window_has_control():
             return
+        bui.getsound(sound).play()
+        user_input = cast(str, bui.textwidget(query=self._text_field)).strip()
+        if user_input == '':
+            bui.screenmessage('You must input a name.')
+            bui.getsound('error').play()
+            return
 
-        self.main_window_replace(
-            SURVEYWindow6(origin_widget=self._root_widget)
-        )
+        bui.app.config[self.key] = user_input
+        bui.app.config.apply_and_commit()
+        bui.buttonwidget(edit=self.ok_btn, on_activate_call=None)
+        bui.textwidget(edit=self._text_field, on_return_press_call=None)
 
-    def changehardmode(self, val: str) -> None:
-        cfg = bui.app.config
-        cfg['squda_spazhardmode'] = val
-        cfg.apply_and_commit()
-        
-    def changegambling(self, val: str) -> None:
-        cfg = bui.app.config
-        cfg['squda_gamblingmode'] = val
-        cfg.apply_and_commit() 
-        
-    def changenoise(self, val: str) -> None:
-        cfg = bui.app.config
-        cfg['squda_noisepolution'] = val
-        cfg.apply_and_commit()
-        
-    def changespazinga(self, val: str) -> None:
-        cfg = bui.app.config
-        cfg['squda_spazfuckedup'] = val
-        cfg.apply_and_commit()
-        
-    def changeparry(self, val: str) -> None:
-        cfg = bui.app.config
-        cfg['squda_parryalways'] = val
-        cfg.apply_and_commit()
-        
-    def changeshutdown(self, val: str) -> None:
-        cfg = bui.app.config
-        cfg['squda_dontshutdown'] = val
-        cfg.apply_and_commit()
-        
-    def changemario(self, val: str) -> None:
-        cfg = bui.app.config
-        cfg['squda_dontdomarioman'] = val
-        cfg.apply_and_commit()
-    
-    def changediscord(self, val: str) -> None:
-        cfg = bui.app.config
-        cfg['squda_richpresence'] = val
-        cfg.apply_and_commit()
-    
-    def changemeter(self, val: str) -> None:
-        cfg = bui.app.config
-        cfg['squda_enablemeter'] = val
-        cfg.apply_and_commit()  
-        
-    def changescoats(self, val: str) -> None:
-        cfg = bui.app.config
-        cfg['squda_nosugarcoats'] = val
-        cfg.apply_and_commit()  
-        
-    @override
-    def get_main_window_state(self) -> bui.MainWindowState:
-        # Support recreating our window for back/refresh purposes.
-        cls = type(self)
-        return bui.BasicMainWindowState(
-            create_call=lambda transition, origin_widget: cls(
-                transition=transition, origin_widget=origin_widget
+        next_index = self._step_index + 1
+
+        if next_index < len(SURVEY_STEPS):
+            self.main_window_replace(
+                NameSurveyWindow(
+                    transition='in_right',
+                    origin_widget=self._root_widget,
+                    step_index=next_index,
+                )
             )
+        else:
+            self.main_window_replace(
+                SurveyIntroWindow(
+                    transition='in_right',
+                    origin_widget=self._root_widget,
+                    step=0,
+                )
+            )
+    def on_back(self):
+        bui.getsound('survey_back').play()
+        self.main_window_back()
+    
+    @override
+    def get_main_window_state(self):
+        return bui.BasicMainWindowState(
+            create_call=lambda t, o, si=self._step_index:
+                NameSurveyWindow._create(t, o, si)
         )
-        
-class SURVEYWindow6(bui.MainWindow):
-    """For selecting your options."""
 
+class SurveyIntroWindow(bui.MainWindow):
+    """First-time setup intro flow before/after BombSquda settings."""
+    @staticmethod
+    def _create(t, o, step):
+        return SurveyIntroWindow(
+            transition=t,
+            origin_widget=o,
+            step=step,
+        )
     def __init__(
         self,
         transition: str | None = 'in_right',
         origin_widget: bui.Widget | None = None,
+        step: int = 0,
     ):
-        # pylint: disable=too-many-locals
+        self._step = step
 
         bui.set_analytics_screen('SURVEYWindow')
         assert bui.app.classic is not None
+
         uiscale = bui.app.ui_v1.uiscale
         width = 1000 if uiscale is bui.UIScale.SMALL else 800
-        height = 350
-        self._r = 'SURVEYWindow'
+        height = 450
 
-        uiscale = bui.app.ui_v1.uiscale
-
-        # Do some fancy math to fill all available screen area up to the
-        # size of our backing container. This lets us fit to the exact
-        # screen shape at small ui scale.
         screensize = bui.get_virtual_screen_size()
         safesize = bui.get_virtual_safe_area_size()
-
-        # We're a generally widescreen shaped window, so bump our
-        # overall scale up a bit when screen width is wider than safe
-        # bounds to take advantage of the extra space.
         smallscale = min(2.0, 1.5 * screensize[0] / safesize[0])
-
         scale = (
             smallscale
             if uiscale is bui.UIScale.SMALL
             else 1.1 if uiscale is bui.UIScale.MEDIUM else 0.8
         )
-        # Calc screen size in our local container space and clamp to a
-        # bit smaller than our container size.
+
         target_height = min(height - 70, screensize[1] / scale)
-
-        # To get top/left coords, go to the center of our window and
-        # offset by half the width/height of our target area.
         yoffs = 0.5 * height + 0.5 * target_height + 30.0
-
-        # scroll_width = target_width
-        # scroll_height = target_height - 25
-        # scroll_bottom = yoffs - 54 - scroll_height
 
         super().__init__(
             root_widget=bui.containerwidget(
                 size=(width, height),
-                toolbar_visibility=(
-                    'menu_minimal'
-                    if uiscale is bui.UIScale.SMALL
-                    else 'menu_full'
-                ),
+                toolbar_visibility='menu_minimal',
                 scale=scale,
             ),
             transition=transition,
             origin_widget=origin_widget,
-            # We're affected by screen size only at small ui-scale.
             refresh_on_screen_size_changes=uiscale is bui.UIScale.SMALL,
         )
-        self.titletext = bui.textwidget(
+        self._back_button = btn = bui.buttonwidget(
             parent=self._root_widget,
-            position=(0, yoffs - (70 if uiscale is bui.UIScale.SMALL else 60)),
-            size=(width, 25),
-            text=bui.Lstr(resource=f'{self._r}.titleText'),
-            color=bui.app.ui_v1.title_color,
-            h_align='center',
-            v_align='center',
-            scale=1.0,
-            maxwidth=4000,)
-        self.choosename = bui.textwidget(
+            position=(width / 10.0, yoffs - 80.0),
+            size=(70, 70),
+            scale=0.8,
+            text_scale=1.2,
+            label=bui.charstr(bui.SpecialChar.BACK),
+            button_type='backSmall',
+            on_activate_call=self.main_window_back,
+        )
+        bui.containerwidget(edit=self._root_widget, cancel_button=btn)
+        self._build_step(height)
+
+    # --------------------------------------------------
+
+    def _build_step(self, height: float) -> None:
+        if self._step == 0:
+            text = 'Now, please select \nyour settings.'
+            buttons = [('OK', self._start_settings)]
+
+        elif self._step == 1:
+            text = 'Do you acknowledge \nthe possibility\nof not enjoying \nthis experience?'
+            buttons = [
+                ('NO', self._next),
+                ('YES', self._next),
+            ]
+
+        else:
+            text = (
+                'Good. Very good. \nYour answers\n'
+                'shall be recorded.\n'
+                'Do you want to move on?'
+            )
+            buttons = [
+                ('NO', self._fucking_die),
+                ('YES', self._finish),
+            ]
+
+        bui.textwidget(
             parent=self._root_widget,
-            text='Do you acknowledge the possibility\nof not enjoying this experience?',
-            position=(250, height - 200),
+            text=text,
+            position=(250, height - 280),
             maxwidth=400,
-            size=(300, 200),
+            size=(300, 300),
+            scale=1.5,
             h_align='center',
             v_align='center',
             color=(0.7, 0.9, 0.7, 1.0),
         )
-        self.btn1 = bui.buttonwidget(
-            parent=self._root_widget,
-            position=(250, height - 250),
-            size=(80, 70),
-            autoselect=False,
-            label='NO',
-            on_activate_call=self.closeit,
-        )
-        self.btn2 = bui.buttonwidget(
-            parent=self._root_widget,
-            position=(350, height - 250),
-            size=(80, 70),
-            autoselect=True,
-            label='YES',
-            on_activate_call=self.closeit,
-        )
-        
-    @override
-    def get_main_window_state(self) -> bui.MainWindowState:
-        # Support recreating our window for back/refresh purposes.
-        cls = type(self)
-        return bui.BasicMainWindowState(
-            create_call=lambda transition, origin_widget: cls(
-                transition=transition, origin_widget=origin_widget
+
+        x = 300 if len(buttons) > 1 else 360
+        for label, call in buttons:
+            bui.buttonwidget(
+                parent=self._root_widget,
+                position=(x, height - 400),
+                size=(80, 70),
+                autoselect=(label == 'YES' or label == 'OK'),
+                label=label,
+                on_activate_call=call,
             )
-        )
-            
-    def closeit(self):
-        # no-op if we're not in control.
+            x += 100
+
+    # --------------------------------------------------
+
+    def _next(self) -> None:
         if not self.main_window_has_control():
             return
-
         self.main_window_replace(
-            SURVEYWindow7(origin_widget=self._root_widget)
+            SurveyIntroWindow(
+                transition='in_right',
+                origin_widget=self._root_widget,
+                step=self._step + 1,
+            )
         )
-class SURVEYWindow7(bui.MainWindow):
-    """For selecting your options."""
-
-    def __init__(
-        self,
-        transition: str | None = 'in_right',
-        origin_widget: bui.Widget | None = None,
-    ):
-        # pylint: disable=too-many-locals
-
-        bui.set_analytics_screen('SURVEYWindow')
-        assert bui.app.classic is not None
-        uiscale = bui.app.ui_v1.uiscale
-        width = 1000 if uiscale is bui.UIScale.SMALL else 800
-        height = 350
-        self._r = 'SURVEYWindow'
-
-        uiscale = bui.app.ui_v1.uiscale
-
-        # Do some fancy math to fill all available screen area up to the
-        # size of our backing container. This lets us fit to the exact
-        # screen shape at small ui scale.
-        screensize = bui.get_virtual_screen_size()
-        safesize = bui.get_virtual_safe_area_size()
-
-        # We're a generally widescreen shaped window, so bump our
-        # overall scale up a bit when screen width is wider than safe
-        # bounds to take advantage of the extra space.
-        smallscale = min(2.0, 1.5 * screensize[0] / safesize[0])
-
-        scale = (
-            smallscale
-            if uiscale is bui.UIScale.SMALL
-            else 1.1 if uiscale is bui.UIScale.MEDIUM else 0.8
+    def _start_settings(self) -> None:
+        from bauiv1lib.settings.melsection import MelWindow
+        if not self.main_window_has_control():
+            return
+        self.main_window_replace(
+            MelWindow(
+                transition='in_right',
+                origin_widget=self._root_widget,
+                first_time=True,
+            )
         )
-        # Calc screen size in our local container space and clamp to a
-        # bit smaller than our container size.
-        target_height = min(height - 70, screensize[1] / scale)
+    def _fucking_die(self) -> None:
+        if getattr(self, 'alrquit', False):
+            return
+        self.alrquit = True
+        bui.screenmessage('Oh.')
+        bs.setmusic(None)
+        bui.apptimer(1.2, lambda: bui.screenmessage('well then gtfo jackass'))
+        bui.apptimer(1.2, bui.getsound('boo').play)
+        bui.apptimer(1.5, ba.quit)
 
-        # To get top/left coords, go to the center of our window and
-        # offset by half the width/height of our target area.
-        yoffs = 0.5 * height + 0.5 * target_height + 30.0
-
-        # scroll_width = target_width
-        # scroll_height = target_height - 25
-        # scroll_bottom = yoffs - 54 - scroll_height
-                    
-
-
-        super().__init__(
-            root_widget=bui.containerwidget(
-                size=(width, height),
-                toolbar_visibility=(
-                    'menu_minimal'
-                    if uiscale is bui.UIScale.SMALL
-                    else 'menu_full'
-                ),
-                scale=scale,
-            ),
-            transition=transition,
-            origin_widget=origin_widget,
-            # We're affected by screen size only at small ui-scale.
-            refresh_on_screen_size_changes=uiscale is bui.UIScale.SMALL,
-        )
-        self.titletext = bui.textwidget(
-            parent=self._root_widget,
-            position=(0, yoffs - (70 if uiscale is bui.UIScale.SMALL else 60)),
-            size=(width, 25),
-            text=bui.Lstr(resource=f'{self._r}.titleText'),
-            color=bui.app.ui_v1.title_color,
-            h_align='center',
-            v_align='center',
-            scale=1.0,
-            maxwidth=4000,)
-        self.choosename = bui.textwidget(
-            parent=self._root_widget,
-            text='Good. Very good. Your answers \nshall be recorded.\nDo you want to move on?',
-            position=(250, height - 200),
-            maxwidth=400,
-            size=(300, 200),
-            h_align='center',
-            v_align='center',
-            color=(0.7, 0.9, 0.7, 1.0),
-        )
-        self.btn4 = bui.buttonwidget(
-            parent=self._root_widget,
-            position=(250, height - 250),
-            size=(80, 70),
-            autoselect=False,
-            label='NO',
-            on_activate_call=ba.quit,
-        )
-        self.btn4 = bui.buttonwidget(
-            parent=self._root_widget,
-            position=(350, height - 250),
-            size=(80, 70),
-            autoselect=True,
-            label='YES',
-            on_activate_call=self.closeit,
-        )
-    def closeit(self):
+    def _finish(self) -> None:
+        if not self.main_window_has_control():
+            return
+        # set config and ui state
+        bui.app.config['squda_playersfirsttime'] = False
+        bui.app.config.apply_and_commit()
+        bui.app.ui_v1.clear_main_window()
+        # pushcall new session
         bs.pushcall(lambda: bs.new_host_session(SurveySessionThing2))
-        
+
+
+    # --------------------------------------------------
     @override
-    def get_main_window_state(self) -> bui.MainWindowState:
-        # Support recreating our window for back/refresh purposes.
-        cls = type(self)
+    def get_main_window_state(self):
         return bui.BasicMainWindowState(
-            create_call=lambda transition, origin_widget: cls(
-                transition=transition, origin_widget=origin_widget
-            )
+            create_call=lambda t, o, s=self._step:
+                SurveyIntroWindow._create(t, o, s)
         )
-            
         
 class SURVEYActivity(bs.Activity[bs.Player, bs.Team]):
-    """Activity showing the rotating main menu bg stuff."""
+    """A blue background. Not much to it."""
     _stdassets = bs.Dependency(bs.AssetPackage, 'stdassets@1')
-
 
     def __init__(self, settings: dict):
         super().__init__(settings)
-        
-        with bs.ContextRef.empty():
-            bui.app.ui_v1.set_main_window(
-                SURVEYWindow(),
-                is_top_level=True,
-                suppress_warning=True,
-            )
+
     def on_transition_in(self) -> None:
         bs.setmusic(bs.MusicType.SURVEY)
-        self.bgterrain = bs.NodeActor(
+        self.terrain = bs.NodeActor(
             bs.newnode(
                 'terrain',
                 attrs={
@@ -1199,19 +375,16 @@ class SURVEYActivity(bs.Activity[bs.Player, bs.Team]):
                 },
             )
         )
-        self.blackthing = bs.newnode('image', 
-            attrs={
-                'texture': bs.gettexture('white2'),
-                'absolute_scale': True,
-                'position': (0, 0),
-                'attach': 'center',
-                'opacity': 0.0,
-                'fill_screen': True,
-                'color': (0, 0, 0)
-            }
-        )
+        # im stupi (only start main window ON start, not init)
+        with bs.ContextRef.empty():
+            bui.app.ui_v1.set_main_window(
+                NameSurveyWindow(step_index=0),
+                is_top_level=True,
+                suppress_warning=True,
+            )
 
 class SurveySessionThing(bs.Session):
+    """Literally just start SURVEYActivity"""
     def __init__(self):
         depsets: Sequence[bs.DependencySet] = [] 
         super().__init__(depsets)
@@ -1222,6 +395,7 @@ class SurveySessionThing(bs.Session):
         return False
         
 class SurveySessionThing2(bs.Session):
+    """Literally just start SURVEYActivity2"""
     def __init__(self):
         depsets: Sequence[bs.DependencySet] = [] 
         super().__init__(depsets)
@@ -1232,7 +406,7 @@ class SurveySessionThing2(bs.Session):
         return False
         
 class SURVEYActivity2(bs.Activity[bs.Player, bs.Team]):
-    """Activity showing the rotating main menu bg stuff."""
+    """Blue background that fades to our logo."""
     _stdassets = bs.Dependency(bs.AssetPackage, 'stdassets@1')
 
 
@@ -1269,17 +443,15 @@ class SURVEYActivity2(bs.Activity[bs.Player, bs.Team]):
             0.0: (0.0),
             1.5: (1.0)
         })
-        bui.app.config['squda_playersfirsttime'] = False
-        bui.app.config.apply_and_commit()
         bs.timer(2.5, lambda: bs.setmusic(bs.MusicType.LOGOTYPE))
         bs.timer(2.5, lambda: CutscenePlayerSpecialEditionCuzFucked(
             cutscene_id=41,
             frame_delays=[
-            2.2, 0.3, 0.3, 0.3, 0.3, 0.3,
-            0.3, 0.3, 0.2, 0.2, 0.1, 
-            0.1, 0.1, 0.1, 0.1, 0.1,
-            0.1, 0.1, 0.1, 0.1, 0.1,
-            0.1, 0.1, 0.1, 0.1, 21.2,
+                2.2, 0.3, 0.3, 0.3, 0.3, 0.3,
+                0.3, 0.2, 0.2, 0.2, 0.1, 
+                0.1, 0.1, 0.1, 0.1, 0.1,
+                0.1, 0.1, 0.1, 0.1, 0.1,
+                0.1, 0.1, 0.1, 0.1, 21.2,
             ],
             fade_duration=2.0
         )

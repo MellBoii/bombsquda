@@ -178,27 +178,27 @@ def _start_stress_test(args: _StressTestArgs) -> None:
             0.48, babase.Call(_update_attract_mode_test, args), repeat=True
         )
         cfgget = ba.app.config.get
-        c1name = cfgget('playername')[0]
-        c2name = cfgget('character1name')[0]
-        c3name = cfgget('character2name')[0]
-        c4name = cfgget('character3name')[0]
+        c1name = cfgget('squda_ch1name')
+        c2name = cfgget('squda_ch2name')
+        c3name = cfgget('squda_ch3name')
+        c4name = cfgget('squda_ch4name')
         you = bui.app.plus.get_v1_account_display_string()
-        ba.apptimer(3.0, lambda: ba.screenmessage('BombSquad by Eric Froemling'))
-        ba.apptimer(6.0, lambda: ba.screenmessage('BombSquda by Mell'))
-        ba.apptimer(9.0, lambda: ba.screenmessage('Music from Bound to the Dark World'))
-        ba.apptimer(12.0, lambda: ba.screenmessage('Starring various characters'))
+        ba.apptimer(3.0, lambda: ba.screenmessage('BombSquad made by Eric Froemling'))
+        ba.apptimer(6.0, lambda: ba.screenmessage('Mell presents: BombSquda'))
+        ba.apptimer(9.0, lambda: ba.screenmessage('Music taken from Bound to the Dark World'))
+        ba.apptimer(12.0, lambda: ba.screenmessage('Starring various characters;'))
         ba.apptimer(15.0, lambda: ba.screenmessage(f"{c1name}, played by {you}"))
         ba.apptimer(18.0, lambda: ba.screenmessage(f"{c2name}, played by themselves"))
         ba.apptimer(21.0, lambda: ba.screenmessage(f"{c3name}, played by GummyBoiYT"))
         ba.apptimer(24.0, lambda: ba.screenmessage(f"{c4name}, played by themselves"))
-        ba.apptimer(27.0, lambda: ba.screenmessage('Meliso, played by himself'))
+        ba.apptimer(27.0, lambda: ba.screenmessage('Mell, played by himself'))
         ba.apptimer(29.0, lambda: ba.screenmessage('Ralsei, played by themselves'))
         ba.apptimer(32.0, lambda: ba.screenmessage('Susie, played by herself'))
         ba.apptimer(35.0, lambda: ba.screenmessage('Orangecap, played by Buddie'))
         ba.apptimer(38.0, lambda: ba.screenmessage('Roaring Knight, played by itself'))
-        ba.apptimer(41.0, lambda: ba.screenmessage('Homer Simpson, played by Homer Simpson'))
+        ba.apptimer(41.0, lambda: ba.screenmessage('Homer, played by Homero Simpson'))
         ba.apptimer(44.0, lambda: ba.screenmessage('Bowser, played by himself'))
-        ba.apptimer(48.0, lambda: ba.screenmessage('Special thanks to everyone who developed BombSquad ♥'))
+        ba.apptimer(48.0, lambda: ba.screenmessage('Special thanks to everyone who developed BombSquad <3'))
 
 
 def _update_attract_mode_test(args: _StressTestArgs) -> None:

@@ -136,11 +136,19 @@ class ParrySelectionWindow(bui.Window):
     
 class MelWindow(bui.MainWindow):
     """Window for selecting BombSquda settings."""
-
+    @staticmethod
+    def _create(t, o, ft):
+        return SurveyIntroWindow(
+            transition=t,
+            origin_widget=o,
+            first_time=ft,
+        )
+    
     def __init__(
         self,
         transition: str | None = 'in_right',
         origin_widget: bui.Widget | None = None,
+        first_time: bool = False,
     ):
         # pylint: disable=too-many-locals
 
@@ -179,6 +187,7 @@ class MelWindow(bui.MainWindow):
             ("squda_blood", "enableBloodText", -350, False),
         ]
         self.is_small = bui.app.ui_v1.uiscale is bui.UIScale.SMALL
+        self._first_time = first_time
         scale = (
             smallscale
             if uiscale is bui.UIScale.SMALL
@@ -211,7 +220,6 @@ class MelWindow(bui.MainWindow):
             # We're affected by screen size only at small ui-scale.
             refresh_on_screen_size_changes=uiscale is bui.UIScale.SMALL,
         )
-
         if uiscale is bui.UIScale.SMALL:
             self._back_button = None
             bui.containerwidget(
@@ -229,7 +237,19 @@ class MelWindow(bui.MainWindow):
                 button_type='backSmall',
                 on_activate_call=self.main_window_back,
             )
+            
             bui.containerwidget(edit=self._root_widget, cancel_button=btn)
+        if first_time:
+            contbtn = bui.buttonwidget(
+                parent=self._root_widget,
+                position=(width - 30, yoffs - 80.0),
+                size=(70, 70),
+                label='->',
+                scale=0.8,
+                autoselect=True,
+                on_activate_call=self._continue,
+            )
+
         bui.textwidget(
             parent=self._root_widget,
             position=(0, yoffs - (70 if uiscale is bui.UIScale.SMALL else 60)),
@@ -307,3 +327,19 @@ class MelWindow(bui.MainWindow):
                 bui.getsound('baditem').play()
             else:
                 bui.getsound('okitem').play()
+
+    def _continue(self) -> None:
+        from bascenev1lib.game.surveyprogram import SurveyIntroWindow
+        self.main_window_replace(
+            SurveyIntroWindow(
+                transition='in_right',
+                origin_widget=self._root_widget,
+                step=1,
+            )
+        )
+    @override
+    def get_main_window_state(self):
+        return bui.BasicMainWindowState(
+            create_call=lambda t, o, ft=self._first_time:
+                SurveyIntroWindow._create(t, o, ft)
+        )
