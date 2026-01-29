@@ -21,14 +21,16 @@ class EmeraldActor(bs.Actor):
     
     def __init__(
         self,
-        position: Sequence[float] = (0.0, 5.0, 0.0),
+        position: Sequence[float],
+        force_type = None
     ):
         super().__init__()
         self.mesh = bs.getmesh('chaosEmerald')
-        self.texname = self.get_fairest_emerald()
+        self.texname = force_type if force_type else self.get_fairest_emerald()
         self.tex = bs.gettexture(self.texname)
         self.material = bs.Material()
         self.emeralds_die = True
+        self.mscale = 0.6
         if self.emeralds_die:
             self.deathTimer = bs.Timer(5, self.scheduled_die_message)
         self.material.add_actions(
@@ -47,6 +49,7 @@ class EmeraldActor(bs.Actor):
                 'body_scale': 0.3,
                 'position': position,
                 'mesh': self.mesh,
+                'mesh_scale': 0,
                 'light_mesh': self.mesh,
                 'shadow_size': 0.5,
                 'color_texture': self.tex,
@@ -55,7 +58,7 @@ class EmeraldActor(bs.Actor):
                 'materials': (self.material, SharedObjects.get().object_material),
             },
         )
-        bs.animate(self.node, 'mesh_scale', {0: 0, 0.5: 0.7})
+        bs.animate(self.node, 'mesh_scale', {0: 0, 0.3: self.mscale})
         
     def scheduled_die_message(self):
         if not self.node:
@@ -66,7 +69,7 @@ class EmeraldActor(bs.Actor):
         from bascenev1lib.actor.spaz import Spaz
         all_types = [f"emerald{i}" for i in range(1, 8)]
 
-        bs.debprint(f"\n{self}: Calculating fairest emerald...")
+        # bs.debprint(f"\n{self}: Calculating fairest emerald...")
 
         # Initialize counts
         counts = {e: 0 for e in all_types}
@@ -80,31 +83,30 @@ class EmeraldActor(bs.Actor):
                 continue
 
             emeralds = getattr(actor, "emeralds", [])
-            bs.debprint(f"  Spaz {actor} has: {emeralds}")
+            # bs.debprint(f"  Spaz {actor} has: {emeralds}")
 
             for e in emeralds:
                 if e in counts:
                     counts[e] += 1
 
-        bs.debprint("  Ownership counts:")
-        for e, c in counts.items():
-            bs.debprint(f"    {e}: {c}")
+        # bs.debprint("  Ownership counts:")
+        # for e, c in counts.items():
+        #     bs.debprint(f"    {e}: {c}")
 
         min_count = min(counts.values())
-        bs.debprint(f"  Minimum ownership count: {min_count}")
+        # bs.debprint(f"  Minimum ownership count: {min_count}")
 
         candidates = [e for e, c in counts.items() if c == min_count]
-        bs.debprint(f"  Candidate emeralds: {candidates}")
+        # bs.debprint(f"  Candidate emeralds: {candidates}")
 
         chosen = random.choice(candidates)
-        bs.debprint(f"  >>> Selected emerald: {chosen}\n")
+        # bs.debprint(f"  >>> Selected emerald: {chosen}\n")
 
         return chosen
     # msg must be any so we don't get circular import issues
     # altho maybe this WILL allow msg to be anything...
     def _handle_hit(self, msg: Any) -> None:
         if msg.hit_type == 'explosion': # exploded? just die
-            bs.debprint(f'{self} was hit by a explosion, so it will die now')
             self.scheduled_die_message()
         # likely hit by a punch; apply impulse
         self.node.handlemessage(
@@ -132,28 +134,38 @@ class EmeraldActor(bs.Actor):
                 if msg.immediate:
                     self.node.delete()
                 else:
-                    bs.animate(self.node, 'mesh_scale', {0: 0.7, 0.1: 0})
+                    bs.animate(self.node, 'mesh_scale', {0: self.mscale, 0.1: 0})
                     bs.timer(0.1, self.node.delete)
                 self.deathTimer = None
+
         elif isinstance(msg, TouchedMsg):
             if not self.node:
                 return
             toucher = bs.getcollision().opposingnode
             isspaz = toucher.getnodetype() == 'spaz'
             actor = toucher.getdelegate(bs.Actor)
-            if not toucher:
-                bs.debprint(f'{self}: no toucher')
+            # very long list of conditions
+            if (
+                not toucher
+                or not actor
+                or not actor.is_alive()
+                or not isspaz
+            ):
+                bs.debprint(
+                    (
+                        '[EmeraldActor]: actor didn\'t meet requirements'
+                        ' (toucher, actor, alive, or is a spaz)'
+                    )
+                )
                 return
-            if not actor:
-                bs.debprint(f'{self}: no toucher')
-                return
-            if isspaz:
-                bs.debprint(f'{self}: A spaz touched us, so we\'re gonna die.')
-                from bascenev1lib.actor.spaz import EmeraldMessage
-                toucher.handlemessage(EmeraldMessage(self.texname))
-                if not actor.issuper: # FIXME: make the spaz tell us if we should die?
-                    self.handlemessage(bs.DieMessage())
+            from bascenev1lib.actor.spaz import EmeraldMessage
+            toucher.handlemessage(EmeraldMessage(self.texname, self.node))
+
         elif isinstance(msg, bs.OutOfBoundsMessage):
             self.handlemessage(bs.DieMessage(immediate=True))
+
         elif isinstance(msg, bs.HitMessage):
             self._handle_hit(msg)
+        else:
+            return super().handlemessage(msg)
+        return None

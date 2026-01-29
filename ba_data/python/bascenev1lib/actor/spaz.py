@@ -24,7 +24,7 @@ from bascenev1._gameactivity import GameActivity
 from bascenev1lib.actor.bomb import Bomb, Blast
 from bascenev1lib.actor.powerupbox import PowerupBoxFactory, PowerupBox
 from bascenev1lib.actor.spazfactory import SpazFactory
-from bascenev1lib.actor.particles import BloodParticle, ConfettiParticle
+from bascenev1lib.actor.particles import BloodParticle, ConfettiParticle, SparkParticle
 from bascenev1lib.gameutils import SharedObjects
 import fromgoverhaul.mell_resources as mell
 import babase as ba
@@ -71,9 +71,11 @@ class EmeraldMessage:
     Message for emerald-related events or state changes.
     Attributes:
         current: The current emerald value or state.
+        srcnode: The emerald node that gave this Message.
     """
-    def __init__(self, current):
+    def __init__(self, current, srcnode):
         self.current = current
+        self.srcnode = srcnode
 
 
 class Spaz(bs.Actor):
@@ -288,6 +290,7 @@ class Spaz(bs.Actor):
         self.earthmeter = None
         self.earthchar = None
         self.earthmetertext = None
+        self.super_sparkies = None
         self.alreadydidanimation = False
         self.frozen = False
         self.shattered = False
@@ -982,7 +985,7 @@ class Spaz(bs.Actor):
                 return
             self.explotimer = None
             bomb.Bomb(position=self.node.position, bomb_type='tntfirework').explode()
-            self.shatter()
+            self.shatter(True)
             bs.getsound(snd2).play(position=self.node.position)
             if on_die_call:
                 # FIXME: maybe just use exec or eval since
@@ -1047,10 +1050,12 @@ class Spaz(bs.Actor):
         Called to 'press bomb' on this spaz;
         used for player or AI connections.
         """
-        if not (
-            self.node or 
-            self.node.knockout > 0.04 
-            or self.frozen or not self.is_alive()
+        if not self.node:
+            return
+        if (
+            not self.is_alive()
+            or self.node.knockout > 0.04
+            or self.frozen
         ):
             return
         if self.source_player: # Prevent tutorial from dying.
@@ -1456,8 +1461,44 @@ class Spaz(bs.Actor):
         ).autoretain()
         bs.getsound('parried').play()
         bs.getsound('orchestraHit').play()
-        return        
-        
+        return      
+    def super_spark(self, chance = 0.6):
+        if not self.node:
+            return
+        pos = self.node.position
+        if random.random() < chance:
+            for _ in range(random.randint(2, 5)):
+                offset_x = random.uniform(-1.5, 1.5)
+                offset_z = random.uniform(-1.5, 1.5)
+                offset_y = random.uniform(0.5, 1.5)
+                particle_pos = (pos[0] + offset_x, pos[1] + offset_y, pos[2] + offset_z)
+                particle = SparkParticle(position=particle_pos)
+                particle.autoretain()
+                dir_x = offset_x
+                dir_z = offset_z
+                dir_y = 1.4
+                length = (dir_x**2 + dir_y**2 + dir_z**2)**0.5
+                if length > 0:
+                    dir_x /= length
+                    dir_y /= length
+                    dir_z /= length
+                force = 1.5
+                particle.node.handlemessage(
+                    'impulse',
+                    particle_pos[0],
+                    particle_pos[1],
+                    particle_pos[2],
+                    0,
+                    0,
+                    0,
+                    force,
+                    force,
+                    0,
+                    0,
+                    dir_x,
+                    dir_y,
+                    dir_z,
+                )
     def gosuper(self, shouldntsetmusic: bool = False) -> None:
         """ 
         Called at a random chance. 
@@ -1499,6 +1540,7 @@ class Spaz(bs.Actor):
             # Instead of using looped array animation,
             # use a timer which allows us to override any color changes
             self.super_flash = bs.Timer(endtime, flash_func, repeat=True) 
+            self.super_sparkies = bs.Timer(endtime + 0.2, self.super_spark, repeat=True) 
             bs.camerashake(intensity=5.0)
             char_name = getattr(self, 'character', None)
             hurtiness = 4.2
@@ -2183,10 +2225,13 @@ class Spaz(bs.Actor):
                 bs.getsound('player_unready').play()
                 bs.debprint(f'{self.node.name}: We\'re super, so not collecting a emerald.')
                 return
+            
             if msg.current not in self.emeralds:
                 self.emeralds.append(msg.current)
                 bs.getsound('s3_blsp').play()
                 bs.debprint(f'{self.node.name} collected emerald {msg.current}.')
+                msg.srcnode.handlemessage(bs.DieMessage())
+
             if len(self.emeralds) == 7:
                 bs.getsound('cd_alright').play()
                 bs.debprint(f'{self.node.name} got {len(self.emeralds)} emeralds.')
@@ -2201,6 +2246,7 @@ class Spaz(bs.Actor):
                     color=(1, 1, 1, 0.6),
                     scale=1.0,
                 ).autoretain()
+
             else:
                 bs.debprint(f'{self.node.name} tried to collect {msg.current}, but it already has it')
                 bs.getsound('player_unready').play()
@@ -3147,8 +3193,7 @@ class Spaz(bs.Actor):
                             )
                     self.node.dead = True
                     bs.timer(6.0, self.node.delete)
-                    self.emeralds = []
-                    self.update_emerald_indicator()
+                    self.drop_emeralds()
         elif isinstance(msg, bs.OutOfBoundsMessage):
             if self.parrying == True:
                 self.tptosafety()
@@ -3847,7 +3892,72 @@ class Spaz(bs.Actor):
                     ),
                 ).autoretain()
             self._cursed = False
-    
+
+    def drop_emeralds(self) -> None:
+        """
+        Tells a Spaz to spawn emeralds 
+        around it based on it's list and 
+        clear it's list; effectively dropping them.
+        """
+        from bascenev1lib.actor.emerald import EmeraldActor
+        if (
+            not getattr(self, 'emeralds', None) 
+            or not self.node
+        ):
+            return      
+        pos = self.node.position
+        bs.getsound('ring_spill').play()
+        for emerald in list(self.emeralds):
+            # random spawn offset
+            offset_x = random.uniform(-0.7, 0.7)
+            offset_z = random.uniform(-0.7, 0.7)
+            offset_y = random.uniform(0.1, 0.3)
+
+            emerald_pos = (
+                pos[0] + offset_x,
+                pos[1] + offset_y,
+                pos[2] + offset_z,
+            )
+
+            actor = EmeraldActor(
+                position=emerald_pos,
+                force_type=emerald,
+            )
+            actor.autoretain()
+
+            # direction (mostly upward)
+            dir_x = offset_x
+            dir_z = offset_z
+            dir_y = 1.4
+
+            length = (dir_x**2 + dir_y**2 + dir_z**2) ** 0.5
+            if length > 0:
+                dir_x /= length
+                dir_y /= length
+                dir_z /= length
+
+            force = 1.0
+
+            actor.node.handlemessage(
+                'impulse',
+                emerald_pos[0],
+                emerald_pos[1],
+                emerald_pos[2],
+                0,
+                0,
+                0,
+                force,
+                force,
+                0,
+                0,
+                dir_x,
+                dir_y,
+                dir_z,
+            )
+        # clear inventory
+        bs.timer(0.3, self.emeralds.clear)
+        bs.timer(0.31, self.update_emerald_indicator)
+
     def explode_head(self):
         """'Explode' the Spaz's head in a gruesome way."""
         if not self.node or self.hexploded:
@@ -3962,7 +4072,7 @@ class Spaz(bs.Actor):
             particle_type = BloodParticle if bloody else ConfettiParticle 
             pos = self.node.position    
             if not bloody:
-                bs.getsound('party_').play(position=pos)
+                bs.getsound('party_blower').play(position=pos)
             for _ in range(15):
                 offset_x = random.uniform(-0.5, 0.5)
                 offset_z = random.uniform(-0.5, 0.5)

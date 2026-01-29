@@ -158,6 +158,7 @@ class SpazBot(Spaz):
         self._charge_speed = 0.5 * (
             self.charge_speed_min + self.charge_speed_max
         )
+        self.emerald_chase_time = 0
         self.chainRepeater = None
         self._lead_amount = 0.5
         self._mode = 'wait'
@@ -331,6 +332,13 @@ class SpazBot(Spaz):
         # don't gaf if we're super already. >B)
         if self.issuper:
             we_chase_emeralds = False
+        # handle if we've taken too much to
+        # grab a emerald
+        if self.emerald_chase_time > 4.0:
+            self.emerald_chase_time = 0
+        elif self.emerald_chase_time > 1.0:
+            we_chase_emeralds = False
+            self.emerald_chase_time += 0.1
         if we_chase_emeralds:
             # save coords
             emerald, edist = self._get_nearest_emerald()
@@ -338,25 +346,24 @@ class SpazBot(Spaz):
             bomb, bdist = self._get_nearest_live_bomb()
 
             defending = False
-            if emerald and edist < 5.5 and bomb and bdist < 3.5:
-                # dargh- a bomb is close to us! run!!
-                # quick note, i just love how spazbots
-                # scurry away like scared creepers xd
-                bomb_pos = bs.Vec3(*bomb.node.position)
-                diff = our_pos - bomb_pos
-                diff = bs.Vec3(diff.x, 0, diff.z)
-                away = diff.normalized()
+            # functionality for escaping bombs; removed due to
+            # too much running away
+            # if emerald and edist < 5.5 and bomb and bdist < 3.5:
+            #     bomb_pos = bs.Vec3(*bomb.node.position)
+            #     diff = our_pos - bomb_pos
+            #     diff = bs.Vec3(diff.x, 0, diff.z)
+            #     away = diff.normalized()
 
-                self._mode = 'flee'
-                self.node.run = 1.0
-                self.node.move_left_right = away.x
-                self.node.move_up_down = -away.z
-                # if we holdin something, probably
-                # our bomb; let go of it and run off.
-                if self.node.hold_node:
-                    self.node.pickup_pressed = True
-                    self.node.pickup_pressed = False
-                return
+            #     self._mode = 'flee'
+            #     self.node.run = 1.0
+            #     self.node.move_left_right = away.x
+            #     self.node.move_up_down = -away.z
+            #     # if we holdin something, probably
+            #     # our bomb; let go of it and run off.
+            #     if self.node.hold_node:
+            #         self.node.pickup_pressed = True
+            #         self.node.pickup_pressed = False
+            #     return
                 
             if threat:
                 # player is too close to US!
@@ -369,13 +376,14 @@ class SpazBot(Spaz):
                     defending = True
 
             # no one? let's chase that emerald!
-            if emerald and edist < 5.0 and not defending:
+            if emerald and edist < 4.3 and not defending:
                 target_pt_raw = bs.Vec3(*emerald.node.position)
                 target_vel = bs.Vec3(0, 0, 0)
                 can_attack = False
                 force_target = True
                 target_is_emerald = True
                 self.node.run = 1.0
+                self.emerald_chase_time += 0.1
                 if self.node.hold_node:
                     self.node.pickup_pressed = True
                     self.node.pickup_pressed = False
@@ -388,6 +396,9 @@ class SpazBot(Spaz):
                 can_attack = True
                 force_target = True
                 target_is_emerald = False
+
+            else:
+                self.emerald_chase_time = 0
             
         # If we're a flag-bearer, we're pretty simple-minded - just walk
         # towards the flag and try to pick it up.

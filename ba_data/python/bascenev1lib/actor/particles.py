@@ -1,4 +1,4 @@
-"""Particle-ish system (by Mell)"""
+"""A multitude of hand-made particles, including a template for one."""
 import bascenev1 as bs
 import random
 from bascenev1lib.gameutils import SharedObjects
@@ -21,7 +21,8 @@ class ParticleActor(bs.Actor):
                  position: Sequence[float],
                  body_scale: int = 0.5,
                  mesh_scale: int = 0.5,
-                 body_type: str = 'sphere'
+                 reflection: int = 0.6,
+                 body_type: str = 'sphere',
     ):
         """
         Initialize a particle actor with physics properties and visual representation.
@@ -77,7 +78,7 @@ class ParticleActor(bs.Actor):
                 'shadow_size': self.bscale - 0.1,
                 'color_texture': self.tex,
                 'reflection': 'powerup',
-                'reflection_scale': [0.6],
+                'reflection_scale': [reflection],
                 'materials': (self.material, obj_mat),
             },
         )
@@ -175,6 +176,40 @@ class ConfettiParticle(ParticleActor):
         self.scheduling = False
 
     def schedule_death(self, time: int = 5.0):
+        """Schedule a time where we will die."""
+        if self.scheduling or not self.node:
+            return
+        self.scheduling = True
+        self.deathTimer = bs.Timer(time, self.die)
+
+    @override
+    def handlemessage(self, msg: Any) -> Any:
+        """Message handler"""
+        assert not self.expired
+        if isinstance(msg, FootingMessage):
+            self.schedule_death()
+        else:
+            return super().handlemessage(msg)
+        return None
+
+class SparkParticle(ParticleActor):
+    """
+    Particle for a spark-ish... particle.
+    Used usually for super periodically.
+    """
+    def __init__(self, position: Sequence[float]):
+        tex = 'confetti_colors/yellow'
+        super().__init__(
+            position=position,
+            texture=bs.gettexture(tex),
+            mesh=bs.getmesh('flash'),
+            body_scale=0.2,
+            mesh_scale=0.1,
+            reflection=1.4
+        )
+        self.scheduling = False
+
+    def schedule_death(self, time: int = 1.0):
         """Schedule a time where we will die."""
         if self.scheduling or not self.node:
             return
