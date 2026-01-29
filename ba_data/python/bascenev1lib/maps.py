@@ -879,7 +879,7 @@ class SNESBattleCourse1(bs.Map):
     @classmethod
     def get_play_types(cls) -> list[str]:
         """Return valid play types for this map."""
-        return ['melee','team_flag','keep_away','king_of_the_hill']
+        return ['melee', 'team_flag', 'keep_away', 'king_of_the_hill']
 
     @override
     @classmethod
@@ -893,8 +893,8 @@ class SNESBattleCourse1(bs.Map):
             'mesh': bs.getmesh('snesCourseLevel'),
             'collision_mesh': bs.getcollisionmesh('snesCourseCollide'),
             'tex': bs.gettexture('snesCourseColor'),
-            'bgtex': bs.gettexture('menuBG'),
-            'bgmesh': bs.getmesh('thePadBG')
+            'bgtex': bs.gettexture('snesCourseColor'),
+            'bgmesh': bs.getmesh('snesSky')
         }
         # fixme should chop this into vr/non-vr sections for efficiency
         return data
@@ -902,7 +902,7 @@ class SNESBattleCourse1(bs.Map):
     def __init__(self) -> None:
         super().__init__()
         shared = SharedObjects.get()
-        bs.newnode(
+        self.node = bs.newnode(
             'terrain',
             delegate=self,
             attrs={
