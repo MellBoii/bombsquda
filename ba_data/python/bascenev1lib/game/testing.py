@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, override
+from bascenev1lib.dialog import DialogueManager
 from bascenev1lib.gameutils import SharedObjects
 import bascenev1 as bs
 import random
@@ -196,6 +197,43 @@ class TestActivity(bs.TeamGameActivity[Player, Team]):
     def on_begin(self) -> None:
         super().on_begin()
         self.signpost = SignpostActor()
+        DialogueManager(
+            self,
+            [
+                {
+                    "character": "meliso",
+                    "expression": "shocked",
+                    "name": "Meliso",
+                    "text": "holy smokes is that spaz!?",
+                    "sound": "diagvoice/meliso",
+                },
+                {
+                    "text": "...",
+                    "sound": "tap",
+                },
+                {
+                    "character": "spaz",
+                    "expression": "angry",
+                    "name": "Newbie",
+                    "text": "Shut up.",
+                    "sound": "diagvoice/spaz",
+                },
+                {
+                    "character": "meliso",
+                    "expression": "neutral",
+                    "name": "Meliso",
+                    "text": "well jeez, you're really \nboring you know!",
+                    "sound": "diagvoice/meliso",
+                },
+                {
+                    "character": "spaz",
+                    "expression": "angry",
+                    "name": "Newbie",
+                    "text": "For not letting you FUCKING chainsaw me \ninto 2 halves like you tried last time? \nIf that's boring, then being boring is now normal.",
+                    "sound": "diagvoice/spaz",
+                },
+            ],
+        )
             
     @override
     def spawn_player(self, player: Player) -> bs.Actor:
