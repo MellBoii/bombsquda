@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, override
+from typing import TYPE_CHECKING, Any, override
 
 import babase
 
@@ -307,7 +307,11 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
         angle: float | None = None,
     ) -> PlayerSpaz:
         """Spawn and wire up a standard player spaz."""
-        spaz = super().spawn_player_spaz(player, position, angle)
+        baller = False
+        if baller:
+            spaz = super().spawn_player_ball(player)
+        else:
+            spaz = super().spawn_player_spaz(player, position, angle)
 
         # Deaths are noteworthy in co-op games.
         spaz.play_big_death_sound = True
@@ -369,7 +373,7 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
         
         player1 = self.players[0]
         p1name = player1.getname()
-        assert isinstance(p1, ba.Player)
+        assert isinstance(player1, ba.Player)
         
         bs.broadcastmessage(f"{p1name} lost the battle...", color=(1.0,0.1,0.1))
 
