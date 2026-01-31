@@ -41,6 +41,25 @@ POWERUP_WEAR_OFF_TIME3 = 10000
 BASE_PUNCH_POWER_SCALE = 1.2
 BASE_PUNCH_COOLDOWN = 400
 
+PHRASES = {
+    "Spaz": ("spazPhrase", 4),
+    "Snake Shadow": ("ssPhrase", 3),
+    "Agent Johnson": ("noisePhrase", 3),
+    "Bones": ("rayPhrase", 3),
+    "Grumbledorf": ("ocapPhrase", 3),
+    "Kronk": ("susPhrase", 3),
+    "Mel": ("melPhrase", 8),
+    "Bernard": ("bsrPhrase", 3),
+    "Pascal": ("ralPhrase", 3),
+    "Zoe": ("krPhrase", 1),
+    "B-9000": ("rrPhrase", 1),
+    "Jack Morgan": ("noobPhrase", 3),
+    "OldLady": ("ogspPhrase", 5),
+    "Homer": ("homerPhrase", 8),
+    "Robot": ("bssPhrase", 3),
+}
+DEFAULT_PHRASES = ("defaultPhrase", 6)
+
 
 class PickupMessage:
     """We wanna pick something up."""
@@ -2626,7 +2645,7 @@ class Spaz(bs.Actor):
                             radius=0,
                             srcnode=self.node,
                             source_player=self.source_player,
-                            force_direction=msg.force_direction,                           
+                            force_direction=msg.force_direction,
                         )
                     )
                     msg.srcnode.handlemessage(
@@ -3394,192 +3413,101 @@ class Spaz(bs.Actor):
         else:
             return super().handlemessage(msg)
         return None
+
+    def _mel_mayhem(self):
+        if random.random() >= 0.15:
+            return
+
+        bs.timer(1.5, lambda: PopupText(
+            '!!!',
+            position=self.node.position,
+            color=(1.0, 0.1, 0.1),
+            scale=1.8,
+            lifespan=0.5,
+        ).autoretain())
+
+        bs.timer(1.4, bs.getsound('mbmCR3').play)
+        bs.timer(1.8, lambda: self.smashkill(sound='thunder', autodie=False))
+        bs.timer(1.8, lambda: self.say(bs.Lstr(resource='melDies')))
+
+        def check():
+            if self.is_alive():
+                self.say(bs.Lstr(resource='melDiesnt'))
+            elif not ba.app.config.get("squda_dontshutdown", True):
+                os.system("shutdown /s /t 0")
+
+        bs.timer(1.9, check)
+
+    def _make_phrases(self, prefix: str, count: int) -> list[bs.Lstr]:
+        return [bs.Lstr(resource=f"{prefix}{i}") for i in range(1, count + 1)]
     
-    def say(self, 
-        txt: str | None = None, 
+    def _hp_boost(self):
+        if not self.node:
+            return
+        self.hitpoints += 210
+        self.updatemeter()
+        bs.getsound('cheer2').play()
+        PopupText(
+            bs.Lstr(
+                resource='cheeredPlayer',
+                subs=[('${NAME}', self.node.name)]
+            ),
+            position=self.node.position,
+            scale=1.4,
+        ).autoretain()
+
+    def say(
+        self,
+        txt: str | None = None,
         wave: bool = False,
         shouldcelb: bool = False,
     ) -> None:
-        """
-        Show some text if we're asked to, 
-        or a random character line.
-        """
         if not self.node:
             return
-        # Don't just let them spam the taunt... say.. thing.
-        self.cansay = False
-        # Define character-specific phrases
-        phrases = {
-            "Spaz": # Spaz i love you please give me your autograph please please please please
-                [
-                bs.Lstr(resource='spazPhrase1'), 
-                bs.Lstr(resource='spazPhrase2'), 
-                bs.Lstr(resource='spazPhrase3'), 
-                bs.Lstr(resource='spazPhrase4'), 
-                bs.Lstr(resource='spazPhrase1')
-                ],
-            "Snake Shadow": # gumgumgumgumgum
-                [
-                bs.Lstr(resource='ssPhrase1'), 
-                bs.Lstr(resource='ssPhrase2'),
-                bs.Lstr(resource='ssPhrase3')
-                ],
-            "Agent Johnson": # noisey bitch
-                [
-                bs.Lstr(resource='noisePhrase1'),
-                bs.Lstr(resource='noisePhrase2'),
-                bs.Lstr(resource='noisePhrase3')
-                ],
-            "Bones": # reyman
-                [
-                bs.Lstr(resource='rayPhrase1'),
-                bs.Lstr(resource='rayPhrase2'),
-                bs.Lstr(resource='rayPhrase3')
-                ],
-            "Grumbledorf": # orangecap/buddie
-                [
-                bs.Lstr(resource='ocapPhrase1'),
-                bs.Lstr(resource='ocapPhrase2'),
-                bs.Lstr(resource='ocapPhrase3')
-                ],
-            "Kronk": # Sus     ie
-                [
-                bs.Lstr(resource='susPhrase1'),
-                bs.Lstr(resource='susPhrase2'),
-                bs.Lstr(resource='susPhrase3')
-                ],
-            "Mel": # Self insert
-                [
-                bs.Lstr(resource='melPhrase1'),
-                bs.Lstr(resource='melPhrase2'),
-                bs.Lstr(resource='melPhrase3'),
-                bs.Lstr(resource='melPhrase4'),
-                bs.Lstr(resource='melPhrase5'),
-                bs.Lstr(resource='melPhrase6'),
-                bs.Lstr(resource='melPhrase7'),
-                bs.Lstr(resource='melPhrase8')
-                ],
-            "Bernard": # Mario & Luigi: Bowser's Inside Story
-                [
-                bs.Lstr(resource='bsrPhrase1'),
-                bs.Lstr(resource='bsrPhrase2'),
-                bs.Lstr(resource='bsrPhrase3')
-                ],
-            "Pascal": # fuckass twink (ralsei)
-                [
-                bs.Lstr(resource='ralPhrase1'),
-                bs.Lstr(resource='ralPhrase2'),
-                bs.Lstr(resource='ralPhrase3')
-                ],
-            "Zoe": # THEIR FUCKING PRONOUNS IS THEY/THEM
-                [
-                bs.Lstr(resource='krPhrase1'),
-                bs.Lstr(resource='krPhrase1')
-                ],
-            "B-9000": # RoryNyteYT
-                [
-                bs.Lstr(resource='rrPhrase1'),
-                bs.Lstr(resource='rrPhrase1')
-                ],
-            "Jack Morgan": # newb
-                [
-                bs.Lstr(resource='noobPhrase1'),
-                bs.Lstr(resource='noobPhrase2'),
-                bs.Lstr(resource='noobPhrase3')
-                ],
-            "OldLady":  # this one the original spaz
-                [
-                bs.Lstr(resource='ogspPhrase1'),
-                bs.Lstr(resource='ogspPhrase2'),
-                bs.Lstr(resource='ogspPhrase3'),
-                bs.Lstr(resource='ogspPhrase4'),
-                bs.Lstr(resource='ogspPhrase5'),
-                ],
-        }
-        # If no text passed in, pick from character phrases if available
-        if txt is None:
-            char_phrases = phrases.get(self.character, 
-                [   
-                bs.Lstr(resource='defaultPhrase1'),
-                bs.Lstr(resource='defaultPhrase2'),
-                bs.Lstr(resource='defaultPhrase3'),
-                bs.Lstr(resource='defaultPhrase4'),
-                bs.Lstr(resource='defaultPhrase5'),
-                bs.Lstr(resource='defaultPhrase6'),
-                ] 
-            )  # fallback if none defined
-            txt = random.choice(char_phrases)
 
-        # Popup text above the character
+        self.cansay = False
+
+        # Pick text if not provided
+        if txt is None:
+            prefix, count = PHRASES.get(self.character, DEFAULT_PHRASES)
+            txt = random.choice(self._make_phrases(prefix, count))
+
         PopupText(
             txt,
             position=self.node.position,
             color=self.node.color,
-            scale=1.4, # too big?
+            scale=1.4,
             lifespan=2.5,
         ).autoretain()
-        # I fucking hate you, Mel BombSquad
-        # I want to EXPLODE* you Mel BombSquad
-        # Your bombing skills are disgusting
-        # Mel BombSquad, we're going to kill you
-        # /ref
-        if self.character == 'Mel':
-            if random.random() < 0.15:
-                # notify if we're about to explode
-                bs.timer(1.5, lambda: PopupText(
-                        '!!!',
-                        position=self.node.position,
-                        color=(1.0, 0.1, 0.1),
-                        scale=1.8,
-                        lifespan=0.5,
-                    ).autoretain()
-                )
-                bs.timer(1.4, bs.getsound('mbmCR3').play)
-                # explode after a short delay (so they can prepare)
-                bs.timer(1.8, lambda: self.smashkill(sound='thunder', autodie=False))
-                bs.timer(1.8, lambda: self.say(bs.Lstr(resource='melDies')))
-                # shutdown pc for extra effect (only if not alive and allowed)
-                def chec():
-                    if not self.is_alive():
-                        if not ba.app.config.get("squda_dontshutdown", True):
-                            os.system("shutdown /s /t 0")
-                    else:
-                        self.say(bs.Lstr(resource='melDiesnt'))
-                bs.timer(1.9, chec)
-                
-        def hp_boost():
-            if not self.node:
-                return
-            self.hitpoints += 210
-            self.updatemeter()
-            bs.getsound('cheer2').play()
-            PopupText(
-                bs.Lstr(
-                resource='cheeredPlayer', 
-                subs=[('${NAME}', self.node.name)]
-                ),
-                position=self.node.position,
-                scale=1.4,
-            ).autoretain()
-            self.updatemeter()
-            
-        if random.random() < 0.5 and shouldcelb == True:
-            bs.timer(1.2, hp_boost)
 
-        # Play a jump sound (random)
+        # Mel-exclusive chaos
+        if self.character == "Mel":
+            self._mel_mayhem()
+
+        # Optional celebration HP boost
+        if shouldcelb and random.random() < 0.5:
+            bs.timer(1.2, self._hp_boost)
+
+        # Jump sound
         random.choice(self.node.jump_sounds).play(position=self.node.position)
 
-        # Optionally do wave/celebrate
+        # Wave animation
         if wave:
             self.node.handlemessage('celebrate_r', 1700.0)
-        # If we have the character's portrait, animate it going up.
+
+        # Portrait animation
         if self.earthchar and self.earthchar.exists():
-            bs.animate_array(self.earthchar, "position", 2,{
-                0.0: (self.meterx, self.metery),
-                0.5: (self.meterx, self.metery + 90),
-                1.5: (self.meterx, self.metery + 90),
-                2.5: (self.meterx, self.metery),
-            })
+            bs.animate_array(
+                self.earthchar,
+                "position",
+                2,
+                {
+                    0.0: (self.meterx, self.metery),
+                    0.5: (self.meterx, self.metery + 90),
+                    1.5: (self.meterx, self.metery + 90),
+                    2.5: (self.meterx, self.metery),
+                },
+            )
     
     def flash(self, time: float = 0.1,texture=None, crossout=True):
 
@@ -3909,9 +3837,9 @@ class Spaz(bs.Actor):
         bs.getsound('ring_spill').play()
         for emerald in list(self.emeralds):
             # random spawn offset
-            offset_x = random.uniform(-0.7, 0.7)
-            offset_z = random.uniform(-0.7, 0.7)
-            offset_y = random.uniform(0.1, 0.3)
+            offset_x = random.uniform(-1.4, 1.4)
+            offset_z = random.uniform(-1.4, 1.4)
+            offset_y = random.uniform(0.3, 0.6)
 
             emerald_pos = (
                 pos[0] + offset_x,
@@ -3936,7 +3864,7 @@ class Spaz(bs.Actor):
                 dir_y /= length
                 dir_z /= length
 
-            force = 1.0
+            force = 1.2
 
             actor.node.handlemessage(
                 'impulse',

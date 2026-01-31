@@ -50,6 +50,7 @@ from bascenev1lib.actor.spazbot import (
     LauncherBot
 )
 from bascenev1lib.actor.cutsceneplayer import CutscenePlayer
+from bascenev1lib.dialog import DialogueManager
 
 if TYPE_CHECKING:
     from typing import Any, Sequence
@@ -439,6 +440,42 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
     )
         if self._preset in {Preset.ENDLESS, Preset.ENDLESS_TOURNAMENT}:
             self._show_pizzatime_sequence() # Time to get funkeh!
+            DialogueManager(
+                [
+                    {
+                        "character": "spaz",
+                        "expression": "angry",
+                        "name": self.players[0].actor.node.name,
+                        "text": "{pause=0.4}...what the hell is a pizza time?{pause=0.3}",
+                        "sound": "diagvoice/spaz",
+                        "interrupt": True,
+                    },
+                    {
+                        "character": "meliso",
+                        "expression": "neutral",
+                        "name": "Meliso",
+                        "text": "so you see,{pause=0.2} it means you're going {sound=voicelines/spaz/hurt03} to die!",
+                        "sound": "diagvoice/meliso",
+                        "interrupt": True,
+                    },
+                    {
+                        "character": "spaz",
+                        "expression": "insane",
+                        "name": self.players[0].actor.node.name,
+                        "text": "WHY IS THERE A TIMER COMING UP?????{pause=0.5}",
+                        "sound": "diagvoice/spaz",
+                        "interrupt": True
+                    },
+                    {
+                        "character": "spaz",
+                        "expression": "insane",
+                        "name": self.players[0].actor.node.name,
+                        "text": "I SWEAR IF I FIND YOU- {sound=shieldDown}",
+                        "sound": "diagvoice/spaz",
+                        "interrupt": True
+                    },
+                ],
+            )
             for player in self.players:
                 if player.character == 'Homer':
                     bs.setmusic(bs.MusicType.LAP0H)
@@ -1017,10 +1054,10 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
             try:
                 player.assigninput(
                 ( 
-                InputType.JUMP_PRESS,
-                InputType.BOMB_PRESS,
-                InputType.PICK_UP_PRESS,
-                InputType.PUNCH_PRESS,
+                    InputType.JUMP_PRESS,
+                    InputType.BOMB_PRESS,
+                    InputType.PICK_UP_PRESS,
+                    InputType.PUNCH_PRESS,
                 ),
                 bs.Call(self._skip_cutscene)
             )

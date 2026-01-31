@@ -198,11 +198,10 @@ class TestActivity(bs.TeamGameActivity[Player, Team]):
         super().on_begin()
         self.signpost = SignpostActor()
         DialogueManager(
-            self,
             [
                 {
                     "character": "meliso",
-                    "expression": "shocked",
+                    "expression": "surprised",
                     "name": "Meliso",
                     "text": "holy smokes is that spaz!?",
                     "sound": "diagvoice/meliso",
@@ -215,21 +214,25 @@ class TestActivity(bs.TeamGameActivity[Player, Team]):
                     "character": "spaz",
                     "expression": "angry",
                     "name": "Newbie",
-                    "text": "Shut up.",
+                    "text": "Shut up.{pause=0.2} I'm gonna fucking kill you.",
                     "sound": "diagvoice/spaz",
                 },
                 {
                     "character": "meliso",
                     "expression": "neutral",
                     "name": "Meliso",
-                    "text": "well jeez, you're really \nboring you know!",
+                    "text": "well jeez,{pause=0.2} you're really \nboring {sound=voicelines/spaz/hurt03}you know!",
                     "sound": "diagvoice/meliso",
+                    "interrupt": True,
                 },
                 {
                     "character": "spaz",
-                    "expression": "angry",
+                    "expression": "insane",
                     "name": "Newbie",
-                    "text": "For not letting you FUCKING chainsaw me \ninto 2 halves like you tried last time? \nIf that's boring, then being boring is now normal.",
+                    "text": (
+                        "BORING?{pause=0.4}{expr=angry} For not letting you FUCKING chainsaw me \ninto 2 "
+                        "halves like you tried last time?\n{pause=0.6}If that's boring, then being boring is now normal."
+                    ),
                     "sound": "diagvoice/spaz",
                 },
             ],

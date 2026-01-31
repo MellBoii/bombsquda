@@ -273,8 +273,8 @@ class SpazFactory:
         )
 
         self.shield_up_sound = (
-        bs.getsound('shieldUp'),
-        bs.getsound('shield2')
+            bs.getsound('shieldUp'),
+            bs.getsound('shield2')
         )
         self.shield_down_sound = bs.getsound('shieldDown')
         self.shield_hit_sound = bs.getsound('shieldHit')

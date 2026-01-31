@@ -43,6 +43,7 @@ from bascenev1lib.actor.spazbot import (
     BomberBotPro,
     BrawlerBotPro,
 )
+from bascenev1lib.dialog import DialogueManager
 
 if TYPE_CHECKING:
     from typing import Any
@@ -546,6 +547,30 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
         # oh yeah, and a special effect for endless
         elif self._preset is Preset.ENDLESS:
             bs.setmusic(None)
+            DialogueManager(
+                [
+                    {
+                        "character": "spaz",
+                        "expression": "neutral",
+                        "name": self.players[0].actor.node.name,
+                        "text": "{pause=2.0}...what the fuck is tha-",
+                        "sound": "diagvoice/spaz",
+                        "interrupt": True
+                    },
+                    {
+                        "name": "Earthmover",
+                        "text": "RAAAAGHHHHHHHHHH{pause=0.4}",
+                        "interrupt": True
+                    },
+                    {
+                        "character": "spaz",
+                        "expression": "insane",
+                        "name": self.players[0].actor.node.name,
+                        "text": "AAAAAAHHHHHHHHHH!!!{pause=1.2}",
+                        "interrupt": True
+                    },
+                ],
+            )
             for player in self.players:
                 def begin(p=player):
                     # teleport a bit above on start 

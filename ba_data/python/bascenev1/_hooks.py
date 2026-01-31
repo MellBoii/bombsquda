@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 
 _end_votes: set[str] = set()
 _vote_activity_id: int | None = None
+reset_timer = None
 
 
 def launch_main_menu_session() -> None:
@@ -44,13 +45,14 @@ def handle_command(msg: str, roster_entry: dict, client_id: int) -> None:
     is_sp = roster_entry.get('singleplayer', False)
     parts = msg.split()
     cmd = parts[0].lower()
+    activity = bs.get_foreground_host_activity()
 
     if cmd == '/kill':
         if not is_sp:
             bs.chatmessage('Only available in Singleplayer!')
             return
         if len(parts) < 2:
-            bs.chatmessage(f'{display}: usage: /kill <player_number>')
+            bs.chatmessage(f'{display}: usage: /kill <player_index>')
             return None
         try:
             index = int(parts[1])
@@ -73,8 +75,8 @@ def handle_command(msg: str, roster_entry: dict, client_id: int) -> None:
         if actor is None:
             bs.chatmessage(f'{display}: player {index} has no actor.')
             return None
-
-        actor.die()
+        with activity.context:
+            actor.die()
         bs.broadcastmessage(f'{display} killed player {index}.')
         return None
     
@@ -83,7 +85,7 @@ def handle_command(msg: str, roster_entry: dict, client_id: int) -> None:
             bs.chatmessage('Only available in Singleplayer!')
             return
         if len(parts) < 2:
-            bs.chatmessage(f'{display}: usage: /kill <player_number>')
+            bs.chatmessage(f'{display}: usage: /super <player_index>')
             return None
         try:
             index = int(parts[1])
@@ -106,16 +108,15 @@ def handle_command(msg: str, roster_entry: dict, client_id: int) -> None:
         if actor is None:
             bs.chatmessage(f'{display}: player {index} has no actor.')
             return None
-
-        actor.gosuper()
-        bs.broadcastmessage(f'{display} killed player {index}.')
+        with activity.context:
+            actor.gosuper()
+        bs.broadcastmessage(f'{display} made player {index} super.')
         return None
     
     elif cmd == '/end':
         # In singleplayer, end immediately
         if is_sp:
             bs.broadcastmessage('Ending activity (/end was sent)')
-            activity = _bascenev1.get_foreground_host_activity()
             if activity:
                 with activity.context:
                     activity.end_game()
@@ -125,16 +126,23 @@ def handle_command(msg: str, roster_entry: dict, client_id: int) -> None:
         if account_id in _end_votes:
             bs.chatmessage(f'{display}: you already voted.')
             return None
-
+        
+        if _end_votes == []:
+            global reset_timer
+            with activity.context:
+                bs.getsound('vote_started').play()
+            reset_timer = bs.Timer(5, reset_end_votes)
+        else:
+            with activity.context:
+                bs.getsound('vote_added').play()
         _end_votes.add(account_id)
-        bs.getsound('vote_added').play()
-
+            
         voters = _end_votes
-        needed = (len(voters) // 2) + 1
+        needed = len(bs.get_game_roster())
         current = len(_end_votes)
 
         bs.broadcastmessage(
-            f'{display} voted to end '
+            f'{display} voted to end the game '
             f'({current}/{needed})'
         )
 
@@ -142,16 +150,20 @@ def handle_command(msg: str, roster_entry: dict, client_id: int) -> None:
         if current >= needed:
             bs.broadcastmessage('Vote passed! Ending activity.')
             _end_votes.clear()
-            bs.getsound('vote_passed')
-            activity = _bascenev1.get_foreground_host_activity()
             if activity:
                 with activity.context:
+                    bs.getsound('vote_passed').play()
                     activity.end_game()
     else:
         bs.broadcastmessage('Not a valid command!')
         return None
     return None
 
+def reset_end_votes():
+    bs.broadcastmessage("The vote was canceled (not enough votes).")
+    _end_votes.clear()
+    with bs.get_foreground_host_activity().context:
+        bs.getsound('vote_failed').play()
 
 def filter_chat_message(msg: str, client_id: int) -> str | None:
     roster = _bascenev1.get_game_roster()
@@ -187,11 +199,8 @@ def filter_chat_message(msg: str, client_id: int) -> str | None:
 
     display = roster_entry.get('display_string', 'Unknown Player')
     account_id = roster_entry.get('account_id')
-
-    # Require account ID in multiplayer
     if not account_id:
-        print(f'Player {display} has no account id; message ignored.')
-        return None
+        print('{display} has no account id, they probably aren\'t logged in!')
 
     if msg.startswith('/'):
         return handle_command(
