@@ -591,8 +591,8 @@ def register_appearances() -> None:
     t.pickup_sounds = ['voicelines/ocap/pickup' + str(i + 1) + '' for i in range(4)]
     t.fall_sounds = ['voicelines/ocap/fall' + str(i + 1) + '' for i in range(3)]
     t.style = 'agent'
-    t.default_color = (0.2, 0.4, 1.0)
-    t.default_highlight = (0.06, 0.15, 0.4)
+    t.default_color = (0.87, 0.44, 0.15)
+    t.default_highlight = (0.46, 0.26, 0.54)
 
     # The Original      Spaz ###################################
     t = Appearance('OldLady')
