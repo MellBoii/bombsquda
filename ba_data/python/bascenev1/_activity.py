@@ -10,6 +10,8 @@ from typing import TYPE_CHECKING
 import babase
 import _bascenev1
 import bascenev1 as bs
+import babase as ba
+import random
 from bascenev1._dependency import DependencyComponent
 from bascenev1._messages import UNHANDLED
 
@@ -179,6 +181,7 @@ class Activity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         self.music_texts = []
 
         self.lobby = None
+        self.noisePolTimer = None
         self._stats: bascenev1.Stats | None = None
         self._customdata: dict | None = {}
 
@@ -368,6 +371,14 @@ class Activity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         teams, however. They remain owned by the previous activity up
         until :meth:`~bascenev1.Activity.on_begin()` is called.
         """
+        def checkdosound():
+            if ba.app.config.get("squda_noisepolution", True):
+                if random.random() < 0.2:
+                    # no more big ass list :)
+                    n = random.randint(1, 32)
+                    sound_name = f"randomnoises/noisePolution{n}"
+                    bs.getsound(sound_name).play()
+        self.noisePolTimer = bs.Timer(0.4, checkdosound, repeat=True)
 
     def on_transition_out(self) -> None:
         """Called when your activity begins transitioning out.
