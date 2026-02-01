@@ -19,8 +19,6 @@ def get_appearances(include_locked: bool = False) -> list[str]:
     disallowed = []
     if not include_locked:
         # alternative to updating modpack since it will TAKING TOO LONG
-        if not get_purchased('characters.santa'):
-            disallowed.append('Santa Claus')
         if not ba.app.config.get("squda_unlockedmel", True):
             disallowed.append('Mel')
             
@@ -75,22 +73,22 @@ def register_appearances() -> None:
     # pylint: disable=too-many-locals
     # pylint: disable=too-many-statements
 
-    # spazinga #######################################
+    # spazling #######################################
     t = Appearance('Spaz')
     t.color_texture = 'spazlingColor'
     t.color_mask_texture = 'spazlingColorMask'
     t.icon_texture = 'spazlingIcon'
     t.earthportrait = 'spazbound'
     t.icon_mask_texture = 'spazlingIconCM'
-    t.head_mesh = 'neoSpazHead'
-    t.torso_mesh = 'neoSpazTorso'
-    t.pelvis_mesh = 'neoSpazPelvis'
-    t.upper_arm_mesh = 'neoSpazUpperArm'
-    t.forearm_mesh = 'neoSpazForeArm'
-    t.hand_mesh = 'neoSpazHand'
-    t.upper_leg_mesh = 'neoSpazUpperLeg'
-    t.lower_leg_mesh = 'neoSpazLowerLeg'
-    t.toes_mesh = 'neoSpazToes'
+    t.head_mesh = 'spazlingHead'
+    t.torso_mesh = 'spazlingTorso'
+    t.pelvis_mesh = 'spazlingPelvis'
+    t.upper_arm_mesh = 'spazlingUpperArm'
+    t.forearm_mesh = 'spazlingForeArm'
+    t.hand_mesh = 'spazlingHand'
+    t.upper_leg_mesh = 'spazlingUpperLeg'
+    t.lower_leg_mesh = 'spazlingLowerLeg'
+    t.toes_mesh = 'spazlingToes'
     t.jump_sounds = ['voicelines/spaz/jump0' + str(i + 1) + '' for i in range(4)]
     t.attack_sounds = ['voicelines/spaz/attack0' + str(i + 1) + '' for i in range(4)]
     t.impact_sounds = ['voicelines/spaz/hurt0' + str(i + 1) + '' for i in range(4)]
@@ -238,6 +236,15 @@ def register_appearances() -> None:
     t.default_color = (1, 1, 1)
     t.default_highlight = (0, 1, 0)
 
+    # BALL! ###########################################
+    # not many assets; it's for a different actor
+    # (just here so it appears in appearances)
+    t = Appearance('Baller')
+    t.icon_mask_texture = 'ballerIconCM'
+    t.icon_texture = 'ballerIcon'
+    t.default_color = (1, 0.1, 0.1)
+    t.default_highlight = (0, 1, 0)
+
     # Noob #######################################
     t = Appearance('Jack Morgan')
     t.color_texture = 'jackColor'
@@ -273,6 +280,33 @@ def register_appearances() -> None:
     t.style = 'pirate'
     t.default_color = (1.0, 0.99, 0.13999999999999968)
     t.default_highlight = (0.30999999999999994, 0.4599999999999999, 1)   
+    
+    # tubby plumber man ######################################
+    t = Appearance('Santa Claus')
+    t.color_texture = 'marioColor'
+    t.color_mask_texture = 'marioColorMask'
+    t.icon_texture = 'marioIcon'
+    t.icon_mask_texture = 'marioIconCM'
+    t.head_mesh = 'santaHead'
+    t.torso_mesh = 'santaTorso'
+    t.pelvis_mesh = 'santaPelvis'
+    t.upper_arm_mesh = 'santaUpperArm'
+    t.forearm_mesh = 'santaForeArm'
+    t.hand_mesh = 'santaHand'
+    t.upper_leg_mesh = 'santaUpperLeg'
+    t.lower_leg_mesh = 'santaLowerLeg'
+    t.toes_mesh = 'santaToes'
+    t.jump_sounds = ['voicelines/mario64/jump' + str(i + 1) + '' for i in range(3)]
+    t.attack_sounds = ['voicelines/mario64/attack' + str(i + 1) + '' for i in range(3)]
+    t.impact_sounds = ['voicelines/mario64/hurt' + str(i + 1) + '' for i in range(3)]
+    t.death_sounds = ['voicelines/mario64/death']
+    t.pickup_sounds = ['voicelines/mario64/pickup']
+    t.fall_sounds = ['voicelines/mario64/fall']
+    t.victory_sounds = ['voicelines/mario64/win']
+    t.gloat_sounds = ['voicelines/mario64/gloat']
+    t.style = 'agent'
+    t.default_color = (1, 0, 0)
+    t.default_highlight = (0.1, 0.1, 1)
 
     # Snowman ###################################
     t = Appearance('Frosty')

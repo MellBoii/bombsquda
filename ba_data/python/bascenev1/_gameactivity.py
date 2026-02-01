@@ -398,14 +398,6 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
 
         # Give our map a chance to override the music
         map_music = self._map_type.get_music_type()
-        if ba.app.config.get("squda_noisepolution", True):
-            def checkdosound():
-                if random.random() < 0.2:
-                    # no more big ass list :)
-                    n = random.randint(1, 32)
-                    sound_name = f"randomnoises/noisePolution{n}"
-                    bs.getsound(sound_name).play()
-            bs.timer(0.4, checkdosound, repeat=True)
         music = map_music if map_music is not None else self.default_music
 
         if music is not None:
@@ -958,6 +950,8 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         name = player.getname()
         color = player.color
         highlight = player.highlight
+        if player.character == 'Baller':
+            return self.spawn_player_ball(player=player)
 
         playerspaztype = getattr(player, 'playerspaztype', PlayerSpaz)
         if not issubclass(playerspaztype, PlayerSpaz):

@@ -9,6 +9,7 @@ import math
 import bascenev1 as bs
 import bascenev1lib as bslib
 from bascenev1lib.actor.spaz import FootingMessage
+from bascenev1lib.actor.playerspaz import PlayerSpazHurtMessage
 from bascenev1lib.gameutils import SharedObjects
 from bascenev1lib.actor.bomb import ExplodeHitMessage
 from bascenev1lib.actor.popuptext import PopupText
@@ -91,13 +92,14 @@ class PlayerBall(bs.Actor):
             ),
         )
         texture = self.texture_for_color(color)
+        mesh = 'bomb'
         self.node = bs.newnode(
             'prop',
             delegate=self,
             attrs={
                 'position': position,
-                'mesh': bs.getmesh('bomb'),
-                'light_mesh': bs.getmesh('bomb'),
+                'mesh': bs.getmesh(mesh),
+                'light_mesh': bs.getmesh(mesh),
                 'body': 'sphere',
                 'body_scale': 1.0,
                 'shadow_size': 0.5,
@@ -111,6 +113,9 @@ class PlayerBall(bs.Actor):
         self._connected_to_player: bs.Player | None = None
         self._num_times_hit = 0
         self.points_mult = 0
+        self.can_thok = False
+        self.parrying = False
+        self.lasthittype = None
         self.initial_speed = 600.0
         self.multipliernt = 4
         self.speed = self.initial_speed / self.multipliernt
@@ -119,9 +124,18 @@ class PlayerBall(bs.Actor):
         self.move_timer = None
         self.node.is_area_of_interest = True
         self.name_text = None
+        self.hp_text = None
         self.standing = False
         self._dead = False
-        self.hitpoints = 1000
+        self.last_player_attacked_by = None
+        self.max_hitpoints = 1000
+        self.hitpoints = self.max_hitpoints
+        self.set_hp(
+            (
+                f'{str(int(self.hitpoints / 10))}'
+                f'/{str(int(self.max_hitpoints / 10))}'
+            )
+        )
 
     # Overloads to tell the type system our return type based on doraise val.
     @overload
@@ -152,7 +166,7 @@ class PlayerBall(bs.Actor):
     def set_name(self, name: str, color: tuple[float, float, float]):
         """
         Makes a node above the actor with
-        some text.
+        some text. Updates it if already exists.
         Args:
             name (str): String of the name
             color (tuple[float, float, float]): Color
@@ -191,6 +205,48 @@ class PlayerBall(bs.Actor):
             start_scale = self.name_text.scale
             self.name_text.text = name
         bs.animate(self.name_text, 'scale', {0.0: start_scale, 0.2: final_scale})
+    
+    def set_hp(self, text: str, color: tuple[float, float, float] = (1, 1, 1)):
+        """
+        Makes a node above the actor with
+        some text. Updates it if already exists.
+        Args:
+            name (str): String of the name
+            color (tuple[float, float, float]): Color
+        """        
+        color_fin = bs.safecolor(color)[:3]
+        final_scale = 0.006
+        if not self.node:
+            return
+        if not self.hp_text:
+            start_scale = 0.0
+            mnode = bs.newnode(
+                'math',
+                owner=self.node,
+                attrs={'input1': (0, 0.3, 0), 'operation': 'add'},
+            )
+            self.node.connectattr('position', mnode, 'input2')
+            self.hp_text = bs.newnode(
+                'text',
+                owner=self.node,
+                attrs={
+                    'text': text,
+                    'in_world': True,
+                    'shadow': 1.0,
+                    'flatness': 1.0,
+                    'color': color_fin,
+                    'opacity': 0.9,
+                    'scale': final_scale,
+                    'h_align': 'center',
+                },
+            )
+            mnode.connectattr('output', self.hp_text, 'position')
+        else:
+            self.hp_text.color = color_fin
+            assert isinstance(self.name_text.scale, float)
+            start_scale = self.hp_text.scale
+            self.hp_text.text = text
+        bs.animate(self.hp_text, 'scale', {0.0: start_scale, 0.2: final_scale})
         
     def refresh_earth_meter(self):
         """Does nothing."""
@@ -198,8 +254,13 @@ class PlayerBall(bs.Actor):
     def set_cansay(self):
         """Does nothing."""
         pass
-    def say(self):
+    def say(self, wave = False):
         """Does nothing."""
+        del wave
+        pass
+    def gosuper(self, shouldntsetmusic = False):
+        """Does nothing."""
+        del shouldntsetmusic
         pass
 
     def getspeed(self, 
@@ -309,6 +370,33 @@ class PlayerBall(bs.Actor):
             y,
             z,
         )
+    def dash(self, x: float | int = 0, y: float | int = 0):
+        if not self.node:
+            return
+        v = self.node.velocity
+        x = x
+        y = y
+        if x == 0 and y == 0:
+            raise ValueError("You must specify at least X or Y for impulse.")
+            return False
+        # only use x and y impulse if specified
+        if x != 0:
+            self.node.handlemessage('impulse', 
+                self.node.position[0], 
+                self.node.position[1], 
+                self.node.position[2],
+                0, 25, 0, x, 0.05, 0, 0,
+                v[0]*15*2, 0, v[2]*15*2
+            )
+        if y != 0:
+            self.node.handlemessage('impulse', 
+                self.node.position[0], 
+                self.node.position[1], 
+                self.node.position[2],
+                0, 25, 0,
+                y, 0.05, 0, 0,
+                0, 20*400, 0
+            )
     
     def _update_move_timer(self):
         if self.move_x == 0 and self.move_z == 0:
@@ -358,8 +446,12 @@ class PlayerBall(bs.Actor):
     
     def on_jump(self):
         if not self.standing:
+            if self.can_thok:
+                self.dash(x=250)
+                bs.getsound('srb2_thok').play()
+                self.can_thok = False
             return
-        self.impulse(y=100, force=200)
+        self.dash(y=150)
         bs.getsound('zoeJump01').play()
 
     def is_alive(self):
@@ -385,30 +477,71 @@ class PlayerBall(bs.Actor):
         # pylint: disable=too-many-statements
         # pylint: disable=too-many-nested-blocks
         assert not self.expired
-        if isinstance(msg, bs.DieMessage):
-            if not self.node:
+        if isinstance(msg, bs.DieMessage): 
+            if not self.node or self._dead:
                 return None
+            # Was this player attacked before death?
+            was_attacked_recently = (
+                self.last_player_attacked_by
+                and bs.time() - self.last_attacked_time < 4.0
+            )
+            # Leaving the game doesn't count as a kill *unless*
+            # someone does it intentionally while being attacked.
+            left_game_cleanly = (
+                msg.how is bs.DeathType.LEFT_GAME 
+                and not was_attacked_recently
+            )
+
+            killed = not (msg.immediate or left_game_cleanly)
+
+            activity = self._activity()
+
+            player = self.getplayer(bs.Player, False)
+            if not killed:
+                killerplayer = None
+            else:
+                # Otherwise, if they were attacked by someone in the
+                # last few seconds, that person is the killer.
+                # Otherwise it was a suicide.
+                # FIXME: Currently disabling suicides in Co-Op since
+                #  all bot kills would register as suicides; need to
+                #  change this from last_player_attacked_by to
+                #  something like last_actor_attacked_by to fix that.
+                if was_attacked_recently:
+                    killerplayer = self.last_player_attacked_by
+                else:
+                    # ok, call it a suicide unless we're in co-op
+                    if activity is not None and not isinstance(
+                        activity.session, bs.CoopSession
+                    ):
+                        killerplayer = player
+                    else:
+                        killerplayer = None
+
+            # We should never wind up with a dead-reference here;
+            # we want to use None in that case.
+            assert killerplayer is None or killerplayer
+
+            # Only report if both the player and the activity still exist.
+            if killed and activity is not None and player:
+                activity.handlemessage(
+                    bs.PlayerDiedMessage(
+                        player, killed, killerplayer, msg.how
+                    )
+                )
             bs.getsound('playerDeath3').play()
             player = self.getplayer(bs.Player, False)
             self._dead = True
-            try:
-                self.activity.handlemessage(
-                    bs.PlayerDiedMessage(
-                        player, False, None, how=msg.how
-                    )
-                )
-            except:
-                pass
             if msg.immediate:
-                self.node.delete()
-                return True
+                    self.node.delete()
+                    return True
             else:      
                 bs.animate(
                     self.node, 
                     'mesh_scale', 
                     {   
                         # seconds: scale
-                        0: 1, 
+                        0: 1.0, 
                         0.1: 0
                     }
                 )
@@ -416,9 +549,19 @@ class PlayerBall(bs.Actor):
                 return True
 
         if isinstance(msg, bs.OutOfBoundsMessage):
-            self.handlemessage(bs.DieMessage(immediate=True))
+            self.handlemessage(bs.DieMessage())
 
         elif isinstance(msg, bs.HitMessage):
+            # Get who last hit us for point rewarding.
+            source_player = msg.get_source_player(type(self.source_player))
+            if source_player:
+                self.last_player_attacked_by = source_player
+                self.last_attacked_time = bs.time()
+                self.last_attacked_type = (msg.hit_type, msg.hit_subtype)
+            activity = self._activity()
+            if activity is not None and self.source_player.exists():
+                activity.handlemessage(PlayerSpazHurtMessage(self))
+            # Impulse.
             self.node.handlemessage(
                 'impulse',
                 msg.pos[0],
@@ -435,25 +578,82 @@ class PlayerBall(bs.Actor):
                 msg.force_direction[1],
                 msg.force_direction[2],
             )
+            # Set damage and HP text.
             damage = (
                 msg.flat_damage 
                 if msg.flat_damage 
-                else msg.magnitude
+                else msg.magnitude * 3
             )
             self.hitpoints -= damage
             if self.hitpoints <= 0:
                 self.die()
             self._num_times_hit += 1
-            PopupText(
-                f'{int(damage)}dmg\n{int(self.hitpoints / 10)}hp',
-                position=self.node.position,
-                color=(0.8, 0, 0, 0.7),
-                scale=1.1,
-            ).autoretain()
-        elif isinstance(msg, ExplodeHitMessage):
-            print('boom!')
+            self.set_hp(
+                (
+                    f'{str(int(self.hitpoints / 10))}'
+                    f'/{str(int(self.max_hitpoints / 10))}'
+                )
+            )
+            # Throw up some chunks.
+            assert msg.force_direction is not None
+            bs.emitfx(
+                position=msg.pos,
+                velocity=(
+                    msg.force_direction[0] * 0.5,
+                    msg.force_direction[1] * 0.5,
+                    msg.force_direction[2] * 0.5,
+                ),
+                count=min(10, 1 + int(damage * 0.0025)),
+                scale=0.3,
+                spread=0.03,
+            )
+
+            bs.emitfx(
+                position=msg.pos,
+                chunk_type='spark',
+                velocity=(
+                    msg.force_direction[0] * 1.3,
+                    msg.force_direction[1] * 1.3 + 5.0,
+                    msg.force_direction[2] * 1.3,
+                ),
+                count=min(30, 1 + int(damage * 0.04)),
+                scale=0.9,
+                spread=0.28,
+            )
+
+            # Momentary flash.
+            hurtiness = damage * 0.003
+            punchpos = (
+                msg.pos[0] + msg.force_direction[0] * 0.02,
+                msg.pos[1] + msg.force_direction[1] * 0.02,
+                msg.pos[2] + msg.force_direction[2] * 0.02,
+            )
+            flash_color = (1.0, 0.8, 0.4)
+            light = bs.newnode(
+                'light',
+                attrs={
+                    'position': punchpos,
+                    'radius': 0.12 + hurtiness * 0.12,
+                    'intensity': 0.3 * (1.0 + 1.0 * hurtiness),
+                    'height_attenuated': False,
+                    'color': flash_color,
+                },
+            )
+            bs.timer(0.06, light.delete)
+
+            flash = bs.newnode(
+                'flash',
+                attrs={
+                    'position': punchpos,
+                    'size': 0.17 + 0.17 * hurtiness,
+                    'color': flash_color,
+                },
+            )
+            bs.timer(0.06, flash.delete)
+
         elif isinstance(msg, FootingMessage):
             self.standing = msg.footing == 1
+            self.can_thok = True
 
         elif isinstance(msg, CollideMessage):
             node = bs.getcollision().opposingnode
@@ -481,7 +681,7 @@ class PlayerBall(bs.Actor):
                 bs.getsound('punchSFX/punchStrong12').play()
             elif speed >= 5:
                 bs.getsound('punchSFX/superPunch').play()
-            mag = -270.0
+            mag = -270.0 * speed
             self.node.handlemessage(
                 'kick_back',
                 self.node.position[0],
@@ -493,7 +693,6 @@ class PlayerBall(bs.Actor):
                 mag,
             )
         else:
-            print(f'unhandled message: {msg}')
             return super().handlemessage(msg)
         return None
     
