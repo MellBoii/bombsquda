@@ -146,6 +146,14 @@ class BombSqudaUtilsTab(DevConsoleTab):
             call=self.test_server,
             style='normal',
         )
+        self.button(
+            'Refresh Media',
+            pos=(self.width * -0.6 + xoff, 15), 
+            size=(200, 40),
+            label_scale=0.6,
+            call=self.refresh_media,
+            style='normal',
+        )
 
     def toggle_debug_prints(self) -> None:
         ba.app.config['squda_debugprints'] = not ba.app.config.get(
@@ -192,6 +200,10 @@ class BombSqudaUtilsTab(DevConsoleTab):
         except requests.exceptions.RequestException as e:
             bs.screenmessage(f'Connection failed. See console for more details.')
             print(e)
+            
+    def refresh_media(self):
+        import bauiv1 as bui
+        bui.app.classic.run_media_reload_benchmark()
 
 class DevConsoleTabUI(DevConsoleTab):
     """Tab to debug/test UI stuff."""
