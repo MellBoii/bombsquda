@@ -74,7 +74,7 @@ def register_appearances() -> None:
     # pylint: disable=too-many-statements
 
     # spazling #######################################
-    t = Appearance('Spazling')
+    t = Appearance('Spaz')
     t.color_texture = 'spazlingColor'
     t.color_mask_texture = 'spazlingColorMask'
     t.icon_texture = 'spazlingIcon'
@@ -150,7 +150,7 @@ def register_appearances() -> None:
     t.fall_sounds = ['snakeyFall1']
     t.gloat_sounds = ['voicelines/snakey/gloat']
     t.victory_sounds = ['voicelines/snakey/win']
-    t.style = 'snakey'
+    t.style = 'ninja'
     t.default_color = (0.2, 1, 1)
     t.default_highlight = (1, 1, 1)
 
@@ -184,7 +184,7 @@ def register_appearances() -> None:
 
     # fatass ###########################################
     # thank you lemon for this incredible voice acting
-    t = Appearance('mell')
+    t = Appearance('Mell')
     t.color_texture = 'mellColor'
     t.color_mask_texture = 'mellColorMask'
     t.icon_texture = 'mellIcon'
@@ -230,19 +230,20 @@ def register_appearances() -> None:
     t.icon_mask_texture = 'noobIconColorMask'
     t.head_mesh = 'noobHead'
     t.torso_mesh = 'noobTorso'
-    t.pelvis_mesh = 'kronkPelvis'
+    t.pelvis_mesh = 'none'
     t.upper_arm_mesh = 'noobUpperArm'
     t.forearm_mesh = 'noobForeArm'
     t.hand_mesh = 'noobHand'
     t.upper_leg_mesh = 'noobUpperLeg'
     t.lower_leg_mesh = 'noobLowerLeg'
     t.toes_mesh = 'noobToes'
-    t.jump_sounds = sounds
-    t.attack_sounds = sounds
-    t.impact_sounds = hit_sounds
-    t.death_sounds = ['noobDeath01']
-    t.pickup_sounds = sounds
-    t.fall_sounds = ['noobFall01']
+    noob_sounds = ['voicelines/noob/sound' + str(i + 1) + '' for i in range(6)]
+    t.jump_sounds = noob_sounds
+    t.attack_sounds = noob_sounds
+    t.impact_sounds = ['voicelines/noob/hurt' + str(i + 1) + '' for i in range(7)]
+    t.death_sounds = ['voicelines/noob/death']
+    t.pickup_sounds = noob_sounds
+    t.fall_sounds = ['voicelines/noob/fall']
     t.style = 'pirate'
     t.default_color = (1.0, 0.99, 0.13999999999999968)
     t.default_highlight = (0.30999999999999994, 0.4599999999999999, 1)   
@@ -290,13 +291,13 @@ def register_appearances() -> None:
     t.upper_leg_mesh = 'raymanUpperLeg'
     t.lower_leg_mesh = 'raymanLowerLeg'
     t.toes_mesh = 'raymanToes'
-    t.jump_sounds = rayman_jump_sounds
-    t.attack_sounds = rayman_sounds
-    t.impact_sounds = rayman_hit_sounds
-    t.victory_sounds = ['raymanWin01']
-    t.death_sounds = ['raymanDeath']
-    t.pickup_sounds = rayman_sounds
-    t.fall_sounds = ['raymanFall']
+    t.jump_sounds = ['voicelines/rayman/jump' + str(i + 1) + '' for i in range(3)]
+    t.attack_sounds = ['voicelines/rayman/attack' + str(i + 1) + '' for i in range(2)]
+    t.impact_sounds = ['voicelines/rayman/hurt' + str(i + 1) + '' for i in range(3)]
+    t.victory_sounds = ['voicelines/rayman/win']
+    t.death_sounds = ['voicelines/rayman/death']
+    t.pickup_sounds = ['voicelines/rayman/attack' + str(i + 1) + '' for i in range(2)]
+    t.fall_sounds = ['voicelines/rayman/fall']
     t.style = 'bones'
     t.default_color = (0.5, 0.25, 1.0)
     t.default_highlight = (1.0, 0.15, 0.15)
@@ -365,7 +366,7 @@ def register_appearances() -> None:
     t.fall_sounds = ['ralseiFall']
     t.victory_sounds = ['ralseiWin1']
     t.gloat_sounds = ['ralseiGloat']
-    t.style = 'ralsei'
+    t.style = 'agent'
     t.default_color = (0.0, 0.7699999999999998, 0.11999999999999998)
     t.default_highlight = (1, 0.08, 0.5)
 
@@ -412,12 +413,12 @@ def register_appearances() -> None:
     t.upper_leg_mesh = 'knightUpperLeg'
     t.lower_leg_mesh = 'knightLowerLeg'
     t.toes_mesh = 'knightToes'
-    sounds = ['voicelines/knight/sound' + str(i + 1) + '' for i in range(4)]
-    t.jump_sounds = sounds
-    t.attack_sounds = sounds
+    knightsounds = ['voicelines/knight/sound' + str(i + 1) + '' for i in range(4)]
+    t.jump_sounds = knightsounds
+    t.attack_sounds = knightsounds
     t.impact_sounds = ['voicelines/knight/hurt' + str(i + 1) + '' for i in range(2)]
     t.death_sounds = ['voicelines/knight/death']
-    t.pickup_sounds = knight_sounds
+    t.pickup_sounds = knightsounds
     t.victory_sounds = ['voicelines/knight/win']
     t.gloat_sounds = ['voicelines/knight/gloat']
     t.fall_sounds = ['voicelines/knight/fall']
@@ -479,26 +480,16 @@ def register_appearances() -> None:
     t.upper_leg_mesh = 'tsHomerUpperLeg'
     t.lower_leg_mesh = 'tsHomerLowerLeg'
     t.toes_mesh = 'tsHomerToes'
-    homersounds = [
-        'homer1',
-        'homer2',
-        'homer3',
-        'homer4',
-        'homer5',
-    ]
-    homerhurtsfx = [
-        'homerHit1',
-        'homerHit2',
-        'homerHit3',
-    ]
+    homersounds = ['voicelines/homer/sound' + str(i + 1) + '' for i in range(2)]
+    homerhurtsfx = ['voicelines/homer/hit' + str(i + 1) + '' for i in range(3)]
     t.jump_sounds = homersounds
     t.attack_sounds = homersounds
     t.impact_sounds = homerhurtsfx
-    t.death_sounds = ['homerDeath1']
-    t.pickup_sounds = ['homerPickup1']
-    t.victory_sounds = ['homer3']
-    t.gloat_sounds = ['homerFall1']
-    t.fall_sounds = ['homerFall1']
+    t.death_sounds = ['voicelines/homer/death']
+    t.pickup_sounds = ['voicelines/homer/pickup']
+    t.victory_sounds = ['voicelines/homer/sound3']
+    t.gloat_sounds = ['voicelines/homer/fall']
+    t.fall_sounds = ['voicelines/homer/fall']
     t.style = 'agent'
     t.default_color = (0.3, 0.3, 0.33)
     t.default_highlight = (1, 0.5, 0.3)

@@ -42,21 +42,21 @@ BASE_PUNCH_POWER_SCALE = 1.2
 BASE_PUNCH_COOLDOWN = 400
 
 PHRASES = {
-    "Spaz": ("spazPhrase", 4),
-    "Snake Shadow": ("ssPhrase", 3),
-    "Agent Johnson": ("noisePhrase", 3),
-    "Bones": ("rayPhrase", 3),
-    "Grumbledorf": ("ocapPhrase", 3),
-    "Kronk": ("susPhrase", 3),
-    "Mel": ("melPhrase", 8),
-    "Bernard": ("bsrPhrase", 3),
-    "Pascal": ("ralPhrase", 3),
-    "Zoe": ("krPhrase", 1),
-    "B-9000": ("rrPhrase", 1),
-    "Jack Morgan": ("noobPhrase", 3),
-    "OldLady": ("ogspPhrase", 5),
+    "Spazling": ("spazPhrase", 4),
+    "GummyBoiYT": ("ssPhrase", 3),
+    "The Noise": ("noisePhrase", 3),
+    "Rayman": ("rayPhrase", 3),
+    "Orangecap": ("ocapPhrase", 3),
+    "Susie": ("susPhrase", 3),
+    "Mell": ("melPhrase", 8),
+    "Bowser": ("bsrPhrase", 3),
+    "Ralsei": ("ralPhrase", 3),
+    "Kris": ("krPhrase", 1),
+    "Roaring knight": ("rrPhrase", 1),
+    "Noob": ("noobPhrase", 3),
+    "OG Spaz": ("ogspPhrase", 5),
     "Homer": ("homerPhrase", 8),
-    "Robot": ("bssPhrase", 3),
+    "Bombgeon Snake Shadow": ("bssPhrase", 3),
 }
 DEFAULT_PHRASES = ("defaultPhrase", 6)
 
@@ -343,7 +343,7 @@ class Spaz(bs.Actor):
         if self.source_player: # FIXME: playerspaz exists, so use that instead
             # we're playing as bombgeon's snake 
             # shadow, so we get a custom moveset
-            if self.character == 'Robot':
+            if self.character == 'Bombgeon Snake Shadow':
                 self.dcl_time = 3
                 self.dashcooldown = bs.Timer(self.dcl_time, self.NINJA_increase, repeat=True)
                 self.dashes = 2
@@ -1078,7 +1078,7 @@ class Spaz(bs.Actor):
         ):
             return
         if self.source_player: # Prevent tutorial from dying.
-            if self.character == 'Robot':
+            if self.character == 'Bombgeon Snake Shadow':
                 self.on_jump_dash()
                 return
         t_ms = int(bs.time() * 1000.0)
@@ -1991,26 +1991,26 @@ class Spaz(bs.Actor):
         self.yeehaws += number
         # play sounds based on our chains
         if self.yeehaws >= 7:
-            bs.getsound('mbmYeehaw4').play()
-            bs.getsound('mbmChain7').play()
+            bs.getsound('mbm/yeehaw4').play()
+            bs.getsound('mbm/chain7').play()
         elif self.yeehaws >= 6:
-            bs.getsound('mbmYeehaw4').play()
-            bs.getsound('mbmChain6').play()
+            bs.getsound('mbm/yeehaw4').play()
+            bs.getsound('mbm/chain6').play()
         elif self.yeehaws >= 5:
-            bs.getsound('mbmYeehaw4').play()
-            bs.getsound('mbmChain5').play()
+            bs.getsound('mbm/yeehaw4').play()
+            bs.getsound('mbm/chain5').play()
         elif self.yeehaws >= 4:
-            bs.getsound('mbmYeehaw4').play()
-            bs.getsound('mbmChain4').play()
+            bs.getsound('mbm/yeehaw4').play()
+            bs.getsound('mbm/chain4').play()
         elif self.yeehaws >= 3:
-            bs.getsound('mbmYeehaw3').play()
-            bs.getsound('mbmChain3').play()
+            bs.getsound('mbm/yeehaw3').play()
+            bs.getsound('mbm/chain3').play()
         elif self.yeehaws >= 2:
-            bs.getsound('mbmYeehaw2').play()
-            bs.getsound('mbmChain2').play()
+            bs.getsound('mbm/yeehaw2').play()
+            bs.getsound('mbm/chain2').play()
         elif self.yeehaws >= 1:
-            bs.getsound('mbmYeehaw1').play()
-            bs.getsound('mbmChain1').play()
+            bs.getsound('mbm/yeehaw1').play()
+            bs.getsound('mbm/chain1').play()
         # add a light to us indicating we have a chain
         if not self.light:
             self.light = bs.newnode(
@@ -2071,18 +2071,18 @@ class Spaz(bs.Actor):
             return
         if self.yeehaws >= 4:
             rsfx = [
-                'mbmThunder1',
-                'mbmThunder2',
-                'mbmThunder3',
-                'mbmThunder4',
+                'mbm/thunder1',
+                'mbm/thunder2',
+                'mbm/thunder3',
+                'mbm/thunder4',
             ]
             bs.getsound(random.choice(rsfx)).play()
         elif self.yeehaws >= 3:
-            bs.getsound('mbmCR3').play()
+            bs.getsound('mbm/release3').play()
         elif self.yeehaws >= 2:
-            bs.getsound('mbmCR2').play()
+            bs.getsound('mbm/release2').play()
         elif self.yeehaws >= 1:
-            bs.getsound('mbmCR1').play()
+            bs.getsound('mbm/release1').play()
         
         self.yeehaws = 0
         if self.light:
@@ -2305,7 +2305,7 @@ class Spaz(bs.Actor):
             if self.pick_up_powerup_callback is not None:
                 self.pick_up_powerup_callback(self)
             if self.source_player: # Prevent tutorial from dying.
-                if self.character == 'Robot':
+                if self.character == 'Bombgeon Snake Shadow':
                     # if we already did the text, don't do it again to not repeat
                     if self.alrdidtext == True:
                         return
@@ -3578,7 +3578,7 @@ class Spaz(bs.Actor):
             self.increase_charge_thing__timer = None
             return
 
-        if not self.character == 'Robot':
+        if not self.character == 'Bombgeon Snake Shadow':
             raise TypeError('This should only be called on an Bombgeon SS player.')
         
         if self.dashes == 4:

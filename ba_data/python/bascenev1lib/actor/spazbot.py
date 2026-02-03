@@ -869,7 +869,7 @@ class LauncherBot(SpazBot):
         '#soretro',
         'Brickbattler',
     ]
-    character = 'Jack Morgan'
+    character = 'Noob'
     points_mult = 3
     color = (0.30, 0.30, 0.30)
     highlight = (0.80, 0.15, 0.15)
@@ -923,7 +923,7 @@ class BrawlerBot(SpazBot):
         '2tuff4u',
         'jeff the killer',
     ]
-    character = 'Kronk'
+    character = 'Susie'
     punchiness = 0.9
     charge_dist_max = 9999.0
     charge_speed_min = 1.0
@@ -982,7 +982,7 @@ class ChargerBot(SpazBot):
         'im so fast',
         'Snake Shadow',
     ]
-    character = 'Snake Shadow'
+    character = 'GummyBoiYT'
     punchiness = 1.0
     run = True
     charge_dist_min = 10.0
@@ -1001,7 +1001,7 @@ class RaymanBot(SpazBot):
     namelist = [
         'Rayman!',
     ]
-    character = 'Bones'
+    character = 'Rayman'
     punchiness = 1.0
     run = True
     charge_dist_min = 10.0
@@ -1024,7 +1024,7 @@ class KNIGHTBot(SpazBot):
         'ROARING KNIGHT',
         'RoryNyteYT',
     ]
-    character = 'B-9000'
+    character = 'Roaring Knight'
     punchiness = 1.0
     color = (0.0, 0.0, 0.0)
     highlight = (1.0, 1.0, 1.0)
@@ -1054,7 +1054,7 @@ class BouncyBot(SpazBot):
 
     color = (1, 1, 1)
     highlight = (1.0, 0.5, 0.5)
-    character = 'Easter Bunny'
+    character = 'Spaz'
     punchiness = 1.0
     run = True
     bouncy = True
@@ -1077,6 +1077,7 @@ class ChargerBotPro(ChargerBot):
     color = PRO_BOT_COLOR
     highlight = PRO_BOT_HIGHLIGHT
     default_boxing_gloves = True
+    character = 'SM64 Mario'
     points_mult = 3
 
 
@@ -1102,7 +1103,7 @@ class TriggerBot(SpazBot):
         'KrisDreemurr',
         'evil green kris',
     ]
-    character = 'Zoe'
+    character = 'Kris'
     punchiness = 0.75
     throwiness = 0.7
     charge_dist_max = 1.0
@@ -1166,7 +1167,7 @@ class StickyBot(SpazBot):
         'orang cap',
         'buddiew',
     ]
-    character = 'Grumbledorf'
+    character = 'Orangecap'
     punchiness = 0.9
     throwiness = 1.0
     color = (
@@ -1207,7 +1208,7 @@ class MelisoBot(StickyBot):
         'Mell',
         'melito pelito',
     ]
-    character = 'Mel'
+    character = 'Mell'
     color = (0.8, 0.8, 0.8)
     highlight = (0, 0.7, 0)
     punchiness = 0.5
@@ -1228,7 +1229,7 @@ class ralsieBot(SpazBot):
     category: Bot Classes
     """
 
-    character = 'Pascal'
+    character = 'Ralsei'
     namelist = [
         'evil fucking ralsei',
         'darkprinceralsei',

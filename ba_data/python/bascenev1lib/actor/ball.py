@@ -452,7 +452,7 @@ class PlayerBall(bs.Actor):
                 self.can_thok = False
             return
         self.dash(y=150)
-        bs.getsound('zoeJump01').play()
+        bs.getsound('deek').play()
 
     def is_alive(self):
         """Tells us if the ball's still fine."""
