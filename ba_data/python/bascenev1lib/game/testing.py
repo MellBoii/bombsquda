@@ -198,26 +198,26 @@ class TestActivity(bs.TeamGameActivity[Player, Team]):
         super().on_begin()
         self.signpost = SignpostActor()
         DialogueManager(
-            [
-                {
+            {
+                0: {
                     "character": "meliso",
                     "expression": "surprised",
                     "name": "Meliso",
                     "text": "holy smokes is that spaz!?",
                     "sound": "diagvoice/meliso",
                 },
-                {
+                1: {
                     "text": "...",
                     "sound": "tap",
                 },
-                {
+                2: {
                     "character": "spaz",
                     "expression": "angry",
                     "name": "Newbie",
                     "text": "Shut up.{pause=0.2} I'm gonna fucking kill you.",
                     "sound": "diagvoice/spaz",
                 },
-                {
+                3: {
                     "character": "meliso",
                     "expression": "neutral",
                     "name": "Meliso",
@@ -225,7 +225,7 @@ class TestActivity(bs.TeamGameActivity[Player, Team]):
                     "sound": "diagvoice/meliso",
                     "interrupt": True,
                 },
-                {
+                4: {
                     "character": "spaz",
                     "expression": "insane",
                     "name": "Newbie",
@@ -234,8 +234,33 @@ class TestActivity(bs.TeamGameActivity[Player, Team]):
                         "halves like you tried last time?\n{pause=0.6}If that's boring, then being boring is now normal."
                     ),
                     "sound": "diagvoice/spaz",
+                }, 
+                "no": {
+                    "character": "meliso",
+                    "expression": "surprised",
+                    "name": "Meliso",
+                    "sound": "diagvoice/meliso",
+                    "text": "damn bro...",
                 },
-            ],
+                "yes": {
+                    "character": "meliso",
+                    "expression": "observe",
+                    "name": "Meliso",
+                    "sound": "diagvoice/meliso",
+                    "text": "ok bye bye{eval=bs.getplayers()[0].actor.die()}",
+                },
+                5: {
+                    "character": "meliso",
+                    "expression": "neutral",
+                    "name": "Meliso",
+                    "text": "so like... want me to kill you or something?",
+                    "sound": "diagvoice/meliso",
+                    "choices": [
+                        ("Hell no!", "no"),
+                        ("Eh, why not.", "yes"),
+                    ],
+                },
+            }
         )
             
     @override

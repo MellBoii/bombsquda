@@ -2,7 +2,73 @@
 import bascenev1 as bs
 import babase as ba
 import re
+from bascenev1lib.actor.image_looped import LoopingImageAnimation
 TOKEN_RE = re.compile(r"\{(\w+)=([^}]+)\}")
+
+class DialogueChoiceBox(bs.Actor):
+    """Box for choosing things"""
+    def __init__(self, choices: list[tuple[str, str]], on_choose):
+        super().__init__()
+
+        self.choices = choices
+        self.on_choose = on_choose
+        self.index = 0
+        self.nodes: list[bs.Node] = []
+
+        base_y = 120
+        spacing = 35
+        base_x = 570
+
+        for i, (text, _) in enumerate(choices):
+            node = bs.newnode(
+                'text',
+                attrs={
+                    'text': text,
+                    'position': (base_x, base_y - i * spacing),
+                    'h_align': 'right',
+                    'v_attach': 'bottom',
+                    'h_attach': 'center',
+                    'scale': 1.2,
+                    'color': (0.8, 0.8, 0.8, 1),
+                    'shadow': 0.5,
+                },
+            )
+            self.nodes.append(node)
+
+        self.hand = LoopingImageAnimation(
+            'mario_hand/frame', 
+            frame_count=21, 
+            frame_delay=0.04, 
+            scale=(60, 60), 
+            position=(base_x + 30, base_y),
+            loop=True,
+            attach="bottomCenter",
+        )
+
+        self._update_highlight()
+
+    def _update_highlight(self):
+        for i, node in enumerate(self.nodes):
+            if i == self.index:
+                handpos = self.hand.node.position
+                self.hand.node.position = (handpos[0], node.position[1] + 40)
+
+    def move(self, direction: int):
+        self.index = (self.index + direction) % len(self.nodes)
+        bs.getsound('deek').play()
+        self._update_highlight()
+
+    def confirm(self):
+        _, label = self.choices[self.index]
+        self.hand.node.delete()
+        self.delete()
+        self.on_choose(label)
+
+    def delete(self):
+        for node in self.nodes:
+            if node:
+                node.delete()
+        self.nodes.clear()
 
 class DialogueBox:
     """Dialogue box."""
@@ -10,12 +76,13 @@ class DialogueBox:
         self.entry = entry
         self.finished = False
         self._typing_timer: bs.Timer | None = None
+        self.continue_timer: bs.Timer | None = None
 
         # Background
         self.bg = bs.newnode(
             'image',
             attrs={
-                'texture': bs.gettexture('black'),
+                'texture': bs.gettexture('dialog_box'),
                 'position': (0, 120),
                 'scale': (900, 260),
                 'opacity': 0.5,
@@ -24,13 +91,14 @@ class DialogueBox:
         )
 
         # Name (optional)
+        x = -370 if not entry.get("character") else -265
         self.name_text = None
         if entry.get("name"):
             self.name_text = bs.newnode(
                 'text',
                 attrs={
                     'text': entry["name"],
-                    'position': (-270, 170),
+                    'position': (x + 15, 170),
                     'scale': 1.7,
                     'h_align': 'left',
                     'color': (1, 1, 1),
@@ -51,7 +119,6 @@ class DialogueBox:
                     'attach': 'bottomCenter',
                 },
             )
-        x = -360 if not entry.get("character") else -265
         # Text node
         self.text_node = bs.newnode(
             'text',
@@ -69,7 +136,7 @@ class DialogueBox:
         self.continue_icon = bs.newnode(
             'text',
             attrs={
-                'text': '>>>',
+                'text': '>',
                 'position': (380, 20),
                 'scale': 1.2,
                 'opacity': 0.0,
@@ -104,6 +171,8 @@ class DialogueBox:
                 tokens.append(("expr", value))
             elif cmd == "sound":
                 tokens.append(("sound", value))
+            elif cmd == "eval":
+                tokens.append(("eval", value))
 
             i = match.end()
 
@@ -142,7 +211,8 @@ class DialogueBox:
             elif kind == "pause":
                 self._typing_timer = bs.Timer(value, self._start_typing)
                 return
-
+            elif kind == "eval":
+                eval(value)
             elif kind == "expr":
                 self.set_expression(value)
             elif kind == "sound":
@@ -151,10 +221,14 @@ class DialogueBox:
         self._typing_timer = bs.Timer(0.04, tick, repeat=True)
 
     def _on_finished(self):
-        bs.animate(self.continue_icon, 'opacity', {
-            0.0: 0.0,
-            0.4: 1.0,
-        })
+        def animate():
+            bs.animate(self.continue_icon, 'opacity', {
+                0.0: 0.0,
+                0.4: 1.0,
+                0.8: 0.0,
+            })
+        animate()
+        self.continue_timer = bs.Timer(0.8, animate, repeat=True)
 
     def skip(self):
         """Instantly finish the text."""
@@ -163,11 +237,13 @@ class DialogueBox:
         self.text_node.text = re.sub(r"\{[^}]+\}", "", self.full_text)
         self.finished = True
         self._typing_timer = None
+        self._on_finished()
 
     def delete(self):
         for node in (self.bg, self.name_text, self.text_node, self.portrait, self.continue_icon):
             if node:
                 node.delete()
+        self.continue_timer = None
 
 
 class DialogueManager:
@@ -175,23 +251,49 @@ class DialogueManager:
     def __init__(self, entries: list[dict]):
         self.entries = entries
         self.index = 0
+        self.entry = None
         self.box: DialogueBox | None = None
+        self.choice_box = None
+        self.current = None
 
         self._bind_inputs()
         self._show_entry()
 
-    # -------------------------
+    def move_choice(self, value: float):
+        if not self.choice_box:
+            return
+
+        if value < 0.5:
+            self.choice_box.move(-1)
+
+        elif value > 0.5:
+            self.choice_box.move(1)
 
     def _show_entry(self):
         if self.box:
             self.box.delete()
-
         try:
             entry = self.entries[self.index]
-        except IndexError:
+        except (KeyError, IndexError):
             self.end()
             return
+        if self.current:
+            entry = self.entries[self.current]
+        self.entry = entry
         self.box = DialogueBox(entry)
+
+        if "choices" in entry:
+            def wait_and_continue():
+                if self.box and self.box.finished:
+                    self.choice_box = DialogueChoiceBox(
+                        entry["choices"],
+                        self._on_choice
+                    )
+                else:
+                    self.wait_timer2 = bs.Timer(0.05, wait_and_continue)
+            wait_and_continue()
+        else:
+            self.choice_box = None
 
         if entry.get("interrupt"):
             # auto-advance when text finishes
@@ -203,16 +305,27 @@ class DialogueManager:
                     self.wait_timer = bs.Timer(0.05, wait_and_continue)
             wait_and_continue()
 
+    def _on_choice(self, target_id: str):
+        self.current = target_id
+        self._show_entry()
+
     def advance(self):
         if not self.box:
+            return
+        if self.choice_box:
+            self.choice_box.confirm()
             return
 
         if not self.box.finished:
             self.box.skip()
         else:
-            self.index += 1
-            self._show_entry()
-            bs.getsound('deek').play()
+            if "next" in self.entry:
+                self.current = self.entry["next"]
+                self._show_entry()
+            else:
+                self.index += 1
+                self._show_entry()
+                bs.getsound('deek').play()
 
     def end(self):
         if self.box:
@@ -225,6 +338,8 @@ class DialogueManager:
     def _bind_inputs(self):
         for player in bs.get_foreground_host_activity().players:
             player.assigninput(bs.InputType.PICK_UP_PRESS, self.advance)
+            player.assigninput(bs.InputType.UP_PRESS, lambda: self.move_choice(1))
+            player.assigninput(bs.InputType.DOWN_PRESS, lambda: self.move_choice(-1))
 
     def _unbind_inputs(self):
         for player in bs.get_foreground_host_activity().players:

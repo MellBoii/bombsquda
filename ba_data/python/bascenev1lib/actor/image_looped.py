@@ -9,7 +9,8 @@ class LoopingImageAnimation:
         frame_delay: float = 0.1,   # seconds between frames
         scale: tuple = (300, 300),
         position: tuple = (0, 0),
-        loop: bool = True
+        loop: bool = True,
+        attach: str = "center",
     ):
         self.prefix = prefix
         self.frame_count = frame_count
@@ -26,6 +27,7 @@ class LoopingImageAnimation:
                 "scale": scale,
                 "position": position,
                 "opacity": 1.0,
+                "attach": attach,
             },
         )
 

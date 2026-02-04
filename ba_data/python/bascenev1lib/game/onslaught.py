@@ -24,6 +24,7 @@ from babase._mgen.enums import InputType
 from bascenev1lib.actor.playerspaz import PlayerSpaz
 from bascenev1lib.actor.bomb import TNTSpawner
 from bascenev1lib.actor.playerspaz import PlayerSpazHurtMessage
+from bascenev1lib.actor.respawnicon import RespawnIcon
 from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.actor.controlsguide import ControlsGuide
 from bascenev1lib.actor.powerupbox import PowerupBox, PowerupBoxFactory
@@ -441,8 +442,8 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
         if self._preset in {Preset.ENDLESS, Preset.ENDLESS_TOURNAMENT}:
             self._show_pizzatime_sequence() # Time to get funkeh!
             DialogueManager(
-                [
-                    {
+                {
+                    0: {
                         "character": "spaz",
                         "expression": "angry",
                         "name": self.players[0].actor.node.name,
@@ -450,7 +451,7 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
                         "sound": "diagvoice/spaz",
                         "interrupt": True,
                     },
-                    {
+                    1: {
                         "character": "meliso",
                         "expression": "neutral",
                         "name": "Meliso",
@@ -458,7 +459,7 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
                         "sound": "diagvoice/meliso",
                         "interrupt": True,
                     },
-                    {
+                    2: {
                         "character": "spaz",
                         "expression": "insane",
                         "name": self.players[0].actor.node.name,
@@ -466,7 +467,7 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
                         "sound": "diagvoice/spaz",
                         "interrupt": True
                     },
-                    {
+                    3: {
                         "character": "spaz",
                         "expression": "insane",
                         "name": self.players[0].actor.node.name,
@@ -474,7 +475,7 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
                         "sound": "diagvoice/spaz",
                         "interrupt": True
                     },
-                ],
+                }
             )
             for player in self.players:
                 if player.character == 'Homer':
