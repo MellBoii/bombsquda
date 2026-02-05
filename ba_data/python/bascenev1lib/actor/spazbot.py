@@ -287,6 +287,7 @@ class SpazBot(Spaz):
     def _get_nearest_emerald(self):
         nearest = None
         nearest_dist = 9999.0
+        nearest_type = None
         our_pos = bs.Vec3(self.node.position[0], 0, self.node.position[2])
 
         for node in bs.getnodes():
@@ -344,6 +345,9 @@ class SpazBot(Spaz):
             emerald, edist = self._get_nearest_emerald()
             threat, tdist = self._get_nearest_player_spaz()
             bomb, bdist = self._get_nearest_live_bomb()
+            if emerald != None:
+                if emerald.texname in self.emeralds:
+                    emerald = None
 
             defending = False
             # functionality for escaping bombs; removed due to
@@ -389,8 +393,6 @@ class SpazBot(Spaz):
                     self.node.pickup_pressed = False
 
             elif defending and threat:
-                # ooh, here's the part where we get pretty
-                # real; defend if a threat is nearby!!!
                 target_pt_raw = bs.Vec3(*threat.node.position)
                 target_vel = bs.Vec3(0, 0, 0)
                 can_attack = True
@@ -972,7 +974,6 @@ class BrawlerBotProShielded(BrawlerBotPro):
 
 class ChargerBot(SpazBot):
     """A speedy melee attack bot.
-
     category: Bot Classes
     """
     
@@ -995,7 +996,6 @@ class ChargerBot(SpazBot):
     
 class RaymanBot(SpazBot):
     """A speedy melee attack bot. 2.
-
     category: Bot Classes
     """
     namelist = [
@@ -1014,8 +1014,7 @@ class RaymanBot(SpazBot):
     points_mult = 2
 
 class KNIGHTBot(SpazBot):
-    """charger but worse
-
+    """IS THAT THE ROARING KNIGHT
     category: Bot Classes
     """
     
@@ -1054,7 +1053,7 @@ class BouncyBot(SpazBot):
 
     color = (1, 1, 1)
     highlight = (1.0, 0.5, 0.5)
-    character = 'Spaz'
+    character = 'Sonic'
     punchiness = 1.0
     run = True
     bouncy = True
@@ -1195,7 +1194,6 @@ class StickyBot(SpazBot):
 class MelisoBot(StickyBot):
     """Separate version of StickyBot, who is less
     crazy and has different character n name.
-
     category: Bot Classes
     """
     

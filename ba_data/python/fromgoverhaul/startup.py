@@ -266,18 +266,17 @@ class Startup():
                     print('Connection to the BombSquda server established successfully.')
                     loopt._connection_success_logged = True
                 time.sleep(3)
+                
             except requests.exceptions.RequestException as e:
                 bs.debprint(f"Server connection failed: {e}")
-                if not loopt._connection_failed_logged:
-                    print(
-                        (
-                            'WARNING: Connection to the BombSquda server failed.\nThings like '
-                            'uploading personal bests, getting commands from Discord and such will not work.'
-                            '\nThis could be due to network issues or the server being offline.'
-                        )
+                print(
+                    (
+                        'WARNING: Connection to the BombSquda server failed.\nThings like '
+                        'uploading personal bests, getting commands from Discord and such will not work.'
+                        '\nThis could be due to network issues or the server being offline.'
                     )
-                    loopt._connection_failed_logged = True
-                strip_exception_tracebacks(e)
+                )
+                break
                 time.sleep(10)
 
 

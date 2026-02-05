@@ -127,7 +127,6 @@ class Icon(bs.Actor):
             assert self.node
             self.node.color = (0.7, 0.3, 0.3)
             self.node.opacity = 0.2
-        # if we're on last life, tell player to "peril!". i love paper mario. 
         if lives == 1:
             # cleanup any danger icon if it exists
             if hasattr(self, "_danger_icon") and self._danger_icon:
@@ -161,7 +160,7 @@ class Icon(bs.Actor):
             self._flash_timer = bs.Timer(0.2, _flash, repeat=True)
 
         elif lives == 2:
-            # cleanup any peril icon if it exists
+            # cleanup icon if it exists
             if hasattr(self, "_warning_icon") and self._warning_icon:
                 self._warning_icon.delete()
             if hasattr(self, "_flash_timer"):
@@ -203,6 +202,7 @@ class Icon(bs.Actor):
                 self._danger_icon.delete()
             if hasattr(self, "danger_flash_timer"):
                 self.danger_flash_timer = None
+                
     def handle_player_spawned(self) -> None:
         """Our player spawned; hooray!"""
         if not self.node:
@@ -264,7 +264,7 @@ class Team(bs.Team[Player]):
 
 
 # ba_meta export bascenev1.GameActivity
-class EliminationGame(bs.TeamGameActivity[Player, Team]):
+class EliminationEX(bs.TeamGameActivity[Player, Team]):
     """Game type where last player(s) left alive win."""
 
     name = 'Elimination EX'
@@ -315,11 +315,6 @@ class EliminationGame(bs.TeamGameActivity[Player, Team]):
             ),
             bs.BoolSetting('Epic Mode', default=False),
         ]
-        if issubclass(sessiontype, bs.DualTeamSession):
-            settings.append(bs.BoolSetting('Solo Mode', default=False))
-            settings.append(
-                bs.BoolSetting('Balance Total Lives', default=False)
-            )
         return settings
 
     @override
@@ -346,7 +341,7 @@ class EliminationGame(bs.TeamGameActivity[Player, Team]):
         self._balance_total_lives = bool(
             settings.get('Balance Total Lives', False)
         )
-        self._solo_mode = bool(settings.get('Solo Mode', False))
+        self._solo_mode = False
 
         # Base class overrides:
         self.slow_motion = self._epic_mode
@@ -357,20 +352,12 @@ class EliminationGame(bs.TeamGameActivity[Player, Team]):
     @override
     def get_instance_description(self) -> str | Sequence:
         # (Pylint Bug?) pylint: disable=missing-function-docstring
-        return (
-            'Last team standing wins.'
-            if isinstance(self.session, bs.DualTeamSession)
-            else 'Last one standing wins.'
-        )
+        return 'Last team standing wins.'
 
     @override
     def get_instance_description_short(self) -> str | Sequence:
         # (Pylint Bug?) pylint: disable=missing-function-docstring
-        return (
-            'last team standing wins'
-            if isinstance(self.session, bs.DualTeamSession)
-            else 'last one standing wins'
-        )
+        return 'last team standing wins'
 
     @override
     def on_player_join(self, player: Player) -> None:
@@ -396,24 +383,6 @@ class EliminationGame(bs.TeamGameActivity[Player, Team]):
         self._start_time = bs.time()
         self.setup_standard_time_limit(self._time_limit)
         self.setup_standard_powerup_drops()
-        if self._solo_mode:
-            self._vs_text = bs.NodeActor(
-                bs.newnode(
-                    'text',
-                    attrs={
-                        'position': (0, 105),
-                        'h_attach': 'center',
-                        'h_align': 'center',
-                        'maxwidth': 200,
-                        'shadow': 0.5,
-                        'vr_depth': 390,
-                        'scale': 0.6,
-                        'v_attach': 'bottom',
-                        'color': (0.8, 0.8, 0.3, 1.0),
-                        'text': bs.Lstr(resource='vsText'),
-                    },
-                )
-            )
 
         # If balance-team-lives is on, add lives to the smaller team until
         # total lives match.
@@ -642,16 +611,14 @@ class EliminationGame(bs.TeamGameActivity[Player, Team]):
                 else:
                     death_sound.play()
 
-            # If we hit zero lives, we're dead (and our team might be too).
-            
+            for teammate in player.team.players:
+                if teammate is not player and teammate.is_alive():
+                    if teammate.actor:
+                        teammate.actor.handlemessage(bs.DieMessage())
+
             if player.lives == 0:
-                # 💀 Custom logic: kill all teammates if one dies completely
                 if not player.team._has_been_eliminated:
                     player.team._has_been_eliminated = True
-                    for teammate in player.team.players:
-                        if teammate is not player and teammate.is_alive():
-                            if teammate.actor:
-                                teammate.actor.handlemessage(bs.DieMessage())
                     # Mark team survival time
                     assert self._start_time is not None
                     player.team.survival_seconds = int(bs.time() - self._start_time)
@@ -700,7 +667,6 @@ class EliminationGame(bs.TeamGameActivity[Player, Team]):
         if self.has_ended():
             return
         results = bs.GameResults()
-        self._vs_text = None  # Kill our 'vs' if its there.
         for team in self.teams:
             results.set_team_score(team, team.survival_seconds)
         self.end(results=results)
