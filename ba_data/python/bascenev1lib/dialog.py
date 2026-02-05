@@ -136,7 +136,7 @@ class DialogueBox:
         self.continue_icon = bs.newnode(
             'text',
             attrs={
-                'text': '>',
+                'text': ba.charstr(ba.SpecialChar.TOP_BUTTON),
                 'position': (380, 20),
                 'scale': 1.2,
                 'opacity': 0.0,
@@ -244,6 +244,7 @@ class DialogueBox:
             if node:
                 node.delete()
         self.continue_timer = None
+        self._typing_timer = None
 
 
 class DialogueManager:
@@ -262,12 +263,8 @@ class DialogueManager:
     def move_choice(self, value: float):
         if not self.choice_box:
             return
-
-        if value < 0.5:
-            self.choice_box.move(-1)
-
-        elif value > 0.5:
-            self.choice_box.move(1)
+        
+        self.choice_box.move(value)
 
     def _show_entry(self):
         if self.box:
@@ -338,8 +335,8 @@ class DialogueManager:
     def _bind_inputs(self):
         for player in bs.get_foreground_host_activity().players:
             player.assigninput(bs.InputType.PICK_UP_PRESS, self.advance)
-            player.assigninput(bs.InputType.UP_PRESS, lambda: self.move_choice(1))
-            player.assigninput(bs.InputType.DOWN_PRESS, lambda: self.move_choice(-1))
+            player.assigninput(bs.InputType.UP_PRESS, lambda: self.move_choice(-1))
+            player.assigninput(bs.InputType.DOWN_PRESS, lambda: self.move_choice(1))
 
     def _unbind_inputs(self):
         for player in bs.get_foreground_host_activity().players:
