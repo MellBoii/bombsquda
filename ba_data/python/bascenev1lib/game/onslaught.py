@@ -353,8 +353,8 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
         if self.timebeforedeath <= 0:
             for player in self.players:
                 player.actor.firework_explode()
-                self.tickintimer = None
-                self.thugshaketimer = None
+            self.tickintimer = None
+            self.thugshaketimer = None
                 
     def _show_pizzatime_sequence(self):
         """ It's Pizza Time! """
