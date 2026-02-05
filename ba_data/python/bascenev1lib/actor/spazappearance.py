@@ -598,7 +598,7 @@ def register_appearances() -> None:
     t.impact_sounds = ninja_hits
     t.death_sounds = ['ninjaDeath1']
     t.pickup_sounds = ninja_attacks
-    t.fall_sounds = ['ninjaFall2']
+    t.fall_sounds = ['ninjaFall1']
     t.style = 'ninja'
     t.default_color = (0.3, 0.5, 0.8)
     t.default_highlight = (1, 0, 0)

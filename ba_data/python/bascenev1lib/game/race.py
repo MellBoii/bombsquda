@@ -418,8 +418,13 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
                                     'operation': 'add',
                                 },
                             )
+                            torso = (
+                                'torso_position' 
+                                if player.actor.actor_type == 'spaz'
+                                else 'position'
+                            )
                             player.actor.node.connectattr(
-                                'torso_position', mathnode, 'input2'
+                                torso, mathnode, 'input2'
                             )
                             tstr = bs.Lstr(
                                 resource='lapNumberText',
@@ -797,7 +802,12 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
             owner=spaz.node,
             attrs={'input1': (0, 1.4, 0), 'operation': 'add'},
         )
-        spaz.node.connectattr('torso_position', mathnode, 'input2')
+        torso = (
+            'torso_position' 
+            if player.actor.actor_type == 'spaz'
+            else 'position'
+        )
+        spaz.node.connectattr(torso, mathnode, 'input2')
 
         distance_txt = bs.newnode(
             'text',

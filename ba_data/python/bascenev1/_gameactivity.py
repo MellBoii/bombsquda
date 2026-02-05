@@ -998,45 +998,12 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         animate(light, 'intensity', {0: 0, 0.25: 1, 0.5: 0})
         _bascenev1.timer(0.5, light.delete)
         return spaz   
-    
-        # short for random point from map defs
-    def rpfmd(self, entry: Tuple[float, ...]) -> Tuple[float, float, float]:
-        """
-        Get a random point from
-        a box or point.
-        Raises:
-            ValueError: Tuple is invalid format.
-        Returns:
-            _type_: Final result.
-        """        
-        if len(entry) == 3:
-            # Plain point
-            return entry
-
-        if len(entry) == 6:
-            # Point box: (x, y, z, sx, sy, sz)
-            x, y, z, sx, sy, sz = entry
-            return (
-                x + random.random() * sx,
-                y + random.random() * sy,
-                z + random.random() * sz,
-            )
-
-        if len(entry) == 9:
-            # Box: (x, y, z, _, _, _, sx, sy, sz)
-            x, y, z, _, _, _, sx, sy, sz = entry
-            return (
-                x + random.random() * sx,
-                y + random.random() * sy,
-                z + random.random() * sz,
-            )
-
-        raise ValueError(f"unknown map defs format: {entry}")
 
     def spawn_player_ball(
         self,
         player: PlayerT,
-        position: Sequence[float] | None = None,
+        position: Sequence[float] = (0, 5, 0),
+        angle: float | None = None,
     ) -> PlayerBall:
         # pylint: disable=too-many-locals
         # pylint: disable=cyclic-import
@@ -1047,19 +1014,8 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         color = player.color
         light_color = babase.normalized_color(color)
         display_color = babase.safecolor(color, target_intensity=0.75)
-        if position is None:
-            mp = self.map.defs.points
-            spawn_names = [
-                'ffa_spawn1',
-                'ffa_spawn2',
-                'ffa_spawn3',
-                'ffa_spawn4',
-            ]
-            points = [mp[name] for name in spawn_names if name in mp]
-            position = self.rpfmd(random.choice(points))
         spaz = PlayerBall(
             player=player,
-            position=(position[0], position[1] + 3, position[2]),
             color=color,
         )
 
@@ -1068,6 +1024,11 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
 
         spaz.connect_controls_to_player()
         spaz.set_name(name=name, color=color)
+        spaz.handlemessage(
+            StandMessage(
+                position, angle if angle is not None else random.uniform(0, 360)
+            )
+        )
         
         self._spawn_sound.play(position=spaz.node.position)
         light = _bascenev1.newnode('light', attrs={'color': light_color})

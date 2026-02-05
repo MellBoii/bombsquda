@@ -64,7 +64,7 @@ class PlayerBall(bs.Actor):
     def __init__(
         self,
         player: bs.Player,
-        position: tuple[float, float, float],
+        position: tuple[float, float, float] = (0, 0, 0),
         color: tuple[float, float, float] = (1, 1, 1),
     ):
         super().__init__()
@@ -110,6 +110,7 @@ class PlayerBall(bs.Actor):
             },
         )
         self.source_player = player
+        self.actor_type = 'ball'
         self._connected_to_player: bs.Player | None = None
         self._num_times_hit = 0
         self.points_mult = 0
@@ -650,7 +651,13 @@ class PlayerBall(bs.Actor):
                 },
             )
             bs.timer(0.06, flash.delete)
-
+        elif isinstance(msg, bs.StandMessage):
+            self._last_stand_pos = (
+                msg.position[0],
+                msg.position[1],
+                msg.position[2],
+            )
+            self.node.position = msg.position
         elif isinstance(msg, FootingMessage):
             self.standing = msg.footing == 1
             self.can_thok = True

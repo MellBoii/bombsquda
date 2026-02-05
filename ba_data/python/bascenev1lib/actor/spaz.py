@@ -162,6 +162,7 @@ class Spaz(bs.Actor):
         self.light = None
         self.sparkies = None
         self.super_flash = None
+        self.actor_type = 'spaz'
 
         self.source_player = source_player
         self._dead = False
@@ -346,6 +347,7 @@ class Spaz(bs.Actor):
             if self.character == 'Bombgeon Snake Shadow':
                 self.dcl_time = 3
                 self.dashcooldown = bs.Timer(self.dcl_time, self.NINJA_increase, repeat=True)
+                self.grab_power = True
                 self.dashes = 2
                 self.hitpoints = 320
                 self.hitpoints_max = 320
@@ -1395,15 +1397,15 @@ class Spaz(bs.Actor):
             try:
                 self.getactivity().metal_players.remove(self)
             except: 
-                bs.debprint(f"Couldn't remove {self.node.name} remove from metal list")
+                bs.debprint(f"Couldn't remove {self} remove from metal list: {e}")
                 pass
                 
     def remove_from_dancin(self):
         if isinstance(self.getactivity(), GameActivity):
             try:
                 self.getactivity().dancing_players.remove(self)
-            except: 
-                bs.debprint(f"Couldn't remove {self.node.name} from wiggle dance list")
+            except Exception as e: 
+                bs.debprint(f"Couldn't remove {self} from wiggle dance list: {e}")
                 pass
             
     def _deactivate_metalcap(self):
@@ -2571,6 +2573,11 @@ class Spaz(bs.Actor):
                     position=self.node.position,
                 )
                 return True
+            if (
+                msg.hit_subtype == 'non_hurt_self_blast' 
+                and msg.bombowner == self.node
+            ):
+                return True
             if self.parrying == True:
                 if self.source_player:
                     from bascenev1lib.game.parrier import ParryMessage
@@ -3202,25 +3209,6 @@ class Spaz(bs.Actor):
                             random.choice(death_sound).play()  # pick a random one
                         else:
                             death_sound.play()
-                    if self.broadcast_death:
-                        if not self.shattered:
-                            pname = self.node.name
-                            bs.broadcastmessage(
-                                bs.Lstr(
-                                    resource='playerDied', 
-                                    subs=[('${NAME}', self.node.name)]
-                                ),
-                                color=(1.0, 0.2, 0.2)
-                            )
-                        else:
-                            pname = self.node.name
-                            bs.broadcastmessage(
-                                bs.Lstr(
-                                    resource='playerExploded', 
-                                    subs=[('${NAME}', self.node.name)]
-                                ),
-                                color=(1.0, 0.1, 0.1)
-                            )
                     self.node.dead = True
                     bs.timer(6.0, self.node.delete)
                     self.drop_emeralds()
@@ -3370,9 +3358,10 @@ class Spaz(bs.Actor):
                         mag,
                     )
         elif isinstance(msg, PickupMessage):
+            if self.character == 'Bombgeon Snake Shadow' and not self.grab_power:
+                return False
             if not self.node:
                 return None
-
             try:
                 collision = bs.getcollision()
                 opposingnode = collision.opposingnode
@@ -3405,6 +3394,49 @@ class Spaz(bs.Actor):
             # Note: hold_body needs to be set before hold_node.
             self.node.hold_body = opposingbody
             self.node.hold_node = opposingnode
+            if self.character == 'Bombgeon Snake Shadow':
+                # Dont grab them unless we can use our power
+                if self.grab_power:
+                    self.grab_power = False
+                    delay_boom = 0.2
+                    delay_until_power_over = 10
+
+                    def unpower():
+                        self.grab_power = True
+                        if self.node:
+                            self.node.mini_billboard_1_texture = bs.gettexture('buttonPickUp')
+
+                    def boom():
+                        # Blow em up
+                        bomb.Blast(
+                            position=self.node.position,
+                            velocity=(self.node.velocity[0], self.node.velocity[1] + 2, self.node.velocity[2]),
+                            blast_radius=1.5,
+                            blast_type='normal',
+                            source_player=ba.existing(self.source_player),
+                            hit_type='explosion',
+                            hit_subtype='non_hurt_self_blast',
+                            owner=self.node,
+                        ).autoretain()
+                    def letemgo():
+                        self.node.hold_node = None
+                        self.allow_pickup = True
+
+                    # Grab em
+                    self.node.hold_body = opposingbody
+                    self.node.hold_node = opposingnode
+                    # Disable the grab button so they cant ungrab em.
+                    self.allow_pickup = False
+                    if self.node:
+                        self.node.mini_billboard_1_texture = None
+                    bs.timer(delay_boom, boom)
+                    bs.timer(delay_boom + 0.1, boom)
+                    bs.timer(delay_boom + 0.2, boom)
+                    bs.timer(delay_boom + 0.2, letemgo)
+                    bs.timer((delay_until_power_over) + delay_boom + 0.2, unpower)
+                else:
+                    return
+
         elif isinstance(msg, bs.CelebrateMessage):
             if self.node:
                 self.node.handlemessage('celebrate', int(msg.duration * 1000))

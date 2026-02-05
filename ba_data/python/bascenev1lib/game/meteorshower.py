@@ -95,7 +95,7 @@ class MeteorShowerGame(bs.TeamGameActivity[Player, Team]):
             delay *= 0.25
         bs.timer(delay, self._decrement_meteor_time, repeat=True)
         for player in self.players:
-            if player.actor.character == 'Mel':
+            if player.actor.character == 'Mell':
                 self.has_mell = True
 
         # Kick off the first wave in a few seconds.
@@ -126,7 +126,7 @@ class MeteorShowerGame(bs.TeamGameActivity[Player, Team]):
             else 'How about YOU die. Fuck you.'
         )
         ound = (
-            'voicelines/mel/sound1' if self.has_mell == False
+            'voicelines/mell/sound1' if self.has_mell == False
             else 'voicelines/spaz/attack03'
         )
         timeformsg = 50.5
