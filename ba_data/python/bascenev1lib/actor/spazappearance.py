@@ -147,7 +147,7 @@ def register_appearances() -> None:
     t.impact_sounds = ['voicelines/snakey/hurt' + str(i + 1) + '' for i in range(8)]
     t.death_sounds = ['voicelines/snakey/death']
     t.pickup_sounds = ['voicelines/snakey/attack' + str(i + 1) + '' for i in range(7)]
-    t.fall_sounds = ['snakeyFall1']
+    t.fall_sounds = ['voicelines/snakey/fall' + str(i + 1) + '' for i in range(2)]
     t.gloat_sounds = ['voicelines/snakey/gloat']
     t.victory_sounds = ['voicelines/snakey/win']
     t.style = 'ninja'
@@ -275,6 +275,33 @@ def register_appearances() -> None:
     t.default_color = (1, 0, 0)
     t.default_highlight = (0.1, 0.1, 1)
 
+    # that one character from the asym they canceled because why not ######################################
+    t = Appearance('Sonic')
+    t.color_texture = 'sonicColor'
+    t.color_mask_texture = 'sonicColorMask'
+    t.icon_texture = 'sonicIcon'
+    t.icon_mask_texture = 'sonicIconCM'
+    t.head_mesh = 'sonicHead'
+    t.torso_mesh = 'sonicTorso'
+    t.pelvis_mesh = 'none'
+    t.upper_arm_mesh = 'sonicUpperArm'
+    t.forearm_mesh = 'sonicForeArm'
+    t.hand_mesh = 'sonicHand'
+    t.upper_leg_mesh = 'sonicUpperLeg'
+    t.lower_leg_mesh = 'sonicLowerLeg'
+    t.toes_mesh = 'none'
+    t.jump_sounds = ['voicelines/sonic/jump' + str(i + 1) + '' for i in range(3)]
+    t.attack_sounds = ['voicelines/sonic/attack' + str(i + 1) + '' for i in range(4)]
+    t.impact_sounds = ['voicelines/sonic/hit' + str(i + 1) + '' for i in range(5)]
+    t.death_sounds = ['voicelines/sonic/death']
+    t.pickup_sounds = ['voicelines/sonic/attack' + str(i + 1) + '' for i in range(4)]
+    t.fall_sounds = ['voicelines/sonic/fall']
+    t.victory_sounds = ['voicelines/sonic/win']
+    t.gloat_sounds = ['voicelines/sonic/gloat']
+    t.style = 'agent'
+    t.default_color = (0.2, 0.2, 0.7)
+    t.default_highlight = (1, 0.1, 0.1)
+
     # Rayman! ################################
     t = Appearance('Rayman')
     t.color_texture = 'raymanColor'
@@ -356,16 +383,16 @@ def register_appearances() -> None:
     t.upper_leg_mesh = 'ralseiUpperLeg'
     t.lower_leg_mesh = 'ralseiLowerLeg'
     t.toes_mesh = 'ralseiToes'
-    ralsei_sounds = ['ralsei1', 'ralsei2', 'ralsei3', 'ralsei4']
-    ralsei_hit_sounds = ['ralseiHit1', 'ralseiHit2']
+    ralsei_sounds = ['voicelines/ralsei/sound' + str(i + 1) + '' for i in range(4)]
+    ralsei_hit_sounds = ['voicelines/ralsei/hit' + str(i + 1) + '' for i in range(2)]
     t.jump_sounds = ralsei_sounds
     t.attack_sounds = ralsei_sounds
     t.impact_sounds = ralsei_hit_sounds
-    t.death_sounds = ['ralseiDeath']
+    t.death_sounds = ['voicelines/ralsei/death']
     t.pickup_sounds = ralsei_sounds
-    t.fall_sounds = ['ralseiFall']
-    t.victory_sounds = ['ralseiWin1']
-    t.gloat_sounds = ['ralseiGloat']
+    t.fall_sounds = ['voicelines/ralsei/fall']
+    t.victory_sounds = ['voicelines/ralsei/win']
+    t.gloat_sounds = ['voicelines/ralsei/gloat']
     t.style = 'agent'
     t.default_color = (0.0, 0.7699999999999998, 0.11999999999999998)
     t.default_highlight = (1, 0.08, 0.5)
