@@ -50,6 +50,7 @@ class ParticleActor(bs.Actor):
         # Footing material is not used by us; It is only here
         # so it can be handled by another actor.
         footing_material = shared.footing_material
+        region_material = shared.region_material
         self.material = bs.Material()
         self.material.add_actions(
             conditions=('they_have_material', footing_material),
@@ -57,6 +58,26 @@ class ParticleActor(bs.Actor):
                 ('message', 'our_node', 'at_connect', FootingMessage(1)),
                 ('message', 'our_node', 'at_disconnect', FootingMessage(-1)),
             ),
+        )
+        self.material.add_actions(
+            conditions=( 
+                ('they_are_different_node_than_us',),
+                'and',
+                ('they_dont_have_material', region_material),
+                'or',
+                ('they_dont_have_material', footing_material),
+            ),
+            actions=('modify_node_collision', 'collide', False),
+        )
+        self.material.add_actions(
+            conditions=( 
+                ('they_are_different_node_than_us',),
+                'and',
+                ('they_have_material', region_material),
+                'or',
+                ('they_have_material', footing_material),
+            ),
+            actions=('modify_node_collision', 'collide', True),
         )
         # node
         self.mesh = mesh

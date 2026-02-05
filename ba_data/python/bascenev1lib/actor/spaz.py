@@ -1481,47 +1481,58 @@ class Spaz(bs.Actor):
         bs.getsound('parried').play()
         bs.getsound('orchestraHit').play()
         return      
-    def super_spark(self, chance = 0.6):
+    
+    def super_spark(self, chance = 0.6, amount1 = 2, amount2 = 5):
         if not self.node:
             return
         pos = self.node.position
         if random.random() < chance:
-            for _ in range(random.randint(2, 5)):
-                offset_x = random.uniform(-1.5, 1.5)
-                offset_z = random.uniform(-1.5, 1.5)
-                offset_y = random.uniform(0.5, 1.5)
+            for _ in range(random.randint(amount1, amount2)):
+                offset_x = random.uniform(-0.5, 0.5)
+                offset_z = random.uniform(-0.5, 0.5)
+                offset_y = random.uniform(0.2, 0.7)
                 particle_pos = (pos[0] + offset_x, pos[1] + offset_y, pos[2] + offset_z)
                 particle = SparkParticle(position=particle_pos)
                 particle.autoretain()
-                dir_x = offset_x
-                dir_z = offset_z
-                dir_y = 1.4
+                dir_x = offset_x * 2
+                dir_z = offset_z * 2
+                dir_y = offset_y * 2
                 length = (dir_x**2 + dir_y**2 + dir_z**2)**0.5
                 if length > 0:
                     dir_x /= length
                     dir_y /= length
                     dir_z /= length
-                force = 1.5
-                particle.node.handlemessage(
-                    'impulse',
-                    particle_pos[0],
-                    particle_pos[1],
-                    particle_pos[2],
-                    0,
-                    0,
-                    0,
-                    force,
-                    force,
-                    0,
-                    0,
-                    dir_x,
-                    dir_y,
-                    dir_z,
-                )
+                force = 20
+                def impulsmf(who):
+                    who.node.handlemessage(
+                        'impulse',
+                        particle_pos[0],
+                        particle_pos[1],
+                        particle_pos[2],
+                        0,
+                        0,
+                        0,
+                        force,
+                        force,
+                        0,
+                        0,
+                        dir_x,
+                        dir_y,
+                        dir_z,
+                    )
+                impulsmf(particle)
+    
     def gosuper(self, shouldntsetmusic: bool = False) -> None:
+        self.impulse(y=350)
+        bs.getsound('pretrans').play()
+        bs.timer(0.4, lambda: self.super(shouldntsetmusic=shouldntsetmusic))
+        bs.timer(0.4, lambda: self.super_spark(1.0, 15, 25))
+
+    def super(self, shouldntsetmusic: bool = False) -> None:
         """ 
-        Called at a random chance. 
-        Severely boosts our spaz's stats.
+        Makes a Spaz flash yellow,
+        severely boosts stats, plays custom music,
+        and allows some specific moves
         """
         if self.node:
             activity = self.getactivity()
@@ -1628,11 +1639,11 @@ class Spaz(bs.Actor):
                 # music setters (character based)
                 gnode = self.activity.globalsnode
                 self.prev_music = gnode.music.upper()
-                if self.character == 'Agent Johnson':
+                if self.character == 'The Noise':
                     bs.setmusic(bs.MusicType.NOISESUPER)
-                elif self.character == 'Zoe':
+                elif self.character == 'Kris':
                     bs.setmusic(bs.MusicType.GRAND_ROMP)
-                elif self.character == 'Kronk':
+                elif self.character == 'Susie':
                     bs.setmusic(bs.MusicType.FEEL_THE_FURY)
                 else:
                     bs.setmusic(bs.MusicType.SUPER)
@@ -3905,15 +3916,15 @@ class Spaz(bs.Actor):
             particle_pos = (pos[0] + offset_x, pos[1] + offset_y, pos[2] + offset_z)
             particle = particle_type(position=particle_pos)
             particle.autoretain()
-            dir_x = offset_x
-            dir_z = offset_z
-            dir_y = 1.4
+            dir_x = offset_x * 2
+            dir_z = offset_z * 2
+            dir_y = offset_y * 2
             length = (dir_x**2 + dir_y**2 + dir_z**2)**0.5
             if length > 0:
                 dir_x /= length
                 dir_y /= length
                 dir_z /= length
-            force = 1.5
+            force = 550
             particle.node.handlemessage(
                 'impulse',
                 particle_pos[0],
@@ -4008,15 +4019,15 @@ class Spaz(bs.Actor):
                 particle_pos = (pos[0] + offset_x, pos[1] + offset_y, pos[2] + offset_z)
                 particle = particle_type(position=particle_pos)
                 particle.autoretain()
-                dir_x = offset_x
-                dir_z = offset_z
-                dir_y = 1.4
+                dir_x = offset_x * 2
+                dir_z = offset_z * 2
+                dir_y = offset_y * 2
                 length = (dir_x**2 + dir_y**2 + dir_z**2)**0.5
                 if length > 0:
                     dir_x /= length
                     dir_y /= length
                     dir_z /= length
-                force = 1.5
+                force = 550
                 particle.node.handlemessage(
                     'impulse',
                     particle_pos[0],
