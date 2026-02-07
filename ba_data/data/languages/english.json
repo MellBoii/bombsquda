@@ -508,6 +508,7 @@
   "clutchTimer": "Waiting for potential respawn before ending...",
   "clutchTimerFail": "No one respawned before the period.",
   "clutchTimerFail2": "Skill issue",
+  "endingSoonCoop": "The current game will end soon if there are no players. Please join to cancel the timer.",
   "speedrunPB": "Personal \nbest is: ${TIME}",
   "newRecord": "NEW RECORD!!!",
   "noShield": "No shield, hardmode is on!",

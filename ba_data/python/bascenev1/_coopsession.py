@@ -88,6 +88,7 @@ class CoopSession(Session):
         self._tutorial_activity: bascenev1.Activity | None = None
         self._custom_menu_ui: list[dict[str, Any]] = []
         self.amaj = False
+        self.endTimer = None
 
         # Start our joining screen.
         self.setactivity(_bascenev1.newactivity(CoopJoinActivity))
@@ -181,7 +182,7 @@ class CoopSession(Session):
                     self.amaj = True
                     bs.broadcastmessage(f'{player.actor.node.name} left the game, anyone can replace their spot')
         super().on_player_leave(sessionplayer)
-        _bascenev1.timer(4.0, babase.WeakCall(self._handle_empty_activity))
+        self._handle_empty_activity()
         
     @override
     def _add_chosen_player(
@@ -264,7 +265,24 @@ class CoopSession(Session):
         self.stats.register_sessionplayer(sessionplayer)
         if pass_to_activity:
             activity.add_player(sessionplayer)
+            if self.scheduling_end:
+                self.unschedule_end_game()
         return sessionplayer
+    
+    def schedule_end_game(self) -> None:
+        from bascenev1lib.actor.overhead_text import OverheadText
+        activity = self.getactivity()
+        self.scheduling_end = True
+        with activity.context:
+            self.endTimer = bs.Timer(20.0, activity.end)
+            OverheadText(babase.Lstr(resource='endingSoonCoop'))
+    
+    def unschedule_end_game(self) -> None:
+        self.scheduling_end = False
+        bs.getsound('dingSmallHigh').play()
+        activity = self.getactivity()
+        with activity.context:
+            self.endTimer = None
 
     def _handle_empty_activity(self) -> None:
         """Handle cases where all players have left the current activity."""
@@ -296,7 +314,7 @@ class CoopSession(Session):
         # running a GUI (or just the current game if we're running headless).
         else:
             if babase.app.env.gui:
-                self.end()
+                self.schedule_end_game()
             else:
                 if isinstance(activity, GameActivity):
                     with activity.context:
