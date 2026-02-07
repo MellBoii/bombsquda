@@ -80,20 +80,19 @@ class TitleWindow(bui.MainWindow):
         # no-op if we're not currently in control.
         rsfx = [
             'voicelines/spaz/death04',
-            'learnPSI',
+            'voicelines/noise/sound2',
+            'voicelines/homer/sound3',
+            'voicelines/mell/sound6',
             'punchSFX/punchStrong01',
             'punchSFX/punchStrong03',
+            'screams/scream1',
+            'mbm/yeehaw1',
             'shatter',
             'smaash',
             'thunder',
             'swish',
             'okitem',
-            'voicelines/mel/sound6',
-            'mbmYeehaw1',
-            'screams/scream1',
-            'homer3',
             'gibbed2',
-            'agent2',
             'healthPowerup',
         ]
         bui.getsound(random.choice(rsfx)).play()
