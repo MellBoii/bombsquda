@@ -92,6 +92,7 @@ class MusicType(Enum):
     SCARY = 'Scary'
     SUPER = 'Super'
     FEEL_THE_FURY = 'Feel_The_Fury'
+    RAINBOW_ROAD = 'RAINBOW_ROAD'
     SRB2_OVERTIME = 'SRB2_Overtime'
     SRB2_PINCH = 'SRB2_Pinch'
     MARCHING = 'Marching'
@@ -234,6 +235,7 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
             bs.MusicType.CHOSEN_ONE: "Tough Guy Alert! - M&L Bowser's Inside Story - GaMetal Cover",
             bs.MusicType.RUN_AWAY: "Tough Guy Alert! - M&L Bowser's Inside Story - GaMetal Cover",
             bs.MusicType.FEEL_THE_FURY: "Feel The Fury - ThatGuyRamon",
+            bs.MusicType.RAINBOW_ROAD: "Rainbow Road Pentagon Path Remix - B1itz Lunar",
             bs.MusicType.SCARY: "???",
         }
         # Get the music name from the list.

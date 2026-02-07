@@ -167,7 +167,7 @@ def reset_end_votes():
 
 def filter_chat_message(msg: str, client_id: int) -> str | None:
     roster = _bascenev1.get_game_roster()
-
+    activity = bs.get_foreground_host_activity()
     # ── Singleplayer fallback ────────────────────
     if not roster:
         plus = bui.app.plus
@@ -185,7 +185,15 @@ def filter_chat_message(msg: str, client_id: int) -> str | None:
                 roster_entry=fake_entry,
                 client_id=-1
             )
-
+        if activity:
+            with activity.context:
+                try:
+                    # We're in singleplayer, so presumably
+                    # whoever's sending the message is P1.
+                    player = activity.players[0]
+                    player.actor.say(msg)
+                except Exception:
+                    pass
         return msg
 
     # ── Multiplayer ──────────────────────────────
@@ -208,7 +216,13 @@ def filter_chat_message(msg: str, client_id: int) -> str | None:
             roster_entry=roster_entry,
             client_id=client_id
         )
-
+    if activity:
+        with activity.context:
+            try:
+                player = activity.players[client_id + 1]
+                player.actor.say(msg)
+            except Exception:
+                pass
     return msg
 
 

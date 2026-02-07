@@ -819,6 +819,8 @@ class Spaz(bs.Actor):
         # Return and don't do anything.
         if self.canparry2 == False:
             return
+        if not self.node or not self.is_alive():
+            return
         # Set important values.
         self.canparry2 = False
         self.parrying = True
@@ -1396,7 +1398,7 @@ class Spaz(bs.Actor):
         if isinstance(self.getactivity(), GameActivity):
             try:
                 self.getactivity().metal_players.remove(self)
-            except: 
+            except Exception as e: 
                 bs.debprint(f"Couldn't remove {self} remove from metal list: {e}")
                 pass
                 
@@ -1525,6 +1527,8 @@ class Spaz(bs.Actor):
                 impulsmf(particle)
     
     def gosuper(self, shouldntsetmusic: bool = False) -> None:
+        if not self.node:
+            return
         self.impulse(y=350)
         bs.getsound('pretrans').play()
         bs.timer(0.4, lambda: self.super(shouldntsetmusic=shouldntsetmusic))
@@ -1647,6 +1651,8 @@ class Spaz(bs.Actor):
                     bs.setmusic(bs.MusicType.GRAND_ROMP)
                 elif self.character == 'Susie':
                     bs.setmusic(bs.MusicType.FEEL_THE_FURY)
+                elif self.character == 'SM64 Mario':
+                    bs.setmusic(bs.MusicType.RAINBOW_ROAD)
                 else:
                     bs.setmusic(bs.MusicType.SUPER)
     
@@ -1654,6 +1660,8 @@ class Spaz(bs.Actor):
         """Give this spaz the 'Hot Potato' effect."""
         if getattr(self, "_has_hot_potato", False):
             return  # Already has one, don't stack
+        if not self.node:
+            return
 
         self._has_hot_potato = True
         self.activity.spongebob_time = time  # seconds remaining
