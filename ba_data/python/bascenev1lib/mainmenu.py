@@ -11,9 +11,11 @@ import datetime
 from typing import TYPE_CHECKING, override
 
 from bacommon.locale import LocaleResolved
+from bascenev1lib.actor.overhead_text import OverheadText
 import bascenev1 as bs
 import bauiv1 as bui
 import babase as ba
+import fromgoverhaul.mell_resources as mell
 from bascenev1lib.game.surveyprogram import SURVEYActivity
 from bascenev1lib.actor.cutsceneplayer import CutscenePlayer
 from bascenev1lib.gameutils import SharedObjects
@@ -137,6 +139,8 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         )
 
         self._update_timer = bs.Timer(0.1, self._update, repeat=True)
+        self._overhead_timer = bs.Timer(5.5, self.overheadtxt, repeat=True)
+        self.overheadtxt()
         self._update()
 
         # Hopefully this won't hitch but lets space these out anyway.
@@ -184,6 +188,18 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         bs.timer(0.6, bs.getsound(random.choice(rsfx)).play, repeat=True)
         self._logo_node.texture = bs.gettexture('logoDies')
         self.splashtext.node.text = 'ow.'
+    
+    def overheadtxt(self, chance: int = 0.2):
+        text = ba.Lstr(
+            resource=f'menuOverhead{random.randint(1, 9)}', 
+            subs=[
+                ('${SERVER}', mell.server),
+            ]
+        )
+        if random.random() < chance:
+            OverheadText(text)
+
+
     
     def reroll_stuff(self):
         self.menu_music()

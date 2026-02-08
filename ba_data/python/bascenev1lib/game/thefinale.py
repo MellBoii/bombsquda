@@ -21,6 +21,7 @@ from bascenev1lib.actor.playerspaz import PlayerSpaz
 from bascenev1lib.actor.bomb import TNTSpawner
 from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.actor.powerupbox import PowerupBoxFactory, PowerupBox
+from bascenev1lib.actor.overhead_text import OverheadText
 # Fuck it, ralsieBot is back. If we want hard...
 # ..we GET HARD. 
 from bascenev1lib.actor.spazbot import (
@@ -160,6 +161,13 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
         self.setup_low_life_warning_sound()
         self._tntspawner = TNTSpawner(
             position=self._tntspawnpos, respawn_time=10.0
+        )
+        OverheadText(bs.Lstr(
+            resource='finaleOverhead',
+            subs=[
+                    ('${NAME}', self.players[0].actor.node.name)
+                ]
+            )
         )
         random_musicas = [
             bs.MusicType.THEFINALE,
@@ -394,13 +402,13 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
                     bs.Lstr(resource='victoryText'), scale=1.0, duration=3.0
                 )
                 self.celebrate(20.0)
-                bs.setmusic(bs.MusicType.VICTORYFINAL, continuous=True)
                 self._bots.clearslowly()
                 bs.cameraflash()
                 for player in self.players:
                     player.actor.say()
                 bs.getsound('srank').play()
                 ba.app.classic.ach.award_local_achievement('I am the BombSquad:tm:')
+                self._bot_update_timer = None
                 self.points_text.text = 'yuo\'re winner :)'
                 return
         assert self._scoreboard is not None
@@ -416,12 +424,14 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
             if self._alrdidach2 == True:
                 return
             self._alrdidach2 = True
-            ba.app.classic.ach.award_local_achievement('The Halfway Mark')
+            self._award_achievement('The Halfway Mark')
+            OverheadText(bs.Lstr(resource='finaleOverhead3'))
         if score >= 250:
             if self._alrdidach1 == True:
                 return
             self._alrdidach1 = True
-            ba.app.classic.ach.award_local_achievement('A Long Way')
+            self._award_achievement('A Long Way')
+            OverheadText(bs.Lstr(resource='finaleOverhead2'))
 
     @override
     def handlemessage(self, msg: Any) -> Any:
@@ -476,7 +486,7 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
         # (Pylint bug?) pylint: disable=missing-function-docstring
         if self._score >= 1500: # 1500 by default, 15 if you're testing
             bs.setmusic(bs.MusicType.VICTORYFINAL, continuous=True)
-            bs.pushcall(bs.WeakCall(self.do_end, 'victory', delay=5.5))
+            bs.pushcall(bs.WeakCall(self.do_end, 'victory', delay=6.5))
         else:
             assert self._bots is not None
             self._bots.final_celebrate()
