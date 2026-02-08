@@ -444,11 +444,9 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
             DialogueManager(
                 {
                     0: {
-                        "character": "spaz",
-                        "expression": "angry",
                         "name": self.players[0].actor.node.name,
                         "text": "{pause=0.4}...what the hell is a pizza time?{pause=0.3}",
-                        "sound": "diagvoice/spaz",
+                        "sound": "tap",
                         "interrupt": True,
                     },
                     1: {
@@ -460,19 +458,15 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
                         "interrupt": True,
                     },
                     2: {
-                        "character": "spaz",
-                        "expression": "insane",
                         "name": self.players[0].actor.node.name,
                         "text": "WHY IS THERE A TIMER COMING UP?????{pause=0.5}",
-                        "sound": "diagvoice/spaz",
+                        "sound": "tap",
                         "interrupt": True
                     },
                     3: {
-                        "character": "spaz",
-                        "expression": "insane",
                         "name": self.players[0].actor.node.name,
                         "text": "I SWEAR IF I FIND YOU- {sound=shieldDown}",
-                        "sound": "diagvoice/spaz",
+                        "sound": "tap",
                         "interrupt": True
                     },
                 }

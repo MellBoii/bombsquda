@@ -924,9 +924,6 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         :meth:`spawn_player_spaz()`.
         """
         assert player  # Dead references should never be passed as args.
-        baller = False
-        if baller:
-            return self.spawn_player_ball(player) 
         # tell every player to refresh their meter
         # in the case of player overriding
         for otherplayer in self.players:
@@ -947,12 +944,53 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         from bascenev1._coopsession import CoopSession
         from bascenev1lib.actor.playerspaz import PlayerSpaz
 
-        name = player.getname()
+        index = self.players.index(player)
+        cget = ba.app.config.get
+        coop = isinstance(self.session, CoopSession)
+        nameoverride = None
+        # Alright, if we're in co-op and the host
+        # accepts the canon coop character changes,
+        # we'll override the character, color, and names based on index
+        if coop and cget("squda_coopnames"):
+            # Newbie
+            if index == 0:
+                nameoverride = cget("squda_ch1name")
+                player.character = 'Spaz'
+                player.color = (0.6, 0.3, 1.0)
+                player.highlight = (0.6, 0.3, 1.0)
+            # Kris
+            elif index == 1:
+                nameoverride = cget("squda_ch2name")
+                player.character = 'Kris'
+                player.color = (1.0, 0.2, 0.4)
+                player.highlight = (0.2, 1.0, 1.0)
+            # Snake Shadow
+            elif index == 2:
+                nameoverride = cget("squda_ch3name")
+                player.character = 'GummyBoiYT'
+                player.color = (0.5, 0.5, 0.5)
+                player.highlight = (0.1, 0.1, 0.1)
+            # Noob
+            elif index == 3:
+                nameoverride = cget("squda_ch4name")
+                player.character = 'Noob'
+                player.color = (1, 1, 0.1)
+                player.highlight = (0.1, 0.1, 1)
+            else:
+                # Anyone out of the 4 of the cast get a
+                # random name, color, and highlight
+                names = bs.get_random_names()
+                nameoverride = names[random.randrange(len(names))]
+                player.character = 'OG Spaz'
+                player.color = (random.random(), random.random(), random.random())
+                player.highlight = (random.random(), random.random(), random.random())
+        # Initiate per usual
+        name = nameoverride if nameoverride else player.getname()
         color = player.color
         highlight = player.highlight
+        # Spawn a different actor if Baller
         if player.character == 'Baller':
             return self.spawn_player_ball(player=player)
-
         playerspaztype = getattr(player, 'playerspaztype', PlayerSpaz)
         if not issubclass(playerspaztype, PlayerSpaz):
             playerspaztype = PlayerSpaz

@@ -1100,7 +1100,7 @@ class TriggerBot(SpazBot):
         'christopher',
         'Kris',
         'KrisDreemurr',
-        'evil green kris',
+        'evil  kris',
     ]
     character = 'Kris'
     punchiness = 0.75

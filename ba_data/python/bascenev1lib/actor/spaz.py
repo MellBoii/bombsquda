@@ -192,6 +192,7 @@ class Spaz(bs.Actor):
         self.explotimer = None
         self.wiggledancetimer = None
         self.parryshield = None
+        self.hardmode = None
 
         if can_accept_powerups:
             pam = PowerupBoxFactory.get().powerup_accept_material
@@ -341,190 +342,6 @@ class Spaz(bs.Actor):
         self.impulse_scale = 1.5
         self.saved_color = self.node.color
         self.saved_highlight = self.node.highlight
-        if self.source_player: # FIXME: playerspaz exists, so use that instead
-            # we're playing as bombgeon's snake 
-            # shadow, so we get a custom moveset
-            if self.character == 'Bombgeon Snake Shadow':
-                self.dcl_time = 3
-                self.dashcooldown = bs.Timer(self.dcl_time, self.NINJA_increase, repeat=True)
-                self.grab_power = True
-                self.dashes = 2
-                self.hitpoints = 320
-                self.hitpoints_max = 320
-                self.shield_hitpoints_max = 150
-                self.impact_scale = 0.5
-                self.alrdidtext = False
-                self._punch_power_scale = 1.04
-                self._jump_cooldown = 0.27
-                self.pasheal_timer = bs.Timer(1.5, self.passiveheal, repeat=True)
-            if ba.app.config.get("squda_parryalways", True):
-                self.canparry = True
-            if ba.app.config.get("squda_enablemeter", True):
-                bs.timer(0.2, self.create_earth_meter)
-            if ba.app.config.get("squda_spazhardmode", True):
-                self.hitpoints = 1
-                self.hitpoints_max = 1  
-                # ew, we have to do this in a timer otherwise it'll break...
-                # maybe because the node isn't fully set up yet (hence it has no pos)
-                bs.timer(0.2, lambda: PopupText(
-                    "HARDMODE ON!!!",
-                    position=self.node.position,
-                    color=(1, 0.1, 0.1, 1),
-                    scale=1.1,
-                ).autoretain())
-                bs.getsound('hardmode').play()
-
-    def updatemeter(self):
-        # FIXME: activity should manage this stuff
-        if not self.earthmeter:
-            return
-
-        # Update HP number
-        if self.earthhptext and self.earthhptext.exists():
-            self.earthhptext.text = str(int(self.hitpoints / 10))
-        
-        # Update SP number
-        if self.earthsptext and self.earthsptext.exists():
-            self.earthsptext.text = str(int(self.shield_hitpoints / 10))
-
-        # Determine visual state
-        low_hp = self.hitpoints <= 210
-        is_super = self.issuper
-
-        # Pick texture
-        if low_hp:
-            texture = 'earthmetermortal'
-            color = (1.0, 0.3, 0.3)
-        elif is_super:
-            texture = 'earthmetersuper'
-            color = (1.0, 0.9, 0.4)
-        else:
-            texture = 'earthmeter'
-            color = (1.0, 1.0, 1.0)
-
-        # Apply texture
-        if self.earthmeter.exists():
-            self.earthmeter.texture = bs.gettexture(texture)
-
-        # Apply colors
-        for node in (self.earthhptext, self.earthmetertext, self.earthsptext):
-            if node and node.exists():
-                node.color = color
-
-    def set_meter_position(self):
-        if not self.source_player:
-            self.meterx = self.metery = -9999
-            return
-
-        players = bs.getplayers()
-
-        if self.source_player not in players:
-            self.meterx = self.metery = -9999
-            return
-
-        index = players.index(self.source_player)
-
-        normal_x = -670
-        spacing = 150
-        default_y = -270
-
-        self.meterx = normal_x + spacing * (index + 1)
-        self.metery = default_y
-    
-    def create_earth_meter(self):
-        self.set_meter_position()
-
-        def make_image(tex, scale):
-            return bs.newnode('image', attrs={
-                'texture': bs.gettexture(tex),
-                'absolute_scale': True,
-                'position': (self.meterx, self.metery),
-                'attach': 'center',
-                'opacity': 1.0,
-                'scale': scale,
-                'color': (1, 1, 1),
-            })
-        char_name = self.character
-        appearances = bs.app.classic.spaz_appearances
-        appearance = appearances[char_name]
-        if hasattr(appearance, 'earthportrait') and appearance.earthportrait:
-            self.charimage = appearance.earthportrait
-        else:
-            self.charimage = appearance.icon_texture
-        self.earthchar = make_image(self.charimage, (80, 80))
-        self.earthmeter = make_image('earthmeter', (150, 150))
-
-        self.earthmetertext = bs.newnode('text', attrs={
-            'text': self.node.name,
-            'h_align': 'center',
-            'position': (self.meterx, self.metery + 25),
-            'scale': 0.7,
-            'color': (1, 1, 1),
-            'shadow': 0.7,
-            'flatness': 0.6,
-        })
-
-        self.earthhptext = bs.newnode('text', attrs={
-            'text': str(int(self.hitpoints / 10)),
-            'h_align': 'center',
-            'position': (self.meterx + 18, self.metery - 16),
-            'scale': 0.9,
-            'color': (1, 1, 1),
-            'shadow': 0.7,
-            'flatness': 0.6,
-        })
-        self.earthsptext = bs.newnode('text', attrs={
-            'text': '0',
-            'h_align': 'center',
-            'position': (self.meterx + 18, self.metery - 53),
-            'scale': 0.9,
-            'color': (1, 1, 1),
-            'shadow': 0.7,
-            'flatness': 0.6,
-        })
-    
-    
-    def refresh_earth_meter(self):
-        self.set_meter_position()
-
-        nodes = [
-            self.earthchar,
-            self.earthmeter,
-            self.earthmetertext,
-            self.earthsptext,
-            self.earthhptext
-        ]
-
-        for node in nodes:
-            if node and node.exists():
-                node.position = (self.meterx, self.metery)
-        if self.earthmetertext and self.earthmetertext.exists():
-            self.earthmetertext.position = (self.meterx, self.metery + 25)
-
-        if self.earthhptext and self.earthhptext.exists():
-            self.earthhptext.position = (self.meterx + 18, self.metery - 16)
-        
-        if self.earthsptext and self.earthsptext.exists():
-            self.earthsptext.position = (self.meterx + 18, self.metery - 53)
-            
-    def play_meter_death_animation(self):
-        from bascenev1lib.actor.nodejumper import ImageJumper
-        if self.alreadydidanimation:
-            return
-
-        self.alreadydidanimation = True
-
-        for node in (
-            self.earthchar, 
-            self.earthmeter, 
-            self.earthmetertext, 
-            self.earthsptext
-        ):
-            if node and node.exists():
-                ImageJumper.jump_image(node, 420, 70, -1500)
-        if self.earthhptext and self.earthhptext.exists():
-            self.earthhptext.delete()
-
 
     @override
     def exists(self) -> bool:
@@ -1304,7 +1121,7 @@ class Spaz(bs.Actor):
             return
         # Prevent players from getting shields 
         # if they're on hardmode (so that it's not too easy).
-        if ba.app.config.get("squda_spazhardmode", True) and not self.source_player == None:
+        if self.hardmode:
             PopupText(
                 bs.Lstr(resource='noShield'),
                 position=self.node.position,
@@ -2325,25 +2142,6 @@ class Spaz(bs.Actor):
                 return True
             if self.pick_up_powerup_callback is not None:
                 self.pick_up_powerup_callback(self)
-            if self.source_player: # Prevent tutorial from dying.
-                if self.character == 'Bombgeon Snake Shadow':
-                    # if we already did the text, don't do it again to not repeat
-                    if self.alrdidtext == True:
-                        return
-                    else:
-                        # tell our player we can't pickup powerups as Ninjageon
-                        self.alrdidtext = True
-                        PopupText(
-                        bs.Lstr(resource='geonPowerup'),
-                        position=self.node.position,
-                        color=(1, 0.1, 0.1, 0.9),
-                        scale=1.0,
-                        ).autoretain()
-                        def _resetalrdid():
-                            self.alrdidtext = False
-                        bs.timer(1.0, _resetalrdid)
-                        bs.getsound('error').play()
-                        return
             if msg.poweruptype == 'triple_bombs':
                 tex = PowerupBoxFactory.get().tex_bomb
                 self._flash_billboard(tex)
@@ -2749,7 +2547,6 @@ class Spaz(bs.Actor):
                     )
                 self.mpa()
                 return True
-                 
             # If we were recently hit, don't count this as another.
             # (so punch flurries and bomb pileups essentially count as 1 hit).
             local_time = int(bs.time() * 1000.0)
@@ -3187,7 +2984,7 @@ class Spaz(bs.Actor):
             if msg.immediate:
                 if self.node:
                     self.node.delete()
-            if ba.app.config.get("squda_spazhardmode", True) and not self.source_player == None:
+            if self.hardmode:
                 if self.node:
                     bs.emitfx(
                     position=self.node.position,
@@ -3982,7 +3779,11 @@ class Spaz(bs.Actor):
                 dir_z,
             )
         self.hexploded = True
-
+        
+    def updatemeter(self):
+        """This is used in PlayerSpaz. Do not use this."""
+        pass
+        
     def shatter(self, extreme: bool = False, force_scream: bool = False) -> None:
         """Break the poor spaz into little bits."""
         if self.shattered:

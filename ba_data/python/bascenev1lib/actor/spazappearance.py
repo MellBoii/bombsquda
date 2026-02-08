@@ -564,15 +564,22 @@ def register_appearances() -> None:
     t.upper_leg_mesh = 'spazUpperLeg'
     t.lower_leg_mesh = 'spazLowerLeg'
     t.toes_mesh = 'spazToes'
-    old_lady_sounds = ['spaz1', 'spaz2', 'spaz3', 'spaz4']
-    old_lady_hit_sounds = ['spazHit1', 'spazHit2', 'spazogImpact03', 'spazogImpact04']
-    t.jump_sounds = ['spazogJump01', 'spazogJump02', 'spazogJump03', 'spazogJump04']
-    t.attack_sounds = old_lady_sounds
-    t.impact_sounds = old_lady_hit_sounds
-    t.death_sounds = ['spazDeath']
-    t.pickup_sounds = ['spazogPickup']
-    t.victory_sounds = ['spazogJump01']
-    t.fall_sounds = ['spazFall']
+    t.jump_sounds = ['spazJump01', 'spazJump02', 'spazJump03', 'spazJump04']
+    t.attack_sounds = [
+        'spazAttack01',
+        'spazAttack02',
+        'spazAttack03',
+        'spazAttack04',
+    ]
+    t.impact_sounds = [
+        'spazImpact01',
+        'spazImpact02',
+        'spazImpact03',
+        'spazImpact04',
+    ]
+    t.death_sounds = ['spazDeath01']
+    t.pickup_sounds = ['spazPickup01']
+    t.fall_sounds = ['spazFall01']
     t.style = 'spaz'
 
     # Bombgeon's Ninja ###################################

@@ -246,33 +246,13 @@ class BenchmarksAndStressTestsWindow(bui.MainWindow):
         self._stress_test_player_count_text = bui.textwidget(
             parent=self._subcontainer,
             position=(246 - x_sub, v - 14),
-            size=(60, 28),
-            editable=False,
+            size=(140, 28),
+            editable=True,
             color=(0.3, 1.0, 0.3, 1.0),
-            h_align='right',
+            h_align='left',
             v_align='center',
             text=str(self._stress_test_player_count),
             padding=2,
-        )
-        bui.buttonwidget(
-            parent=self._subcontainer,
-            position=(330 - x_sub, v - 11),
-            size=(28, 28),
-            label='-',
-            autoselect=True,
-            on_activate_call=bui.Call(self._stress_test_player_count_decrement),
-            repeat=True,
-            enable_sound=True,
-        )
-        bui.buttonwidget(
-            parent=self._subcontainer,
-            position=(380 - x_sub, v - 11),
-            size=(28, 28),
-            label='+',
-            autoselect=True,
-            on_activate_call=bui.Call(self._stress_test_player_count_increment),
-            repeat=True,
-            enable_sound=True,
         )
         v -= 42
 
@@ -291,37 +271,13 @@ class BenchmarksAndStressTestsWindow(bui.MainWindow):
         self._stress_test_round_duration_text = bui.textwidget(
             parent=self._subcontainer,
             position=(246 - x_sub, v - 14),
-            size=(60, 28),
-            editable=False,
+            size=(140, 28),
+            editable=True,
             color=(0.3, 1.0, 0.3, 1.0),
-            h_align='right',
+            h_align='left',
             v_align='center',
             text=str(self._stress_test_round_duration),
             padding=2,
-        )
-        bui.buttonwidget(
-            parent=self._subcontainer,
-            position=(330 - x_sub, v - 11),
-            size=(28, 28),
-            label='-',
-            autoselect=True,
-            on_activate_call=bui.Call(
-                self._stress_test_round_duration_decrement
-            ),
-            repeat=True,
-            enable_sound=True,
-        )
-        bui.buttonwidget(
-            parent=self._subcontainer,
-            position=(380 - x_sub, v - 11),
-            size=(28, 28),
-            label='+',
-            autoselect=True,
-            on_activate_call=bui.Call(
-                self._stress_test_round_duration_increment
-            ),
-            repeat=True,
-            enable_sound=True,
         )
         v -= 82
         btn = bui.buttonwidget(
@@ -344,38 +300,6 @@ class BenchmarksAndStressTestsWindow(bui.MainWindow):
             )
         )
 
-    def _stress_test_player_count_decrement(self) -> None:
-        self._stress_test_player_count = max(
-            1, self._stress_test_player_count - 1
-        )
-        bui.textwidget(
-            edit=self._stress_test_player_count_text,
-            text=str(self._stress_test_player_count),
-        )
-
-    def _stress_test_player_count_increment(self) -> None:
-        self._stress_test_player_count = self._stress_test_player_count + 1
-        bui.textwidget(
-            edit=self._stress_test_player_count_text,
-            text=str(self._stress_test_player_count),
-        )
-
-    def _stress_test_round_duration_decrement(self) -> None:
-        self._stress_test_round_duration = max(
-            10, self._stress_test_round_duration - 10
-        )
-        bui.textwidget(
-            edit=self._stress_test_round_duration_text,
-            text=str(self._stress_test_round_duration),
-        )
-
-    def _stress_test_round_duration_increment(self) -> None:
-        self._stress_test_round_duration = self._stress_test_round_duration + 10
-        bui.textwidget(
-            edit=self._stress_test_round_duration_text,
-            text=str(self._stress_test_round_duration),
-        )
-
     def _stress_test_game_type_selected(self, game_type: str) -> None:
         self._stress_test_game_type = game_type
 
@@ -393,7 +317,16 @@ class BenchmarksAndStressTestsWindow(bui.MainWindow):
 
     def _stress_test_pressed(self) -> None:
         from bascenev1lib.mainmenu import MainMenuActivity
+        pc = cast(str, bui.textwidget(query=self._stress_test_player_count_text)).strip()
+        rd = cast(str, bui.textwidget(query=self._stress_test_round_duration_text)).strip()
 
+        try:
+            self._stress_test_player_count = int(pc)
+            self._stress_test_round_duration = int(rd)
+        except ValueError:
+            bui.screenmessage('Round duration or player count must be a number.')
+            bui.getsound('error').play()
+            return
         if bui.app.classic is None:
             logging.warning('stress-test requires classic')
             return

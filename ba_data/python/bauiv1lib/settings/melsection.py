@@ -138,7 +138,7 @@ class MelWindow(bui.MainWindow):
     """Window for selecting BombSquda settings."""
     @staticmethod
     def _create(t, o, ft):
-        return SurveyIntroWindow(
+        return MelWindow(
             transition=t,
             origin_widget=o,
             first_time=ft,
@@ -169,41 +169,46 @@ class MelWindow(bui.MainWindow):
         # We're a generally widescreen shaped window, so bump our
         # overall scale up a bit when screen width is wider than safe
         # bounds to take advantage of the extra space.
-        smallscale = min(2.0, 1.5 * screensize[0] / safesize[0])
-        self._settings = [
-            ("squda_spazfuckedup", "spazBigEyesText", 300, False),
-            ("squda_noisepolution", "noisePollutionText", 250, False),
-            ("squda_gamblingmode", "gamblingModeText", 200, False),
-            ("squda_spazhardmode", "spazHardModeText", 150, True),
-            ("squda_parryalways", "parryAlwaysText", 100, False),
-            ("squda_dontshutdown", "dontShutdownText", 50, False),
-            ("squda_dontdomarioman", "noMarioDelayText", 0, False),
-            ("squda_richpresence", "discordRpcText", -50, False),
-            ("squda_enablemeter", "enableMeterText", -100, False),
-            ("squda_nosugarcoats", "noSugarcoatingText", -150, False),
-            ("squda_disablemm", "disableMetalMusicText", -200, False),
-            ("squda_customfont", "customFontWarningText", -250, False),
-            ("squda_speedrunner", "speedrunTimerText", -300, False),
-            ("squda_blood", "enableBloodText", -350, False),
-        ]
-        self.is_small = bui.app.ui_v1.uiscale is bui.UIScale.SMALL
-        self._first_time = first_time
         scale = (
             smallscale
             if uiscale is bui.UIScale.SMALL
             else 1.1 if uiscale is bui.UIScale.MEDIUM else 0.8
         )
-        if self.is_small:
-            col_x = [150, 500]   # left & right columns
-            start_y = 320
-            row_height = 60
-        else:
-            col_x = [250]
-            start_y = 300
-            row_height = 50
-        
         target_height = min(height - 70, screensize[1] / scale)
+        target_width = min(width - 80, screensize[0] / scale)
         yoffs = 0.5 * height + 0.5 * target_height + 30.0
+        self._scroll_width = target_width - 30
+        self._scroll_height = target_height - 45
+        self._sub_width = min(500, self._scroll_width * 0.95)
+        self._sub_height = 840.0
+        scroll_bottom = yoffs - 56 - self._scroll_height
+        smallscale = min(2.0, 1.5 * screensize[0] / safesize[0])
+        col_x = width * 0.12
+        start_y = self._sub_height - 60
+        spacing = 2
+        raw_settings = [
+            ("squda_spazfuckedup", "spazBigEyesText", False),
+            ("squda_noisepolution", "noisePollutionText", False),
+            ("squda_gamblingmode", "gamblingModeText", False),
+            ("squda_spazhardmode", "spazHardModeText", True),
+            ("squda_parryalways", "parryAlwaysText", False),
+            ("squda_dontshutdown", "dontShutdownText", False),
+            ("squda_dontdomarioman", "noMarioDelayText", False),
+            ("squda_richpresence", "discordRpcText", False),
+            ("squda_enablemeter", "enableMeterText", False),
+            ("squda_nosugarcoats", "noSugarcoatingText", False),
+            ("squda_disablemm", "disableMetalMusicText", False),
+            ("squda_customfont", "customFontWarningText", False),
+            ("squda_speedrunner", "speedrunTimerText", False),
+            ("squda_blood", "enableBloodText", False),
+            ("squda_coopnames", "coopNamesText", False),
+        ]
+        self._settings = [
+            (key, text, start_y - i * spacing, sound)
+            for i, (key, text, sound) in enumerate(raw_settings)
+        ]
+        self.is_small = bui.app.ui_v1.uiscale is bui.UIScale.SMALL
+        self._first_time = first_time
         
         super().__init__(
             root_widget=bui.containerwidget(
@@ -220,6 +225,26 @@ class MelWindow(bui.MainWindow):
             # We're affected by screen size only at small ui-scale.
             refresh_on_screen_size_changes=uiscale is bui.UIScale.SMALL,
         )
+        self._scrollwidget = bui.scrollwidget(
+            parent=self._root_widget,
+            size=(self._scroll_width, self._scroll_height),
+            position=(
+                width * 0.5 - self._scroll_width * 0.5,
+                scroll_bottom,
+            ),
+            simple_culling_v=20.0,
+            highlight=False,
+            center_small_content_horizontally=True,
+            selection_loops_to_parent=True,
+            border_opacity=0.4,
+        )
+        bui.widget(edit=self._scrollwidget, right_widget=self._scrollwidget)
+        self._subcontainer = bui.containerwidget(
+            parent=self._scrollwidget,
+            size=(self._sub_width, self._sub_height),
+            background=False,
+            selection_loops_to_parent=True,
+        )
         if uiscale is bui.UIScale.SMALL:
             self._back_button = None
             bui.containerwidget(
@@ -229,7 +254,7 @@ class MelWindow(bui.MainWindow):
             self._back_button = btn = bui.buttonwidget(
                 parent=self._root_widget,
                 autoselect=True,
-                position=(50, yoffs - 80.0),
+                position=(50, yoffs - 50.0),
                 size=(70, 70),
                 scale=0.8,
                 text_scale=1.2,
@@ -252,7 +277,7 @@ class MelWindow(bui.MainWindow):
 
         bui.textwidget(
             parent=self._root_widget,
-            position=(0, yoffs - (70 if uiscale is bui.UIScale.SMALL else 60)),
+            position=(0, yoffs - (45 if uiscale is bui.UIScale.SMALL else 35)),
             size=(width, 25),
             text=bui.Lstr(resource=f'{self._r}.titleText'),
             color=bui.app.ui_v1.title_color,
@@ -261,28 +286,20 @@ class MelWindow(bui.MainWindow):
             scale=1.0,
             maxwidth=4000,
         )
-        # i love thefuckedupuifix!! thefuckedupuifix forever!!
-        thefuckedupuifix = 210 if self.is_small else 350
         self._checkboxes = {}
+        row_height = 50
 
-        for i, (key, label_key, _y, playsound) in enumerate(self._settings):
-            
-            if self.is_small:
-                col = i % 2
-                row = i // 2
-            else:
-                col = 0
-                row = i
-
-            x = col_x[col]
+        for i, (key, label_key, start_y, playsound) in enumerate(self._settings):
+            row = i
+            x = col_x
             y = start_y - row * row_height
 
             self._checkboxes[key] = bui.checkboxwidget(
-                parent=self._root_widget,
-                position=(x, y + thefuckedupuifix),
+                parent=self._subcontainer,
+                position=(x, y),
                 size=(220, 40),
                 autoselect=False,
-                maxwidth=260,
+                maxwidth=300,
                 textcolor=(1.0, 1.0, 1.0),
                 value=bui.app.config.get(key, False),
                 text=bui.Lstr(resource=f"{self._r}.{label_key}"),
@@ -341,5 +358,5 @@ class MelWindow(bui.MainWindow):
     def get_main_window_state(self):
         return bui.BasicMainWindowState(
             create_call=lambda t, o, ft=self._first_time:
-                SurveyIntroWindow._create(t, o, ft)
+                MelWindow._create(t, o, ft)
         )

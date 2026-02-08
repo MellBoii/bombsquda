@@ -87,7 +87,7 @@ class CoopSession(Session):
         self._ran_tutorial_activity = False
         self._tutorial_activity: bascenev1.Activity | None = None
         self._custom_menu_ui: list[dict[str, Any]] = []
-        self.amaj = False
+        self.amaj_players = 0
         self.endTimer = None
 
         # Start our joining screen.
@@ -179,7 +179,7 @@ class CoopSession(Session):
                 # If within reasonable hitpoints or
                 # alive, allow mid activity rejoining.
                 if player.actor.hitpoints >= 410:
-                    self.amaj = True
+                    self.amaj_players += 1
                     bs.broadcastmessage(f'{player.actor.node.name} left the game, anyone can replace their spot')
         super().on_player_leave(sessionplayer)
         self._handle_empty_activity()
@@ -212,7 +212,7 @@ class CoopSession(Session):
         # However, if we're not allowing mid-game joins, don't actually pass;
         # just announce the arrival and say they'll partake next round.
         if pass_to_activity:
-            if self.amaj == False:
+            if self.amaj_players <= 0:
                 pass_to_activity = False
                 with self.context:
                     _bascenev1.broadcastmessage(
@@ -224,8 +224,8 @@ class CoopSession(Session):
                         ),
                         color=(0, 1, 0),
                     )
-        if self.amaj == True:
-            self.amaj = False
+        if self.amaj_players > 0:
+            self.amaj_players -= 1
 
         # If we're a non-team session, each player gets their own team.
         # (keeps mini-game coding simpler if we can always deal with teams).
@@ -265,7 +265,7 @@ class CoopSession(Session):
         self.stats.register_sessionplayer(sessionplayer)
         if pass_to_activity:
             activity.add_player(sessionplayer)
-            if self.scheduling_end:
+            if getattr(self, 'scheduling_end', False):
                 self.unschedule_end_game()
         return sessionplayer
     
@@ -274,7 +274,12 @@ class CoopSession(Session):
         activity = self.getactivity()
         self.scheduling_end = True
         with activity.context:
-            self.endTimer = bs.Timer(20.0, activity.end)
+            def try_end():
+                if not activity.players and self.sessionplayers:
+                    self.restart()
+                else:
+                    activity.end()
+            self.endTimer = bs.Timer(20.0, try_end)
             OverheadText(babase.Lstr(resource='endingSoonCoop'))
     
     def unschedule_end_game(self) -> None:

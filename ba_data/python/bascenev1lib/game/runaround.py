@@ -550,11 +550,9 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
             DialogueManager(
                 [
                     {
-                        "character": "spaz",
-                        "expression": "neutral",
                         "name": self.players[0].actor.node.name,
                         "text": "{pause=2.0}...what the fuck is tha-",
-                        "sound": "diagvoice/spaz",
+                        "sound": "tap",
                         "interrupt": True
                     },
                     {
@@ -563,10 +561,8 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
                         "interrupt": True
                     },
                     {
-                        "character": "spaz",
-                        "expression": "insane",
                         "name": self.players[0].actor.node.name,
-                        "text": "AAAAAAHHHHHHHHHH!!!{pause=1.2}",
+                        "text": "AAAAAAHHHHHHHHHH!!!{pause=1.0}",
                         "interrupt": True
                     },
                 ],
@@ -576,7 +572,7 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
                     # teleport a bit above on start 
                     
                     # so our player falls down
-                    if not p.actor.node.exists():
+                    if not p.actor.node:
                         return
                     p.actor.node.handlemessage(
                         bs.StandMessage(
@@ -591,7 +587,7 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
                     p.actor.disconnect_controls_from_player()
                 def lookfwd(p=player):
                     # player looks forward
-                    if not p.actor.node.exists():
+                    if not p.actor.node:
                         return
                     p.actor.node.move_up_down = 0.1
                     def stop():
@@ -599,11 +595,11 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
                         p.actor.node.move_up_down = 0
                     bs.timer(0.2, stop)
                 def connect(p=player):
-                    if not p.actor.node.exists():
+                    if not p.actor.node:
                         return
                     p.actor.connect_controls_to_player()
                 def scream(p=player):
-                    if not p.actor.node.exists():
+                    if not p.actor.node:
                         return
                     # make the earthmover scream!!!
                     bs.getsound('earthmover_scream').play()
