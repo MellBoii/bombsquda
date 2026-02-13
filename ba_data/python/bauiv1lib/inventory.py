@@ -7,7 +7,8 @@ from __future__ import annotations
 from typing import override
 
 import bauiv1 as bui
-
+import babase as ba
+import bascenev1 as bs
 
 class InventoryWindow(bui.MainWindow):
     """Shows what you got."""
@@ -25,7 +26,7 @@ class InventoryWindow(bui.MainWindow):
         self._width = 1400 if uiscale is bui.UIScale.SMALL else 450
         self._height = (
             1200
-            if uiscale is bui.UIScale.SMALL else 300
+            if uiscale is bui.UIScale.SMALL else 400
         )
         # xoffs = 70 if uiscale is bui.UIScale.SMALL else 0
         # yoffs = -45 if uiscale is bui.UIScale.SMALL else 0
@@ -97,7 +98,12 @@ class InventoryWindow(bui.MainWindow):
             bui.containerwidget(edit=self._root_widget, cancel_button=btn)
 
         button_width = 300
-        self._player_profiles_button = btn = bui.buttonwidget(
+        imgsize = 60
+        xoffs = 20
+        image_mult = 0.4
+        text_mult = 0.55
+        yoffs += 20
+        self._player_profiles_button = bui.buttonwidget(
             parent=self._root_widget,
             position=(self._width * 0.5 - button_width * 0.5, yoffs - 200),
             autoselect=True,
@@ -108,15 +114,65 @@ class InventoryWindow(bui.MainWindow):
             textcolor=(0.75, 0.7, 0.8),
             on_activate_call=self._player_profiles_press,
         )
+        yoffs -= 60
+        button_width = 200
+        bui.buttonwidget(
+            parent=self._root_widget,
+            position=(self._width * 0.5 - button_width * 0.5, yoffs - 210),
+            autoselect=True,
+            size=(button_width, 60),
+            label=bui.Lstr(resource='customstoreText'),
+            color=(0.55, 0.5, 0.6),
+            icon=bui.gettexture('storeIcon'),
+            textcolor=(0.75, 0.7, 0.8),
+            on_activate_call=self._open_store,
+        )
+        bui.imagewidget(
+            parent=self._root_widget,
+            position=(self._width * image_mult - xoffs, yoffs - 265),
+            size=(imgsize, imgsize),
+            texture=bui.gettexture('spaztickets'),
+        )
         bui.textwidget(
             parent=self._root_widget,
-            position=(self._width * 0.5, yoffs - 250),
-            size=(0, 0),
-            text=bui.Lstr(resource='moreSoonText'),
-            scale=0.7,
+            position=(self._width * text_mult - xoffs, yoffs - 250),
+            size=(300, 30),
+            text=str(ba.app.config.get("squda_spaztix")),
+            scale=1.0,
             maxwidth=self._width * 0.9,
-            h_align='center',
+            h_align='left',
             v_align='center',
+        )
+        yoffs -= 70
+        bui.imagewidget(
+            parent=self._root_widget,
+            position=(self._width * image_mult - xoffs, yoffs - 265),
+            size=(imgsize, imgsize),
+            texture=bui.gettexture('spaztokens'),
+        )
+        bui.textwidget(
+            parent=self._root_widget,
+            position=(self._width * text_mult - xoffs, yoffs - 250),
+            size=(300, 30),
+            text=str(ba.app.config.get("squda_spaztokens")),
+            scale=1.0,
+            maxwidth=self._width * 0.9,
+            h_align='left',
+            v_align='center',
+        )
+        yoffs -= 30
+        button_width = 300
+        bui.buttonwidget(
+            parent=self._root_widget,
+            position=(self._width * 0.7 - button_width * 0.5, yoffs - 270),
+            autoselect=False,
+            size=(button_width, 80),
+            scale=0.4,
+            text_scale=1.6,
+            label=bui.Lstr(resource='whatIsThisText'),
+            color=(0.55, 0.5, 0.6),
+            textcolor=(0.75, 0.7, 0.8),
+            on_activate_call=self.show_what_dis,
         )
 
     def _player_profiles_press(self) -> None:
@@ -130,7 +186,22 @@ class InventoryWindow(bui.MainWindow):
         self.main_window_replace(
             ProfileBrowserWindow(origin_widget=self._player_profiles_button)
         )
-
+    
+    def show_what_dis(self):
+        if not self._root_widget or self._root_widget.transitioning_out:
+            return
+            
+        from bauiv1lib.mell_about import MellInfoWindow
+        MellInfoWindow(
+            titletext=ba.Lstr(resource='aboutCustomCurrencyTitle'),
+            bodytext=ba.Lstr(resource='aboutCustomCurrency'),
+        )
+        
+    def _open_store(self) -> None:
+        """Pushcall a new session (our Store activity)"""
+        from bascenev1lib.mell_store import MellStoreSession as sesh
+        bs.pushcall(lambda: bs.new_host_session(sesh))
+        
     @override
     def get_main_window_state(self) -> bui.MainWindowState:
         # Support recreating our window for back/refresh purposes.

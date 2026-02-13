@@ -503,7 +503,7 @@ class Spaz(bs.Actor):
                         blast_type='tnt',
                         source_player= None
                     )
-                    bs.getsound('boo').play()
+                    bs.getsound('boo').play(position=self.node.position)
                     ba.app.classic.ach.award_local_achievement(
                         'Turbo'
                     )
@@ -673,7 +673,7 @@ class Spaz(bs.Actor):
         self.node.connectattr('position_center', self.parryshield, 'position')
         bs.animate(self.parryshield, 'radius', {parrytime: 1.0, parrytime + 0.2: 0.0})
         bs.timer(parrytime + 0.3, self.parryshield.delete)
-        bs.getsound('attempt_parry').play()
+        bs.getsound('attempt_parry').play(position=self.node.position)
     
     def impulse(self, x: float | int = 0, y: float | int = 0):
         if not self.node:
@@ -816,7 +816,7 @@ class Spaz(bs.Actor):
         """
         if not self.node:
             return
-        bs.getsound(snd1).play()
+        bs.getsound(snd1).play(position=self.node.position)
         yforce = 240
         savedY = self.node.position[1]
         def actualexplode():
@@ -873,15 +873,15 @@ class Spaz(bs.Actor):
         self._roulette_active = False
         # FIXME: make lists of good and bad items
         if self._roulette_current == 'curse':
-            bs.getsound('baditem').play()
+            bs.getsound('baditem').play(position=self.node.position)
         if self._roulette_current == 'spongebob':
-            bs.getsound('baditem').play()
+            bs.getsound('baditem').play(position=self.node.position)
         elif self._roulette_current == 'punch':
-            bs.getsound('gooditem').play()
+            bs.getsound('gooditem').play(position=self.node.position)
         elif self._roulette_current == 'metal':
-            bs.getsound('gooditem').play()
+            bs.getsound('gooditem').play(position=self.node.position)
         else:
-            bs.getsound('okitem').play()
+            bs.getsound('okitem').play(position=self.node.position)
         self.handlemessage(bs.PowerupMessage(self._roulette_current))
         self._roulette_current = None
 
@@ -999,7 +999,7 @@ class Spaz(bs.Actor):
                 'celebrate', int(50)), 
             repeat=True
         )
-        bs.getsound('drumRollShort').play()
+        bs.getsound('drumRollShort').play(position=self.node.position)
         self.wiggling = True
         if isinstance(self.getactivity(), GameActivity):
             self.getactivity().dancing_players.append(self)
@@ -1128,7 +1128,7 @@ class Spaz(bs.Actor):
                 color=(1, 0.1, 0.1, 0.9),
                 scale=1.0,
             ).autoretain()
-            bs.getsound('error').play()
+            bs.getsound('error').play(position=self.node.position)
             return
 
         factory = SpazFactory.get()
@@ -1253,7 +1253,7 @@ class Spaz(bs.Actor):
                 if not ba.app.config.get("squda_disablemmusic"):
                     self.getactivity().metal_players.append(self)
         # play a sound
-        self._metalcap_sound = bs.getsound('metalcap').play()
+        self._metalcap_sound = bs.getsound('metalcap').play(position=self.node.position)
 
         # save the material we were using
         self._saved_materials = self.node.color_texture
@@ -1299,8 +1299,8 @@ class Spaz(bs.Actor):
             color=(1, 0, 1, 0.9),
             scale=1.0,
         ).autoretain()
-        bs.getsound('parried').play()
-        bs.getsound('orchestraHit').play()
+        bs.getsound('parried').play(position=self.node.position)
+        bs.getsound('orchestraHit').play(position=self.node.position)
         return      
     
     def super_spark(self, chance = 0.6, amount1 = 2, amount2 = 5):
@@ -1347,7 +1347,7 @@ class Spaz(bs.Actor):
         if not self.node:
             return
         self.impulse(y=350)
-        bs.getsound('pretrans').play()
+        bs.getsound('pretrans').play(position=self.node.position)
         bs.timer(0.4, lambda: self.super(shouldntsetmusic=shouldntsetmusic))
         bs.timer(0.4, lambda: self.super_spark(1.0, 15, 25))
 
@@ -1360,7 +1360,7 @@ class Spaz(bs.Actor):
         if self.node:
             activity = self.getactivity()
             gnode = activity.globalsnode
-            bs.getsound('supertrans').play() # i'm keeping it as super trans. fuck you. die.
+            bs.getsound('supertrans').play(position=self.node.position) # i'm keeping it as super trans. fuck you. die.
             self.issuper = True
             # flashing effect function
             if not self.node.exists():
@@ -1473,126 +1473,179 @@ class Spaz(bs.Actor):
                 else:
                     bs.setmusic(bs.MusicType.SUPER)
     
-    def _activate_spongebob(self, time: int, speed: int):
+    def _activate_spongebob(self, time: int, speed: int, transition_in: bool = True):
         """Give this spaz the 'Hot Potato' effect."""
         if getattr(self, "_has_hot_potato", False):
             return  # Already has one, don't stack
         if not self.node:
-            return
+            return # no node
 
         self._has_hot_potato = True
         self.activity.spongebob_time = time  # seconds remaining
         self._potato_speed = speed
-        
-        if self.node.name:
-            self._potato_holder_text = bs.newnode(
-                'text',
-                attrs={
-                    'text': bs.Lstr(
-                        resource='spongedPlayer', 
-                        subs=[('${NAME}', self.node.name)]
-                    ),
-                    'h_align': 'center',
-                    'v_attach': 'top',
-                    'position': (0, -40),
-                    'scale': 1.0,
-                    'color': (1, 1, 0),
-                    'shadow': 0.7,
-                    'flatness': 0.5,
-                },
-            )
-        else:
-            self._potato_holder_text = bs.newnode(
-                'text',
-                attrs={
-                    'text': bs.Lstr(
-                        resource='spongedChar', 
-                        subs=[('${NAME}', self.character)]
-                    ),
-                    'h_align': 'center',
-                    'v_attach': 'top',
-                    'position': (0, -40),
-                    'scale': 1.0,
-                    'color': (1, 1, 0),
-                    'shadow': 0.7,
-                    'flatness': 0.5,
-                },
-            )
-        if self.node.name:
-            self._potato_timer_text = bs.newnode(
-                'text',
-                attrs={
-                    'text': bs.Lstr(
-                        resource='spongePlayer', 
-                        subs=[('${NAME}', self.node.name), ('${TIME}', self.activity.spongebob_time)]
-                    ),
-                    'h_align': 'center',
-                    'v_attach': 'top',
-                    'position': (0, -70),
-                    'scale': 1.0,
-                    'color': (1, 0.3, 0.1),
-                    'shadow': 0.7,
-                    'flatness': 0.5,
-                },
-            )
-        else:
-            self._potato_timer_text = bs.newnode(
-                'text',
-                attrs={
-                    'text': bs.Lstr(
-                        resource='spongeChar', 
-                        subs=[('${NAME}', self.character),('${TIME}', self.activity.spongebob_time)]
-                    ),
-                    'h_align': 'center',
-                    'v_attach': 'top',
-                    'position': (0, -70),
-                    'scale': 1.0,
-                    'color': (1, 0.3, 0.1),
-                    'shadow': 0.7,
-                    'flatness': 0.5,
-                },
-            )
-        
-        # Timer countdown
+        name = self.node.name if self.node.name else self.character
+        xoffs = 500
+        usualy = 120
+        self._potato_holder_text = bs.newnode(
+            'text',
+            attrs={
+                'text': bs.Lstr(
+                    resource='spongePlayer', 
+                    subs=[
+                        ('${NAME}', name)
+                    ]
+                ),
+                'h_align': 'center',
+                'v_attach': 'bottom',
+                'position': (xoffs, usualy + 90),
+                'scale': 1.0,
+                'color': (1, 1, 0),
+                'shadow': 0.7,
+                'flatness': 0.5,
+            },
+        )
+        self._potato_timer_img = None
+        if self.source_player:
+            from bascenev1lib.actor.image import Image
+            self._potato_player_img = Image(
+                texture=self.source_player.get_icon(),
+                position=(xoffs, usualy + 160),
+                scale=(60.0, 60.0),
+                attach=Image.Attach.BOTTOM_CENTER,
+            ).autoretain()
+        self._potato_timer_img = bs.newnode(
+            'image',
+            attrs={
+                'texture': bs.gettexture('spongetimer1'),
+                'position': (xoffs, usualy - 20),
+                'scale': (200, 200),
+                'color': (0.8, 0.8, 0.8),
+                'attach': 'bottomCenter',
+            },
+        )
+        self._potato_timer_images = []
+        self._shaking = False
+        self._shake_timer = None
+        def create_timer_images(current_time):
+            # Delete old images
+            for img in self._potato_timer_images:
+                if img.exists():
+                    img.delete()
+            self._potato_timer_images = []
+
+            # Get digits
+            digits = [int(d) for d in str(current_time)]
+            num_digits = len(digits)
+            spacing = 40.0
+            for i, digit in enumerate(digits):
+                x = (i - (num_digits - 1) / 2) * spacing
+                img = bs.newnode(
+                    'image',
+                    attrs={
+                        'texture': bs.gettexture(f'spongenumber{digit}'),
+                        'position': (x + xoffs, usualy - 20),
+                        'scale': (120, 120),
+                        'color': (1, 1, 1),
+                        'attach': 'bottomCenter',
+                    },
+                )
+                self._potato_timer_images.append(img)
+
+            # Handle shaking
+            if current_time <= 0:
+                for img in self._potato_timer_images:
+                    if img.exists():
+                        img.delete()
+            if current_time <= 5 and not self._shaking:
+                self._shaking = True
+                def shake():
+                    for img in self._potato_timer_images:
+                        if img.exists():
+                            current_pos = img.position
+                            shake_num = 5
+                            offset_x = random.randint(-shake_num, shake_num)
+                            offset_y = random.randint(-shake_num, shake_num)
+                            bs.animate_array(
+                                img, 
+                                'position', 
+                                2,
+                                {
+                                    0: (current_pos[0] + offset_x, current_pos[1] + offset_y),
+                                    0.01: (current_pos[0], current_pos[1]),
+                                }
+                            )
+                self._shake_timer = bs.Timer(0.001, shake, repeat=True)
+                if self._potato_timer_img:
+                    self._potato_timer_img.texture = bs.gettexture('spongetimer2')
+            elif current_time > 5 and self._shaking:
+                self._shaking = False
+                if self._shake_timer:
+                    self._shake_timer = None
+                if self._potato_timer_img:
+                    self._potato_timer_img.texture = bs.gettexture('spongetimer1')
+        # Ticks
         def tick():
+            # Delete anything in case we're dead or our node doesn't exist
             if self._has_hot_potato == False or not self.node or self._dead:
-                self._potato_holder_text.delete()
-                self._potato_timer_text.delete()
+                if hasattr(self, "_potato_timer_img") and self._potato_timer_img.exists():
+                    self._potato_timer_img.delete()
+                if hasattr(self, "_potato_player_img") and self._potato_player_img.exists():
+                    self._potato_player_img.delete()
+                if hasattr(self, "_potato_holder_text") and self._potato_holder_text.exists():
+                    self._potato_holder_text.delete()
+                if hasattr(self, '_potato_timer_images'):
+                    for img in self._potato_timer_images:
+                        if img.exists():
+                            img.delete()
                 self.spongebob_timer = None
                 return
-
+            # Remove one from the time
             self.activity.spongebob_time -= 1
-
-            # Update onscreen timer
-            if self._potato_timer_text and self._potato_timer_text.exists():
-                if self.node.name:
-                    self._potato_timer_text.text = bs.Lstr(
-                        resource='spongePlayer', 
-                        subs=[
-                            ('${NAME}', self.node.name),
-                            ('${TIME}', str(self.activity.spongebob_time))
-                        ]
-                    )
-                else:
-                    self._potato_timer_text.text = bs.Lstr(
-                        resource='spongePlayer', 
-                        subs=[
-                            ('${NAME}', self.character),
-                            ('${TIME}', str(self.activity.spongebob_time))
-                        ]
-                    )
-
-            # Explosion
+            create_timer_images(self.activity.spongebob_time)
+            # Explode if we should die
             if self.activity.spongebob_time <= 0:
                 if self._has_hot_potato == False:
                     return
                 self.firework_explode()
                 self._potato_holder_text.delete()
-                self._potato_timer_text.delete()
                 self.spongebob_timer = None
-                bs.getsound('spongebobdead').play()
+                bs.getsound('spongebobdead').play(position=self.node.position)
+                self._potato_timer_images = []
+                endtime = 0.5
+                bs.animate(
+                    self._potato_timer_img, 
+                    'opacity',
+                    {
+                        0: 1.0,
+                        endtime: 0.0,
+                    }
+                )
+                bs.animate(
+                    self._potato_player_img.node, 
+                    'opacity',
+                    {
+                        0: 1.0,
+                        endtime: 0.0,
+                    }
+                )
+                for img in self._potato_timer_images:
+                    bs.animate(
+                        img,
+                        'opacity',
+                        {
+                            0: 1.0,
+                            endtime: 0.0,
+                        }
+                    )
+                def delete():
+                    for img in self._potato_timer_images:
+                        if img.exists():
+                            img.delete()
+                    self._potato_timer_img.delete()
+                    self._potato_player_img.node.delete()
+                bs.timer(endtime, delete)
             else:
-                bs.getsound('spongebob').play()
+                bs.getsound('spongebob').play(position=self.node.position)
         tick()
         self.spongebob_timer = bs.Timer(self._potato_speed, tick, repeat=True)
             
@@ -1736,10 +1789,10 @@ class Spaz(bs.Actor):
         Scripted text sequence. See bascenev1._coopgame.
         """
         PopupText(
-        bs.Lstr(resource='gambText1'),
-        position=self.node.position,
-        color=(1, 0.5, 0.5, 0.9),
-        scale=1.0,
+            bs.Lstr(resource='gambText1'),
+            position=self.node.position,
+            color=(1, 0.5, 0.5, 0.9),
+            scale=1.0,
         ).autoretain()
         def text2():
             PopupText(
@@ -1748,7 +1801,7 @@ class Spaz(bs.Actor):
             color=(1, 0.4, 0.4, 0.9),
             scale=1.0,
             ).autoretain()
-            bs.getsound('error').play()
+            bs.getsound('error').play(position=self.node.position)
             bs.setmusic(None)
         def text3():
             PopupText(
@@ -1808,7 +1861,7 @@ class Spaz(bs.Actor):
             if not self._roulette_active or not self.node:
                 return
             self._roulette_current = random.choice(powerups)
-            bs.getsound(random.choice(sounds)).play()
+            bs.getsound(random.choice(sounds)).play(position=self.node.position)
 
         def force_stop():
             if self._roulette_active:
@@ -1829,26 +1882,26 @@ class Spaz(bs.Actor):
         self.yeehaws += number
         # play sounds based on our chains
         if self.yeehaws >= 7:
-            bs.getsound('mbm/yeehaw4').play()
-            bs.getsound('mbm/chain7').play()
+            bs.getsound('mbm/yeehaw4').play(position=self.node.position)
+            bs.getsound('mbm/chain7').play(position=self.node.position)
         elif self.yeehaws >= 6:
-            bs.getsound('mbm/yeehaw4').play()
-            bs.getsound('mbm/chain6').play()
+            bs.getsound('mbm/yeehaw4').play(position=self.node.position)
+            bs.getsound('mbm/chain6').play(position=self.node.position)
         elif self.yeehaws >= 5:
-            bs.getsound('mbm/yeehaw4').play()
-            bs.getsound('mbm/chain5').play()
+            bs.getsound('mbm/yeehaw4').play(position=self.node.position)
+            bs.getsound('mbm/chain5').play(position=self.node.position)
         elif self.yeehaws >= 4:
-            bs.getsound('mbm/yeehaw4').play()
-            bs.getsound('mbm/chain4').play()
+            bs.getsound('mbm/yeehaw4').play(position=self.node.position)
+            bs.getsound('mbm/chain4').play(position=self.node.position)
         elif self.yeehaws >= 3:
-            bs.getsound('mbm/yeehaw3').play()
-            bs.getsound('mbm/chain3').play()
+            bs.getsound('mbm/yeehaw3').play(position=self.node.position)
+            bs.getsound('mbm/chain3').play(position=self.node.position)
         elif self.yeehaws >= 2:
-            bs.getsound('mbm/yeehaw2').play()
-            bs.getsound('mbm/chain2').play()
+            bs.getsound('mbm/yeehaw2').play(position=self.node.position)
+            bs.getsound('mbm/chain2').play(position=self.node.position)
         elif self.yeehaws >= 1:
-            bs.getsound('mbm/yeehaw1').play()
-            bs.getsound('mbm/chain1').play()
+            bs.getsound('mbm/yeehaw1').play(position=self.node.position)
+            bs.getsound('mbm/chain1').play(position=self.node.position)
         # add a light to us indicating we have a chain
         if not self.light:
             self.light = bs.newnode(
@@ -1914,13 +1967,13 @@ class Spaz(bs.Actor):
                 'mbm/thunder3',
                 'mbm/thunder4',
             ]
-            bs.getsound(random.choice(rsfx)).play()
+            bs.getsound(random.choice(rsfx)).play(position=self.node.position)
         elif self.yeehaws >= 3:
-            bs.getsound('mbm/release3').play()
+            bs.getsound('mbm/release3').play(position=self.node.position)
         elif self.yeehaws >= 2:
-            bs.getsound('mbm/release2').play()
+            bs.getsound('mbm/release2').play(position=self.node.position)
         elif self.yeehaws >= 1:
-            bs.getsound('mbm/release1').play()
+            bs.getsound('mbm/release1').play(position=self.node.position)
         
         self.yeehaws = 0
         if self.light:
@@ -1952,6 +2005,7 @@ class Spaz(bs.Actor):
                 best_dist_sq = dist_sq
                 best = True
         return best
+        
     def mpa(self):
         # Short for Manual Parry Activator.
         # Useful if we want to do the same logic as parrying,
@@ -1999,7 +2053,7 @@ class Spaz(bs.Actor):
             self.shield_hitpoints += healpoints / 1.5
         self.updatemeter()
         # ---------------- healpoints -------------------
-        bs.getsound('parried').play()
+        bs.getsound('parried').play(position=self.node.position)
         bs.emitfx(
             position=self.node.position,
             velocity=self.node.velocity,
@@ -2016,7 +2070,9 @@ class Spaz(bs.Actor):
         # If we parried more than 5 times, do the funny
         # "I'm not gonna sugarcoat it" thing.
         if self.timesparried >= 5:
-            bs.getsound('bellMed').play()
+            # Each parry is 15 spaz tickets
+            mell.add_spaz(15, 'tix', self.node.position)
+            bs.getsound('bellMed').play(position=self.node.position)
             self.sugarcoat_overlay(sound='dingSmall', image='sugarcoatparry')
     
     def _get_emerald_text(self) -> str:
@@ -2079,18 +2135,18 @@ class Spaz(bs.Actor):
                 
         if isinstance(msg, EmeraldMessage):
             if self.issuper:
-                bs.getsound('player_unready').play()
+                bs.getsound('player_unready').play(position=self.node.position)
                 bs.debprint(f'{self.node.name}: We\'re super, so not collecting a emerald.')
                 return
             
             if msg.current not in self.emeralds:
                 self.emeralds.append(msg.current)
-                bs.getsound('s3_blsp').play()
+                bs.getsound('s3_blsp').play(position=self.node.position)
                 bs.debprint(f'{self.node.name} collected emerald {msg.current}.')
                 msg.srcnode.handlemessage(bs.DieMessage())
 
             if len(self.emeralds) == 7:
-                bs.getsound('cd_alright').play()
+                bs.getsound('cd_alright').play(position=self.node.position)
                 bs.debprint(f'{self.node.name} got {len(self.emeralds)} emeralds.')
                 PopupText(
                     bs.Lstr(
@@ -2106,7 +2162,7 @@ class Spaz(bs.Actor):
 
             else:
                 bs.debprint(f'{self.node.name} tried to collect {msg.current}, but it already has it')
-                bs.getsound('player_unready').play()
+                bs.getsound('player_unready').play(position=self.node.position)
             self.update_emerald_indicator()
             
         elif isinstance(msg, bs.PickedUpMessage):
@@ -2124,6 +2180,16 @@ class Spaz(bs.Actor):
             # Eww; seems we have to do this in a timer or it wont work right.
             # (since we're getting called from within update() perhaps?..)
             if self.is_bomb_impactdmg():
+                if self.parrying:
+                    bs.timer(0.001, lambda: PopupText(
+                            bs.Lstr(resource='bombCritted'),
+                            position=self.node.position,
+                            color=(0, 1, 0, 0.9),
+                            scale=1.3,
+                        ).autoretain()
+                    )
+                    bs.timer(0.001, self.mpa)
+                    return
                 bs.timer(0.001, bs.WeakCall(self._hit_self, msg.intensity * 18.0))
                 bs.timer(0.001, lambda: PopupText(
                         bs.Lstr(resource='bombCritted'),
@@ -2134,6 +2200,7 @@ class Spaz(bs.Actor):
                 )
                 bs.timer(0.001, lambda: bs.getsound('bananasnipe').play(position=self.node.position))
                 bs.timer(0.001, self.explode_head)
+                bs.timer(0.001, lambda: mell.add_spaz(120, 'tix', self.node.position))
             else:
                 bs.timer(0.001, bs.WeakCall(self._hit_self, msg.intensity))
 
@@ -2332,12 +2399,12 @@ class Spaz(bs.Actor):
         elif isinstance(msg, bs.FreezeMessage):
             if self._has_metalcap == True: # immune to freeze
                 PopupText(
-                bs.Lstr(resource='freezeImmunity'),
-                position=self.node.position,
-                color=(1, 0.9, 0.9, 0.7),
-                scale=1.0,
-                ).autoretain()
-                bs.getsound('block').play()
+                    bs.Lstr(resource='freezeImmunity'),
+                    position=self.node.position,
+                    color=(1, 0.9, 0.9, 0.7),
+                    scale=1.0,
+                    ).autoretain()
+                bs.getsound('block').play(position=self.node.position)
                 return None
             if not self.node:
                 return None
@@ -2401,8 +2468,8 @@ class Spaz(bs.Actor):
                         v2 = self.node.velocity   
                         hurtiness = 3.8
                         flash_color = (1.0, 0.8, 0.4)
-                        bs.getsound('bellHigh').play()
-                        bs.getsound('OUUHH').play()
+                        bs.getsound('bellHigh').play(position=self.node.position)
+                        bs.getsound('OUUHH').play(position=self.node.position)
                         self.impulse(xforce, yforce)
                         bs.timer(0.01, lambda: self.impulse(xforce))
                         # FIXME: for some reason impulse doesn't 
@@ -2521,8 +2588,8 @@ class Spaz(bs.Actor):
                         )
                         bs.timer(0.06, light.delete)
                         bs.timer(0.06, flash.delete)
-                        bs.getsound('parried').play()
-                        bs.getsound('player_unready').play()
+                        bs.getsound('parried').play(position=self.node.position)
+                        bs.getsound('player_unready').play(position=self.node.position)
                         return
                     # ---------- DONT ALLOW PLAYER TEAM BOMB PARRYING!! ----------- 
                     msg.bombowner.handlemessage('impulse', 
@@ -2722,7 +2789,7 @@ class Spaz(bs.Actor):
                 if random.random() < 0.18:  # 18% chance of SMAAAASH!!ing
                     damage *= 1.4
                     # Play sound.
-                    bs.getsound('smaash').play()
+                    bs.getsound('smaash').play(position=self.node.position)
                     # Get important values.
                     punchpos = (
                         msg.pos[0] + msg.force_direction[0] * 0.02,
@@ -2757,7 +2824,7 @@ class Spaz(bs.Actor):
                         if not self.node:
                             return
                         if self._dead:
-                            bs.getsound('youwon').play()
+                            bs.getsound('youwon').play(position=self.node.position)
                             pos = self.node.position
                             PopupText(
                                 bs.Lstr(resource='youWon'),
@@ -2777,7 +2844,7 @@ class Spaz(bs.Actor):
                     bs.timer(1.5, checkifdied)
                 # try to show text if player has a actor position
                 def try_show(text, sound_name, color):
-                    bs.getsound(sound_name).play()
+                    bs.getsound(sound_name).play(position=self.node.position)
                     pos = self.node.position
                     show_floating_text(text, pos, color)
                 
@@ -3015,7 +3082,7 @@ class Spaz(bs.Actor):
                         else:
                             death_sound.play()
                     self.node.dead = True
-                    bs.timer(6.0, self.node.delete)
+                    bs.timer(4.0, self.node.delete)
                     self.drop_emeralds()
         elif isinstance(msg, bs.OutOfBoundsMessage):
             if self.parrying == True:
@@ -3048,7 +3115,7 @@ class Spaz(bs.Actor):
         elif isinstance(msg, bs.SpongebobMessage):
             activity = self.activity
             speed = 1
-            self._activate_spongebob(activity.spongebob_time, speed)
+            self._activate_spongebob(activity.spongebob_time, speed, transition_in=False)
             
         elif isinstance(msg, PunchHitMessage):
             if not self.node:
@@ -3085,10 +3152,16 @@ class Spaz(bs.Actor):
                         node.handlemessage(bs.SpongebobMessage())
                         self.node.handlemessage('celebrate', int(0.001))
                         self._has_hot_potato = False
-                        if hasattr(self, "_potato_timer_text") and self._potato_timer_text.exists():
-                            self._potato_timer_text.delete()
+                        if hasattr(self, "_potato_timer_img") and self._potato_timer_img.exists():
+                            self._potato_timer_img.delete()
                         if hasattr(self, "_potato_holder_text") and self._potato_holder_text.exists():
                             self._potato_holder_text.delete()
+                        if hasattr(self, '_potato_timer_images'):
+                            for img in self._potato_timer_images:
+                                if img.exists():
+                                    img.delete()
+                        if hasattr(self, "_potato_player_img") and self._potato_player_img.node.exists():
+                            self._potato_player_img.node.delete()
 
                 ppos = self.node.punch_position
                 punchdir = self.node.punch_velocity
@@ -3294,7 +3367,7 @@ class Spaz(bs.Actor):
             return
         self.hitpoints += 210
         self.updatemeter()
-        bs.getsound('cheer2').play()
+        bs.getsound('cheer2').play(position=self.node.position)
         PopupText(
             bs.Lstr(
                 resource='cheeredPlayer',
@@ -3619,8 +3692,8 @@ class Spaz(bs.Actor):
                 scale=1.4,
             ).autoretain()
             # Play sounds.
-            bs.getsound('bellHigh').play()
-            bs.getsound('orchestraHit2').play()
+            bs.getsound('bellHigh').play(position=self.node.position)
+            bs.getsound('orchestraHit2').play(position=self.node.position)
             self._cursed = False
             # Remove cursed material.
             factory = SpazFactory.get()
@@ -3656,7 +3729,7 @@ class Spaz(bs.Actor):
             self.shatter(extreme=True)
             self.die()
             activity = self._activity()
-            bs.getsound('crazyOver').play() # play the last sound (it syncs with the usual curse sound)
+            bs.getsound('crazyOver').play(position=self.node.position) # play the last sound (it syncs with the usual curse sound)
             if activity:
                 Blast(
                     position=self.node.position,
@@ -3682,7 +3755,7 @@ class Spaz(bs.Actor):
         ):
             return      
         pos = self.node.position
-        bs.getsound('ring_spill').play()
+        bs.getsound('ring_spill').play(position=self.node.position)
         for emerald in list(self.emeralds):
             # random spawn offset
             offset_x = random.uniform(-1.4, 1.4)
@@ -3885,6 +3958,7 @@ class Spaz(bs.Actor):
                     dir_y,
                     dir_z,
                 )
+            mell.add_spaz(30, 'tix', self.node.position)
         self.node.shattered = 2 if extreme else 1
 
     def _hit_self(self, intensity: float) -> None:
@@ -3910,8 +3984,8 @@ class Spaz(bs.Actor):
             ).autoretain()
             self.hitpoints += 40
             self.updatemeter()
-            bs.getsound('bellHigh').play()
-            bs.getsound('orchestraHit').play()
+            bs.getsound('bellHigh').play(position=self.node.position)
+            bs.getsound('orchestraHit').play(position=self.node.position)
             self.node.handlemessage('knockout', 0)
             # Dont send a message (the hitmessage above will count a point anyway)
             #if self.source_player:
@@ -3926,7 +4000,7 @@ class Spaz(bs.Actor):
             ba.app.classic.ach.award_local_achievement(
                 'Big Fall'
             )
-            self.sugarcoat_overlay(sound='block', image='white2')
+            self.sugarcoat_overlay(sound='block', image='white')
             self.shatter()
         elif intensity >= 5.0:
             sounds = SpazFactory.get().impact_sounds_harder

@@ -21,7 +21,7 @@ COLOR_TEXTURES = {
     'confetti_colors/blue':   (0.2, 0.4, 1.0),
     'confetti_colors/red':    (1.0, 0.2, 0.2),
     'confetti_colors/yellow': (1.0, 0.9, 0.2),
-    'white2':                 (1.0, 1.0, 1.0),
+    'white':                 (1.0, 1.0, 1.0),
     'black':                  (0.0, 0.0, 0.0),
 }
 

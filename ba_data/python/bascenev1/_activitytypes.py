@@ -110,6 +110,7 @@ class JoinActivity(Activity[EmptyPlayer, EmptyTeam]):
         musics = [
             MusicType.CHAR_SELECT,
             MusicType.CHAR_SELECT2,
+            MusicType.TUTORIAL,
         ]
         setmusic(random.choice(musics))
 

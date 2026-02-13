@@ -24,6 +24,7 @@ def register_all_maps() -> None:
         Bridgit,
         BigG,
         SNESBattleCourse1,
+        BFDIMap,
         CREDITS,
         Space,
         NintendoDS,
@@ -936,6 +937,67 @@ class SNESBattleCourse1(bs.Map):
         ]
         chosen_music = random.choice(music_choices)
         return chosen_music
+
+class BFDIMap(bs.Map):
+    """that one balance beam from bfdi; i haven otihng else to say"""
+
+    # noinspection PyUnresolvedReferences
+    from bascenev1lib.mapdata import bfdi as defs
+
+    name = 'Balance Beam'
+
+    @override
+    @classmethod
+    def get_play_types(cls) -> list[str]:
+        """Return valid play types for this map."""
+        return ['melee', 'team_flag', 'keep_away', 'king_of_the_hill']
+
+    @override
+    @classmethod
+    def get_preview_texture_name(cls) -> str:
+        return 'bfdiMapPreview'
+
+    @override
+    @classmethod
+    def on_preload(cls) -> Any:
+        data: dict[str, Any] = {
+            'mesh': bs.getmesh('bfdiMap'),
+            'collision_mesh': bs.getcollisionmesh('bfdiMap'),
+            'tex': bs.gettexture('bfdiMap'),
+            'bgtex': bs.gettexture('bfdiMap'),
+            'bgmesh': bs.getmesh('bfdiMapBG')
+        }
+        # fixme should chop this into vr/non-vr sections for efficiency
+        return data
+
+    def __init__(self) -> None:
+        super().__init__()
+        shared = SharedObjects.get()
+        self.node = bs.newnode(
+            'terrain',
+            delegate=self,
+            attrs={
+                'collision_mesh': self.preloaddata['collision_mesh'],
+                'mesh': self.preloaddata['mesh'],
+                'color_texture': self.preloaddata['tex'],
+                'materials': [shared.footing_material],
+            },
+        )
+        self.background = bs.newnode(
+            'terrain',
+            attrs={
+                'mesh': self.preloaddata['bgmesh'],
+                'lighting': False,
+                'background': True,
+                'color_texture': self.preloaddata['bgtex'],
+            },
+        )
+        gnode = bs.getactivity().globalsnode
+        bn = 0.9
+        gnode.tint = (0.6 + bn, 0.5 + bn, 0.7 + bn)
+        gnode.ambient_color = (1, 1, 1)
+        gnode.vignette_outer = (0.7, 0.78, 0.84)
+        gnode.vignette_inner = (0.86, 0.76, 0.88)
         
 class CREDITS(bs.Map):
     """A map made to work with the credits."""

@@ -304,6 +304,34 @@ def register_appearances() -> None:
     t.default_color = (0.2, 0.2, 0.7)
     t.default_highlight = (1, 0.1, 0.1)
 
+    # colas del fox ######################################
+    t = Appearance('Tails')
+    t.color_texture = 'tailsColor'
+    t.color_mask_texture = 'tailsColorMask'
+    t.icon_texture = 'tailsIcon'
+    t.icon_mask_texture = 'tailsIconCM'
+    t.earthportrait = 'sonicbound'
+    t.head_mesh = 'tailsHead'
+    t.torso_mesh = 'tailsTorso'
+    t.pelvis_mesh = 'tailsPelvis'
+    t.upper_arm_mesh = 'tailsUpperArm'
+    t.forearm_mesh = 'tailsForeArm'
+    t.hand_mesh = 'tailsHand'
+    t.upper_leg_mesh = 'tailsUpperLeg'
+    t.lower_leg_mesh = 'tailsLowerLeg'
+    t.toes_mesh = 'tailsToes'
+    t.jump_sounds = ['voicelines/sonic/jump' + str(i + 1) + '' for i in range(3)]
+    t.attack_sounds = ['voicelines/sonic/attack' + str(i + 1) + '' for i in range(4)]
+    t.impact_sounds = ['voicelines/sonic/hit' + str(i + 1) + '' for i in range(5)]
+    t.death_sounds = ['voicelines/sonic/death']
+    t.pickup_sounds = ['voicelines/sonic/attack' + str(i + 1) + '' for i in range(4)]
+    t.fall_sounds = ['voicelines/sonic/fall']
+    t.victory_sounds = ['voicelines/sonic/win']
+    t.gloat_sounds = ['voicelines/sonic/gloat']
+    t.style = 'agent'
+    t.default_color = (0.9, 0.5, 0.01)
+    t.default_highlight = (1, 0.1, 0.1)
+
     # Rayman! ################################
     t = Appearance('Rayman')
     t.color_texture = 'raymanColor'

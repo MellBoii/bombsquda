@@ -65,6 +65,76 @@ FEEL_THE_FURY = [
     ('Can you feel the fury?', 206.45),
 ]
 screams = ['screams/scream' + str(i + 1) + '' for i in range(10)]
-server = "https://bombsquda-leaderboard.tailc76b25.ts.net"
+server = "https://bombsquda.tailc76b25.ts.net"
 version = '2.1'
 update_date = '1/13/2026'
+currencies = ['tix', 'tokens']
+
+def add_spaz(
+    amount: int | float = 50, 
+    currency: str = 'tix', 
+    text_pos = (0, 0, 0)
+):
+    """
+    A config change function; made to
+    just simplify changing a amount of currency.
+    As per suggested, it adds the specified amount to a 'spaz' currency
+    (eg. spaztickets, spaztokens, and stuff that can be added later...)
+    """
+    import bascenev1 as bs
+    import babase as ba
+    # Return if currency not in current currency types
+    if currency not in currencies:
+        raise TypeError(f'{currency} is a incorrect custom currency type. \nAllowed: {currencies} (tix is short for tickets)')
+        return
+    # Change config
+    ba.app.config[f'squda_spaz{currency}'] += amount
+    ba.app.config.apply_and_commit()
+    # Show text if we have a position and activity
+    activity = bs.get_foreground_host_activity()
+    glyph = (
+        ba.charstr(ba.SpecialChar.OUYA_BUTTON_Y) # tickets
+        if currency == 'tix' else
+        ba.charstr(ba.SpecialChar.OUYA_BUTTON_A) # tokens
+        if currency == 'tokens' else
+        ba.charstr(ba.SpecialChar.TICKET) # placeholder
+    )
+    if text_pos != (0, 0, 0) and activity:
+        with activity.context:
+            from bascenev1lib.actor.popuptext import PopupText
+            PopupText(
+                f'+{amount}{glyph}',
+                position=text_pos,
+                color=(0.643, 0.4, 0.961),
+                scale=1.4,
+            ).autoretain()
+            bs.getsound('cashRegister2').play(volume=2.0, position=text_pos)
+
+# keeping this here for later
+
+# def send_friend_request(name: str):
+    # session = requests.Session()
+    # try:
+        # session.post(
+            # f"{SERVER}/friends/request",
+            # json={
+                # "from": get_clean_display_name(),
+                # "to": name
+            # },
+            # timeout=2
+        # )
+        # bs.screenmessage(f"Friend request sent to {name}")
+    # except Exception:
+        # bs.screenmessage("Failed to send friend request", color=(1, 0, 0))
+
+# def respond_friend_request(name: str, accept: bool):
+    # session = requests.Session()
+    # session.post(
+        # f"{SERVER}/friends/respond",
+        # json={
+            # "user": get_clean_display_name(),
+            # "from": name,
+            # "accept": accept
+        # },
+        # timeout=2
+    # )

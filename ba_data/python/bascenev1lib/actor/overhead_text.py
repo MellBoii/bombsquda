@@ -1,7 +1,7 @@
 """Overhead text manager for announcing things and such"""
 import bascenev1 as bs
 import babase as ba
-from typing import Union
+from typing import Sequence, Union
 
 def estimate_text_width(
     text: str | ba.Lstr,
@@ -21,7 +21,13 @@ class OverheadText:
     makes the text that scrolls in. The speed attribute controls how fast
     the texts scrolls through, and text is what it'll show. Accepts either ba.Lstr or strings.
     """
-    def __init__(self, text: str | ba.Lstr, speed: int = 240.0):
+    def __init__(
+            self, 
+            text: str | ba.Lstr, 
+            speed: int = 240.0,
+            color: Sequence[float] = (0, 0, 0),
+            sound: str = 'elevator_ding',
+    ):
         self.scale = 1.1
         self.fadeTime = 0.6
         self.text = text
@@ -29,13 +35,22 @@ class OverheadText:
         self._delete_x = None
         self.animateTimer = bs.Timer(self.fadeTime + 0.4, lambda: self.animate(speed=self.speed))
         self.checkTimer = None
+        bgy = 30
+        nodey = 45
+        spacing = 50
+        if not hasattr(bs.getactivity(), 'overheads'):
+            bs.getactivity().overheads = []
+        for otext in bs.getactivity().overheads:
+            bgy += spacing
+            nodey += spacing
+        bs.getactivity().overheads.append(self)
         self.bg = bs.newnode(
             'image',
             attrs={
-                'texture': bs.gettexture('white2'),
+                'texture': bs.gettexture('white'),
                 'scale': (999999, 50),
-                'color': (0, 0, 0),
-                'position': (0, -30),
+                'color': color,
+                'position': (0, -bgy),
                 'opacity': 0.0,
                 'attach': 'topCenter',
             },
@@ -45,7 +60,7 @@ class OverheadText:
             attrs={
                 'text': text,
                 'scale': self.scale,
-                'position': (99999, -50),
+                'position': (99999, -nodey),
                 'v_attach': 'top',
                 'h_align': 'left',
             },
@@ -58,7 +73,7 @@ class OverheadText:
                 self.fadeTime: 0.5,
             }
         )
-        bs.getsound('elevator_ding').play()
+        bs.getsound(sound).play()
 
     def _check_position(self):
         if not self.node:
@@ -96,6 +111,7 @@ class OverheadText:
         
     def stop(self):
         self.node.delete()
+        bs.getactivity().overheads.remove(self)
         bs.animate(
             self.bg,
             'opacity',

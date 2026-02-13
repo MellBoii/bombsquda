@@ -429,7 +429,7 @@ class SURVEYActivity2(bs.Activity[bs.Player, bs.Team]):
         )
         self.blackthing = bs.newnode('image', 
             attrs={
-                'texture': bs.gettexture('white2'),
+                'texture': bs.gettexture('white'),
                 'absolute_scale': True,
                 'position': (0, 0),
                 'attach': 'center',

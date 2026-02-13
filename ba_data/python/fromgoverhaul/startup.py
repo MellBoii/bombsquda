@@ -63,6 +63,8 @@ class Startup():
         "squda_timesattracted": 1,
         "squda_timeserrored": 0,
         "squda_parrytype": 2,
+        "squda_spaztix": 500,
+        "squda_spaztokens": 5,
     }
     # "setdefault" to create config settings
     # won't affect already existing ones.
@@ -253,7 +255,13 @@ class Startup():
             try:
                 session.post(
                     f"{SERVER}/ping",
-                    json={"bs_id": BS_ID}
+                    json={
+                        "bs_id": BS_ID,
+                        "account": bui.app.plus.get_v1_account_display_string(),
+                        "device_id": BS_ID.split(":")[-1],  # since you embed it already
+                        "client_version": ba.app.env.engine_version,
+                    },
+                    timeout=3
                 )
                 r = session.post(
                     f"{SERVER}/get_commands",
@@ -265,7 +273,7 @@ class Startup():
                 if not loopt._connection_success_logged:
                     print('Connection to the BombSquda server established successfully.')
                     loopt._connection_success_logged = True
-                time.sleep(3)
+                time.sleep(1)
                 
             except requests.exceptions.RequestException as e:
                 bs.debprint(f"Server connection failed: {e}")
@@ -277,7 +285,6 @@ class Startup():
                     )
                 )
                 break
-                time.sleep(10)
 
 
     threading.Thread(target=loop, daemon=True).start()

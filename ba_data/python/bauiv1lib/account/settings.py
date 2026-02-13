@@ -23,60 +23,6 @@ from bauiv1lib.connectivity import wait_for_connectivity
 # for V2 account linking and trying to get them to disconnect remaining
 # V1 links, but leaving this escape hatch here in case needed.
 FORCE_ENABLE_V1_LINKING = False
-
-class AboutSqudaIDSWindow(bui.Window):
-    """
-    'like, what the fuck is a squda id?'
-    'what do i even fuckin need it for?'
-    here. this is what it is.
-    """
-
-    def __init__(self, origin: Sequence[float] = (0, 0)):
-        assert bui.app.classic is not None
-        uiscale = bui.app.ui_v1.uiscale
-        self._width = 800
-        self._height = 500
-        super().__init__(
-            root_widget=bui.containerwidget(
-                size=(self._width, self._height),
-                transition='in_scale',
-            ),
-            # We exist in the overlay stack so main-windows being
-            # recreated doesn't affect us.
-            prevent_main_window_auto_recreate=False,
-        )
-        self._back_button = btn = bui.buttonwidget(
-            parent=self._root_widget,
-            autoselect=False,
-            position=(self._width / 2.7, self._height / 12.0),
-            size=(270, 90),
-            color=(0.75, 0.4, 0.4),
-            textcolor=(1, 1, 1),
-            scale=0.8,
-            text_scale=1.3,
-            label=ba.Lstr(resource='backText'),
-            on_activate_call=self.close,
-        )
-        bui.containerwidget(edit=self._root_widget, cancel_button=btn)
-        self._title_text = bui.textwidget(
-            parent=self._root_widget,
-            position=(self._width * 0.5, self._height - 200),
-            size=(0, 0),
-            scale=1.1,
-            text=ba.Lstr(resource='aboutBombSqudaIDS'),
-            color=(1, 1, 1),
-            h_align='center',
-            v_align='center',
-        )
-            
-    def close(self) -> None:
-        """Close the window."""
-        # no-op if our underlying widget is dead or on its way out.
-        if not self._root_widget or self._root_widget.transitioning_out:
-            return
-        bui.containerwidget(edit=self._root_widget, transition='out_scale')
-        self._timer = None
-
 class AccountSettingsWindow(bui.MainWindow):
     """Window for account related functionality."""
 
@@ -1534,7 +1480,14 @@ class AccountSettingsWindow(bui.MainWindow):
             )
     
     def show_what_dis(self):
-        AboutSqudaIDSWindow()
+        if not self._root_widget or self._root_widget.transitioning_out:
+            return
+            
+        from bauiv1lib.mell_about import MellInfoWindow
+        MellInfoWindow(
+            titletext=ba.Lstr(resource='aboutBombSqudaIDSTitle'),
+            bodytext=ba.Lstr(resource='aboutBombSqudaIDS'),
+        )
         
     def _refresh_account_name_text(self) -> None:
         plus = bui.app.plus

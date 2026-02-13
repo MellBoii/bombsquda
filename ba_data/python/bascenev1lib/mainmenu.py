@@ -191,7 +191,7 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
     
     def overheadtxt(self, chance: int = 0.2):
         text = ba.Lstr(
-            resource=f'menuOverhead{random.randint(1, 9)}', 
+            resource=f'menuOverhead{random.randint(1, 14)}', 
             subs=[
                 ('${SERVER}', mell.server),
             ]

@@ -95,7 +95,6 @@ def root_ui_inventory_button_press() -> None:
 
 def root_ui_ticket_icon_press() -> None:
     from bauiv1._appsubsystem import UIV1AppSubsystem
-
     _root_ui_button_press(UIV1AppSubsystem.RootUIElement.TICKETS_METER)
 
 

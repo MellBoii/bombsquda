@@ -31,7 +31,7 @@ class ParticleActor(bs.Actor):
             body_scale: The scale factor for the physics body. Defaults to 0.5.
             mesh_scale: The scale factor for the mesh geometry. Defaults to 0.5.
             mesh: The mesh object to use for rendering. Defaults to 'bomb' mesh.
-            texture: The texture to apply to the particle. Defaults to 'white2' texture.
+            texture: The texture to apply to the particle. Defaults to 'white' texture.
             body_type: The body type of the particle. Defaults to 'sphere'.
         Attributes:
             material: Custom material with footing interaction handling.

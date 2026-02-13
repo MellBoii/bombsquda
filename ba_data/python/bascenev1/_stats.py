@@ -531,6 +531,42 @@ class Stats:
                         )
 
                 elif killer is not None:
+                    if player.actor.lasthittype == 'explosion':
+                        _bascenev1.broadcastmessage(
+                            babase.Lstr(
+                                resource='nameKillBombText', subs=[
+                                    ('${NAME}', killer.getname()),
+                                    ('${VICTIM}', name),
+                                ],
+                            ),
+                            top=True,
+                            color=killer.color,
+                            image=killer.get_icon(),
+                        )
+                    elif player.actor.lasthittype == 'impact':
+                        _bascenev1.broadcastmessage(
+                            babase.Lstr(
+                                resource='nameKillFallText', subs=[
+                                    ('${NAME}', killer.getname()),
+                                    ('${VICTIM}', name),
+                                ],
+                            ),
+                            top=True,
+                            color=killer.color,
+                            image=killer.get_icon(),
+                        )
+                    elif player.actor.lasthittype == 'fall':
+                        _bascenev1.broadcastmessage(
+                            babase.Lstr(
+                                resource='nameKillOOBText', subs=[
+                                    ('${NAME}', killer.getname()),
+                                    ('${VICTIM}', name),
+                                ],
+                            ),
+                            top=True,
+                            color=killer.color,
+                            image=killer.get_icon(),
+                        )
                     if killer.team is player.team:
                         _bascenev1.broadcastmessage(
                             babase.Lstr(
