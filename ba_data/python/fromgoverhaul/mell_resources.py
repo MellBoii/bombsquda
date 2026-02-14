@@ -73,7 +73,8 @@ currencies = ['tix', 'tokens']
 def add_spaz(
     amount: int | float = 50, 
     currency: str = 'tix', 
-    text_pos = (0, 0, 0)
+    text_pos = None,
+    notif_type: str = 'screen',
 ):
     """
     A config change function; made to
@@ -99,16 +100,38 @@ def add_spaz(
         if currency == 'tokens' else
         ba.charstr(ba.SpecialChar.TICKET) # placeholder
     )
-    if text_pos != (0, 0, 0) and activity:
-        with activity.context:
-            from bascenev1lib.actor.popuptext import PopupText
-            PopupText(
-                f'+{amount}{glyph}',
-                position=text_pos,
-                color=(0.643, 0.4, 0.961),
-                scale=1.4,
-            ).autoretain()
-            bs.getsound('cashRegister2').play(volume=2.0, position=text_pos)
+    if notif_type == 'popup':
+        if text_pos and activity:
+            with activity.context:
+                from bascenev1lib.actor.popuptext import PopupText
+                PopupText(
+                    f'+{amount}{glyph}',
+                    position=text_pos,
+                    color=(0.643, 0.4, 0.961),
+                    scale=1.4,
+                    lifespan=3.5,
+                ).autoretain()
+                bs.getsound('cashRegister2').play(volume=2.0, position=text_pos)
+        else:
+            raise TypeError("Notification type was 'popup' but no text_pos was given or no activity exists")
+    elif notif_type == 'screen':
+        display = (
+            f'{glyph} {bs.Lstr(resource='spazTickets').evaluate()}' if currency == 'tix'
+            else f'{glyph} {bs.Lstr(resource='spazTokens').evaluate()}' if currency == 'tokens'
+            else f'{glyph} {bs.Lstr(resource='unknownCurrency').evaluate()}'
+        )
+        bs.broadcastmessage(bs.Lstr(
+                resource='wonCustomCurrency', 
+                subs=[
+                    ('${AMOUNT}', str(amount)),
+                    ('${CURRENCY}', display),
+                ]
+            ),
+        )
+        bs.getsound('cashRegister2').play(volume=2.0)
+    else:
+        raise TypeError(f"{notif_type} is a incorrect notification type.\nAllowed: ['screen', 'popup']")
+
 
 # keeping this here for later
 

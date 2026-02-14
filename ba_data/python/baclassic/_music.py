@@ -143,6 +143,7 @@ ASSET_SOUNDTRACK_ENTRIES: dict[MusicType, AssetSoundtrackEntry] = {
     MusicType.LAP8: AssetSoundtrackEntry('music/lap8'),
     MusicType.LAP9: AssetSoundtrackEntry('music/lap9'),
     MusicType.CRASH_HANDLER: AssetSoundtrackEntry('music/crash_handler'),
+    MusicType.SHOP: AssetSoundtrackEntry('music/shop'),
     MusicType.MARCHING: AssetSoundtrackEntry(
         'music/runaroundMusic', volume=0.8
     ),

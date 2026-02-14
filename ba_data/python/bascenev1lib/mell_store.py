@@ -16,11 +16,12 @@ class MellStoreSession(bs.Session):
     def on_player_request(self, player: bs.SessionPlayer) -> bool:
         # Reject all player requests.
         return False
-
+        
 class MellStoreActivity(bs.GameActivity[bs.Player, bs.Team]):
     """fukcing store."""
     name = ''
     description = ''
+    default_music = bs.MusicType.SHOP
     suppress_zoomtext = True
     show_controls_guide = False
     allow_pausing = False
@@ -40,6 +41,8 @@ class MellStoreActivity(bs.GameActivity[bs.Player, bs.Team]):
     
     def on_begin(self) -> None:
         super().on_begin()
+        gnode = self.globalsnode
+        gnode.camera_mode = 'rotate'
         self.bg = bs.newnode(
             'image', 
             attrs={
@@ -49,46 +52,4 @@ class MellStoreActivity(bs.GameActivity[bs.Player, bs.Team]):
                 'opacity': 0.7,
             }
         )
-        x = -400
-        y = 0
-        imgscale = 300
-        boxXmult = 350
-        boxYmult = -100
-        self.box = bs.newnode(
-            'image', 
-            attrs={
-                'texture': bs.gettexture('black'),
-                'position': (x + imgscale + 15, y - imgscale + 80),
-                'scale': (imgscale + boxXmult, imgscale + boxYmult),
-                'absolute_scale': True,
-                'opacity': 0.5,
-            }
-        )
-        self.char = bs.newnode(
-            'image', 
-            attrs={
-                'texture': bs.gettexture('dialogue/spaz_neutral'),
-                'position': (x, y),
-                'scale': (imgscale, imgscale),
-                'absolute_scale': True,
-            }
-        )
-        self.name = bs.newnode(
-            'text',
-            attrs={
-                'text': 'Spazling',
-                'position': (x + 10, y - imgscale + 110),
-                'scale': 1.1,
-                'color': (0.5, 0.1, 1),
-            },
-        )
-        self.dialog = bs.newnode(
-            'text',
-            attrs={
-                'text': ba.Lstr(resource='dialogTest'),
-                'position': (x + 20, y - imgscale + 70),
-                'scale': 1.1,
-                'color': (0.7, 0.5, 1),
-                'maxwidth': boxXmult + imgscale - 100
-            },
-        )
+        

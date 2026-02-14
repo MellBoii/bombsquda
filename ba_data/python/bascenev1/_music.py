@@ -83,8 +83,9 @@ class MusicType(Enum):
     EPIC = 'Epic'
     ONLINE = 'Online'
     PAUSE = 'Pause'
-    D_RUNNIN = 'D_RUNNIN' # <- if you get the reference to what this is, you already know why its here.
-    EPICFAST = 'EpicFast' # otherwise, it's used as the default music if there is a broken one
+    SHOP = 'Shop'
+    D_RUNNIN = 'D_RUNNIN'
+    EPICFAST = 'EpicFast'
     SPORTS = 'Sports'
     FOOTBALL = 'Football'
     FLYING = 'Flying'
@@ -144,6 +145,7 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
         music_names = {
             # bs.MusicType.MUSICTYPE: "musictitleandartistmaybe",
             bs.MusicType.TO_THE_DEATH: "Daniel Bautista - Intro",
+            bs.MusicType.SHOP: "Wii Shop Channel - Nintendo Sound Team",
             bs.MusicType.TO_THE_DEATH2: "Chrono Symphonic - Darkness Dueling (Plastic Men and Iron Blades)",
             bs.MusicType.TO_THE_DEATH2FAST: "Daniel Bautista - Flight of the Bumblebee",
             bs.MusicType.TO_THE_DEATH3FAST: "Bãtutã la trompeta - Rabbids Go Home",

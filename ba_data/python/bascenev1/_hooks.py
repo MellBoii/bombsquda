@@ -166,7 +166,7 @@ def reset_end_votes():
         bs.getsound('vote_failed').play()
 
 def filter_chat_message(msg: str, client_id: int) -> str | None:
-    roster = _bascenev1.get_game_roster()
+    roster = bs.get_game_roster()
     activity = bs.get_foreground_host_activity()
     # ── Singleplayer fallback ────────────────────
     if not roster:
@@ -193,6 +193,7 @@ def filter_chat_message(msg: str, client_id: int) -> str | None:
                     player = activity.players[0]
                     player.actor.say(msg)
                 except Exception:
+                    print(e)
                     pass
         return msg
 
@@ -221,7 +222,9 @@ def filter_chat_message(msg: str, client_id: int) -> str | None:
             try:
                 player = activity.players[client_id + 1]
                 player.actor.say(msg)
-            except Exception:
+            except Exception as e:
+                print(e)
+                print(client_id)
                 pass
     return msg
 

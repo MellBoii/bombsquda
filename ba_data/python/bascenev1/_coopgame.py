@@ -431,7 +431,7 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
                 # Whoo, got a new record! Let's set the time to 
                 # our config and tell the player they got a new personal best.
                 if is_new_record:
-                    bs.getsound('cashRegister').play()
+                    bs.getsound('cashRegister2').play()
                     bs.getsound('ding').play()
                     self.speedrun_timer.color = (0, 1, 0)
                     self.personal_best_text.color = (0.7, 0.7, 0.7)

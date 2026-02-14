@@ -1590,7 +1590,7 @@ class Spaz(bs.Actor):
                 if hasattr(self, "_potato_timer_img") and self._potato_timer_img.exists():
                     self._potato_timer_img.delete()
                 if hasattr(self, "_potato_player_img") and self._potato_player_img.exists():
-                    self._potato_player_img.delete()
+                    self._potato_player_img.node.delete()
                 if hasattr(self, "_potato_holder_text") and self._potato_holder_text.exists():
                     self._potato_holder_text.delete()
                 if hasattr(self, '_potato_timer_images'):
@@ -2071,7 +2071,7 @@ class Spaz(bs.Actor):
         # "I'm not gonna sugarcoat it" thing.
         if self.timesparried >= 5:
             # Each parry is 15 spaz tickets
-            mell.add_spaz(15, 'tix', self.node.position)
+            mell.add_spaz(15, 'tix', self.node.position, 'popup')
             bs.getsound('bellMed').play(position=self.node.position)
             self.sugarcoat_overlay(sound='dingSmall', image='sugarcoatparry')
     
@@ -2200,7 +2200,7 @@ class Spaz(bs.Actor):
                 )
                 bs.timer(0.001, lambda: bs.getsound('bananasnipe').play(position=self.node.position))
                 bs.timer(0.001, self.explode_head)
-                bs.timer(0.001, lambda: mell.add_spaz(120, 'tix', self.node.position))
+                bs.timer(0.001, lambda: mell.add_spaz(120, 'tix', self.node.position, 'popup'))
             else:
                 bs.timer(0.001, bs.WeakCall(self._hit_self, msg.intensity))
 
@@ -3153,7 +3153,7 @@ class Spaz(bs.Actor):
                         self.node.handlemessage('celebrate', int(0.001))
                         self._has_hot_potato = False
                         if hasattr(self, "_potato_timer_img") and self._potato_timer_img.exists():
-                            self._potato_timer_img.delete()
+                            self._potato_timer_img.node.delete()
                         if hasattr(self, "_potato_holder_text") and self._potato_holder_text.exists():
                             self._potato_holder_text.delete()
                         if hasattr(self, '_potato_timer_images'):
@@ -3958,7 +3958,7 @@ class Spaz(bs.Actor):
                     dir_y,
                     dir_z,
                 )
-            mell.add_spaz(30, 'tix', self.node.position)
+            mell.add_spaz(30, 'tix', self.node.position, 'popup')
         self.node.shattered = 2 if extreme else 1
 
     def _hit_self(self, intensity: float) -> None:

@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, override
 import _babase
 import babase as ba
 import urllib.request
-import threading, time, requests
+import threading, time
 import fromgoverhaul.mell_resources as mellres
 
 from babase._logging import description_for_logger
@@ -189,7 +189,7 @@ class BombSqudaUtilsTab(DevConsoleTab):
             return full_str
         BS_ID = get_unique_bs_id()
         try:
-            session = requests.Session()
+            session = urllib.request.Session()
             session.timeout = 2
             poster = session.post(
                 f"{mellres.server}/ping",
@@ -197,7 +197,7 @@ class BombSqudaUtilsTab(DevConsoleTab):
             )
             latency = response.elapsed.total_seconds()
             bs.screenmessage(f'Connection was a success!\nLatency = {latency}')
-        except requests.exceptions.RequestException as e:
+        except urllib.request.exceptions.RequestException as e:
             bs.screenmessage(f'Connection failed. See console for more details.')
             print(e)
             

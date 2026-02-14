@@ -6,14 +6,14 @@ import os
 import bauiv1 as bui
 from .discordrp_handler import RichPresence
 import json
-import urllib.request
-import _babase # type: ignore
+import urllib
+import _babase
 import sys
 import traceback
 import datetime
 import bascenev1 as bs
 import fromgoverhaul.mell_resources as mell
-import threading, time, requests
+import threading, time
 import uuid
 from efro.util import strip_exception_tracebacks
 SERVER = mell.server
@@ -198,84 +198,29 @@ class Startup():
     ba.apptimer(1.5, set_bs_id)
 
     def loop():
-        session = requests.Session()
-        session.timeout = 2
         loopt = stupid_attribute_holder()
-        def run_in_activity(fn):
-            def _wrapped():
-                act = bs.get_foreground_host_activity()
-                if act is None:
-                    return
-                with act.context:
-                    fn(act)
-            ba.pushcall(_wrapped, from_other_thread=True)
-            
-        def cmd_screen_msg(text):
-            bs.screenmessage(text)
-            
-        def cmd_firework(text):
-            def _do(act):
-                if not act.players:
-                    return
-                player = act.players[0]
-                if player.actor:
-                    player.actor.firework_explode()
-                bs.screenmessage(text)
 
-            run_in_activity(_do)
-            
-        def cmd_slowmode(text):
-            def _do(act):
-                gnode = act.globalsnode
-                gnode.slow_motion = not gnode.slow_motion
-                bs.screenmessage(text)
-
-            run_in_activity(_do)
-
-
-        def handle_command(cmd):
-            action = cmd["action"]
-
-            if action == "screen_msg":
-                ba.pushcall(
-                    lambda: bs.screenmessage(cmd["text"]),
-                    from_other_thread=True
-                )
-
-            elif action == "firework":
-                cmd_firework(cmd["text"])
-
-            elif action == "slowmode":
-                cmd_slowmode(cmd["text"])
-            
         while BS_ID is None:
             time.sleep(0.2)  # wait until ID is ready
 
         while True:
+            data = {
+                "bs_id": BS_ID,
+                "account": bui.app.plus.get_v1_account_display_string(),
+                "device_id": BS_ID.split(":")[-1],
+                "client_version": ba.app.env.engine_version,
+            }
+            request = urllib.request.Request(
+                f"{SERVER}/ping",
+                data=json.dumps(data).encode('utf-8'),
+            )
             try:
-                session.post(
-                    f"{SERVER}/ping",
-                    json={
-                        "bs_id": BS_ID,
-                        "account": bui.app.plus.get_v1_account_display_string(),
-                        "device_id": BS_ID.split(":")[-1],  # since you embed it already
-                        "client_version": ba.app.env.engine_version,
-                    },
-                    timeout=3
-                )
-                r = session.post(
-                    f"{SERVER}/get_commands",
-                    json={"bs_id": BS_ID}
-                )
-
-                for cmd in r.json():
-                    handle_command(cmd)
+                urllib.request.urlopen(request, timeout=2)
                 if not loopt._connection_success_logged:
                     print('Connection to the BombSquda server established successfully.')
                     loopt._connection_success_logged = True
                 time.sleep(1)
-                
-            except requests.exceptions.RequestException as e:
+            except Exception as e:
                 bs.debprint(f"Server connection failed: {e}")
                 print(
                     (
@@ -285,7 +230,6 @@ class Startup():
                     )
                 )
                 break
-
 
     threading.Thread(target=loop, daemon=True).start()
 
