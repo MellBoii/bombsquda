@@ -3153,7 +3153,7 @@ class Spaz(bs.Actor):
                         self.node.handlemessage('celebrate', int(0.001))
                         self._has_hot_potato = False
                         if hasattr(self, "_potato_timer_img") and self._potato_timer_img.exists():
-                            self._potato_timer_img.node.delete()
+                            self._potato_timer_img.delete()
                         if hasattr(self, "_potato_holder_text") and self._potato_holder_text.exists():
                             self._potato_holder_text.delete()
                         if hasattr(self, '_potato_timer_images'):
