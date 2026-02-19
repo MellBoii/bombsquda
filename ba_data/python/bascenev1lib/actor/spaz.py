@@ -56,7 +56,6 @@ PHRASES = {
     "Noob": ("noobPhrase", 3),
     "OG Spaz": ("ogspPhrase", 5),
     "Homer": ("homerPhrase", 8),
-    "Bombgeon Snake Shadow": ("bssPhrase", 3),
 }
 DEFAULT_PHRASES = ("defaultPhrase", 6)
 
@@ -898,10 +897,6 @@ class Spaz(bs.Actor):
             or self.frozen
         ):
             return
-        if self.source_player: # Prevent tutorial from dying.
-            if self.character == 'Bombgeon Snake Shadow':
-                self.on_jump_dash()
-                return
         t_ms = int(bs.time() * 1000.0)
         assert isinstance(t_ms, int)
         if t_ms - self.last_bomb_time_ms >= self._bomb_cooldown:
@@ -1740,49 +1735,6 @@ class Spaz(bs.Actor):
             )
             if self.earthhptext and self.earthhptext.exists():
                 self.earthhptext.text = str(int(self.hitpoints / 10))
-        
-    def passiveheal(self):
-        """
-        Allow Bombgeon Ninja to passively heal (he can't grab health kits)
-        """
-        if not self.node:
-            return
-        if self.hitpoints > self.hitpoints_max:
-            multi = 3
-            self.hitpoints = self.hitpoints - (
-                (10 * multi) * self.impact_scale
-            )
-            def pulse_red(intensity: float = 1.0, time: float = 0.65):
-                if self.node:
-                    bs.animate_array(
-                        self.node,
-                        'color',
-                        3,
-                        {
-                            0: (2*intensity, 0, 0),
-                            time*0.8: self.node.color,
-                            time: self.node.color
-                        }
-                    )
-                    bs.animate_array(
-                        self.node,
-                        'highlight',
-                        3,
-                        {
-                            0: (2*intensity, 0, 0),
-                            time*0.8: self.node.highlight,
-                            time: self.node.highlight
-                        }
-                    )
-            pulse_red(0.65)
-            return
-        multi = 1.39
-        self.hitpoints = min(self.hitpoints_max, 
-            self.hitpoints + ((10 * multi) * self.impact_scale)
-        )
-        self.updatemeter()
-        if self.hitpoints != self.hitpoints_max:
-            self.pulse_green(0.65)
     
     def tellfucked(self):
         """
@@ -2409,9 +2361,6 @@ class Spaz(bs.Actor):
             if not self.node:
                 return None
             if self.parrying == True:
-                if self.source_player:
-                    from bascenev1lib.game.parrier import ParryMessage
-                    self.getactivity().handlemessage(ParryMessage(self.source_player.team, self.source_player))
                 return
             if self.node.invincible:
                 SpazFactory.get().block_sound.play(
@@ -2452,9 +2401,6 @@ class Spaz(bs.Actor):
             ):
                 return True
             if self.parrying == True:
-                if self.source_player:
-                    from bascenev1lib.game.parrier import ParryMessage
-                    self.getactivity().handlemessage(ParryMessage(self.source_player.team, self.source_player))
                 # Check for source node. Most likely being punched.
                 if msg.srcnode:
                     # Get the other spaz's node.
@@ -3236,8 +3182,6 @@ class Spaz(bs.Actor):
                         mag,
                     )
         elif isinstance(msg, PickupMessage):
-            if self.character == 'Bombgeon Snake Shadow' and not self.grab_power:
-                return False
             if not self.node:
                 return None
             try:
@@ -3272,48 +3216,6 @@ class Spaz(bs.Actor):
             # Note: hold_body needs to be set before hold_node.
             self.node.hold_body = opposingbody
             self.node.hold_node = opposingnode
-            if self.character == 'Bombgeon Snake Shadow':
-                # Dont grab them unless we can use our power
-                if self.grab_power:
-                    self.grab_power = False
-                    delay_boom = 0.2
-                    delay_until_power_over = 10
-
-                    def unpower():
-                        self.grab_power = True
-                        if self.node:
-                            self.node.mini_billboard_1_texture = bs.gettexture('buttonPickUp')
-
-                    def boom():
-                        # Blow em up
-                        bomb.Blast(
-                            position=self.node.position,
-                            velocity=(self.node.velocity[0], self.node.velocity[1] + 2, self.node.velocity[2]),
-                            blast_radius=1.5,
-                            blast_type='normal',
-                            source_player=ba.existing(self.source_player),
-                            hit_type='explosion',
-                            hit_subtype='non_hurt_self_blast',
-                            owner=self.node,
-                        ).autoretain()
-                    def letemgo():
-                        self.node.hold_node = None
-                        self.allow_pickup = True
-
-                    # Grab em
-                    self.node.hold_body = opposingbody
-                    self.node.hold_node = opposingnode
-                    # Disable the grab button so they cant ungrab em.
-                    self.allow_pickup = False
-                    if self.node:
-                        self.node.mini_billboard_1_texture = None
-                    bs.timer(delay_boom, boom)
-                    bs.timer(delay_boom + 0.1, boom)
-                    bs.timer(delay_boom + 0.2, boom)
-                    bs.timer(delay_boom + 0.2, letemgo)
-                    bs.timer((delay_until_power_over) + delay_boom + 0.2, unpower)
-                else:
-                    return
 
         elif isinstance(msg, bs.CelebrateMessage):
             if self.node:
@@ -3484,140 +3386,6 @@ class Spaz(bs.Actor):
         
         return False
     
-    def NINJA_increase(self):
-        """
-        Increases the dash count for 
-        Bombgeon Snake Shadow.
-        """
-        if not self.exists():
-            self.increase_charge_thing__timer = None
-            return
-
-        try:
-            self.node.move_left_right
-        except:
-            self.increase_charge_thing__timer = None
-            return
-
-        if not self.character == 'Bombgeon Snake Shadow':
-            raise TypeError('This should only be called on an Bombgeon SS player.')
-        
-        if self.dashes == 4:
-            return
-
-        self.flash(time=1, texture=bs.gettexture('buttonJump'), crossout=False) # for some reason looks kinda choppy
-        
-        self.dashes += 1
-        
-    def on_jump_dash(self):
-        """ 
-        Routine for dashing. 
-        'Borrowed' from bombgeon..
-        ..pls dont kill me gummy
-        """
-        if self.dashes > 0:
-            if self.node.exists() and not self.frozen and not self.shattered and self.is_alive():
-                self.dashes -= 1
-                xforce = 55
-                yforce = 2
-                for _ in range(50):
-                    self.impulse(xforce, yforce)
-                def sparkies():
-                            if self.node.exists():
-                                bs.emitfx(position=self.node.position,
-                                    chunk_type='sweat',
-                                    count=5,
-                                    scale=1,
-                                    spread=0.6)
-                                bs.emitfx(position=self.node.position,
-                                    chunk_type='spark',
-                                    count=5,
-                                    scale=1.0,
-                                    spread=0.1)
-                bs.timer(0.01,ba.Call(sparkies))
-                bs.timer(0.1,ba.Call(sparkies))
-                bs.timer(0.2,ba.Call(sparkies))
-                pos = self.calculate_infront(return_pos=True)
-                vel = self.calculate_infront(return_vel=True)
-                self.explode_sounds = (
-                    'explosion01',
-                    'explosion02',
-                    'explosion03',
-                    'explosion04',
-                    'explosion05',
-                )        
-                self.debris_fall_sound = 'debrisFall'
-
-
-                explode_sound = self.explode_sounds[random.randrange(len(self.explode_sounds))]
-            
-                explosion = bs.newnode(
-                    'explosion',
-                    attrs={
-                        'position': pos,
-                        'velocity': vel,
-                        'radius': 1,
-                        'big': False,
-                    },
-                )
-                # Make a scorch that fades over time.
-                scorch = bs.newnode(
-                    'scorch',
-                    attrs={
-                        'position': pos,
-                        'size': 1,
-                        'big': False,
-                    },
-                )
-
-                bs.animate(scorch, 'presence', {3.000: 1, 13.000: 0})
-                bs.timer(13.0, scorch.delete)
-                lcolor = (1, 0.3, 0.1)
-                light = bs.newnode(
-                    'light',
-                    attrs={
-                        'position': pos,
-                        'volume_intensity_scale': 10.0,
-                        'color': lcolor,
-                    },
-                )
-
-                scl = random.uniform(0.6, 0.9)
-                scorch_radius = light_radius = 1
-
-                iscale = 1.6
-                bs.animate(
-                    light,
-                    'intensity',
-                    {
-                        0: 2.0 * iscale,
-                        scl * 0.02: 0.1 * iscale,
-                        scl * 0.025: 0.2 * iscale,
-                        scl * 0.05: 17.0 * iscale,
-                        scl * 0.06: 5.0 * iscale,
-                        scl * 0.08: 4.0 * iscale,
-                        scl * 0.2: 0.6 * iscale,
-                        scl * 2.0: 0.00 * iscale,
-                        scl * 3.0: 0.0,
-                    },
-                )
-                bs.animate(
-                    light,
-                    'radius',
-                    {
-                        0: light_radius * 0.2,
-                        scl * 0.05: light_radius * 0.55,
-                        scl * 0.1: light_radius * 0.3,
-                        scl * 0.3: light_radius * 0.15,
-                        scl * 1.0: light_radius * 0.05,
-                    },
-                )
-                bs.timer(scl * 3.0, light.delete)
-
-                lpos = light.position
-                bs.getsound(explode_sound).play(position=lpos)
-                bs.getsound(self.debris_fall_sound).play(position=lpos)
-    
     def drop_bomb(self) -> Bomb | None:
         """
         Tell the spaz to drop one of his bombs, and returns
@@ -3721,9 +3489,6 @@ class Spaz(bs.Actor):
                 ),
             ).autoretain()
             # Don't explode.
-            if self.source_player:
-                from bascenev1lib.game.parrier import ParryMessage
-                self.getactivity().handlemessage(ParryMessage(self.source_player.team, self.source_player))
             return
         if self._cursed and self.node:
             self.shatter(extreme=True)
@@ -3987,10 +3752,6 @@ class Spaz(bs.Actor):
             bs.getsound('bellHigh').play(position=self.node.position)
             bs.getsound('orchestraHit').play(position=self.node.position)
             self.node.handlemessage('knockout', 0)
-            # Dont send a message (the hitmessage above will count a point anyway)
-            #if self.source_player:
-            #    from bascenev1lib.game.parrier import ParryMessage
-            #    self.getactivity().handlemessage(ParryMessage(self.source_player.team, self.source_player))
             return
         
         self.node.handlemessage('knockout', max(0.0, 50.0 * intensity))

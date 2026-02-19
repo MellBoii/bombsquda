@@ -126,7 +126,7 @@ def register_appearances() -> None:
     t.default_color = (0.9215686274509803, 0.0, 0.5843137254901961)
     t.default_highlight = (0.4588235294117647, 0.984313725490196, 0.9294117647058824)
 
-    # gummy ##########################################
+    # that fucking ninja that i hate ##########################################
     t = Appearance('GummyBoiYT')
     t.color_texture = 'snakeyColor'
     t.color_mask_texture = 'snakeyColorMask'
@@ -609,31 +609,3 @@ def register_appearances() -> None:
     t.pickup_sounds = ['spazPickup01']
     t.fall_sounds = ['spazFall01']
     t.style = 'spaz'
-
-    # Bombgeon's Ninja ###################################
-    t = Appearance('Bombgeon Snake Shadow')
-    t.color_texture = 'ninjaColor'
-    t.color_mask_texture = 'ninjaColorMask'
-    t.icon_texture = 'ninjaIcon'
-    t.icon_mask_texture = 'ninjaIconColorMask'
-    t.head_mesh = 'ninjaHead'
-    t.torso_mesh = 'ninjaTorso'
-    t.pelvis_mesh = 'ninjaPelvis'
-    t.upper_arm_mesh = 'ninjaUpperArm'
-    t.forearm_mesh = 'ninjaForeArm'
-    t.hand_mesh = 'ninjaHand'
-    t.upper_leg_mesh = 'ninjaUpperLeg'
-    t.lower_leg_mesh = 'ninjaLowerLeg'
-    t.toes_mesh = 'ninjaToes'
-    ninja_attacks = ['ninjaAttack' + str(i + 1) + '' for i in range(7)]
-    ninja_hits = ['ninjaHit' + str(i + 1) + '' for i in range(8)]
-    ninja_jumps = ['ninjaAttack' + str(i + 1) + '' for i in range(7)]
-    t.jump_sounds = ninja_jumps
-    t.attack_sounds = ninja_attacks
-    t.impact_sounds = ninja_hits
-    t.death_sounds = ['ninjaDeath1']
-    t.pickup_sounds = ninja_attacks
-    t.fall_sounds = ['ninjaFall1']
-    t.style = 'ninja'
-    t.default_color = (0.3, 0.5, 0.8)
-    t.default_highlight = (1, 0, 0)
