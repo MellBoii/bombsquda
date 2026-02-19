@@ -266,24 +266,6 @@ class CoopBrowserWindow(bui.MainWindow):
         # the server for an update
         self._tourney_data_up_to_date = False
 
-        # If we've got a cached tournament list for our account and info for
-        # each one of those tournaments, go ahead and display it as a
-        # starting point.
-        if (
-            classic.accounts.account_tournament_list is not None
-            and classic.accounts.account_tournament_list[0]
-            == plus.get_v1_account_state_num()
-            and all(
-                t_id in classic.accounts.tournament_info
-                for t_id in classic.accounts.account_tournament_list[1]
-            )
-        ):
-            tourney_data = [
-                classic.accounts.tournament_info[t_id]
-                for t_id in classic.accounts.account_tournament_list[1]
-            ]
-            self._update_for_data(tourney_data)
-
         # This will pull new data periodically, update timers, etc.
         self._update_timer = bui.AppTimer(
             1.0, bui.WeakCall(self._update), repeat=True
