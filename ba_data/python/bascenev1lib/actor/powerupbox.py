@@ -65,6 +65,9 @@ class PowerupBoxFactory:
     tex_metal: bs.Texture
     """Metal powerup bs.Texture."""
     
+    tex_deton: bs.Texture
+    """Deton powerup bs.Texture."""
+    
     tex_random: bs.Texture
     """Roulette powerup bs.Texture."""
     
@@ -112,6 +115,8 @@ class PowerupBoxFactory:
         self.tex_impact_bombs = bs.gettexture('powerupImpactBombs')
         self.tex_health = bs.gettexture('powerupHealth')
         self.tex_metal = bs.gettexture('powerupMetal')
+        self.tex_deton = bs.gettexture('powerupDeton')
+        self.tex_shotgun = bs.gettexture('powerupShotgun')
         self.tex_random = bs.gettexture('powerupRandom')
         self.tex_strong = bs.gettexture('powerupStrong')
         self.tex_spongebob = bs.gettexture('powerupSponge')
@@ -259,8 +264,12 @@ class PowerupBox(bs.Actor):
             tex = factory.tex_curse
         elif poweruptype == 'metal':
             tex = factory.tex_metal
+        elif poweruptype == 'deton':
+            tex = factory.tex_deton
         elif poweruptype == 'random':
             tex = factory.tex_random
+        elif poweruptype == 'shotgun':
+            tex = factory.tex_shotgun
         elif poweruptype == 'strong':
             tex = factory.tex_strong
         elif poweruptype == 'spongebob':
@@ -297,7 +306,7 @@ class PowerupBox(bs.Actor):
                 bs.WeakCall(self._start_flashing),
             )
             bs.timer(
-                DEFAULT_POWERUP_INTERVAL - 2.5,
+                DEFAULT_POWERUP_INTERVAL - 1.5,
                 bs.WeakCall(self.handlemessage, bs.DieMessage()),
             )
 

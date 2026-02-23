@@ -67,7 +67,7 @@ FEEL_THE_FURY = [
 screams = ['screams/scream' + str(i + 1) + '' for i in range(10)]
 server = "https://bombsquda.tailc76b25.ts.net"
 version = '2.1'
-update_date = '1/13/2026'
+update_date = '2/21/2026'
 currencies = ['tix', 'tokens']
 
 def add_spaz(

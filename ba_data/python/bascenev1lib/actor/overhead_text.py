@@ -35,15 +35,17 @@ class OverheadText:
         self._delete_x = None
         self.animateTimer = bs.Timer(self.fadeTime + 0.4, lambda: self.animate(speed=self.speed))
         self.checkTimer = None
-        bgy = 30
-        nodey = 45
+        base_y = 30
+        base_node_y = 45
         spacing = 50
-        if not hasattr(bs.getactivity(), 'overheads'):
-            bs.getactivity().overheads = []
-        for otext in bs.getactivity().overheads:
-            bgy += spacing
-            nodey += spacing
-        bs.getactivity().overheads.append(self)
+        activity = bs.getactivity()
+        if not hasattr(activity, 'overheads'):
+            bs.getactivity().overheads = {}
+        overheads = activity.overheads
+        self._slot = self._get_free_slot(overheads)
+        overheads[self._slot] = self
+        bgy = base_y + (self._slot * spacing)
+        nodey = base_node_y + (self._slot * spacing)
         self.bg = bs.newnode(
             'image',
             attrs={
@@ -74,7 +76,13 @@ class OverheadText:
             }
         )
         bs.getsound(sound).play()
-
+        
+    def _get_free_slot(self, overheads: dict) -> int:
+        slot = 0
+        while slot in overheads:
+            slot += 1
+        return slot
+        
     def _check_position(self):
         if not self.node:
             return
@@ -111,7 +119,8 @@ class OverheadText:
         
     def stop(self):
         self.node.delete()
-        bs.getactivity().overheads.remove(self)
+        if hasattr(bs.getactivity(), 'overheads'):
+            bs.getactivity().overheads.pop(self._slot, None)
         bs.animate(
             self.bg,
             'opacity',

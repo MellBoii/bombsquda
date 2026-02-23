@@ -65,6 +65,7 @@ class Startup():
         "squda_parrytype": 2,
         "squda_spaztix": 500,
         "squda_spaztokens": 5,
+        "squda_showerrors": False
     }
     # "setdefault" to create config settings
     # won't affect already existing ones.
@@ -111,31 +112,6 @@ class Startup():
         console_globals['gp'] = bs.getplayers
         console_globals['gs'] = bs.getsession
         console_globals['sm'] = bs.setmusic
-        # our "cheats"
-        def super():
-            bs.getplayers()[0].actor.gosuper()
-        def firework():
-            bs.getplayers()[0].actor.firework_explode()
-        def slowmode():
-            gnode = bs.getactivity().globalsnode
-            slow = True if gnode.slow_motion == False else False
-            gnode.slow_motion = slow
-        def killbots():
-            try:
-                for bot in bs.getactivity()._bots.get_living_bots(): 
-                    bot.shatter(extreme=True, force_scream=True)
-                bs.getsound('explosion01').play()
-            except AttributeError:
-                bs.screenmessage('Try this again in coop...')
-                print('Try this again in coop...')
-                bs.getsound('error').play()
-        def wither_and_die():
-            bs.getsound('WITHERANDDIE').play()
-            bs.timer(0.6, killbots)
-        console_globals['GOLDENFORM'] = super
-        console_globals['NEWYEARS'] = firework
-        console_globals['SLOWDOWN'] = slowmode
-        console_globals['WITHERANDDIE'] = wither_and_die
         bs.debprint('console globals done!')
     # call it
     auto_module_import()
@@ -161,7 +137,9 @@ class Startup():
         _recent_error = True
         # Log it somewhere visible
         print(error_text)
-        bs.screenmessage(
+        if not ba.app.config.get("squda_showerrors"):
+            return
+        bs.broadcastmessage(
             f"An error occured:\n{error_text}", 
             color=(1, 0, 0)
         )
@@ -208,28 +186,30 @@ class Startup():
                 "bs_id": BS_ID,
                 "account": bui.app.plus.get_v1_account_display_string(),
                 "device_id": BS_ID.split(":")[-1],
-                "client_version": ba.app.env.engine_version,
+                "bs_version": ba.app.env.engine_version,
+                "squda_version": mell.version,
+                "squda_updatedate": mell.update_date,
             }
             request = urllib.request.Request(
                 f"{SERVER}/ping",
                 data=json.dumps(data).encode('utf-8'),
+                headers={
+                    "Content-Type": "application/json"
+                },
             )
             try:
                 urllib.request.urlopen(request, timeout=2)
                 if not loopt._connection_success_logged:
                     print('Connection to the BombSquda server established successfully.')
                     loopt._connection_success_logged = True
+                    loopt._connection_failed_logged = False
                 time.sleep(1)
             except Exception as e:
                 bs.debprint(f"Server connection failed: {e}")
-                print(
-                    (
-                        'WARNING: Connection to the BombSquda server failed.\nThings like '
-                        'uploading personal bests, getting commands from Discord and such will not work.'
-                        '\nThis could be due to network issues or the server being offline.'
-                    )
-                )
-                break
+                if not loopt._connection_failed_logged:
+                    print('Connecting to the BombSquda server failed.')
+                    loopt._connection_success_logged = False
+                    loopt._connection_failed_logged = True
 
     threading.Thread(target=loop, daemon=True).start()
 

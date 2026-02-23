@@ -61,4 +61,6 @@ def get_default_powerup_distribution() -> Sequence[tuple[str, int]]:
         ('random', 9999 if ba.app.config.get("squda_gamblingmode", True) else 1),
         ('spongebob', 9999 if debug_powerup == 'spongebob' else 2),
         ('strong', 9999 if debug_powerup == 'strong' else 3),
+        ('deton', 9999 if debug_powerup == 'deton' else 3),
+        ('shotgun', 9999 if debug_powerup == 'shotgun' else 2),
     )

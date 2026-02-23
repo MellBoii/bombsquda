@@ -126,7 +126,13 @@ class MusicType(Enum):
     CRASH_HANDLER = 'Crash_Handler'
     ELIM_DANGER = 'Elim_Danger'
     ELIM_VERSUS = 'Elim_Versus'
-    
+
+def _get_free_slot(slots: dict) -> int:
+    slot = 0
+    while slot in slots:
+        slot += 1
+    return slot  
+  
 def show_music_now_playing(music_type: bs.MusicType) -> None:
         """
         Display current music on screen.
@@ -251,10 +257,11 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
         with activity.context:
             # get important variables
             uiscale = bui.app.ui_v1.uiscale
-            amt = activity.music_texts
             base_y = 0
             step_y = 30
-            ypos = base_y + len(activity.music_texts) * step_y
+
+            slot = _get_free_slot(activity.music_texts)
+            ypos = base_y + slot * step_y
             xpos = 635
             ofscrX = 1500
             tscale = (
@@ -286,6 +293,7 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
                 shadow=0.5,
                 flatness=0.5,
             ).autoretain()
+            activity.music_texts[slot] = txt
             # animate text going on screen then back out
             bs.animate_array(
                 txt.node,
@@ -310,10 +318,6 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
                     7.0: (ofscrX, ypos),  # slide back out
                 },
             )
-            # append us to the activity's music texts
-            # so we can track how many texts there are
-            # so we don't show up infront of one
-            activity.music_texts.append(txt)
             # define stuff
             def add_one():
                 # add 5 to rotation
@@ -323,7 +327,7 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
                 # and delete stuff
                 txt.node.delete()
                 img.node.delete()
-                activity.music_texts.remove(txt)
+                activity.music_texts.pop(slot, None)
                 img.rotatetimer = None
             # timers
             img.rotatetimer = bs.Timer(0.01, add_one, repeat=True)

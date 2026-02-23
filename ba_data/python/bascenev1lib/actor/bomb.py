@@ -770,6 +770,7 @@ class Bomb(bs.Actor):
         source_player: bs.Player | None = None,
         owner: bs.Node | None = None,
         nosound: bool = False,
+        manual: bool = False
     ):
         """Create a new Bomb.
 
@@ -798,6 +799,7 @@ class Bomb(bs.Actor):
         self._exploded = False
         self.scale = bomb_scale
         self.nosound = nosound
+        self.manual = manual
 
         self.texture_sequence: bs.Node | None = None
 
@@ -999,9 +1001,10 @@ class Bomb(bs.Actor):
         # Light the fuse!!!
         if self.bomb_type not in ('land_mine', 'tnt', 'tntfirework'):
             assert fuse_time is not None
-            bs.timer(
-                fuse_time, bs.WeakCall(self.handlemessage, ExplodeMessage())
-            )
+            if not self.manual:
+                bs.timer(
+                    fuse_time, bs.WeakCall(self.handlemessage, ExplodeMessage())
+                )
 
         bs.animate(
             self.node,

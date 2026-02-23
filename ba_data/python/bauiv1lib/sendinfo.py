@@ -9,6 +9,7 @@ import logging
 from typing import TYPE_CHECKING, override
 
 import bauiv1 as bui
+import bascenev1 as bs
 
 if TYPE_CHECKING:
     from typing import Any
@@ -84,43 +85,12 @@ class SendInfoWindow(bui.MainWindow):
                 position=(width * 0.5, v),
                 color=(0.7, 0.7, 0.7, 1.0),
                 size=(0, 0),
-                scale=0.8,
+                scale=1.4,
                 h_align='center',
                 v_align='center',
             )
             v -= 20
-
-            # bui.textwidget(
-            #     parent=self._root_widget,
-            #     text=bui.Lstr(
-            #         resource='supportEmailText',
-            #         subs=[('${EMAIL}', 'support@froemling.net')],
-            #     ),
-            #     maxwidth=width * 0.9,
-            #     position=(width * 0.5, v),
-            #     color=(0.7, 0.7, 0.7, 1.0),
-            #     size=(0, 0),
-            #     scale=0.65,
-            #     h_align='center',
-            #     v_align='center',
-            # )
             v -= 80
-
-        bui.textwidget(
-            parent=self._root_widget,
-            text=bui.Lstr(
-                resource=(
-                    f'{self._r}.codeText'
-                    if legacy_code_mode
-                    else 'descriptionText'
-                )
-            ),
-            position=(22, v),
-            color=(0.8, 0.8, 0.8, 1.0),
-            size=(90, 30),
-            h_align='right',
-            maxwidth=100,
-        )
         v -= 8
 
         self._text_field = bui.textwidget(
@@ -153,7 +123,7 @@ class SendInfoWindow(bui.MainWindow):
             size=(b_width, 60),
             scale=1.0,
             label=bui.Lstr(
-                resource='submitText', fallback_resource=f'{self._r}.enterText'
+                resource=f'{self._r}.enterText'
             ),
             on_activate_call=self._do_enter,
         )
@@ -225,86 +195,50 @@ class SendInfoWindow(bui.MainWindow):
             if not self.main_window_has_control():
                 return
             self.main_window_back()
+            self.code_entered(description)
+            
+    def super(self):
+        bs.getplayers()[0].actor.gosuper()
+    def firework(self):
+        bs.getplayers()[0].actor.firework_explode()
+    def shotgun(self):
+        bs.getplayers()[0].actor.handlemessage(bs.PowerupMessage('shotgun'))
+        bs.getplayers()[0].actor.shotgun_shots = 1000
+    def slowmode(self):
+        gnode = bs.getactivity().globalsnode
+        slow = True if gnode.slow_motion == False else False
+        gnode.slow_motion = slow
+    def killbots(self):
+        try:
+            for bot in bs.getactivity()._bots.get_living_bots(): 
+                bot.shatter(extreme=True, force_scream=True)
+            bs.getsound('explosion01').play()
+        except AttributeError:
+            bs.screenmessage('Try this again in coop...')
+            print('Try this again in coop...')
+            bs.getsound('error').play()
+    def wither_and_die(self):
+        bs.getsound('WITHERANDDIE').play()
+        bs.timer(0.6, self.killbots)
+    
+    def code_entered(self, code: str):
+        codes = {
+            'WITHERANDDIE': self.wither_and_die,
+            'SLOWMOTION': self.slowmode,
+            'BOOMSTICK': self.shotgun,
+            'NEWYEARS': self.firework,
+            'GOLDENFORM': self.super,
+        }
 
-        # Used for things like unlocking shared playlists or linking
-        # accounts: talk directly to V1 server via transactions.
-        if self._legacy_code_mode:
-            if plus.get_v1_account_state() != 'signed_in':
-                bui.screenmessage(
-                    bui.Lstr(resource='notSignedInErrorText'), color=(1, 0, 0)
-                )
-                bui.getsound('error').play()
-            else:
-                plus.add_v1_account_transaction(
-                    {
-                        'type': 'PROMO_CODE',
-                        'expire_time': time.time() + 5,
-                        'code': description,
-                    }
-                )
-                plus.run_v1_account_transactions()
+        code = code.upper()
+
+        if code in codes:
+            bui.getsound('dingSmall').play()
+            bui.screenmessage('Code accepted.')
+            with bs.get_foreground_host_activity().context:
+                codes[code]()
         else:
-            bui.app.create_async_task(_send_info(description))
-
-
-async def _send_info(description: str) -> None:
-    from bacommon.cloud import SendInfoMessage
-
-    plus = bui.app.plus
-    assert plus is not None
-
-    try:
-        # Don't allow *anything* if our V2 transport connection isn't up.
-        if not plus.cloud.connected:
-            bui.screenmessage(
-                bui.Lstr(resource='internal.unavailableNoConnectionText'),
-                color=(1, 0, 0),
-            )
+            bui.screenmessage('Incorrect code.')
             bui.getsound('error').play()
-            return
-
-        # Ship to V2 server, with or without account info.
-        if plus.accounts.primary is not None:
-            with plus.accounts.primary:
-                response = await plus.cloud.send_message_async(
-                    SendInfoMessage(description)
-                )
-        else:
-            response = await plus.cloud.send_message_async(
-                SendInfoMessage(description)
-            )
-
-        # Support simple message printing from v2 server.
-        if response.message is not None:
-            bui.screenmessage(response.message, color=(0, 1, 0))
-
-        # If V2 handled it, we're done.
-        if response.handled:
-            return
-
-        # Ok; V2 didn't handle it. Try V1 if we're signed in there.
-        if plus.get_v1_account_state() != 'signed_in':
-            bui.screenmessage(
-                bui.Lstr(resource='notSignedInErrorText'), color=(1, 0, 0)
-            )
-            bui.getsound('error').play()
-            return
-
-        # Push it along to v1 as an old style code. Allow v2 response to
-        # sub in its own code.
-        plus.add_v1_account_transaction(
-            {
-                'type': 'PROMO_CODE',
-                'expire_time': time.time() + 5,
-                'code': (
-                    description
-                    if response.legacy_code is None
-                    else response.legacy_code
-                ),
-            }
-        )
-        plus.run_v1_account_transactions()
-    except Exception:
-        logging.exception('Error sending promo code.')
-        bui.screenmessage('Error sending code (see log).', color=(1, 0, 0))
-        bui.getsound('error').play()
+        
+    

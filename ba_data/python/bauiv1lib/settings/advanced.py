@@ -324,6 +324,17 @@ class AdvancedSettingsWindow(bui.MainWindow):
         this_button_width = 410
 
         assert bui.app.classic is not None
+        self._send_info_button = bui.buttonwidget(
+            parent=self._subcontainer,
+            position=(self._sub_width / 2 - this_button_width / 2, v - 14),
+            size=(this_button_width, 60),
+            autoselect=True,
+            label=bui.Lstr(resource=f'{self._r}.sendInfoText'),
+            text_scale=1.0,
+            on_activate_call=self._on_send_info_press,
+        )
+        
+        v -= 60
         bui.textwidget(
             parent=self._subcontainer,
             position=(70, v + 10),
@@ -372,7 +383,6 @@ class AdvancedSettingsWindow(bui.MainWindow):
                 langs_full[lang] = (
                     langs_translated[lang] + ' (' + lang_translated + ')'
                 )
-
         self._language_popup = PopupMenu(
             parent=self._subcontainer,
             position=(210, v - 19),
@@ -556,13 +566,9 @@ class AdvancedSettingsWindow(bui.MainWindow):
                 size=(self._sub_width - 100, 30),
                 configkey='Use Insecure Connections',
                 autoselect=True,
-                # displayname='USE INSECURE CONNECTIONS',
                 displayname=bui.Lstr(
                     resource=(f'{self._r}.insecureConnectionsText')
                 ),
-                # displayname=bui.Lstr(
-                #     resource=f'{self._r}.alwaysUseInternalKeyboardText'
-                # ),
                 scale=1.0,
                 maxwidth=430,
             )
@@ -570,10 +576,6 @@ class AdvancedSettingsWindow(bui.MainWindow):
                 parent=self._subcontainer,
                 position=(90, v - 20),
                 size=(0, 0),
-                # text=(
-                #     'not recommended, but may allow online play\n'
-                #     'from restricted countries or networks'
-                # ),
                 text=bui.Lstr(
                     resource=(f'{self._r}.insecureConnectionsDescriptionText')
                 ),
@@ -741,17 +743,6 @@ class AdvancedSettingsWindow(bui.MainWindow):
             label=bui.Lstr(resource=f'{self._r}.benchmarksText'),
             text_scale=1.0,
             on_activate_call=self._on_benchmark_press,
-        )
-
-        v -= 100
-        self._send_info_button = bui.buttonwidget(
-            parent=self._subcontainer,
-            position=(self._sub_width / 2 - this_button_width / 2, v - 14),
-            size=(this_button_width, 60),
-            autoselect=True,
-            label=bui.Lstr(resource=f'{self._r}.sendInfoText'),
-            text_scale=1.0,
-            on_activate_call=self._on_send_info_press,
         )
 
         for child in self._subcontainer.get_children():

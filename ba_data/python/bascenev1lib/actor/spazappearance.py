@@ -244,9 +244,38 @@ def register_appearances() -> None:
     t.death_sounds = ['voicelines/noob/death']
     t.pickup_sounds = noob_sounds
     t.fall_sounds = ['voicelines/noob/fall']
-    t.style = 'pirate'
+    t.style = 'bones'
     t.default_color = (1.0, 0.99, 0.13999999999999968)
     t.default_highlight = (0.30999999999999994, 0.4599999999999999, 1)   
+
+    # I will swallow you and spit you out at other enemies. ######################################
+    t = Appearance('Kirby')
+    t.color_texture = 'kirbyColor'
+    t.color_mask_texture = 'kirbyColorMask'
+    t.icon_texture = 'kirbyIcon'
+    t.icon_mask_texture = 'kirbyIconCM'
+    t.earthportrait = 'kirbybound'
+    t.head_mesh = 'none'
+    t.torso_mesh = 'kirbyTorso'
+    t.pelvis_mesh = 'none'
+    t.upper_arm_mesh = 'none'
+    t.forearm_mesh = 'none'
+    t.hand_mesh = 'kirbyHand'
+    t.upper_leg_mesh = 'none'
+    t.lower_leg_mesh = 'kirbyLowerLeg'
+    t.toes_mesh = 'none'
+    t.jump_sounds = ['voicelines/kirby/jump' + str(i + 1) + '' for i in range(3)]
+    kirbyattack = ['voicelines/kirby/attack' + str(i + 1) + '' for i in range(4)]
+    t.attack_sounds = kirbyattack
+    t.pickup_sounds = kirbyattack
+    t.impact_sounds = ['voicelines/kirby/hurt' + str(i + 1) + '' for i in range(6)]
+    t.death_sounds = ['voicelines/kirby/death']
+    t.fall_sounds = ['voicelines/kirby/fall' + str(i + 1) + '' for i in range(2)]
+    t.victory_sounds = ['voicelines/kirby/win' + str(i + 1) + '' for i in range(4)]
+    t.gloat_sounds = ['voicelines/kirby/gloat' + str(i + 1) + '' for i in range(6)]
+    t.style = 'agent'
+    t.default_color = (1, 0, 0)
+    t.default_highlight = (0.1, 0.1, 1)
     
     # tubby plumber man ######################################
     t = Appearance('SM64 Mario')
@@ -272,7 +301,7 @@ def register_appearances() -> None:
     t.fall_sounds = ['voicelines/mario64/fall']
     t.victory_sounds = ['voicelines/mario64/win']
     t.gloat_sounds = ['voicelines/mario64/gloat']
-    t.style = 'agent'
+    t.style = 'bones'
     t.default_color = (1, 0, 0)
     t.default_highlight = (0.1, 0.1, 1)
 
@@ -310,7 +339,7 @@ def register_appearances() -> None:
     t.color_mask_texture = 'tailsColorMask'
     t.icon_texture = 'tailsIcon'
     t.icon_mask_texture = 'tailsIconCM'
-    t.earthportrait = 'sonicbound'
+    t.earthportrait = 'tailsbound'
     t.head_mesh = 'tailsHead'
     t.torso_mesh = 'tailsTorso'
     t.pelvis_mesh = 'tailsPelvis'

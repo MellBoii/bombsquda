@@ -1073,6 +1073,10 @@
     "powerupMetalNameText": "Metal Cap",
     "powerupStickyBombsDescriptionText": "...who the hell in the naming convention \ndecided to name him Aaaaa??!!\nAre the devs on crack??",
     "powerupStickyBombsNameText": "\"Aaaaa\"",
+	"powerupShotgunNameText": "Shotgun",
+    "powerupShotgunDescriptionText": "A shotgun that takes bombs as ammo!\nLets you fire 3 shots of \nwhatever bomb type you have.",
+	"powerupDetonNameText": "Detonator",
+    "powerupDetonDescriptionText": "A switch that explodes all your bombs manually! \nMakes your bombs not explode automatically, \nand you press GRAB to activate it.",
     "powerupsSubtitleText": "well, obviously, every modpack needs them!",
     "powerupsSubtitleTextScale": 0.8,
     "powerupsText": "Powerups",
@@ -1092,7 +1096,9 @@
 	  "mechanicsSuperTitle": "Super Form",
 	  "mechanicsSuperText": "Randomly, Chaos Emeralds will spawn \naround the map and disappear after a while. \nIf you manage to catch all of them, you can \nunlock your SUPER form by pressing \npickup after jumping! This not only gives \nyou some health and a shield, but it \nallows you to do 2 new moves, like flying and;",
 	  "mechanicsParryTitle": "Parrying",
-	  "mechanicsParryText": "Whenever you're able to, you can press the grab\nbutton to attempt a parry. If timed correctly, \nthis can prevent you from being hit by ANYTHING!\n Bombs, punches, hitting your head, even falling off the map!"
+	  "mechanicsParryText": "Whenever you're able to, you can press the grab\nbutton to attempt a parry. If timed correctly, \nthis can prevent you from being hit by ANYTHING!\n Bombs, punches, hitting your head, even falling off the map!",
+	  "mechanicsHexplodeTitle": "Head Explosions",
+	  "mechanicsHexplodeText": "If you throw a bomb at a person's head and it hits, \nthe person who got hit will die instantly having their \nhead explode into a bunch of blood/confetti."
   },
   "holdAnyButtonText": "<hold any button>",
   "holdAnyKeyText": "<hold any key>",
@@ -1492,7 +1498,7 @@
   },
   "scoreWasText": "(was ${COUNT})",
   "selectText": "Select",
-  "sendInfoDescriptionText": "Sends account and app state info to the developer.\nPlease include your name or reason for sending.",
+  "sendInfoDescriptionText": "Enter a code.",
   "seriesWinLine1PlayerText": "IS THE",
   "seriesWinLine1TeamText": "IS THE",
   "seriesWinLine1Text": "IS THE",
@@ -1523,7 +1529,8 @@
     "customFontWarningText": "custom font (WINDOWS ONLY)",
     "speedrunTimerText": "speedrun timer in coop levels",
     "enableBloodText": "enable blood (not hyperrealistic)",
-    "coopNamesText": "use 'canon' names in coop"
+    "coopNamesText": "use 'canon' names in coop",
+    "showErrorsText": "show errors onscreen"
   },
   "SURVEYWindow": {
     "titleText": "SURVEY PROGRAM"
@@ -1549,7 +1556,7 @@
     "mustRestartText": "You must restart the game for this to take effect.",
     "netTestingText": "Network Testing",
     "resetText": "Reset",
-    "sendInfoText": "Send Info",
+    "sendInfoText": "Enter Code",
     "showBombTrajectoriesText": "Show Bomb Trajectories",
     "showDemosWhenIdleText": "Show demos when idle",
     "showDeprecatedLoginTypesText": "Show deprecated login types",

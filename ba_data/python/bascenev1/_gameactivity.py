@@ -675,7 +675,8 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         
         if self.metal_players:
             if self.metal_sound:
-                self.metal_sound.volume = 2.0           
+                self.metal_sound.volume = 2.0
+                self.metal_sound.position = self.metal_players[0].node.position
         else:
             if self.metal_sound:
                 self.metal_sound.volume = 0.0
@@ -721,7 +722,8 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         
         if self.dancing_players:
             if self.dancin_sound:
-                self.dancin_sound.volume = 2.0           
+                self.dancin_sound.volume = 2.0
+                self.dancin_sound.position = self.dancing_players[0].node.position
         else:
             if self.dancin_sound:
                 self.dancin_sound.volume = 0.0

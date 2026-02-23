@@ -140,7 +140,7 @@ class HelpWindow(bui.MainWindow):
         # self._sub_width = 810 if uiscale is bui.UIScale.SMALL else 660
         self._sub_width = 660
         self._sub_height = (
-            2550
+            2800
             + bui.app.lang.get_resource(f'{self._r}.someDaysExtraSpace')
             + bui.app.lang.get_resource(
                 f'{self._r}.orPunchingSomethingExtraSpace'
@@ -591,6 +591,8 @@ class HelpWindow(bui.MainWindow):
             'powerupStrong',
             'powerupSponge',
             'powerupRandom',
+            'powerupDeton',
+            'powerupShotgun',
         ]:
             name = bui.Lstr(resource=f'{self._r}.' + tex + 'NameText')
             desc = bui.Lstr(resource=f'{self._r}.' + tex + 'DescriptionText')
@@ -802,6 +804,38 @@ class HelpWindow(bui.MainWindow):
             v_align='center',
             flatness=1.0,
         )
+        
+        v -= spacing * 70.0
+        txt_scale = getres(f'{self._r}.powerupsSubtitleTextScale') + 0.2
+        txt = bui.Lstr(resource=f'{self._r}.mechanicsHexplodeTitle').evaluate()
+        bui.textwidget(
+            parent=self._subcontainer,
+            position=(h, v),
+            size=(0, 0),
+            scale=txt_scale,
+            flatness=0.5,
+            text=txt,
+            h_align='center',
+            color=header,
+            v_align='center',
+            maxwidth=txt_maxwidth,
+        )
+        
+        v -= spacing * 55.0
+        txt_scale = getres(f'{self._r}.powerupsSubtitleTextScale') 
+        txt = bui.Lstr(resource=f'{self._r}.mechanicsHexplodeText').evaluate()
+        bui.textwidget(
+            parent=self._subcontainer,
+            position=(h, v),
+            size=(0, 0),
+            scale=txt_scale,
+            maxwidth=self._sub_width * 0.9,
+            text=txt,
+            h_align='center',
+            color=paragraph,
+            v_align='center',
+            flatness=1.0,
+        )
 
 
     def _play_sound(self, text: str, num: int) -> None:
@@ -836,6 +870,10 @@ class HelpWindow(bui.MainWindow):
             bui.getsound('spongebob').play()
         elif text == 'powerupRandom':
             bui.getsound('okitem').play()
+        elif text == 'powerupShotgun':
+            bui.getsound('shotgunload').play()
+        elif text == 'powerupDeton':
+            bui.getsound('menu_sel').play()
         else:
             print(f'HelpWindow error: {text} not in plpwpsound')
             bui.getsound('error').play()

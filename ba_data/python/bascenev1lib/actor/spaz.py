@@ -162,6 +162,10 @@ class Spaz(bs.Actor):
         self.sparkies = None
         self.super_flash = None
         self.actor_type = 'spaz'
+        self.deton = False
+        self.deton_bombs = []
+        self.shotgunned = False
+        self.shotgun_shots = 0
 
         self.source_player = source_player
         self._dead = False
@@ -250,6 +254,7 @@ class Spaz(bs.Actor):
 
             bs.timer(1.5, bs.Call(_safesetattr, self.node, 'invincible', False))
         self.hitpoints = self.default_hitpoints
+        self.defaulthand = media['hand_mesh']
         self.hitpoints_max = self.default_hitpoints
         self.shield_hitpoints: int | None = None
         self.shield_hitpoints_max = 650
@@ -376,8 +381,6 @@ class Spaz(bs.Actor):
             self.wiggledancetimer,
             self._flash_timer,
             self.spongebob_timer,
-            getattr(self, 'dashcooldown', None),
-            getattr(self, 'pasheal_timer', None),
         ]
         for timer in timers_to_clear:
             if timer is not None:
@@ -427,20 +430,6 @@ class Spaz(bs.Actor):
                 'scale',
                 {0.0: self._score_text.scale, 0.2: 0.0},
             )
-        
-    def _drop_bomb(
-        self, 
-        position: Sequence[float], 
-        velocity: Sequence[float],
-        bomb_type: str = 'normal'
-    ) -> None:
-        ourbomb = Bomb(
-            position=position, 
-            velocity=velocity, 
-            bomb_type=bomb_type, 
-            source_player=self.source_player
-        ).autoretain()
-        node = ourbomb.node
         
     def getspeed(self, 
             should_abs: bool = True, 
@@ -711,7 +700,9 @@ class Spaz(bs.Actor):
             # If rouletting, give our item to the player.
             self.giveitem()
             return
-
+        if self.deton:
+            bs.getsound('menu_sel').play(position=self.node.position)
+            bs.timer(0.1, self.explode_deton_bombs)
         # wow, lotsa conditions
         if (
             len(self.emeralds) >= 7 and
@@ -881,6 +872,7 @@ class Spaz(bs.Actor):
             bs.getsound('gooditem').play(position=self.node.position)
         else:
             bs.getsound('okitem').play(position=self.node.position)
+        self.node.billboard_opacity = 0
         self.handlemessage(bs.PowerupMessage(self._roulette_current))
         self._roulette_current = None
 
@@ -899,6 +891,95 @@ class Spaz(bs.Actor):
             return
         t_ms = int(bs.time() * 1000.0)
         assert isinstance(t_ms, int)
+        if self.shotgunned:
+            if t_ms - self.last_bomb_time_ms >= self._bomb_cooldown:
+                for _ in range(random.randint(4, 7)):
+                    pos = self.node.position
+                    vel = self.node.velocity
+                    # Normalize forward direction
+                    length = math.sqrt(vel[0]**2 + vel[1]**2 + vel[2]**2)
+                    if length <= 0.01:
+                        continue  # don't spawn if not moving
+                    forward = (
+                        vel[0] / length,
+                        pos[1] / length,
+                        vel[2] / length
+                    )
+                    # Small random spread
+                    spread = 0.46  # adjust this for tighter/wider shotgun
+                    rand_offset = (
+                        random.uniform(-spread, spread),
+                        random.uniform(-spread, spread),
+                        random.uniform(-spread, spread)
+                    )
+                    # Combine forward + spread
+                    dir_x = forward[0] + rand_offset[0]
+                    dir_y = forward[1] + rand_offset[1]
+                    dir_z = forward[2] + rand_offset[2]
+
+                    # Normalize final direction
+                    final_length = math.sqrt(dir_x**2 + dir_y**2 + dir_z**2)
+                    dir_x /= final_length
+                    dir_y /= final_length
+                    dir_z /= final_length
+                    mult = 68.0
+                    dir_x *= mult
+                    dir_y *= mult
+                    dir_z *= mult
+                    particle = Bomb(
+                        position=pos,
+                        velocity=vel,
+                        bomb_type=self.bomb_type,
+                        blast_radius=self.blast_radius - 0.4,
+                        source_player=self.source_player,
+                        bomb_scale=0.7,
+                        owner=self.node,
+                        manual=self.deton
+                    ).autoretain()
+                    if self.deton:
+                        self.deton_bombs.append(particle)
+                    force = 69
+                    particle.node.handlemessage(
+                        'impulse',
+                        pos[0],
+                        pos[1],
+                        pos[2],
+                        0, 0, 0,
+                        force,
+                        force,
+                        0,
+                        0,
+                        dir_x,
+                        dir_y,
+                        dir_z,
+                    )
+                mag = -1050.0
+                if self._hockey:
+                    mag *= 0.7
+                ppos = self.node.position
+                punchdir = self.node.velocity
+                self.node.handlemessage(
+                    'kick_back',
+                    ppos[0],
+                    ppos[1],
+                    ppos[2],
+                    punchdir[0],
+                    punchdir[1],
+                    punchdir[2],
+                    mag,
+                )
+                self.on_punch_press()
+                self.on_punch_release()
+                self.shotgun_shots -= 1
+                self.node.counter_text = 'x' + str(self.shotgun_shots)
+                self.node.counter_texture = (
+                    PowerupBoxFactory.get().tex_shotgun
+                )
+                if self.shotgun_shots == 0:
+                    self.shotgunned = False
+                    self.node.counter_text = ''
+                bs.getsound('shotgunshot').play(position=self.node.position)
+                return
         if t_ms - self.last_bomb_time_ms >= self._bomb_cooldown:
             self.last_bomb_time_ms = t_ms
             self.node.bomb_pressed = True
@@ -1773,52 +1854,72 @@ class Spaz(bs.Actor):
                     self.node.handlemessage('celebrate', int(1000))
         bs.timer(2.0, text2)
         bs.timer(4.0, text3)
-            
+    def _get_texture_for_powerup(self, factory, ptype: str):
+        texture_map = {
+            'triple_bombs': factory.tex_bomb,
+            'punch': factory.tex_punch,
+            'ice_bombs': factory.tex_ice_bombs,
+            'sticky_bombs': factory.tex_sticky_bombs,
+            'shield': factory.tex_shield,
+            'impact_bombs': factory.tex_impact_bombs,
+            'health': factory.tex_health,
+            'land_mines': factory.tex_land_mines,
+            'curse': factory.tex_curse,
+            'metal': factory.tex_metal,
+            'deton': factory.tex_deton,
+            'strong': factory.tex_strong,
+            'spongebob': factory.tex_spongebob,
+            'shotgun': factory.tex_shotgun,
+        }
+
+        return texture_map.get(ptype, factory.tex_random)
+        
     def _activate_roulette(self):
-        """ 
-        Start rolling for a random powerup.
-        """
+        """Start rolling for a random powerup."""
         if self._roulette_active:
-            return False  # already rolling
+            return False
+
         self._roulette_active = True
-        # FIXME: this list should be pulled from the powerup list 
-        powerups = [
-            'triple_bombs', 'shield', 'punch', 'impact_bombs', 
-            'land_mines', 'sticky_bombs', 'ice_bombs', 'health', 
-            'metal', 'curse', 'strong', 'spongebob', 'punch', 'sticky'
-        ]
+
+        factory = PowerupBoxFactory.get()
+
         sounds = [
-            'DSITROL1', 
-            'DSITROL2', 
-            'DSITROL3', 
-            'DSITROL4', 
-            'DSITROL5', 
-            'DSITROL6', 
-            'DSITROL7', 
-            'DSITROL8',
+            'DSITROL1', 'DSITROL2', 'DSITROL3', 'DSITROL4',
+            'DSITROL5', 'DSITROL6', 'DSITROL7', 'DSITROL8',
         ]
+
         PopupText(
             bs.Lstr(
-                resource='grabItem', 
-                subs=[
-                    ('${GRAB}', ba.charstr(ba.SpecialChar.TOP_BUTTON))
-                ]
+                resource='grabItem',
+                subs=[('${GRAB}', ba.charstr(ba.SpecialChar.TOP_BUTTON))]
             ),
             position=self.node.position,
             color=(1, 1, 1, 0.6),
             scale=1.0,
         ).autoretain()
-        
+
         def roll():
             if not self._roulette_active or not self.node:
                 return
-            self._roulette_current = random.choice(powerups)
-            bs.getsound(random.choice(sounds)).play(position=self.node.position)
+
+            # Use factory distribution
+            ptype = factory.get_random_powerup_type()
+            self._roulette_current = ptype
+
+            # Update billboard texture dynamically
+            tex = self._get_texture_for_powerup(factory, ptype)
+            if tex:
+                self.node.billboard_texture = tex
+                self.node.billboard_opacity = 1.0
+
+            bs.getsound(random.choice(sounds)).play(
+                position=self.node.position
+            )
 
         def force_stop():
             if self._roulette_active:
                 self.giveitem()
-        # if our player hasn't rolled for a while, just stop for em
+
         self.force_stop_timer = bs.Timer(5.0, force_stop)
         self._roulette_timer = bs.Timer(0.09, roll, repeat=True)
         roll()
@@ -2183,6 +2284,14 @@ class Spaz(bs.Actor):
                     )
             elif msg.poweruptype == 'land_mines':
                 self.set_land_mine_count(min(self.land_mine_count + 3, 9999))
+            elif msg.poweruptype == 'shotgun':
+                self.shotgunned = True
+                self.shotgun_shots += 3
+                bs.getsound('shotgunload').play(position=self.node.position)
+                self.node.counter_text = 'x' + str(self.shotgun_shots)
+                self.node.counter_texture = (
+                    PowerupBoxFactory.get().tex_shotgun
+                )
             elif msg.poweruptype == 'impact_bombs':
                 self.bomb_type = 'impact'
                 tex = self._get_bomb_type_tex()
@@ -2337,6 +2446,27 @@ class Spaz(bs.Actor):
                     self._metal_wear_off_timer = bs.Timer(
                         POWERUP_WEAR_OFF_TIME3 / 1000.0,
                         bs.WeakCall(self._metal_wear_off),
+                    )
+            
+            elif msg.poweruptype == 'deton':
+                self.deton = True
+                if self.powerups_expire:
+                    tex = PowerupBoxFactory.get().tex_deton
+                    self._flash_billboard(tex)
+                    self.node.mini_billboard_3_texture = tex
+                    t_ms = int(bs.time() * 1000.0)
+                    assert isinstance(t_ms, int)
+                    self.node.mini_billboard_3_start_time = t_ms
+                    self.node.mini_billboard_3_end_time = (
+                        t_ms + POWERUP_WEAR_OFF_TIME
+                    )
+                    self._deton_wear_off_flash_timer = bs.Timer(
+                        (POWERUP_WEAR_OFF_TIME - 2000) / 1000.0,
+                        bs.WeakCall(self._deton_wear_off_flash),
+                    )
+                    self._deton_wear_off_timer = bs.Timer(
+                        POWERUP_WEAR_OFF_TIME / 1000.0,
+                        bs.WeakCall(self._deton_wear_off),
                     )
             elif msg.poweruptype == 'random':
                 self._activate_roulette()
@@ -3030,6 +3160,7 @@ class Spaz(bs.Actor):
                     self.node.dead = True
                     bs.timer(4.0, self.node.delete)
                     self.drop_emeralds()
+                    self.explode_deton_bombs()
         elif isinstance(msg, bs.OutOfBoundsMessage):
             if self.parrying == True:
                 self.tptosafety()
@@ -3374,9 +3505,7 @@ class Spaz(bs.Actor):
         if return_vel and return_pos:
             raise TypeError('Can only return one thing at a time.')
         elif not return_pos and not return_vel:
-            # note to gummy; maybe don't just say '???' and 
-            # ACTUALLY tell the func user what they did wrong
-            raise TypeError('???') 
+            raise TypeError('Neither pos or vel was specified.') 
         
         if return_vel:
             return vel
@@ -3407,7 +3536,7 @@ class Spaz(bs.Actor):
         else:
             dropping_bomb = True
             bomb_type = self.bomb_type
-
+        deton = self.deton
         bomb = Bomb(
             position=(pos[0], pos[1] - 0.0, pos[2]),
             velocity=(vel[0], vel[1], vel[2]),
@@ -3415,7 +3544,10 @@ class Spaz(bs.Actor):
             blast_radius=self.blast_radius,
             source_player=self.source_player,
             owner=self.node,
+            manual=deton
         ).autoretain()
+        if deton:
+            self.deton_bombs.append(bomb)
 
         assert bomb.node
         if dropping_bomb:
@@ -3550,7 +3682,7 @@ class Spaz(bs.Actor):
                 dir_y /= length
                 dir_z /= length
 
-            force = 1.2
+            force = 1.6
 
             actor.node.handlemessage(
                 'impulse',
@@ -3842,6 +3974,27 @@ class Spaz(bs.Actor):
                 position=self.node.position,
             )
             self.node.billboard_opacity = 0.0
+    
+    def _deton_wear_off_flash(self) -> None:
+        if self.node:
+            self.node.billboard_texture = PowerupBoxFactory.get().tex_deton
+            self.node.billboard_opacity = 1.0
+            self.node.billboard_cross_out = True
+            bs.getsound('warnBeep').play(position=self.node.position)
+
+    def _deton_wear_off(self) -> None:
+        self.deton = False
+        self.explode_deton_bombs()
+        if self.node:
+            PowerupBoxFactory.get().powerdown_sound.play(
+                position=self.node.position,
+            )
+            self.node.billboard_opacity = 0.0
+    
+    def explode_deton_bombs(self):
+        for bomb in self.deton_bombs:
+            if bomb and bomb.node:
+                bomb.explode()
 
     def _bomb_wear_off_flash(self) -> None:
         if self.node:
