@@ -95,6 +95,22 @@ class EmeraldMessage:
         self.current = current
         self.srcnode = srcnode
 
+class HeadExplodedMessage:
+    """
+    Message for when a Spaz gets 
+    his head crushed by a bomb.
+    """
+    def __init__(self, spaz):
+        self.spaz = spaz 
+
+class ShatteredMessage:
+    """
+    Message for when a Spaz gets 
+    torn into multiple pieces. Basically; shattered.
+    """
+    def __init__(self, spaz):
+        self.spaz = spaz 
+
 
 class Spaz(bs.Actor):
     """
@@ -891,9 +907,12 @@ class Spaz(bs.Actor):
             return
         t_ms = int(bs.time() * 1000.0)
         assert isinstance(t_ms, int)
+        # If we have a shotgun, use it
         if self.shotgunned:
             if t_ms - self.last_bomb_time_ms >= self._bomb_cooldown:
+                # Random range of 4 to 7 bombs
                 for _ in range(random.randint(4, 7)):
+                    # Get pos and velocity
                     pos = self.node.position
                     vel = self.node.velocity
                     # Normalize forward direction
@@ -902,11 +921,11 @@ class Spaz(bs.Actor):
                         continue  # don't spawn if not moving
                     forward = (
                         vel[0] / length,
-                        pos[1] / length,
+                        pos[1] / length, # Position here since we don't care about upwards vel
                         vel[2] / length
                     )
                     # Small random spread
-                    spread = 0.46  # adjust this for tighter/wider shotgun
+                    spread = 0.48
                     rand_offset = (
                         random.uniform(-spread, spread),
                         random.uniform(-spread, spread),
@@ -922,6 +941,7 @@ class Spaz(bs.Actor):
                     dir_x /= final_length
                     dir_y /= final_length
                     dir_z /= final_length
+                    # Multiply for extra speed
                     mult = 68.0
                     dir_x *= mult
                     dir_y *= mult
@@ -936,9 +956,11 @@ class Spaz(bs.Actor):
                         owner=self.node,
                         manual=self.deton
                     ).autoretain()
+                    # Also append to our manual bombs
+                    # so we synergize well with deton
                     if self.deton:
                         self.deton_bombs.append(particle)
-                    force = 69
+                    force = 69 # Nice
                     particle.node.handlemessage(
                         'impulse',
                         pos[0],
@@ -958,6 +980,7 @@ class Spaz(bs.Actor):
                     mag *= 0.7
                 ppos = self.node.position
                 punchdir = self.node.velocity
+                # Kick us back for simulating recoil
                 self.node.handlemessage(
                     'kick_back',
                     ppos[0],
@@ -968,8 +991,10 @@ class Spaz(bs.Actor):
                     punchdir[2],
                     mag,
                 )
+                # Punch
                 self.on_punch_press()
                 self.on_punch_release()
+                # Update our counter and play sound
                 self.shotgun_shots -= 1
                 self.node.counter_text = 'x' + str(self.shotgun_shots)
                 self.node.counter_texture = (
@@ -1088,8 +1113,7 @@ class Spaz(bs.Actor):
 
     def on_punched(self, damage: int) -> None:
         """Called when this spaz gets punched."""
-    # note; i still don't get why this 
-    # isn't a function in vanilla; lot easier than using handlemessage all the time
+
     def die(self, how: bs.DeathType = bs.DeathType.IMPACT):
         """Kill us. Simple."""
         self.node.handlemessage(bs.DieMessage(how=how))
@@ -1354,8 +1378,8 @@ class Spaz(bs.Actor):
         ]
         points = [mp[name] for name in spawn_names if name in mp]
         if not points:
-            print(f'{self.node.name} tried to tp to safety but the map')
-            print('on does not have any ffa spawn points.')
+            bs.debprint(f'{self.node.name} tried to tp to safety but the map')
+            bs.debprint('on does not have any ffa spawn points.')
             self.die()
             return
         self.node.handlemessage(
@@ -1429,14 +1453,18 @@ class Spaz(bs.Actor):
 
     def super(self, shouldntsetmusic: bool = False) -> None:
         """ 
-        Makes a Spaz flash yellow,
-        severely boosts stats, plays custom music,
-        and allows some specific moves
+        Give this spaz the 'Super' effect;
+        this is a big buff with a flashy effect and music change.
+        Set shouldntsetmusic to True to 
+        prevent the music change, which is useful for 
+        when we want to activate super but we're 
+        already playing super music (like if we got super 
+        while already being super).
         """
         if self.node:
             activity = self.getactivity()
             gnode = activity.globalsnode
-            bs.getsound('supertrans').play(position=self.node.position) # i'm keeping it as super trans. fuck you. die.
+            bs.getsound('supertrans').play(position=self.node.position)
             self.issuper = True
             # flashing effect function
             if not self.node.exists():
@@ -1538,6 +1566,8 @@ class Spaz(bs.Actor):
                 # music setters (character based)
                 gnode = self.activity.globalsnode
                 self.prev_music = gnode.music.upper()
+                # character specific music
+                # FIXME: clean this up
                 if self.character == 'The Noise':
                     bs.setmusic(bs.MusicType.NOISESUPER)
                 elif self.character == 'Kris':
@@ -1549,7 +1579,7 @@ class Spaz(bs.Actor):
                 else:
                     bs.setmusic(bs.MusicType.SUPER)
     
-    def _activate_spongebob(self, time: int, speed: int, transition_in: bool = True):
+    def _activate_spongebob(self, time: int, speed: int):
         """Give this spaz the 'Hot Potato' effect."""
         if getattr(self, "_has_hot_potato", False):
             return  # Already has one, don't stack
@@ -2233,29 +2263,9 @@ class Spaz(bs.Actor):
             # Eww; seems we have to do this in a timer or it wont work right.
             # (since we're getting called from within update() perhaps?..)
             if self.is_bomb_impactdmg():
-                if self.parrying:
-                    bs.timer(0.001, lambda: PopupText(
-                            bs.Lstr(resource='bombCritted'),
-                            position=self.node.position,
-                            color=(0, 1, 0, 0.9),
-                            scale=1.3,
-                        ).autoretain()
-                    )
-                    bs.timer(0.001, self.mpa)
-                    return
-                bs.timer(0.001, bs.WeakCall(self._hit_self, msg.intensity * 18.0))
-                bs.timer(0.001, lambda: PopupText(
-                        bs.Lstr(resource='bombCritted'),
-                        position=self.node.position,
-                        color=(0, 1, 0, 0.9),
-                        scale=1.3,
-                    ).autoretain()
-                )
-                bs.timer(0.001, lambda: bs.getsound('bananasnipe').play(position=self.node.position))
-                bs.timer(0.001, self.explode_head)
-                bs.timer(0.001, lambda: mell.add_spaz(120, 'tix', self.node.position, 'popup'))
+                bs.timer(0.001, bs.WeakCall(self._hit_self, msg.intensity * 18.0, True))
             else:
-                bs.timer(0.001, bs.WeakCall(self._hit_self, msg.intensity))
+                bs.timer(0.001, bs.WeakCall(self._hit_self, msg.intensity, False))
 
         elif isinstance(msg, bs.PowerupMessage):
             if self._dead or not self.node:
@@ -3708,6 +3718,9 @@ class Spaz(bs.Actor):
         """'Explode' the Spaz's head in a gruesome way."""
         if not self.node or self.hexploded:
             return
+        activity = self._activity()
+        if activity:
+            activity.handlemessage(HeadExplodedMessage(self))
         pos = self.node.position
         bloody = ba.app.config.get("squda_blood")
         self.node.head_mesh = bs.getmesh('none')
@@ -3769,6 +3782,9 @@ class Spaz(bs.Actor):
             return
         self.shattered = True
         assert self.node
+        activity = self._activity()
+        if activity:
+            activity.handlemessage(ShatteredMessage(self))
         if self.frozen:
             # Momentary flash of light.
             light = bs.newnode(
@@ -3858,10 +3874,19 @@ class Spaz(bs.Actor):
             mell.add_spaz(30, 'tix', self.node.position, 'popup')
         self.node.shattered = 2 if extreme else 1
 
-    def _hit_self(self, intensity: float) -> None:
+    def _hit_self(self, intensity: float, explode_head: bool = False) -> None:
         if not self.node:
             return
-        
+        if explode_head == True:
+            PopupText(
+                bs.Lstr(resource='bombCritted'),
+                position=self.node.position,
+                color=(0, 1, 0, 0.9),
+                scale=1.3,
+            ).autoretain()
+            bs.getsound('bananasnipe').play(position=self.node.position)
+            self.explode_head()
+            mell.add_spaz(120, 'tix', self.node.position, 'popup')
         pos = self.node.position
         self.handlemessage(
             bs.HitMessage(
@@ -3980,10 +4005,13 @@ class Spaz(bs.Actor):
             self.node.billboard_texture = PowerupBoxFactory.get().tex_deton
             self.node.billboard_opacity = 1.0
             self.node.billboard_cross_out = True
+            # Warn player that their bombs will explode
             bs.getsound('warnBeep').play(position=self.node.position)
 
     def _deton_wear_off(self) -> None:
+        # Remove our 'detonator' status
         self.deton = False
+        # Explode any bombs we had
         self.explode_deton_bombs()
         if self.node:
             PowerupBoxFactory.get().powerdown_sound.play(

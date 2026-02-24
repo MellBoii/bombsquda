@@ -1847,6 +1847,7 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
         elif isinstance(msg, bs.PlayerScoredMessage):
             self._score += msg.score
             self._update_scores()
+            super().handlemessage(msg)
 
         elif isinstance(msg, bs.PlayerDiedMessage):
             super().handlemessage(msg)  # Augment standard behavior.
@@ -1892,6 +1893,7 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
             else:
                 self._score += pts
             self._update_scores()
+            super().handlemessage(msg)
         else:
             super().handlemessage(msg)
 

@@ -449,10 +449,12 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
             )
             player.respawn_icon = RespawnIcon(player, respawn_time)
             bs.timer(0.1, self._checkroundover)
+            super().handlemessage(msg)
 
         elif isinstance(msg, bs.PlayerScoredMessage):
             self._score += msg.score
             self._update_scores()
+            super().handlemessage(msg)
 
         elif isinstance(msg, SpazBotDiedMessage):
             pts, importance = msg.spazbot.get_death_points(msg.how)
@@ -478,6 +480,7 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
             else:
                 self._score += pts
             self._update_scores()
+            super().handlemessage(msg)
         else:
             super().handlemessage(msg)
 

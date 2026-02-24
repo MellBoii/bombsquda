@@ -949,6 +949,7 @@ class FootballCoopGame(bs.CoopGameActivity[Player, Team]):
         elif isinstance(msg, SpazBotDiedMessage):
             # Every time a bad guy dies, spawn a new one.
             bs.timer(3.0, bs.Call(self._spawn_bot, (type(msg.spazbot))))
+            super().handlemessage(msg)
 
         elif isinstance(msg, SpazBotPunchedMessage):
             if self._preset in ['rookie', 'rookie_easy']:
@@ -957,6 +958,7 @@ class FootballCoopGame(bs.CoopGameActivity[Player, Team]):
             elif self._preset in ['pro', 'pro_easy']:
                 if msg.damage >= 1000:
                     self._award_achievement('Super Mega Punch')
+            super().handlemessage(msg)
 
         # Respawn dead flags.
         elif isinstance(msg, FlagDiedMessage):

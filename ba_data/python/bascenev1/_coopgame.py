@@ -86,6 +86,10 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
             if self.personal_best == None:
                 self.personal_best = 9999
             self.start_speedrun_timer()
+        self.doultrameter = True
+        if self.doultrameter:
+            from bascenev1lib.actor.ultrakillmeter import UltrakillMeter
+            self.ultrameter = UltrakillMeter()
 
         # Preload achievement images in case we get some.
         _bascenev1.timer(2.0, babase.WeakCall(self._preload_achievements))
@@ -441,8 +445,9 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
                             0.1: (1, 1, 1),
                             0.2: (1, 1, 0),
                         },
-                    loop=True
+                        loop=True
                     )
+                    delay += 3
                     self.new_record_text.opacity = 1.0
                     cfg = ba.app.config
                     cfg[self.speedrun_prefix] = self.speedrun_time
@@ -450,3 +455,32 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
                     # schedule uploads for later if it fails here.
                     self.submit_pb()
         super().end(results, delay, force)
+    
+    @override
+    def handlemessage(self, msg: Any) -> Any:
+        # Ouch. Hurts to do a import here, but we have to...
+        from bascenev1lib.actor.spazbot import SpazBotDiedMessage
+        from bascenev1lib.actor.spaz import ShatteredMessage, HeadExplodedMessage
+        # (Pylint Bug?) pylint: disable=missing-function-docstring
+
+        if isinstance(msg, bs.PlayerScoredMessage):
+            if self.ultrameter:
+                self.ultrameter.style_text(bs.Lstr(resource='stylePScored'), msg.score * 2, (1, 1, 0))
+
+        elif isinstance(msg, bs.PlayerDiedMessage):
+            super().handlemessage(msg)  # Augment standard behavior.
+            if self.ultrameter:
+                self.ultrameter.style_text(bs.Lstr(resource='stylePDied'), -15, (0.5, 0.1, 0.1))
+        elif isinstance(msg, SpazBotDiedMessage):
+            if self.ultrameter:
+                self.ultrameter.style_text(bs.Lstr(resource='styleKilled'), 45, (1, 0.1, 0.1))
+        elif isinstance(msg, ShatteredMessage):
+            if self.ultrameter:
+                self.ultrameter.style_text(bs.Lstr(resource='styleShattered'), 65, (0.9, 0, 0.6))
+        elif isinstance(msg, HeadExplodedMessage):
+            if self.ultrameter:
+                self.ultrameter.style_text(bs.Lstr(resource='styleHexploded'), 125, (1, 0.1, 0.1))
+        else:
+            super().handlemessage(msg) # Augment standard behavior.
+            
+        super().handlemessage(msg) # Shouldn't happen; but still augment.

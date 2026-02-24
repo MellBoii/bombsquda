@@ -1472,6 +1472,7 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
         if isinstance(msg, bs.PlayerScoredMessage):
             self._score += msg.score
             self._update_scores()
+            super().handlemessage(msg)
 
         elif isinstance(msg, bs.PlayerDiedMessage):
             # Augment standard behavior.
@@ -1487,6 +1488,7 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
                 respawn_time, bs.Call(self.spawn_player_if_exists, player)
             )
             player.respawn_icon = RespawnIcon(player, respawn_time)
+            super().handlemessage(msg)
 
         elif isinstance(msg, SpazBotDiedMessage):
             if msg.how is bs.DeathType.REACHED_GOAL:
@@ -1525,6 +1527,7 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
             else:
                 self._score += pts
             self._update_scores()
+            super().handlemessage(msg)
 
         else:
             return super().handlemessage(msg)
