@@ -113,8 +113,6 @@ def get_all_tips() -> list[str]:
 
     if (
         app.classic is not None
-        and app.classic.platform in ('android', 'ios')
-        and not app.env.tv
     ):
         tips += [
             (
@@ -123,7 +121,7 @@ def get_all_tips() -> list[str]:
                 'in Settings->Graphics'
             ),
         ]
-    if app.classic is not None and app.classic.platform in ['mac', 'android']:
+    if app.classic is not None:
         tips += [
             'Tired of the soundtrack?  Replace it with your own!'
             '\nSee Settings->Audio->Soundtrack'

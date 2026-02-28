@@ -101,25 +101,22 @@ class StoreSubsystem:
             babase.app.classic.store_items = {
                 'upgrades.infinite_runaround': {},
                 'upgrades.infinite_onslaught': {},
-                'characters.kronk': {'character': 'Kronk'},
-                'characters.zoe': {'character': 'Zoe'},
-                'characters.jackmorgan': {'character': 'Jack Morgan'},
-                'characters.mel': {'character': 'Mel'},
-                'characters.snakeshadow': {'character': 'Snake Shadow'},
-                'characters.bones': {'character': 'Bones'},
-                'characters.bernard': {
-                    'character': 'Bernard',
-                    'highlight': (0.6, 0.5, 0.8),
-                },
-                'characters.pixie': {'character': 'Pixel'},
-                'characters.wizard': {'character': 'Grumbledorf'},
-                'characters.frosty': {'character': 'Frosty'},
-                'characters.pascal': {'character': 'Pascal'},
-                'characters.cyborg': {'character': 'B-9000'},
-                'characters.agent': {'character': 'Agent Johnson'},
+                'characters.susie': {'character': 'Susie'},
+                'characters.kris': {'character': 'Kris'},
+                'characters.ralsei': {'character': 'Ralsei'},
+                'characters.rk': {'character': 'Roaring Knight'},
+                'characters.noob': {'character': 'Noob'},
+                'characters.mell': {'character': 'Mell'},
+                'characters.gummyboiyt': {'character': 'GummyBoiYT'},
+                'characters.rayman': {'character': 'Rayman'},
+                'characters.bowser': {'character': 'Bowser'},
+                'characters.orangecap': {'character': 'Orangecap'},
+                'characters.noise': {'character': 'The Noise'},
                 'characters.taobaomascot': {'character': 'Taobao Mascot'},
-                'characters.santa': {'character': 'Santa Claus'},
-                'characters.bunny': {'character': 'Easter Bunny'},
+                'characters.mario': {'character': 'SM64 Mario'},
+                'characters.sonic': {'character': 'Sonic'},
+                'characters.kirby': {'character': 'Kirby'},
+                'characters.tails': {'character': 'Tails'},
                 'merch': {},
                 'pro': {},
                 'maps.lake_frigid': {'map_type': maps.LakeFrigid},
@@ -368,17 +365,21 @@ class StoreSubsystem:
         store_layout['characters'] = [
             {
                 'items': [
-                    'characters.kronk',
-                    'characters.zoe',
-                    'characters.jackmorgan',
-                    'characters.mel',
-                    'characters.snakeshadow',
-                    'characters.bones',
-                    'characters.bernard',
-                    'characters.agent',
-                    'characters.frosty',
-                    'characters.pascal',
-                    'characters.pixie',
+                    'characters.susie',
+                    'characters.kris',
+                    'characters.ralsei',
+                    'characters.rk',
+                    'characters.noob',
+                    'characters.mell',
+                    'characters.gummyboiyt',
+                    'characters.rayman',
+                    'characters.bowser',
+                    'characters.noise',
+                    'characters.mario',
+                    'characters.taobaomascot',
+                    'characters.sonic',
+                    'characters.kirby',
+                    'characters.tails',
                 ]
             }
         ]
@@ -394,23 +395,6 @@ class StoreSubsystem:
                 ]
             }
         ]
-        if plus.get_v1_account_misc_read_val('xmas', False):
-            store_layout['characters'][0]['items'].append('characters.santa')
-        store_layout['characters'][0]['items'].append('characters.wizard')
-        store_layout['characters'][0]['items'].append('characters.cyborg')
-        if plus.get_v1_account_misc_read_val('easter', False):
-            store_layout['characters'].append(
-                {
-                    'title': 'store.holidaySpecialText',
-                    'items': ['characters.bunny'],
-                }
-            )
-            store_layout['minigames'].append(
-                {
-                    'title': 'store.holidaySpecialText',
-                    'items': ['games.easter_egg_hunt'],
-                }
-            )
 
         # This will cause merch to show only if the master-server has
         # given us a link (which means merch is available in our region).

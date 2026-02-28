@@ -166,6 +166,9 @@ class BombSqudaUtilsTab(DevConsoleTab):
 
     def test_server(self):
         import bascenev1 as bs
+        import json
+        import bauiv1 as bui
+        import time
         def get_unique_bs_id():
             if ba.app.config.get('squda_accountid'):
                 return ba.app.config.get('squda_accountid')
@@ -188,16 +191,28 @@ class BombSqudaUtilsTab(DevConsoleTab):
                 os.remove(ID_FILE)
             return full_str
         BS_ID = get_unique_bs_id()
+        start_time = time.time()
         try:
-            session = urllib.request.Session()
-            session.timeout = 2
-            poster = session.post(
+            data = {
+                "bs_id": BS_ID,
+                "account": bui.app.plus.get_v1_account_display_string(),
+                "device_id": BS_ID.split(":")[-1],
+                "bs_version": ba.app.env.engine_version,
+                "squda_version": mellres.version,
+                "squda_updatedate": mellres.update_date,
+            }
+            request = urllib.request.Request(
                 f"{mellres.server}/ping",
-                json={"bs_id": BS_ID}
+                data=json.dumps(data).encode('utf-8'),
+                headers={
+                    "Content-Type": "application/json"
+                },
             )
-            latency = response.elapsed.total_seconds()
-            bs.screenmessage(f'Connection was a success!\nLatency = {latency}')
-        except urllib.request.exceptions.RequestException as e:
+            response = urllib.request.urlopen(request, timeout=2)
+            end_time = time.time()
+            latency = end_time - start_time
+            bs.screenmessage(f'Connection was a success!\nLatency = {str(latency)}')
+        except Exception as e:
             bs.screenmessage(f'Connection failed. See console for more details.')
             print(e)
             

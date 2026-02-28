@@ -10,6 +10,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, override
 from bascenev1lib.dialog import DialogueManager
 from bascenev1lib.gameutils import SharedObjects
+from bascenev1lib.actor.portalradio import PortalRadio
 import bascenev1 as bs
 import random
 import time
@@ -139,10 +140,8 @@ class TestActivity(bs.TeamGameActivity[Player, Team]):
                 self._tt_pending = True
                 self._tt_halfway = True
 
-                # Halfway check (3 seconds)
                 bs.timer(3.0, lambda: self._halfway_check(p))
 
-                # Final check (6 seconds)
                 bs.timer(6.0, lambda: self.checkfortt(plr=p))
 
         else:
@@ -154,7 +153,6 @@ class TestActivity(bs.TeamGameActivity[Player, Team]):
 
         if not self.eemiles:
             print('Lost speed halfway — aborting time travel')
-            self.state = None
             self._tt_pending = False
             self._tt_halfway = False
 
@@ -197,6 +195,7 @@ class TestActivity(bs.TeamGameActivity[Player, Team]):
     def on_begin(self) -> None:
         super().on_begin()
         self.signpost = SignpostActor()
+        self.radio = PortalRadio((1, 3, 0))
         DialogueManager(
             {
                 0: {

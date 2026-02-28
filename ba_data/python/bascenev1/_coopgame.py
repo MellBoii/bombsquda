@@ -460,26 +460,32 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
     def handlemessage(self, msg: Any) -> Any:
         # Ouch. Hurts to do a import here, but we have to...
         from bascenev1lib.actor.spazbot import SpazBotDiedMessage
-        from bascenev1lib.actor.spaz import ShatteredMessage, HeadExplodedMessage
+        from bascenev1lib.actor.spaz import ShatteredMessage, HeadExplodedMessage, ParriedMessage
+        from bascenev1lib.actor.bomb import ReturnMessage
         # (Pylint Bug?) pylint: disable=missing-function-docstring
 
         if isinstance(msg, bs.PlayerScoredMessage):
             if self.ultrameter:
                 self.ultrameter.style_text(bs.Lstr(resource='stylePScored'), msg.score * 2, (1, 1, 0))
-
         elif isinstance(msg, bs.PlayerDiedMessage):
             super().handlemessage(msg)  # Augment standard behavior.
             if self.ultrameter:
                 self.ultrameter.style_text(bs.Lstr(resource='stylePDied'), -15, (0.5, 0.1, 0.1))
         elif isinstance(msg, SpazBotDiedMessage):
             if self.ultrameter:
-                self.ultrameter.style_text(bs.Lstr(resource='styleKilled'), 45, (1, 0.1, 0.1))
+                self.ultrameter.style_text(bs.Lstr(resource='styleKilled'), 30, (1, 0.1, 0.1))
         elif isinstance(msg, ShatteredMessage):
             if self.ultrameter:
-                self.ultrameter.style_text(bs.Lstr(resource='styleShattered'), 65, (0.9, 0, 0.6))
+                self.ultrameter.style_text(bs.Lstr(resource='styleShattered'), 40, (0.9, 0, 0.6))
         elif isinstance(msg, HeadExplodedMessage):
             if self.ultrameter:
-                self.ultrameter.style_text(bs.Lstr(resource='styleHexploded'), 125, (1, 0.1, 0.1))
+                self.ultrameter.style_text(bs.Lstr(resource='styleHexploded'), 60, (1, 0.1, 0.1))
+        elif isinstance(msg, ParriedMessage):
+            if self.ultrameter:
+                self.ultrameter.style_text(bs.Lstr(resource='styleParry'), 30, (0, 1, 0))
+        elif isinstance(msg, ReturnMessage):
+            if self.ultrameter:
+                self.ultrameter.style_text(bs.Lstr(resource='styleReturned'), 70, (0, 1.3, 0.2))
         else:
             super().handlemessage(msg) # Augment standard behavior.
             

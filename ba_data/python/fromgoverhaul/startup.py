@@ -5,6 +5,7 @@ import baclassic as bsc
 import os
 import bauiv1 as bui
 from .discordrp_handler import RichPresence
+from typing import Sequence
 import json
 import urllib
 import _babase
@@ -65,7 +66,8 @@ class Startup():
         "squda_parrytype": 2,
         "squda_spaztix": 500,
         "squda_spaztokens": 5,
-        "squda_showerrors": False
+        "squda_showerrors": False,
+        "squda_foxyjumpscare": False,
     }
     # "setdefault" to create config settings
     # won't affect already existing ones.
@@ -104,14 +106,13 @@ class Startup():
         import bascenev1 as bs
         import bauiv1 as bui
         # and install them to the console
-        console_globals = sys.modules['__main__'].__dict__
-        console_globals['ba'] = ba
-        console_globals['bs'] = bs
-        console_globals['bui'] = bui
-        console_globals['ga'] = bs.getactivity
-        console_globals['gp'] = bs.getplayers
-        console_globals['gs'] = bs.getsession
-        console_globals['sm'] = bs.setmusic
+        globals = sys.modules['__main__'].__dict__
+        globals['ba'] = ba
+        globals['bs'] = bs
+        globals['bui'] = bui
+        globals['ga'] = bs.getactivity
+        globals['gp'] = bs.getplayers
+        globals['gs'] = bs.getsession
         bs.debprint('console globals done!')
     # call it
     auto_module_import()
@@ -203,7 +204,7 @@ class Startup():
                     print('Connection to the BombSquda server established successfully.')
                     loopt._connection_success_logged = True
                     loopt._connection_failed_logged = False
-                time.sleep(1)
+                time.sleep(2)
             except Exception as e:
                 bs.debprint(f"Server connection failed: {e}")
                 if not loopt._connection_failed_logged:

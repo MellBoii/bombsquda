@@ -70,6 +70,7 @@ class MelWindow(bui.MainWindow):
         raw_settings = [
             ("squda_spazfuckedup", "spazBigEyesText", False),
             ("squda_noisepolution", "noisePollutionText", False),
+            ("squda_foxyjumpscare", "foxyJumpscareText", False),
             ("squda_gamblingmode", "gamblingModeText", False),
             ("squda_spazhardmode", "spazHardModeText", True),
             ("squda_parryalways", "parryAlwaysText", False),

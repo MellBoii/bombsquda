@@ -106,6 +106,7 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
         self._excludepowerups: list[str] = []
         self._scoreboard: Scoreboard | None = None
         self._score = 0
+        self.points_to_win = 2000
         self._bots = SpazBotSet()
         self._dingsound = bs.getsound('dingSmall')
         self._dingsoundhigh = bs.getsound('dingSmallHigh')
@@ -393,8 +394,7 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
     def _update_scores(self) -> None:
         score = self._score
 
-        # Win condition: 1500 points (15 if testing)
-        if score >= 1500:
+        if score >= self.points_to_win:
             if not getattr(self, '_game_over', False):
                 self._game_over = True
                 self.end_game()
@@ -416,7 +416,7 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
         ptext_lstr = bs.Lstr(
             resource='finalePoints',
             subs=[
-                ('${NUM}', str(1500 - self._score)),
+                ('${NUM}', str(self.points_to_win - self._score)),
             ],
         )
         self.points_text.text = ptext_lstr
@@ -487,7 +487,7 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
     @override
     def end_game(self) -> None:
         # (Pylint bug?) pylint: disable=missing-function-docstring
-        if self._score >= 1500: # 1500 by default, 15 if you're testing
+        if self._score >= self.points_to_win:
             bs.setmusic(bs.MusicType.VICTORYFINAL, continuous=True)
             bs.pushcall(bs.WeakCall(self.do_end, 'victory', delay=6.5))
         else:

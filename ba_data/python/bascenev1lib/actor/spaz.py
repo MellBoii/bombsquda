@@ -111,6 +111,13 @@ class ShatteredMessage:
     def __init__(self, spaz):
         self.spaz = spaz 
 
+class ParriedMessage:
+    """
+    Message for when a Spaz
+    parries a damage source. (Bombs, punches, etc)
+    """
+    def __init__(self, spaz):
+        self.spaz = spaz
 
 class Spaz(bs.Actor):
     """
@@ -1385,21 +1392,13 @@ class Spaz(bs.Actor):
         self.node.handlemessage(
             bs.StandMessage(random.choice(points))
         )
-        bs.emitfx(
-            position=self.node.position,
-            velocity=self.node.velocity,
-            count=15,
-            scale=0.6,
-            spread=1.5,
-            chunk_type='spark',
-        ),
+        self.mpa(heal=False)
         text = PopupText(
             bs.Lstr(resource='oobParried'),
             position=self.node.position,
             color=(1, 0, 1, 0.9),
             scale=1.0,
         ).autoretain()
-        bs.getsound('parried').play(position=self.node.position)
         bs.getsound('orchestraHit').play(position=self.node.position)
         return      
     
@@ -2089,7 +2088,7 @@ class Spaz(bs.Actor):
                 best = True
         return best
         
-    def mpa(self):
+    def mpa(self, heal: bool = True, healpoints: int = 250):
         # Short for Manual Parry Activator.
         # Useful if we want to do the same logic as parrying,
         # but within a different section that doesn't use hitmessage.
@@ -2120,21 +2119,11 @@ class Spaz(bs.Actor):
         self.timesparried += 1
         self.timesparriedtotal += 1
         # ---------------- healpoints -------------------
-        if ba.app.config.get("squda_parrytype") == 1:
-            healpoints = 450
-        if ba.app.config.get("squda_parrytype") == 2:
-            healpoints = 250
-        if ba.app.config.get("squda_parrytype") == 3:
-            healpoints = 150
-        else:
-            healpoints = 250
-            bs.debprint('no parrytype config, this shouldn\'t happen')
-            bs.debprint('either way, we\'ll default to 250')
-            bs.debprint(f'parrytype is {ba.app.config['squda_parrytype']} btw')
-        self.hitpoints += healpoints
-        if self.shield:
-            self.shield_hitpoints += healpoints / 1.5
-        self.updatemeter()
+        if heal:
+            self.hitpoints += healpoints
+            if self.shield:
+                self.shield_hitpoints += healpoints / 1.5
+            self.updatemeter()
         # ---------------- healpoints -------------------
         bs.getsound('parried').play(position=self.node.position)
         bs.emitfx(
@@ -2150,6 +2139,10 @@ class Spaz(bs.Actor):
             ba.app.classic.ach.award_local_achievement(
                 'Parrier'
             )
+        activity = self._activity()
+        if activity:
+            activity.handlemessage(ParriedMessage(self))
+            
         # If we parried more than 5 times, do the funny
         # "I'm not gonna sugarcoat it" thing.
         if self.timesparried >= 5:
@@ -2549,7 +2542,7 @@ class Spaz(bs.Actor):
                     # to prevent a infinite recursion.
                     if otherspaz.parrying == True:
                         xforce = -200
-                        yforce = 400
+                        yforce = 200
                         v = (-self.node.velocity[0], -self.node.velocity[1], -self.node.velocity[2])
                         v2 = self.node.velocity   
                         hurtiness = 3.8
@@ -3202,7 +3195,7 @@ class Spaz(bs.Actor):
         elif isinstance(msg, bs.SpongebobMessage):
             activity = self.activity
             speed = 1
-            self._activate_spongebob(activity.spongebob_time, speed, transition_in=False)
+            self._activate_spongebob(activity.spongebob_time, speed)
             
         elif isinstance(msg, PunchHitMessage):
             if not self.node:
@@ -3885,8 +3878,9 @@ class Spaz(bs.Actor):
                 scale=1.3,
             ).autoretain()
             bs.getsound('bananasnipe').play(position=self.node.position)
-            self.explode_head()
-            mell.add_spaz(120, 'tix', self.node.position, 'popup')
+            if not self.parrying:
+                self.explode_head()
+                mell.add_spaz(120, 'tix', self.node.position, 'popup')
         pos = self.node.position
         self.handlemessage(
             bs.HitMessage(

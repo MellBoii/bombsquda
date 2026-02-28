@@ -17,6 +17,8 @@ from bascenev1lib.gameutils import SharedObjects
 if TYPE_CHECKING:
     from typing import Any, Sequence, Callable
 
+class ReturnMessage:
+    """A bomb has been punched by a non-owner very hard."""
 
 class BombFactory:
     """Wraps up media and other resources used by the
@@ -1200,6 +1202,17 @@ class Bomb(bs.Actor):
 
     def _handle_hit(self, msg: bs.HitMessage) -> None:
         ispunched = msg.srcnode and msg.srcnode.getnodetype() == 'spaz'
+        if (
+            ispunched 
+            and msg.srcnode 
+            is not self.owner
+        ):
+            if msg.magnitude >= 150:
+                bs.getsound('punchSFX/punchDeath1').play()
+                bs.getsound('punchSFX/punchStrong03').play()
+                activity = self._activity()
+                if activity:
+                    activity.handlemessage(ReturnMessage())
 
         # Normal bombs are triggered by non-punch impacts;
         # impact-bombs by all impacts.

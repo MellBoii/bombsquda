@@ -106,7 +106,7 @@ class PlayerBall(bs.Actor):
                 'color_texture': bs.gettexture(texture),
                 'reflection': 'soft',
                 'reflection_scale': [0.23],
-                'materials': [self.roller_material, player_material],
+                'materials': [self.roller_material, player_material, shared.object_material,],
             },
         )
         self.source_player = player

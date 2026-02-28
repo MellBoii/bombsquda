@@ -325,10 +325,10 @@ def instantiate_store_item_display(
         )
 
         for charname, pos in [
-            ('Kronk', (0.32, 0.45)),
-            ('Zoe', (0.425, 0.4)),
-            ('Jack Morgan', (0.555, 0.45)),
-            ('Mel', (0.645, 0.4)),
+            ('Susie', (0.32, 0.45)),
+            ('Kris', (0.425, 0.4)),
+            ('Noob', (0.555, 0.45)),
+            ('Mell', (0.645, 0.4)),
         ]:
             tile_size = (b_width * 0.16 * 0.9, b_width * 0.2 * 0.9)
             tile_pos = (

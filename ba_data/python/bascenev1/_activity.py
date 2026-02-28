@@ -182,6 +182,7 @@ class Activity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
 
         self.lobby = None
         self.noisePolTimer = None
+        self.foxyTimer = None
         self._stats: bascenev1.Stats | None = None
         self._customdata: dict | None = {}
 
@@ -372,13 +373,28 @@ class Activity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         until :meth:`~bascenev1.Activity.on_begin()` is called.
         """
         def checkdosound():
-            if ba.app.config.get("squda_noisepolution", True):
+            if ba.app.config.get("squda_noisepolution", False):
                 if random.random() < 0.2:
                     # no more big ass list :)
                     n = random.randint(1, 32)
                     sound_name = f"randomnoises/noisePolution{n}"
                     bs.getsound(sound_name).play()
-        self.noisePolTimer = bs.Timer(0.4, checkdosound, repeat=True)
+        def roll():
+            if ba.app.config.get("squda_foxyjumpscare", False):
+                self.randNumber = random.randint(1,1000)
+                if self.randNumber == 6:
+                    bs.getsound('jumpscare').play()
+                    self.nodename = bs.newnode('image',
+                        attrs={
+                            'texture': bs.gettexture('foxy'),
+                            'fill_screen': True,
+                            'opacity': 1.0,
+                            'color': (1, 1, 1),
+                        }
+                    )
+                    bs.basetimer(1.6, self.nodename.delete)
+        self.noisePolTimer = bs.BaseTimer(0.4, checkdosound, repeat=True)
+        self.foxyTimer = bs.BaseTimer(0.1, roll, repeat=True)
 
     def on_transition_out(self) -> None:
         """Called when your activity begins transitioning out.

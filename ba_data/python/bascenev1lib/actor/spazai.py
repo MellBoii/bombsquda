@@ -21,6 +21,12 @@ class AIPlayer(bs.Player):
     @override
     def __init__(self):
         sessionplayer = bs.SessionPlayer(None)
+        sessionplayer.setdata(
+            team=sessionteam,
+            character=chooser.get_character_name(),
+            color=chooser.get_color(),
+            highlight=chooser.get_highlight(),
+        )
         super().__init__()
         self._sessionplayer = sessionplayer
 
@@ -118,6 +124,7 @@ class SpazAI(Spaz):
         self.source_player = AIPlayer()
         self.source_player.actor = self
         self.activity.players.append(self.source_player)
+        self.activity.session.stats.register_sessionplayer(self.source_player._sessionplayer)
         self.updateTimer = bs.Timer(0.05, self.update, repeat=True)
     
     @property
@@ -351,8 +358,6 @@ class SpazAI(Spaz):
         diff = target_pt - our_pos
         dist = diff.length()
         to_target = diff.normalized()
-        # oh, we have all the emeralds.
-        # even tho its rare to achieve them, we will go super >:3
         if len(self.emeralds) >= 7:
             self.on_jump_press()
             bs.timer(0.1, self.on_jump_release)

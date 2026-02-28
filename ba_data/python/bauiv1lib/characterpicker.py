@@ -86,7 +86,7 @@ class CharacterPicker(PopupWindow):
             1.0 / 0.95
         ) * (1.0 / 0.8)
         self._height = self._width * (
-            0.8 if uiscale is bui.UIScale.SMALL else 1.06
+            0.6 if uiscale is bui.UIScale.SMALL else 1.06
         )
 
         self._scroll_width = self._width * 0.8
@@ -180,32 +180,7 @@ class CharacterPicker(PopupWindow):
                     break
             if index >= count:
                 break
-        self._get_more_characters_button = btn = bui.buttonwidget(
-            parent=self._subcontainer,
-            size=(self._sub_width * 0.8, 60),
-            position=(self._sub_width * 0.1, 30),
-            label=bui.Lstr(resource='editProfileWindow.getMoreCharactersText'),
-            on_activate_call=self._on_store_press,
-            color=(0.6, 0.6, 0.6),
-            textcolor=(0.8, 0.8, 0.8),
-            autoselect=True,
-        )
         bui.widget(edit=btn, show_buffer_top=30, show_buffer_bottom=30)
-
-    def _on_store_press(self) -> None:
-        from bauiv1lib.account.signin import show_sign_in_prompt
-
-        plus = bui.app.plus
-        assert plus is not None
-
-        if plus.get_v1_account_state() != 'signed_in':
-            show_sign_in_prompt()
-            return
-
-        if self._delegate is not None:
-            self._delegate.on_character_picker_get_more_press()
-
-        self._transition_out()
 
     def _select_character(self, character: str) -> None:
         if self._delegate is not None:

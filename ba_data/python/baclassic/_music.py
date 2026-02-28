@@ -561,7 +561,7 @@ def preload_all_music():
 
             bs.debprint(f'[MusicPreloader] {mtype.value} -> {asset}')
 
-            sound = bs.getsound(asset)
+            bs.getsound(asset)
 
             total += 1
         except Exception as e:
