@@ -103,11 +103,7 @@ class SendInfoWindow(bui.MainWindow):
             max_chars=64,
             color=(0.9, 0.9, 0.9, 1.0),
             description=bui.Lstr(
-                resource=(
-                    f'{self._r}.codeText'
-                    if legacy_code_mode
-                    else 'descriptionText'
-                )
+                resource='descriptionText'
             ),
             editable=True,
             padding=4,
@@ -198,12 +194,15 @@ class SendInfoWindow(bui.MainWindow):
             self.code_entered(description)
             
     def super(self):
-        bs.getplayers()[0].actor.gosuper()
+        for player in bs.getplayers():
+            player.actor.gosuper()
     def firework(self):
-        bs.getplayers()[0].actor.firework_explode()
+        for player in bs.getplayers():
+            player.actor.firework_explode()
     def shotgun(self):
-        bs.getplayers()[0].actor.handlemessage(bs.PowerupMessage('shotgun'))
-        bs.getplayers()[0].actor.shotgun_shots = 1000
+        for player in bs.getplayers():
+            player.actor.handlemessage(bs.PowerupMessage('shotgun'))
+            player.actor.shotgun_shots = 1000
     def slowmode(self):
         gnode = bs.getactivity().globalsnode
         slow = True if gnode.slow_motion == False else False
@@ -215,7 +214,6 @@ class SendInfoWindow(bui.MainWindow):
             bs.getsound('explosion01').play()
         except AttributeError:
             bs.screenmessage('Try this again in coop...')
-            print('Try this again in coop...')
             bs.getsound('error').play()
     def wither_and_die(self):
         bs.getsound('WITHERANDDIE').play()
@@ -228,17 +226,16 @@ class SendInfoWindow(bui.MainWindow):
             'BOOMSTICK': self.shotgun,
             'NEWYEARS': self.firework,
             'GOLDENFORM': self.super,
+            'APRILFOOLS': None,
         }
 
         code = code.upper()
 
         if code in codes:
-            bui.getsound('dingSmall').play()
-            bui.screenmessage('Code accepted.')
+            bui.getsound('ominous').play()
             with bs.get_foreground_host_activity().context:
                 codes[code]()
         else:
-            bui.screenmessage('Incorrect code.')
             bui.getsound('error').play()
         
     

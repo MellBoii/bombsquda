@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 
 import babase
 import _bascenev1
+import bascenev1 as bs
 from bascenev1._profile import get_player_profile_colors
 from bascenev1._gameutils import animate, animate_array
 
@@ -210,6 +211,46 @@ class Chooser:
         self._profilename = ''
         self._profilenames: list[str] = []
         self._ready: bool = False
+        # --- Custom menu attrs ---
+        self._menu_active = False
+        self._menu_index = 0  # which menu option we're at
+        self._settings_index = 0  # which setting we're editing (future-proof)
+        self._sound_index = 0  # which sound we're at (also pretty future-proof)
+        self._submenu_mode: str | None = None  # None, 'character', 'settings'
+        self._default_boptions = ['grab', 'jump', 'punch', 'bomb']
+        # Sound list is a list of strings. 
+        # Actual sounds are in sound_dict.
+        self._sound_list = [
+            'reflector',
+            'head explode',
+            'outta here',
+            'foxy',
+            'lobotomy',
+            'Equip',
+            'ultra instinct',
+            'keemstar',
+            'swish',
+            'WITHER AND DIE',
+            'reprieve',
+            'spongebob',
+        ]
+        # Sound dict. Gives a sound to
+        # a string.
+        self._sound_dict = {
+            'reflector': bs.getsound('attempt_parry'),
+            'head explode': bs.getsound('bananasnipe'),
+            'outta here': bs.getsound('cd_outtahere'),
+            'foxy': bs.getsound('jumpscare'),
+            'lobotomy': bs.getsound('lobotomized'),
+            'Equip': bs.getsound('ominous'),
+            'ultra instinct': bs.getsound('orchestraHit'),
+            'keemstar': bs.getsound('playerDeath'),
+            'swish': bs.getsound('swish'),
+            'WITHER AND DIE': bs.getsound('WITHERANDDIE'),
+            'reprieve': bs.getsound('reprieve'),
+            'spongebob': bs.getsound('spongebob'),
+        }
+        # --- Custom menu attrs ---
         self._character_names: list[str] = []
         self._last_change: Sequence[float | int] = (0, 0)
         self._profiles: dict[str, dict[str, Any]] = {}
@@ -245,13 +286,14 @@ class Chooser:
         # for this input-device, etc.
         self._profileindex = self._select_initial_profile()
         self._profilename = self._profilenames[self._profileindex]
-
+        self.subspacing = -10
+        self.spacing = -5
         self._text_node = _bascenev1.newnode(
             'text',
             delegate=self,
             attrs={
-                'position': (-100, self._vpos),
-                'maxwidth': 160,
+                'position': (-100, self._vpos - self.spacing),
+                'maxwidth': 200,
                 'shadow': 0.5,
                 'vr_depth': -20,
                 'h_align': 'left',
@@ -259,7 +301,24 @@ class Chooser:
                 'v_attach': 'top',
             },
         )
+        
+        self._subtext_node = _bascenev1.newnode(
+            'text',
+            owner=self._text_node,
+            attrs={
+                'position': (-100, self._vpos - self.subspacing),
+                'maxwidth': 160,
+                'shadow': 0.3,
+                'vr_depth': -20,
+                'h_align': 'left',
+                'v_align': 'center',
+                'v_attach': 'top',
+                'opacity': 0.5,
+                'color': (1, 1, 1)
+            },
+        )
         animate(self._text_node, 'scale', {0: 0, 0.1: 1.0})
+        animate(self._subtext_node, 'scale', {0: 0, 0.1: 0.7})
         self.icon = _bascenev1.newnode(
             'image',
             owner=self._text_node,
@@ -523,7 +582,13 @@ class Chooser:
             self._text_node,
             'position',
             2,
-            {0: self._text_node.position, 0.1: (-100 + offs, self._vpos + 23)},
+            {0: self._text_node.position, 0.1: (-100 + offs, self._vpos + 23 - self.spacing)},
+        )
+        animate_array(
+            self._subtext_node,
+            'position',
+            2,
+            {0: self._text_node.position, 0.1: (-100 + offs, self._vpos - self.subspacing)},
         )
         animate_array(
             self.icon,
@@ -754,10 +819,81 @@ class Chooser:
         elif now - self._last_change[0] > QUICK_CHANGE_RESET_INTERVAL:
             count = 0
         self._last_change = (now, count)
+    
+    def _handle_menu_move(self, direction: int) -> None:
+        if not self._menu_active:
+            self._menu_active = True
+            self._menu_index = 0
+        else:
+            self._menu_index = (self._menu_index + direction) % 4
 
+        self.movesound.play()
+        self._update_text()
+    
+    def _handle_menu_confirm(self) -> None:
+        if not self._menu_active:
+            self._menu_active = True
+            self._menu_index = 0
+            self.switchsound.play()
+            self._update_text()
+            return
+
+        if self._menu_index == 0:
+            # Ready
+            self._handle_ready_msg(True)
+
+        elif self._menu_index == 1:
+            # Settings
+            self._submenu_mode = 'settings'
+            self._settings_index = 0
+            self.switchsound.play()
+
+        elif self._menu_index == 2:
+            # Character slider
+            self._submenu_mode = 'character'
+            self.switchsound.play()
+        
+        elif self._menu_index == 3:
+            # Character slider
+            self._submenu_mode = 'sound'
+            self.switchsound.play()
+
+        self._update_text()
+    
+    def _handle_character_slider(self, direction: int) -> None:
+        self._character_index = (
+            self._character_index + direction
+        ) % len(self._character_names)
+
+        self.charsound.play()
+        self._update_text()
+        self._update_icon()
+    
+    def _handle_settings_change(self, direction: int) -> None:
+        # Only one setting for now: Parry Button
+        current = self._lobby()._player_settings[self._sessionplayer.id]['buttontoparry']
+        index = self._default_boptions.index(current)
+        index = (index + direction) % len(self._default_boptions)
+        new_value = self._default_boptions[index]
+        self._lobby()._player_settings[self._sessionplayer.id]['buttontoparry'] = new_value
+        self.movesound.play()
+        self._update_text()
+    
+    def _handle_sound_slider(self, direction: int) -> None:
+        self._sound_index = (
+            self._sound_index + direction
+        ) % len(self._sound_list)
+        self.movesound.play()
+        self._update_text()
+    
+    def _handle_sound_play(self) -> None:
+        current = self._sound_list[self._sound_index]
+        sound = self._sound_dict[current]
+        sound.play()
+        
     def handlemessage(self, msg: Any) -> Any:
         """Standard generic message handler."""
-
+        
         if isinstance(msg, ChangeMessage):
             self._handle_repeat_message_attack()
 
@@ -769,7 +905,60 @@ class Chooser:
             if not self._text_node:
                 logging.error('got ChangeMessage after nodes died')
                 return
+                
+            # Integrate the menu system into the message system
+            # Risky, but it works without assigning input!
+            if not self._ready:
+                # Pressing up-down while in a active menu and non submenu changes menu option
+                if msg.what == 'profileindex' and self._menu_active and self._submenu_mode == None:
+                    self._handle_menu_move(msg.value)
+                    return
+                
+                # I don't know what i'm doing
+                if msg.what == 'profileindex' and self._menu_active and self._submenu_mode != None:
+                    return
+                    
+                # Bomb cancels submenu
+                if msg.what == 'character' and self._menu_active and self._submenu_mode is not None:
+                    self._submenu_mode = None
+                    self.switchsound.play()
+                    self._update_text()
+                    return
 
+                # Bomb cancels main menu
+                if msg.what == 'character' and self._menu_active:
+                    self._menu_active = False
+                    self._menu_index = 0
+                    self.unreadysound.play()
+                    self._update_text()
+                    return
+                
+                # Jump/grab backs out character select
+                if msg.what == 'ready' and self._menu_active and self._submenu_mode == 'character':
+                    self._submenu_mode = None
+                    self.switchsound.play()
+                    self._update_text()
+                    return
+                
+                # Jump/grab plays current sound in sound select
+                if msg.what == 'ready' and self._menu_active and self._submenu_mode == 'sound':
+                    self._handle_sound_play()
+                    return
+                                
+                # Handle left-right presses
+                if msg.what == 'team' and self._menu_active and self._submenu_mode is not None:
+                    if self._submenu_mode == 'character':
+                        self._handle_character_slider(msg.value)
+                    elif self._submenu_mode == 'settings':
+                        self._handle_settings_change(msg.value)
+                    elif self._submenu_mode == 'sound':
+                        self._handle_sound_slider(msg.value)
+                    return
+                    
+                # Switching teams doesn't work while in a menu
+                if msg.what == 'team' and self._menu_active:
+                    return    
+                    
             if msg.what == 'team':
                 sessionteams = self.lobby.sessionteams
                 if len(sessionteams) > 1:
@@ -805,7 +994,10 @@ class Chooser:
                 self._update_icon()
 
             elif msg.what == 'ready':
-                self._handle_ready_msg(bool(msg.value))
+                if not self._ready:
+                    self._handle_menu_confirm()
+                else:
+                    self._handle_ready_msg(False)
 
     def _update_text(self) -> None:
         assert self._text_node is not None
@@ -820,8 +1012,33 @@ class Chooser:
                     ('${B}', babase.Lstr(resource='readyText')),
                 ],
             )
+            self._text_node.text = text
         else:
-            text = babase.Lstr(value=self._getname(full=True))
+            name_text = babase.Lstr(value=self._getname(full=True))
+            self._text_node.text = name_text
+
+            if self._menu_active:
+                lefta = babase.charstr(babase.SpecialChar.LEFT_ARROW)
+                righta = babase.charstr(babase.SpecialChar.RIGHT_ARROW)
+                upa = babase.charstr(babase.SpecialChar.UP_ARROW)
+                downa = babase.charstr(babase.SpecialChar.DOWN_ARROW)
+                
+                if self._submenu_mode == 'character':
+                    sub = f'{lefta} {self._character_names[self._character_index]} {righta}'
+                elif self._submenu_mode == 'settings':
+                    settings = self._lobby()._player_settings[self._sessionplayer.id]
+                    parry = settings['buttontoparry']
+
+                    sub = f'parry button: {lefta} {parry.upper()} {righta}'
+                elif self._submenu_mode == 'sound':
+                    sub = f'{lefta} {self._sound_list[self._sound_index]} {righta}'
+                else:
+                    options = ['ready', 'settings', 'character', 'sound']
+                    sub = f'{upa}{options[self._menu_index]}{downa}'
+            else:
+                sub = 'choose profile'
+
+            self._subtext_node.text = sub
 
         can_switch_teams = len(self.lobby.sessionteams) > 1
 
@@ -845,8 +1062,6 @@ class Chooser:
                 )
             else:
                 self._text_node.color = fin_color
-
-        self._text_node.text = text
 
     def get_color(self) -> Sequence[float]:
         """Return the currently selected color."""
@@ -969,6 +1184,7 @@ class Lobby:
         from bascenev1._coopsession import CoopSession
 
         session = _bascenev1.getsession()
+        self._player_settings: dict[int, dict[str, str]] = {}
         self._use_team_colors = session.use_team_colors
         if session.use_teams:
             self._sessionteams = [
@@ -1063,6 +1279,12 @@ class Lobby:
         self.choosers.append(
             Chooser(vpos=self._vpos, sessionplayer=sessionplayer, lobby=self)
         )
+        player_id = sessionplayer.id
+
+        if player_id not in self._player_settings:
+            self._player_settings[player_id] = {
+                'buttontoparry': 'grab'
+            }
         self._next_add_team = (self._next_add_team + 1) % len(
             self._sessionteams
         )

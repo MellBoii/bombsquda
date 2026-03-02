@@ -8,6 +8,7 @@ import time
 import random
 import weakref
 import datetime
+from datetime import date
 from typing import TYPE_CHECKING, override
 
 from bacommon.locale import LocaleResolved
@@ -58,8 +59,11 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         self.today = datetime.datetime.now()
         self.cutscene_player = None
         self.canstartdemo = True
-        self.map = SNESBattleCourse1
-
+        self.today2 = date.today()
+        self.day = self.today2.day
+        self.month = self.today2.month
+        self.christmas = self.month == 12 and self.day == 25
+        self.aprilfools = self.month == 4 and self.day == 1
     
     @override
     def on_transition_in(self) -> None:
@@ -202,6 +206,10 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
 
     
     def reroll_stuff(self):
+        if self.aprilfools:
+            bs.screenmessage("Happy April Fools!", color=(1, 0, 0))
+            bs.getsound('error').play()
+            return
         self.menu_music()
         random.seed(time.time())
         cfgget = ba.app.config.get
@@ -421,6 +429,9 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
                     },
                 )
             )
+            if self.aprilfools:
+                self.modpack_name.node.text = 'the         .modpack'
+                self.splashtext.node.text = 'Yes'
             assert self.splashtext.node
             bs.animate(self.splashtext.node, 'opacity', {0.5: 0, 1.0: 1.0})
 
@@ -544,17 +555,15 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
             )
 
     def _get_custom_logo_tex_name(self) -> str | None:
-        from datetime import date
-        today = date.today()
-        day = today.day
-        month = today.month
         plus = bui.app.plus
         assert plus is not None
 
         if plus.get_v1_account_misc_read_val('easter', False):
             return 'logoEaster'
-        if month == 12 and day == 25:
+        if self.christmas:
             return 'logoChristmas'
+        if self.aprilfools:
+            return 'logoAF'
         return None
 
     # Pop the logo and menu in.
@@ -677,7 +686,8 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
     def menu_music(self) -> None:
         assert bs.app.classic is not None
         music_choices = ['MENU' + str(i + 1) for i in range(17)]
-        music_choices.append('MENU67')
+        if self.aprilfools:
+            music_choices = ['MENU67']
         chosen = random.choice(music_choices)
         self.chosen_music = getattr(bs.MusicType, chosen)
         bs.setmusic(self.chosen_music)

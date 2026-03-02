@@ -660,7 +660,7 @@ class TutorialActivity(bs.Activity[Player, Team]):
     @override
     def on_transition_in(self) -> None:
         super().on_transition_in()
-        bs.setmusic(bs.MusicType.TUTORIAL)
+        bs.setmusic(bs.MusicType.TUTORIAL, continuous=True)
         self.map = self._map_type()
 
     @override
