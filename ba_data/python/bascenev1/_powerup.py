@@ -63,4 +63,7 @@ def get_default_powerup_distribution() -> Sequence[tuple[str, int]]:
         ('strong', 9999 if debug_powerup == 'strong' else 3),
         ('deton', 9999 if debug_powerup == 'deton' else 3),
         ('shotgun', 9999 if debug_powerup == 'shotgun' else 2),
+        ('fireball', 9999 if debug_powerup == 'fireball' else 2),
+        ('bloxy', 9999 if debug_powerup == 'bloxy' else 1),
+        ('hook', 9999 if debug_powerup == 'hook' else 1),
     )

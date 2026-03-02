@@ -520,6 +520,15 @@ class Stats:
                             color=player.color,
                             image=player.get_icon(),
                         )
+                    elif killer.actor.lasthittype == 'fireball':
+                        _bascenev1.broadcastmessage(
+                            babase.Lstr(
+                                resource='nameSuicideFBallText', subs=[('${NAME}', name)]
+                            ),
+                            top=True,
+                            color=player.color,
+                            image=player.get_icon(),
+                        )
                     else:
                         _bascenev1.broadcastmessage(
                             babase.Lstr(
@@ -572,6 +581,18 @@ class Stats:
                         _bascenev1.broadcastmessage(
                             babase.Lstr(
                                 resource='nameKillOOBText', subs=[
+                                    ('${NAME}', killer.getname()),
+                                    ('${VICTIM}', name),
+                                ],
+                            ),
+                            top=True,
+                            color=killer.color,
+                            image=killer.get_icon(),
+                        )
+                    elif player.actor.lasthittype == 'fireball':
+                        _bascenev1.broadcastmessage(
+                            babase.Lstr(
+                                resource='nameKillFBallText', subs=[
                                     ('${NAME}', killer.getname()),
                                     ('${VICTIM}', name),
                                 ],

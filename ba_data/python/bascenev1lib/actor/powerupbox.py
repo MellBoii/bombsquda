@@ -68,6 +68,15 @@ class PowerupBoxFactory:
     tex_deton: bs.Texture
     """Deton powerup bs.Texture."""
     
+    tex_fireball: bs.Texture
+    """Fireball powerup bs.Texture."""
+
+    tex_hook: bs.Texture
+    """Hook powerup bs.Texture."""
+    
+    tex_bloxy: bs.Texture
+    """Bloxy powerup bs.Texture."""
+    
     tex_random: bs.Texture
     """Roulette powerup bs.Texture."""
     
@@ -115,7 +124,10 @@ class PowerupBoxFactory:
         self.tex_impact_bombs = bs.gettexture('powerupImpactBombs')
         self.tex_health = bs.gettexture('powerupHealth')
         self.tex_metal = bs.gettexture('powerupMetal')
+        self.tex_fireball = bs.gettexture('powerupFireball')
+        self.tex_bloxy = bs.gettexture('powerupBloxy')
         self.tex_deton = bs.gettexture('powerupDeton')
+        self.tex_hook = bs.gettexture('powerupHook')
         self.tex_shotgun = bs.gettexture('powerupShotgun')
         self.tex_random = bs.gettexture('powerupRandom')
         self.tex_strong = bs.gettexture('powerupStrong')
@@ -266,6 +278,12 @@ class PowerupBox(bs.Actor):
             tex = factory.tex_metal
         elif poweruptype == 'deton':
             tex = factory.tex_deton
+        elif poweruptype == 'fireball':
+            tex = factory.tex_fireball
+        elif poweruptype == 'bloxy':
+            tex = factory.tex_bloxy
+        elif poweruptype == 'hook':
+            tex = factory.tex_hook
         elif poweruptype == 'random':
             tex = factory.tex_random
         elif poweruptype == 'shotgun':

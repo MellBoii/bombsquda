@@ -49,9 +49,11 @@ class SpongetatoGame(bs.TeamGameActivity[Player, Team]):
             bs.IntChoiceSetting(
                 'Time to Pass',
                 choices=[
-                    ('5 Seconds', 5),
+                    ('7 Seconds', 7),
                     ('10 Seconds', 10),
                     ('15 Seconds', 15),
+                    ('20 Seconds', 20),
+                    ('30 Seconds', 30),
                 ],
                 default=10,
             ),
@@ -102,7 +104,7 @@ class SpongetatoGame(bs.TeamGameActivity[Player, Team]):
         ]
             
     def trigger_potato(self, player: Player) -> None:
-        player.actor._activate_spongebob(time=self._time_to_pass, speed=self._speed)
+        player.actor.activate_spongebob(time=self._time_to_pass, speed=self._speed)
         
     @override
     def on_begin(self) -> None:

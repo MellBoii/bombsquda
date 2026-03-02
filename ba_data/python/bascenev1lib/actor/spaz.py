@@ -25,6 +25,7 @@ from bascenev1lib.actor.bomb import Bomb, Blast
 from bascenev1lib.actor.powerupbox import PowerupBoxFactory, PowerupBox
 from bascenev1lib.actor.spazfactory import SpazFactory
 from bascenev1lib.actor.particles import BloodParticle, ConfettiParticle, SparkParticle
+from bascenev1lib.actor.hookfireball import UKHook, Fireball
 from bascenev1lib.gameutils import SharedObjects
 import fromgoverhaul.mell_resources as mell
 import babase as ba
@@ -188,7 +189,11 @@ class Spaz(bs.Actor):
         self.deton = False
         self.deton_bombs = []
         self.shotgunned = False
+        self.fireballed = False
+        self.whiplashed = False
         self.shotgun_shots = 0
+        self.fireballs = 0
+        self.hook = None
 
         self.source_player = source_player
         self._dead = False
@@ -723,6 +728,13 @@ class Spaz(bs.Actor):
             # If rouletting, give our item to the player.
             self.giveitem()
             return
+        if self.whiplashed:
+            if not self.hook or not self.hook.node:
+                self._shoot_hook()
+                return
+            else:
+                bs.getsound('swip').play(position=self.hook.node.position)
+                self.hook.handlemessage(bs.DieMessage())
         if self.deton:
             bs.getsound('menu_sel').play(position=self.node.position)
             bs.timer(0.1, self.explode_deton_bombs)
@@ -898,7 +910,214 @@ class Spaz(bs.Actor):
         self.node.billboard_opacity = 0
         self.handlemessage(bs.PowerupMessage(self._roulette_current))
         self._roulette_current = None
+        
+    def _shoot_shotgun(self):
+        # Random range of 4 to 7 bombs
+        for _ in range(random.randint(4, 7)):
+            # Get pos and velocity
+            pos = self.node.position
+            vel = self.node.velocity
+            # Normalize forward direction
+            length = math.sqrt(vel[0]**2 + vel[1]**2 + vel[2]**2)
+            if length <= 0.01:
+                continue  # don't spawn if not moving
+            forward = (
+                vel[0] / length,
+                pos[1] / length, # Position here since we don't care about upwards vel
+                vel[2] / length
+            )
+            # Small random spread
+            spread = 0.48
+            rand_offset = (
+                random.uniform(-spread, spread),
+                random.uniform(-spread, spread),
+                random.uniform(-spread, spread)
+            )
+            # Combine forward + spread
+            dir_x = forward[0] + rand_offset[0]
+            dir_y = forward[1] + rand_offset[1]
+            dir_z = forward[2] + rand_offset[2]
 
+            # Normalize final direction
+            final_length = math.sqrt(dir_x**2 + dir_y**2 + dir_z**2)
+            dir_x /= final_length
+            dir_y /= final_length
+            dir_z /= final_length
+            # Multiply for extra speed
+            mult = 68.0
+            dir_x *= mult
+            dir_y *= mult
+            dir_z *= mult
+            particle = Bomb(
+                position=pos,
+                velocity=vel,
+                bomb_type=self.bomb_type,
+                blast_radius=self.blast_radius - 0.4,
+                source_player=self.source_player,
+                bomb_scale=0.7,
+                owner=self.node,
+                manual=self.deton
+            ).autoretain()
+            # Also append to our manual bombs
+            # so we synergize well with deton
+            if self.deton:
+                self.deton_bombs.append(particle)
+            force = 69 # Nice
+            particle.node.handlemessage(
+                'impulse',
+                pos[0],
+                pos[1],
+                pos[2],
+                0, 0, 0,
+                force,
+                force,
+                0,
+                0,
+                dir_x,
+                dir_y,
+                dir_z,
+            )
+        mag = -1050.0
+        if self._hockey:
+            mag *= 0.7
+        ppos = self.node.position
+        punchdir = self.node.velocity
+        # Kick us back for simulating recoil
+        self.node.handlemessage(
+            'kick_back',
+            ppos[0],
+            ppos[1],
+            ppos[2],
+            punchdir[0],
+            punchdir[1],
+            punchdir[2],
+            mag,
+        )
+        # Punch
+        self.node.punch_pressed = True
+        self.node.punch_pressed = False
+        # Update our counter and play sound
+        self.shotgun_shots -= 1
+        self.node.counter_text = 'x' + str(self.shotgun_shots)
+        self.node.counter_texture = (
+            PowerupBoxFactory.get().tex_shotgun
+        )
+        if self.shotgun_shots == 0:
+            self.shotgunned = False
+            self.node.counter_text = ''
+        bs.getsound('shotgunshot').play(position=self.node.position)
+    
+    def _shoot_fireball(self):
+        # Get pos and velocity
+        pos = self.node.position
+        vel = self.node.velocity
+        # Normalize forward direction
+        length = math.sqrt(vel[0]**2 + vel[1]**2 + vel[2]**2)
+        forward = (
+            vel[0] / length,
+            7,
+            vel[2] / length
+        )
+        # Combine forward + spread
+        dir_x = forward[0] 
+        dir_y = forward[1]
+        dir_z = forward[2] 
+        # This multiplier depends on the
+        # player's velocity. Don't change too much.
+        mult = 19.0
+        dir_x *= mult
+        dir_z *= mult
+        spawn_distance = 0.9
+        spawn_height = 0.6
+
+        spawn_pos = (
+            pos[0] + forward[0] * spawn_distance,
+            pos[1] + spawn_height,
+            pos[2] + forward[2] * spawn_distance
+        )
+        fireball = Fireball(
+            position=spawn_pos,
+            owner=self,
+        ).autoretain()
+        # This is the default force. It's "multiplied" persay
+        # by the velocity, so if you also make it too strong it overshoots.
+        force = 250
+        fireball.node.handlemessage(
+            'impulse',
+            spawn_pos[0],
+            spawn_pos[1],
+            spawn_pos[2],
+            0, 0, 0,
+            force,
+            force,
+            0,
+            0,
+            dir_x,
+            dir_y,
+            dir_z,
+        )
+        # Punch
+        self.node.punch_pressed = True
+        self.node.punch_pressed = False
+        # Update our counter and play sound
+        self.fireballs -= 1
+        self.node.counter_text = 'x' + str(self.fireballs)
+        self.node.counter_texture = (
+            PowerupBoxFactory.get().tex_fireball
+        )
+        if self.fireballs == 0:
+            self.fireballed = False
+            self.node.counter_text = ''
+        bs.getsound('smb1_fireball').play(position=pos)
+    
+    def _shoot_hook(self):
+        pos = self.node.position
+        vel = self.node.velocity
+        length = math.sqrt(vel[0]**2 + vel[1]**2 + vel[2]**2)
+        forward = (
+            vel[0] / length,
+            5,
+            vel[2] / length
+        )
+        dir_x = forward[0] 
+        dir_y = forward[1]
+        dir_z = forward[2] 
+        mult = 22.0
+        dir_x *= mult
+        dir_z *= mult
+        spawn_distance = 0.9
+        spawn_height = 0.6
+
+        spawn_pos = (
+            pos[0] + forward[0] * spawn_distance,
+            pos[1] + spawn_height,
+            pos[2] + forward[2] * spawn_distance
+        )
+        hook = UKHook(
+            position=spawn_pos,
+            owner=self,
+        ).autoretain()
+        self.hook = hook
+        force = 600
+        hook.node.handlemessage(
+            'impulse',
+            spawn_pos[0],
+            spawn_pos[1],
+            spawn_pos[2],
+            0, 0, 0,
+            force,
+            force,
+            0,
+            0,
+            dir_x,
+            dir_y,
+            dir_z,
+        )
+        # Punch
+        self.node.punch_pressed = True
+        self.node.punch_pressed = False
+        bs.getsound('hook_throw').play(position=self.node.position)
+        
     def on_bomb_press(self) -> None:
         """
         Called to 'press bomb' on this spaz;
@@ -917,100 +1136,11 @@ class Spaz(bs.Actor):
         # If we have a shotgun, use it
         if self.shotgunned:
             if t_ms - self.last_bomb_time_ms >= self._bomb_cooldown:
-                # Random range of 4 to 7 bombs
-                for _ in range(random.randint(4, 7)):
-                    # Get pos and velocity
-                    pos = self.node.position
-                    vel = self.node.velocity
-                    # Normalize forward direction
-                    length = math.sqrt(vel[0]**2 + vel[1]**2 + vel[2]**2)
-                    if length <= 0.01:
-                        continue  # don't spawn if not moving
-                    forward = (
-                        vel[0] / length,
-                        pos[1] / length, # Position here since we don't care about upwards vel
-                        vel[2] / length
-                    )
-                    # Small random spread
-                    spread = 0.48
-                    rand_offset = (
-                        random.uniform(-spread, spread),
-                        random.uniform(-spread, spread),
-                        random.uniform(-spread, spread)
-                    )
-                    # Combine forward + spread
-                    dir_x = forward[0] + rand_offset[0]
-                    dir_y = forward[1] + rand_offset[1]
-                    dir_z = forward[2] + rand_offset[2]
-
-                    # Normalize final direction
-                    final_length = math.sqrt(dir_x**2 + dir_y**2 + dir_z**2)
-                    dir_x /= final_length
-                    dir_y /= final_length
-                    dir_z /= final_length
-                    # Multiply for extra speed
-                    mult = 68.0
-                    dir_x *= mult
-                    dir_y *= mult
-                    dir_z *= mult
-                    particle = Bomb(
-                        position=pos,
-                        velocity=vel,
-                        bomb_type=self.bomb_type,
-                        blast_radius=self.blast_radius - 0.4,
-                        source_player=self.source_player,
-                        bomb_scale=0.7,
-                        owner=self.node,
-                        manual=self.deton
-                    ).autoretain()
-                    # Also append to our manual bombs
-                    # so we synergize well with deton
-                    if self.deton:
-                        self.deton_bombs.append(particle)
-                    force = 69 # Nice
-                    particle.node.handlemessage(
-                        'impulse',
-                        pos[0],
-                        pos[1],
-                        pos[2],
-                        0, 0, 0,
-                        force,
-                        force,
-                        0,
-                        0,
-                        dir_x,
-                        dir_y,
-                        dir_z,
-                    )
-                mag = -1050.0
-                if self._hockey:
-                    mag *= 0.7
-                ppos = self.node.position
-                punchdir = self.node.velocity
-                # Kick us back for simulating recoil
-                self.node.handlemessage(
-                    'kick_back',
-                    ppos[0],
-                    ppos[1],
-                    ppos[2],
-                    punchdir[0],
-                    punchdir[1],
-                    punchdir[2],
-                    mag,
-                )
-                # Punch
-                self.on_punch_press()
-                self.on_punch_release()
-                # Update our counter and play sound
-                self.shotgun_shots -= 1
-                self.node.counter_text = 'x' + str(self.shotgun_shots)
-                self.node.counter_texture = (
-                    PowerupBoxFactory.get().tex_shotgun
-                )
-                if self.shotgun_shots == 0:
-                    self.shotgunned = False
-                    self.node.counter_text = ''
-                bs.getsound('shotgunshot').play(position=self.node.position)
+                self._shoot_shotgun()
+                return
+        if self.fireballed:
+            if t_ms - self.last_bomb_time_ms >= self._bomb_cooldown:
+                self._shoot_fireball()
                 return
         if t_ms - self.last_bomb_time_ms >= self._bomb_cooldown:
             self.last_bomb_time_ms = t_ms
@@ -1578,7 +1708,7 @@ class Spaz(bs.Actor):
                 else:
                     bs.setmusic(bs.MusicType.SUPER)
     
-    def _activate_spongebob(self, time: int, speed: int):
+    def activate_spongebob(self, time: int, speed: int):
         """Give this spaz the 'Hot Potato' effect."""
         if getattr(self, "_has_hot_potato", False):
             return  # Already has one, don't stack
@@ -1753,7 +1883,26 @@ class Spaz(bs.Actor):
                 bs.getsound('spongebob').play(position=self.node.position)
         tick()
         self.spongebob_timer = bs.Timer(self._potato_speed, tick, repeat=True)
-            
+        
+    def _activate_bloxy(self):
+        bs.getsound('cola').play(position=self.node.position)
+        def heal():
+            if not self.node or not self.is_alive():
+                self.healTimer = None
+                return
+            self.hitpoints += 15
+            self.updatemeter()
+            bs.getsound('heal').play(position=self.node.position)
+            if self.hitpoints >= self.hitpoints_max - 450:
+                self.hitpoints += 100
+                self.updatemeter()
+                bs.getsound('heal').play(volume=0.5, position=self.node.position)
+                PowerupBoxFactory.get().powerdown_sound.play(
+                    position=self.node.position,
+                )
+                self.healTimer = None
+        self.healTimer = bs.Timer(0.5, heal, repeat=True)
+        
     def smashkill(self, 
         sound: str, 
         autodie: bool = True
@@ -1896,6 +2045,9 @@ class Spaz(bs.Actor):
             'curse': factory.tex_curse,
             'metal': factory.tex_metal,
             'deton': factory.tex_deton,
+            'hook': factory.tex_hook,
+            'fireball': factory.tex_fireball,
+            'bloxy': factory.tex_bloxy,
             'strong': factory.tex_strong,
             'spongebob': factory.tex_spongebob,
             'shotgun': factory.tex_shotgun,
@@ -2295,6 +2447,36 @@ class Spaz(bs.Actor):
                 self.node.counter_texture = (
                     PowerupBoxFactory.get().tex_shotgun
                 )
+            elif msg.poweruptype == 'fireball':
+                self.fireballed = True
+                self.fireballs += 8
+                self.node.counter_text = 'x' + str(self.fireballs)
+                self.node.counter_texture = (
+                    PowerupBoxFactory.get().tex_fireball
+                )
+            elif msg.poweruptype == 'hook':
+                self.whiplashed = True
+                tex = PowerupBoxFactory.get().tex_hook
+                self._flash_billboard(tex)
+                self.node.mini_billboard_1_texture = tex
+                t_ms = int(bs.time() * 1000.0)
+                assert isinstance(t_ms, int)
+                self.node.mini_billboard_1_start_time = t_ms
+                self.node.mini_billboard_1_end_time = (
+                    t_ms + POWERUP_WEAR_OFF_TIME
+                )
+                self._hook_wear_off_flash_timer = bs.Timer(
+                    (POWERUP_WEAR_OFF_TIME - 2000) / 1000.0,
+                    bs.WeakCall(self._hook_wear_off_flash),
+                )
+                self._hook_wear_off_timer = bs.Timer(
+                    POWERUP_WEAR_OFF_TIME / 1000.0,
+                    bs.WeakCall(self._hook_wear_off),
+                )
+            elif msg.poweruptype == 'bloxy':
+                tex = PowerupBoxFactory.get().tex_bloxy
+                self._flash_billboard(tex)
+                self._activate_bloxy()
             elif msg.poweruptype == 'impact_bombs':
                 self.bomb_type = 'impact'
                 tex = self._get_bomb_type_tex()
@@ -2474,7 +2656,7 @@ class Spaz(bs.Actor):
             elif msg.poweruptype == 'random':
                 self._activate_roulette()
             elif msg.poweruptype == 'spongebob':
-                self._activate_spongebob(15, 1)
+                self.activate_spongebob(15, 1)
             
             self.node.handlemessage('flash')
             if msg.sourcenode:
@@ -3195,7 +3377,7 @@ class Spaz(bs.Actor):
         elif isinstance(msg, bs.SpongebobMessage):
             activity = self.activity
             speed = 1
-            self._activate_spongebob(activity.spongebob_time, speed)
+            self.activate_spongebob(activity.spongebob_time, speed)
             
         elif isinstance(msg, PunchHitMessage):
             if not self.node:
@@ -3940,7 +4122,7 @@ class Spaz(bs.Actor):
         bs.animate(
             self.node,
             'billboard_opacity',
-            {0.0: 0.0, 0.1: 1.0, 0.4: 1.0, 0.5: 0.0},
+            {0.0: 0.0, 0.1: 1.0, 0.4: 1.0, 0.6: 0.0},
         )
 
     def set_bomb_count(self, count: int) -> None:
@@ -4007,6 +4189,23 @@ class Spaz(bs.Actor):
         self.deton = False
         # Explode any bombs we had
         self.explode_deton_bombs()
+        if self.node:
+            PowerupBoxFactory.get().powerdown_sound.play(
+                position=self.node.position,
+            )
+            self.node.billboard_opacity = 0.0
+    
+    def _hook_wear_off_flash(self) -> None:
+        if self.node:
+            self.node.billboard_texture = PowerupBoxFactory.get().tex_hook
+            self.node.billboard_opacity = 1.0
+            self.node.billboard_cross_out = True
+
+    def _hook_wear_off(self) -> None:
+        self.whiplashed = False
+        # clean up nicely'nt
+        if self.hook:
+            self.hook.handlemessage(bs.DieMessage())
         if self.node:
             PowerupBoxFactory.get().powerdown_sound.play(
                 position=self.node.position,

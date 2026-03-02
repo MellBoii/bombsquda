@@ -583,7 +583,7 @@ class PlayerBall(bs.Actor):
             damage = (
                 msg.flat_damage 
                 if msg.flat_damage 
-                else msg.magnitude * 3
+                else msg.magnitude / 0.5
             )
             self.hitpoints -= damage
             if self.hitpoints <= 0:

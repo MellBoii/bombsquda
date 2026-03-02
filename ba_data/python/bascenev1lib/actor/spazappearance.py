@@ -232,11 +232,11 @@ def register_appearances() -> None:
     t.torso_mesh = 'noobTorso'
     t.pelvis_mesh = 'none'
     t.upper_arm_mesh = 'noobUpperArm'
-    t.forearm_mesh = 'noobForeArm'
-    t.hand_mesh = 'noobHand'
+    t.forearm_mesh = 'none'
+    t.hand_mesh = 'none'
     t.upper_leg_mesh = 'noobUpperLeg'
-    t.lower_leg_mesh = 'noobLowerLeg'
-    t.toes_mesh = 'noobToes'
+    t.lower_leg_mesh = 'none'
+    t.toes_mesh = 'none'
     noob_sounds = ['voicelines/noob/sound' + str(i + 1) + '' for i in range(6)]
     t.jump_sounds = noob_sounds
     t.attack_sounds = noob_sounds
@@ -246,7 +246,36 @@ def register_appearances() -> None:
     t.fall_sounds = ['voicelines/noob/fall']
     t.style = 'bones'
     t.default_color = (1.0, 0.99, 0.13999999999999968)
-    t.default_highlight = (0.30999999999999994, 0.4599999999999999, 1)   
+    t.default_highlight = (0.30999999999999994, 0.4599999999999999, 1)
+
+    # wait this isnt noob holy shit hes back #######################################
+    t = Appearance('John Grace')
+    t.color_texture = 'graceColor'
+    t.color_mask_texture = 'graceColorMask'
+    t.icon_texture = 'graceIcon'
+    t.earthportrait = 'noobbound'
+    t.icon_mask_texture = 'graceIconCM'
+    t.head_mesh = 'graceHead'
+    t.torso_mesh = 'noobTorso'
+    t.pelvis_mesh = 'none'
+    t.upper_arm_mesh = 'noobUpperArm'
+    t.forearm_mesh = 'none'
+    t.hand_mesh = 'none'
+    t.upper_leg_mesh = 'noobUpperLeg'
+    t.lower_leg_mesh = 'none'
+    t.toes_mesh = 'none'
+    t.jump_sounds = ['voicelines/kirby/jump' + str(i + 1) + '' for i in range(3)]
+    kirbyattack = ['voicelines/kirby/attack' + str(i + 1) + '' for i in range(4)]
+    t.attack_sounds = kirbyattack
+    t.pickup_sounds = kirbyattack
+    t.impact_sounds = ['voicelines/kirby/hurt' + str(i + 1) + '' for i in range(6)]
+    t.death_sounds = ['voicelines/kirby/death']
+    t.fall_sounds = ['voicelines/kirby/fall' + str(i + 1) + '' for i in range(2)]
+    t.victory_sounds = ['voicelines/kirby/win' + str(i + 1) + '' for i in range(4)]
+    t.gloat_sounds = ['voicelines/kirby/gloat' + str(i + 1) + '' for i in range(6)]
+    t.style = 'bones'
+    t.default_color = (0, 0, 0)
+    t.default_highlight = (0.8, 0.8, 0.8)  
 
     # I will swallow you and spit you out at other enemies. ######################################
     t = Appearance('Kirby')
