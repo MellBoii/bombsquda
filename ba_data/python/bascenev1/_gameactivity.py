@@ -268,10 +268,20 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         self.emerald_drop_timer = bs.Timer(
             self.emerald_time, babase.WeakCall(self.emerald_drop), repeat=True
         )
-        self.metal_sound = _bascenev1.newnode('sound', attrs={'sound': _bascenev1.getsound('metalMusic'),
-                        'volume': 0.0})
-        self.dancin_sound = _bascenev1.newnode('sound', attrs={'sound': _bascenev1.getsound('homeroLoop'),
-                        'volume': 0.0}) 
+        self.metal_sound = _bascenev1.newnode(
+            'sound', 
+            attrs={
+                'sound': _bascenev1.getsound('metalMusic'),
+                'volume': 0.0
+            }
+        )
+        self.dancin_sound = _bascenev1.newnode(
+            'sound', 
+            attrs={
+                'sound': _bascenev1.getsound('homeroLoop'),
+                'volume': 0.0
+            }
+        )
         self._standard_metal_tick_timer = _bascenev1.Timer(
             0.1, babase.WeakCall(self.metal_tick), repeat=True
         )

@@ -26,21 +26,41 @@ from bascenev1lib.actor.powerupbox import PowerupBoxFactory, PowerupBox
 from bascenev1lib.actor.spazfactory import SpazFactory
 from bascenev1lib.actor.particles import BloodParticle, ConfettiParticle, SparkParticle
 from bascenev1lib.actor.hookfireball import UKHook, Fireball
+from bascenev1lib.actor.emerald import TouchedMsg
 from bascenev1lib.gameutils import SharedObjects
 import fromgoverhaul.mell_resources as mell
 import babase as ba
-
 
 if TYPE_CHECKING:
     from typing import Any, Sequence, Callable
 
 POWERUP_WEAR_OFF_TIME = 27000
-POWERUP_WEAR_OFF_TIME2 = 45000
+POWERUP_WEAR_OFF_TIME2 = 15000
 POWERUP_WEAR_OFF_TIME3 = 10000
+POWERUP_WEAR_OFF_TIME_STAR = 22000
 
 # Obsolete - just used for demo guy now.
 BASE_PUNCH_POWER_SCALE = 1.2
 BASE_PUNCH_COOLDOWN = 400
+
+RAINBOW_SPEED = 0.4  # determine speed
+RAINBOW_COLORS = [
+    (1.0, 0.0, 0.0),  # red
+    (1.0, 0.5, 0.0),  # orange
+    (1.0, 1.0, 0.0),  # yellow
+    (0.0, 1.0, 0.0),  # green
+    (0.0, 0.0, 1.0),  # blue
+]
+
+def build_rainbow(speed: float):
+    colors = RAINBOW_COLORS + [RAINBOW_COLORS[0]]
+    step = speed / (len(colors) - 1)
+    return {
+        i * step: color
+        for i, color in enumerate(colors)
+    }
+
+RAINBOW = build_rainbow(RAINBOW_SPEED)
 
 PHRASES = {
     "Spazling": ("spazPhrase", 4),
@@ -325,6 +345,8 @@ class Spaz(bs.Actor):
         self._pickup_cooldown = 0
         self._bomb_cooldown = 0
         self._has_boxing_gloves = False
+        self._has_metalcap = False
+        self._has_star = False
         if self.default_boxing_gloves:
             self.equip_boxing_gloves()
         if self.default_boxing_gloves_stronger:
@@ -372,8 +394,9 @@ class Spaz(bs.Actor):
         self.flashing = False
         self._flash_timer = None
         self.impulse_scale = 1.5
-        self.saved_color = self.node.color
-        self.saved_highlight = self.node.highlight
+        self._saved_color = self.node.color
+        self._saved_highlight = self.node.highlight
+        self._saved_materials = self.node.color_texture
 
     @override
     def exists(self) -> bool:
@@ -409,6 +432,7 @@ class Spaz(bs.Actor):
             self.wiggledancetimer,
             self._flash_timer,
             self.spongebob_timer,
+            self.hook,
         ]
         for timer in timers_to_clear:
             if timer is not None:
@@ -1082,7 +1106,7 @@ class Spaz(bs.Actor):
         dir_x = forward[0] 
         dir_y = forward[1]
         dir_z = forward[2] 
-        mult = 22.0
+        mult = 24.0
         dir_x *= mult
         dir_z *= mult
         spawn_distance = 0.9
@@ -1098,7 +1122,7 @@ class Spaz(bs.Actor):
             owner=self,
         ).autoretain()
         self.hook = hook
-        force = 600
+        force = 670
         hook.node.handlemessage(
             'impulse',
             spawn_pos[0],
@@ -1210,8 +1234,9 @@ class Spaz(bs.Actor):
     def on_move_left_right(self, value: float) -> None:
         if not self.node:
             return
+        if self._has_metalcap:
+            value *= 0.5
         self.node.move_left_right = value
-        
         def resetwiggle():
             self._wiggle_count = 0
         # detect any significant fast changes to the value
@@ -1226,6 +1251,8 @@ class Spaz(bs.Actor):
     def on_move_up_down(self, value: float) -> None:
         if not self.node:
             return
+        if self._has_metalcap:
+            value *= 0.5
         self.node.move_up_down = value
         
     def _start_wiggle_sequence(self):
@@ -1471,12 +1498,70 @@ class Spaz(bs.Actor):
         self.node.color_texture = self._saved_materials
         self.impact_scale = self.impact_scale + 0.5
         self.remove_from_metal_list()
-
+    
+    def _activate_star(self):
+        if not self.node:
+            return
+        if self._has_star:
+            return
+        gnode = self.activity.globalsnode
+        self.prev_music2 = gnode.music.upper()
+        bs.setmusic(bs.MusicType.STARMAN)
+        def flash_func():
+            if (
+                not self.node
+                or not self.is_alive()
+                or not self._has_star
+            ):
+                return
+            flashC = bs.animate_array(self.node, 'color', 3, RAINBOW)
+            flashH = bs.animate_array(self.node, 'highlight', 3, RAINBOW)
+        # Instead of using looped array animation,
+        # use a timer which allows us to override any color changes
+        self.star_flash = bs.Timer(RAINBOW_SPEED, flash_func, repeat=True) 
+        self.star_sparkies = bs.Timer(RAINBOW_SPEED + 0.2, self.super_spark, repeat=True) 
+        self._has_star = True
+        self.node.invincible = True
+        self.node.hockey = True
+        char_name = getattr(self, 'character', None)
+        vol = 3
+        if char_name:
+            appearances = bs.app.classic.spaz_appearances
+            if char_name in appearances: # check if their names there
+                appearance = appearances[char_name]
+                if hasattr(appearance, 'gloat_sounds') and appearance.gloat_sounds:
+                     # play the character's gloat voiceline(s)
+                    sound = random.choice(appearance.gloat_sounds)
+                    bs.getsound(sound).play(volume=vol, position=self.node.position)
+                else:
+                    if hasattr(appearance, 'victory_sounds') and appearance.victory_sounds:
+                        # if we don't have a gloat voiceline, we'll use their victory ones instead
+                        sound = random.choice(appearance.victory_sounds)
+                        bs.getsound(sound).play(volume=vol, position=self.node.position)
+                    else:
+                        # this character doesn't have a victory voiceline too. we'll play the default one.
+                        bs.getsound('win').play(volume=vol, position=self.node.position)
+            else: # didn't find this character's name in appearances
+                bs.getsound('error').play(volume=vol, position=self.node.position) 
+                raise ValueError(f"Character name '{char_name}' not found in appearances.")
+    
+    def _deactivate_star(self):
+        self._has_star = False
+        self.star_flash = None
+        self.star_sparkies = None
+        self.node.invincible = False
+        self.node.hockey = False
+        self.node.color = self._saved_color
+        self.node.highlight = self._saved_highlight
+        if self.prev_music2:
+            bs.setmusic(getattr(bs.MusicType, self.prev_music2))
+        self.prev_music2 = None
+            
     def _activate_metalcap(self) -> None:
         if not self.node:
             return
         
-        if getattr(self, "_has_metalcap", False):
+        if self._has_metalcap:
             return
             
         self._has_metalcap = True
@@ -1491,11 +1576,6 @@ class Spaz(bs.Actor):
                     self.getactivity().metal_players.append(self)
         # play a sound
         self._metalcap_sound = bs.getsound('metalcap').play(position=self.node.position)
-
-        # save the material we were using
-        self._saved_materials = self.node.color_texture
-        self._saved_color = self.node.color
-        self._saved_highlight = self.node.highlight
 
         # make us metal...
         self.node.color_texture = bs.gettexture('metal')
@@ -1577,10 +1657,10 @@ class Spaz(bs.Actor):
             return
         self.impulse(y=350)
         bs.getsound('pretrans').play(position=self.node.position)
-        bs.timer(0.4, lambda: self.super(shouldntsetmusic=shouldntsetmusic))
+        bs.timer(0.4, lambda: self._super(shouldntsetmusic=shouldntsetmusic))
         bs.timer(0.4, lambda: self.super_spark(1.0, 15, 25))
 
-    def super(self, shouldntsetmusic: bool = False) -> None:
+    def _super(self, shouldntsetmusic: bool = False) -> None:
         """ 
         Give this spaz the 'Super' effect;
         this is a big buff with a flashy effect and music change.
@@ -1653,6 +1733,7 @@ class Spaz(bs.Actor):
             bs.timer(0.12, flash.delete)
             bs.timer(0.1, self.updatemeter)
             self.say()
+            vol = 3
             if char_name:
                 appearances = bs.app.classic.spaz_appearances
                 if char_name in appearances: # check if their names there
@@ -1660,17 +1741,17 @@ class Spaz(bs.Actor):
                     if hasattr(appearance, 'gloat_sounds') and appearance.gloat_sounds:
                          # play the character's gloat voiceline(s)
                         sound = random.choice(appearance.gloat_sounds)
-                        bs.getsound(sound).play(position=self.node.position)
+                        bs.getsound(sound).play(volume=vol, position=self.node.position)
                     else:
                         if hasattr(appearance, 'victory_sounds') and appearance.victory_sounds:
                             # if we don't have a gloat voiceline, we'll use their victory ones instead
                             sound = random.choice(appearance.victory_sounds)
-                            bs.getsound(sound).play(position=self.node.position)
+                            bs.getsound(sound).play(volume=vol, position=self.node.position)
                         else:
                             # this character doesn't have a victory voiceline too. we'll play the default one.
-                            bs.getsound('win').play(position=self.node.position)
+                            bs.getsound('win').play(volume=vol, position=self.node.position)
                 else: # didn't find this character's name in appearances
-                    bs.getsound('error').play(position=self.node.position) 
+                    bs.getsound('error').play(volume=vol, position=self.node.position) 
                     raise ValueError(f"Character name '{char_name}' not found in appearances.")
             # buff our spaz
             self.hitpoints_max = 2500
@@ -1978,8 +2059,8 @@ class Spaz(bs.Actor):
                 3,
                 {
                     0: (0, 2*intensity, 0),
-                    time*0.8: self.saved_color,
-                    time: self.saved_color
+                    time*0.8: self._saved_color,
+                    time: self._saved_color
                 }
             )
             bs.animate_array(
@@ -1988,8 +2069,8 @@ class Spaz(bs.Actor):
                 3,
                 {
                     0: (0, 2*intensity, 0),
-                    time*0.8: self.saved_highlight,
-                    time: self.saved_highlight
+                    time*0.8: self._saved_highlight,
+                    time: self._saved_highlight
                 }
             )
             if self.earthhptext and self.earthhptext.exists():
@@ -2358,6 +2439,83 @@ class Spaz(bs.Actor):
         # pylint: disable=too-many-branches
         assert not self.expired
         
+        if isinstance(msg, TouchedMsg):
+            collision = bs.getcollision()
+            toucher = collision.opposingnode
+            actor = toucher.getdelegate(bs.Actor)
+            ishittable = toucher.getnodetype() in ['spaz', 'prop']
+            if (
+                not actor
+                or not actor.is_alive()
+                or not self._has_star
+                or actor is self
+                or not ishittable
+                or not toucher
+            ):
+                return None
+                
+            # Get pos and velocity
+            pos = self.node.position
+            vel = self.node.velocity
+            srcpl = getattr(self, 'source_player', None)
+            dmult = 51
+            damage = self.getspeed() * dmult
+            toucher.handlemessage(
+                bs.HitMessage(
+                    magnitude=damage,
+                    pos=pos,
+                    velocity=vel,
+                    radius=2,
+                    srcnode=self.node,
+                    source_player=srcpl,
+                    hit_type='star',
+                )
+            )
+            # Normalize forward direction
+            length = math.sqrt(vel[0]**2 + vel[1]**2 + vel[2]**2)
+            forward = (
+                vel[0] / length,
+                22,
+                vel[2] / length
+            )
+            # Combine forward + spread
+            dir_x = forward[0] 
+            dir_y = forward[1]
+            dir_z = forward[2] 
+            # This multiplier depends on the
+            # player's velocity. Don't change too much.
+            mult = 36.0
+            dir_x *= mult
+            dir_z *= mult
+            spawn_distance = 0.9
+            spawn_height = 0.6
+            # This is the default force. It's "multiplied" persay
+            # by the velocity, so if you also make it too strong it overshoots.
+            force = 450
+            toucher.handlemessage(
+                'impulse',
+                pos[0],
+                pos[1],
+                pos[2],
+                0, 0, 0,
+                force,
+                force,
+                0,
+                0,
+                dir_x,
+                dir_y,
+                dir_z,
+            )
+            bs.getsound('smb1_kick').play(position=self.node.position)
+            bs.emitfx(
+                position=pos,
+                chunk_type='spark',
+                velocity=vel,
+                count=35,
+                scale=1.2,
+                spread=0.26,
+            )
+        
         if isinstance(msg, FootingMessage):
             self.standing = msg.footing == 1
                 
@@ -2472,6 +2630,25 @@ class Spaz(bs.Actor):
                 self._hook_wear_off_timer = bs.Timer(
                     POWERUP_WEAR_OFF_TIME / 1000.0,
                     bs.WeakCall(self._hook_wear_off),
+                )
+            elif msg.poweruptype == 'star':
+                self._activate_star()
+                tex = PowerupBoxFactory.get().tex_star
+                self._flash_billboard(tex)
+                self.node.mini_billboard_1_texture = tex
+                t_ms = int(bs.time() * 1000.0)
+                assert isinstance(t_ms, int)
+                self.node.mini_billboard_1_start_time = t_ms
+                self.node.mini_billboard_1_end_time = (
+                    t_ms + POWERUP_WEAR_OFF_TIME_STAR
+                )
+                self._star_wear_off_flash_timer = bs.Timer(
+                    (POWERUP_WEAR_OFF_TIME_STAR - 2000) / 1000.0,
+                    bs.WeakCall(self._star_wear_off_flash),
+                )
+                self._star_wear_off_timer = bs.Timer(
+                    POWERUP_WEAR_OFF_TIME_STAR / 1000.0,
+                    bs.WeakCall(self._star_wear_off),
                 )
             elif msg.poweruptype == 'bloxy':
                 tex = PowerupBoxFactory.get().tex_bloxy
@@ -2824,6 +3001,7 @@ class Spaz(bs.Actor):
                     # ---------- DONT ALLOW PLAYER TEAM BOMB PARRYING!! -----------
                     if (
                         msg.bombowner.source_player != None and
+                        self.source_player != None and
                         msg.bombowner.source_player.team is 
                         self.source_player.team
                     ):
@@ -3342,6 +3520,8 @@ class Spaz(bs.Actor):
                             random.choice(death_sound).play()  # pick a random one
                         else:
                             death_sound.play()
+                    if self._has_star:
+                        self._deactivate_star()
                     self.node.dead = True
                     bs.timer(4.0, self.node.delete)
                     self.drop_emeralds()
@@ -4223,19 +4403,20 @@ class Spaz(bs.Actor):
             self.node.billboard_opacity = 1.0
             self.node.billboard_cross_out = True
             
-    def _metal_wear_off_flash(self) -> None:
-        if self.node:
-            self.node.billboard_texture = PowerupBoxFactory.get().tex_metal
-            self.node.billboard_opacity = 1.0
-            self.node.billboard_cross_out = True
-
     def _bomb_wear_off(self) -> None:
         self.bomb_type = self.bomb_type_default
         if self.node:
             PowerupBoxFactory.get().powerdown_sound.play(
                 position=self.node.position,
             )
-            self.node.billboard_opacity = 0.0
+            self.node.billboard_opacity = 0.0   
+            
+    def _metal_wear_off_flash(self) -> None:
+        if self.node:
+            self.node.billboard_texture = PowerupBoxFactory.get().tex_metal
+            self.node.billboard_opacity = 1.0
+            self.node.billboard_cross_out = True
+            
     def _metal_wear_off(self) -> None:
         if self.node:
             PowerupBoxFactory.get().powerdown_sound.play(
@@ -4243,3 +4424,18 @@ class Spaz(bs.Actor):
             )
             self.node.billboard_opacity = 0.0
             self._deactivate_metalcap()
+    
+    def _star_wear_off_flash(self) -> None:
+        if self.node:
+            bs.getsound('smb1r_timerlow').play()
+            self.node.billboard_texture = PowerupBoxFactory.get().tex_star
+            self.node.billboard_opacity = 1.0
+            self.node.billboard_cross_out = True
+            
+    def _star_wear_off(self) -> None:
+        if self.node:
+            PowerupBoxFactory.get().powerdown_sound.play(
+                position=self.node.position,
+            )
+            self.node.billboard_opacity = 0.0
+            self._deactivate_star()

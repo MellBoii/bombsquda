@@ -183,7 +183,7 @@ def register_appearances() -> None:
     t.default_highlight = (0.5333333333333333, 0.09019607843137255, 0.41568627450980394)
 
     # fatass ###########################################
-    # thank you lemon for this incredible voice acting
+    # thank you lemon for this incredible voice acting #
     t = Appearance('Mell')
     t.color_texture = 'mellColor'
     t.color_mask_texture = 'mellColorMask'
@@ -219,7 +219,7 @@ def register_appearances() -> None:
     t.icon_mask_texture = 'ballerIconCM'
     t.icon_texture = 'ballerIcon'
     t.default_color = (1, 0.1, 0.1)
-    t.default_highlight = (0, 1, 0)
+    t.default_highlight = (0, 0.1, 0.7)
 
     # Noob #######################################
     t = Appearance('Noob')
@@ -253,7 +253,7 @@ def register_appearances() -> None:
     t.color_texture = 'graceColor'
     t.color_mask_texture = 'graceColorMask'
     t.icon_texture = 'graceIcon'
-    t.earthportrait = 'noobbound'
+    t.earthportrait = 'gracebound'
     t.icon_mask_texture = 'graceIconCM'
     t.head_mesh = 'graceHead'
     t.torso_mesh = 'noobTorso'
@@ -264,6 +264,8 @@ def register_appearances() -> None:
     t.upper_leg_mesh = 'noobUpperLeg'
     t.lower_leg_mesh = 'none'
     t.toes_mesh = 'none'
+    # kirby voicelines is placeholder (even tho it fits lol)
+    # yeah dude real thanks to the guy who made Kirby Voice Acting
     t.jump_sounds = ['voicelines/kirby/jump' + str(i + 1) + '' for i in range(3)]
     kirbyattack = ['voicelines/kirby/attack' + str(i + 1) + '' for i in range(4)]
     t.attack_sounds = kirbyattack
@@ -275,7 +277,7 @@ def register_appearances() -> None:
     t.gloat_sounds = ['voicelines/kirby/gloat' + str(i + 1) + '' for i in range(6)]
     t.style = 'bones'
     t.default_color = (0, 0, 0)
-    t.default_highlight = (0.8, 0.8, 0.8)  
+    t.default_highlight = (1.2, 1.2, 1.2)  
 
     # I will swallow you and spit you out at other enemies. ######################################
     t = Appearance('Kirby')

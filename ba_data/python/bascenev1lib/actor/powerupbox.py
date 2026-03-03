@@ -85,6 +85,9 @@ class PowerupBoxFactory:
 
     tex_spongebob: bs.Texture
     """Spongebob powerup bs.Texture."""
+    
+    tex_star: bs.Texture
+    """Spongebob powerup bs.Texture."""
 
     health_powerup_sounds: Sequence[bs.Sound]
     """bs.Sound played when a health powerup is accepted."""
@@ -132,6 +135,7 @@ class PowerupBoxFactory:
         self.tex_random = bs.gettexture('powerupRandom')
         self.tex_strong = bs.gettexture('powerupStrong')
         self.tex_spongebob = bs.gettexture('powerupSponge')
+        self.tex_star = bs.gettexture('powerupStar')
         self.tex_land_mines = bs.gettexture('powerupLandMines')
         self.tex_curse = bs.gettexture('powerupCurse')
         self.health_powerup_sounds = (
@@ -292,6 +296,8 @@ class PowerupBox(bs.Actor):
             tex = factory.tex_strong
         elif poweruptype == 'spongebob':
             tex = factory.tex_spongebob
+        elif poweruptype == 'star':
+            tex = factory.tex_star
         else:
             raise ValueError('invalid poweruptype: ' + str(poweruptype))
 

@@ -441,36 +441,6 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
     )
         if self._preset in {Preset.ENDLESS, Preset.ENDLESS_TOURNAMENT}:
             self._show_pizzatime_sequence() # Time to get funkeh!
-            DialogueManager(
-                {
-                    0: {
-                        "name": self.players[0].actor.node.name,
-                        "text": "{pause=0.4}...what the hell is a pizza time?{pause=0.3}",
-                        "sound": "tap",
-                        "interrupt": True,
-                    },
-                    1: {
-                        "character": "meliso",
-                        "expression": "neutral",
-                        "name": "Meliso",
-                        "text": "so you see,{pause=0.2} it means you're going {sound=voicelines/spaz/hurt03} to die!",
-                        "sound": "diagvoice/meliso",
-                        "interrupt": True,
-                    },
-                    2: {
-                        "name": self.players[0].actor.node.name,
-                        "text": "WHY IS THERE A TIMER COMING UP?????{pause=0.5}",
-                        "sound": "tap",
-                        "interrupt": True
-                    },
-                    3: {
-                        "name": self.players[0].actor.node.name,
-                        "text": "I SWEAR IF I FIND YOU- {sound=shieldDown}",
-                        "sound": "tap",
-                        "interrupt": True
-                    },
-                }
-            )
             for player in self.players:
                 if player.character == 'Homer':
                     bs.setmusic(bs.MusicType.LAP0H)

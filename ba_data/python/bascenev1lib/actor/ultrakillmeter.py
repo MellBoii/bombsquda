@@ -266,6 +266,7 @@ class UltrakillMeter(bs.Actor):
             self._rank_index += 1
             self._apply_rank()
             self.set_bar_length(50)
+            bs.getsound('smb1r_rankup').play()
         
         # Decrease bar length RAPIDLY if over the limit
         if self._bar_width >= self._width:
@@ -276,6 +277,7 @@ class UltrakillMeter(bs.Actor):
             self._rank_index -= 1
             self._apply_rank()
             self.set_bar_length(self._width - 20)
+            bs.getsound('smb1r_rankdown').play()
         # reduce the bar length
         self.add_bar_length(-2)
     

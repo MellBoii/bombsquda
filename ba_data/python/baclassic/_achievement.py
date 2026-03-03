@@ -129,6 +129,13 @@ class AchievementSubsystem:
                 award=5,
             ),
             Achievement(
+                'When TNT Flies3',
+                'achievementFly',
+                (1, 1, 1),
+                '',
+                award=15,
+            ),
+            Achievement(
                 'Nice Try',
                 'achievementMultiCap',
                 (1, 1, 1),
@@ -466,15 +473,7 @@ class AchievementSubsystem:
         try:
             ach = self.get_achievement(achname)
             if not ach.complete:
-                # Report new achievements to the game-service.
-                plus.report_achievement(achname)
-
-                # And to our account.
-                plus.add_v1_account_transaction(
-                    {'type': 'ACHIEVEMENT', 'name': achname}
-                )
-
-                # Now attempt to show a banner.
+                # Just show a banner i guess
                 self.display_achievement_banner(achname)
 
         except Exception:

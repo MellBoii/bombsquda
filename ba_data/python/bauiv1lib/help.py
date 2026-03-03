@@ -140,7 +140,7 @@ class HelpWindow(bui.MainWindow):
         # self._sub_width = 810 if uiscale is bui.UIScale.SMALL else 660
         self._sub_width = 660
         self._sub_height = (
-            2800
+            3400
             + bui.app.lang.get_resource(f'{self._r}.someDaysExtraSpace')
             + bui.app.lang.get_resource(
                 f'{self._r}.orPunchingSomethingExtraSpace'
@@ -463,7 +463,7 @@ class HelpWindow(bui.MainWindow):
             color=(0.5, 0.5, 1),
             selectable=False,
             enable_sound=False,
-            on_activate_call=bui.getsound('zoePickup01').play,
+            on_activate_call=bui.getsound('voicelines/kris/pickup').play,
         )
 
         txtl = bui.Lstr(resource=f'{self._r}.pickUpInfoText')
@@ -491,7 +491,7 @@ class HelpWindow(bui.MainWindow):
             color=(0.4, 1, 0.4),
             selectable=False,
             enable_sound=False,
-            on_activate_call=bui.getsound('zoeJump01').play,
+            on_activate_call=bui.getsound('smb1_jump').play,
         )
 
         txt = bui.Lstr(resource=f'{self._r}.jumpInfoText').evaluate()
@@ -593,6 +593,10 @@ class HelpWindow(bui.MainWindow):
             'powerupRandom',
             'powerupDeton',
             'powerupShotgun',
+            'powerupFireball',
+            'powerupBloxy',
+            'powerupHook',
+            'powerupStar',
         ]:
             name = bui.Lstr(resource=f'{self._r}.' + tex + 'NameText')
             desc = bui.Lstr(resource=f'{self._r}.' + tex + 'DescriptionText')
@@ -874,6 +878,14 @@ class HelpWindow(bui.MainWindow):
             bui.getsound('shotgunload').play()
         elif text == 'powerupDeton':
             bui.getsound('menu_sel').play()
+        elif text == 'powerupBloxy':
+            bui.getsound('cola').play()
+        elif text == 'powerupHook':
+            bui.getsound('hook_throw').play()
+        elif text == 'powerupFireball':
+            bui.getsound('smb1_fireball').play()
+        elif text == 'powerupStar':
+            bui.getsound('smb1r_timerlow').play()
         else:
             print(f'HelpWindow error: {text} not in plpwpsound')
             bui.getsound('error').play()

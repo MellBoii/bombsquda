@@ -271,6 +271,21 @@ class SpazFactory:
                 ('message', 'our_node', 'at_disconnect', FootingMessage(-1)),
             ),
         )
+        
+        from bascenev1lib.actor.emerald import TouchedMsg
+
+        self.spaz_material.add_actions(
+            conditions=('they_have_material', player_material),
+            actions=(
+                ('message', 'our_node', 'at_connect', TouchedMsg()),
+            ),
+        )
+        self.spaz_material.add_actions(
+            conditions=('they_have_material', object_material),
+            actions=(
+                ('message', 'our_node', 'at_connect', TouchedMsg()),
+            ),
+        )
 
         self.shield_up_sound = (
             bs.getsound('shieldUp'),

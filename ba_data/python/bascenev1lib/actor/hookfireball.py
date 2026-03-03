@@ -282,8 +282,6 @@ class Fireball(bs.Actor):
             return None
 
         if isinstance(msg, bs.DieMessage):
-            self.soundloop.volume = 0
-            self.soundloop.delete()
             if msg.immediate:
                 self.node.delete()
             else:

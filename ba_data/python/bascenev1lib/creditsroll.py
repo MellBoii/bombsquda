@@ -11,10 +11,6 @@ class CreditsSession(bs.Session):
         depsets: Sequence[bs.DependencySet] = [] 
         super().__init__(depsets)
         self.setactivity(bs.newactivity(CreditsActivity))
-    @override
-    def on_player_request(self, player: bs.SessionPlayer) -> bool:
-        # Reject all player requests.
-        return False
 
 class CreditsActivity(bs.GameActivity[bs.Player, bs.Team]):
     """Simple activity for rolling credits."""
@@ -203,4 +199,27 @@ class CreditsActivity(bs.GameActivity[bs.Player, bs.Team]):
                 TEXT_END: (0, 2600)    # end position
             }
         )
+    
+    @override
+    def spawn_player_spaz(
+        self,
+        player: PlayerT,
+        position: Sequence[float] = (0, 0, 0),
+        angle: float | None = None,
+    ) -> PlayerSpaz:
+        return super().spawn_player_spaz(player=player,position=(0, 5, -2))
+    
+    @override
+    def handlemessage(self, msg: Any) -> Any:
+        # (Pylint Bug?) pylint: disable=missing-function-docstring
+
+        if isinstance(msg, bs.PlayerDiedMessage):
+            # Augment standard behavior.
+            super().handlemessage(msg)
+
+            player = msg.getplayer(bs.Player)
+            self.respawn_player(player)
+        else:
+            return super().handlemessage(msg)
+        return None
 

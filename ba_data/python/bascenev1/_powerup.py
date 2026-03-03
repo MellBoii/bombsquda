@@ -45,25 +45,33 @@ class PowerupAcceptMessage:
 
 def get_default_powerup_distribution() -> Sequence[tuple[str, int]]:
     """Standard set of powerups."""
-    # set this variable to debug a powerup!!
+    # set a powerup's str to debug it
     debug_powerup = None
-    return (
-        ('triple_bombs', 9999 if debug_powerup == 'triple_bombs' else 3),
-        ('ice_bombs', 9999 if debug_powerup == 'ice_bombs' else 3),
-        ('punch', 9999 if debug_powerup == 'punch' else 3),
-        ('impact_bombs', 9999 if debug_powerup == 'impact_bombs' else 3),
-        ('land_mines', 9999 if debug_powerup == 'land_mines' else 2),
-        ('sticky_bombs', 9999 if debug_powerup == 'sticky_bombs' else 3),
-        ('shield', 9999 if debug_powerup == 'shield' else 2),
-        ('health', 9999 if debug_powerup == 'health' else 2),
-        ('curse', 9999 if debug_powerup == 'curse' else 1),
-        ('metal', 9999 if debug_powerup == 'metal' else 1),
-        ('random', 9999 if ba.app.config.get("squda_gamblingmode", True) else 1),
-        ('spongebob', 9999 if debug_powerup == 'spongebob' else 2),
-        ('strong', 9999 if debug_powerup == 'strong' else 3),
-        ('deton', 9999 if debug_powerup == 'deton' else 3),
-        ('shotgun', 9999 if debug_powerup == 'shotgun' else 2),
-        ('fireball', 9999 if debug_powerup == 'fireball' else 2),
-        ('bloxy', 9999 if debug_powerup == 'bloxy' else 1),
-        ('hook', 9999 if debug_powerup == 'hook' else 1),
-    )
+    base_distribution = {
+        'triple_bombs': 3,
+        'ice_bombs': 3,
+        'punch': 3,
+        'impact_bombs': 3,
+        'land_mines': 2,
+        'sticky_bombs': 3,
+        'shield': 2,
+        'health': 2,
+        'curse': 1,
+        'metal': 1,
+        'random': 1,
+        'spongebob': 2,
+        'strong': 3,
+        'deton': 3,
+        'shotgun': 2,
+        'fireball': 2,
+        'bloxy': 1,
+        'hook': 1,
+        'star': 1,
+    }
+    if ba.app.config.get("squda_gamblingmode", True):
+        base_distribution['random'] = 9999
+
+    if debug_powerup:
+        for key in base_distribution:
+            base_distribution[key] = 9999 if key == debug_powerup else 0
+    return tuple(base_distribution.items())

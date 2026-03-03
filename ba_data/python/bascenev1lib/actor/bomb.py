@@ -802,6 +802,7 @@ class Bomb(bs.Actor):
         self.scale = bomb_scale
         self.nosound = nosound
         self.manual = manual
+        self.star_hits = 0
 
         self.texture_sequence: bs.Node | None = None
 
@@ -1208,8 +1209,15 @@ class Bomb(bs.Actor):
             is not self.owner
         ):
             if msg.magnitude >= 150:
-                bs.getsound('punchSFX/punchDeath1').play()
-                bs.getsound('punchSFX/punchStrong03').play()
+                if msg.hit_type == 'star':
+                    self.star_hits += 1
+                    if self.star_hits >= 6 and not getattr(self, 'no_ach', False):
+                        import babase as ba
+                        self.no_ach = True
+                        ba.app.classic.ach.award_local_achievement(
+                            'When TNT Flies3'
+                        )
+                bs.getsound('punchSFX/punchDeath1').play(position=self.node.position)
                 activity = self._activity()
                 if activity:
                     activity.handlemessage(ReturnMessage())
