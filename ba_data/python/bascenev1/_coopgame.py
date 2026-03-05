@@ -17,6 +17,7 @@ import babase as ba
 import json
 import urllib.request
 import urllib.parse
+import math
 SERVER = mell.server
 
 if TYPE_CHECKING:
@@ -59,6 +60,7 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
         self._life_warning_beep: bascenev1.Actor | None = None
         self._life_warning_beep_timer: bascenev1.Timer | None = None
         self._warn_beeps_sound = _bascenev1.getsound('warnBeeps')
+        self.ultrameter = None
 
     @override
     def on_begin(self) -> None:
@@ -74,6 +76,8 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
             _bascenev1.timer(
                 3.8, babase.WeakCall(self._show_remaining_achievements)
             )
+        self._sb_lasthittype = None
+        self._sb_lastsubhittype = None
         # set speedrun mode if we should
         self.speedrun_mode = False
         self.speedrun_time = 0
@@ -226,8 +230,10 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
         self.speedrun_timer_tick = bs.Timer(0.001, tick, repeat=True)    
 
 
-    # FIXME: this is now redundant with activityutils.getscoreconfig();
-    #  need to kill this.
+    # "FIXME: this is now redundant with activityutils.getscoreconfig();
+    #  need to kill this."
+    # #stopkillingfunctions
+    # #andalsostopmakingredundantfunctions
     def get_score_type(self) -> str:
         """
         Return the score unit this co-op game uses ('point', 'seconds', etc.)
@@ -459,12 +465,19 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
     @override
     def handlemessage(self, msg: Any) -> Any:
         # Ouch. Hurts to do a import here, but we have to...
-        from bascenev1lib.actor.spazbot import SpazBotDiedMessage
+        from bascenev1lib.actor.spazbot import SpazBotDiedMessage, SpazBotHitMessage
         from bascenev1lib.actor.spaz import ShatteredMessage, HeadExplodedMessage, ParriedMessage
         from bascenev1lib.actor.bomb import ReturnMessage
         # (Pylint Bug?) pylint: disable=missing-function-docstring
-
-        if isinstance(msg, bs.PlayerScoredMessage):
+        if isinstance(msg, SpazBotHitMessage):
+            if msg.types == (self._sb_lasthittype, self._sb_lastsubhittype):
+                if self.ultrameter:
+                    self.ultrameter.add_freshness(-0.2)
+            else:
+                if self.ultrameter:
+                    self.ultrameter.add_freshness(4)
+            self._sb_lasthittype, self._sb_lastsubhittype = msg.types
+        elif isinstance(msg, bs.PlayerScoredMessage):
             if self.ultrameter:
                 self.ultrameter.style_text(bs.Lstr(resource='stylePScored'), msg.score * 2, (1, 1, 0))
         elif isinstance(msg, bs.PlayerDiedMessage):
@@ -472,6 +485,18 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
             if self.ultrameter:
                 self.ultrameter.style_text(bs.Lstr(resource='stylePDied'), -15, (0.5, 0.1, 0.1))
         elif isinstance(msg, SpazBotDiedMessage):
+            if msg.types:
+                hittype, subhittype = msg.types
+            else:
+                hittype = None
+                subhittype = None
+            if hittype == 'explosion' and msg.killerplayer:
+                player = msg.killerplayer.actor
+                bot = msg.spazbot
+                distance = math.dist(bot.node.position, player.node.position)
+                if distance >= 6.9:
+                    if self.ultrameter:
+                        self.ultrameter.style_text(bs.Lstr(resource='styleSniped'), 50, (0, 0.5, 0.8))
             if self.ultrameter:
                 self.ultrameter.style_text(bs.Lstr(resource='styleKilled'), 30, (1, 0.1, 0.1))
         elif isinstance(msg, ShatteredMessage):

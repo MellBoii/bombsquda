@@ -78,7 +78,7 @@ PHRASES = {
     "OG Spaz": ("ogspPhrase", 5),
     "Homer": ("homerPhrase", 8),
 }
-DEFAULT_PHRASES = ("defaultPhrase", 6)
+DEFAULT_PHRASES = ("defaultPhrase", 11)
 
 
 class PickupMessage:
@@ -217,10 +217,18 @@ class Spaz(bs.Actor):
 
         self.source_player = source_player
         self._dead = False
+        # stats for punch
+        self.knightscale = 2.3
+        self.knightcwd = 1400
+        self.boxingscale = 1.7
+        self.boxingcwd = 700
+        self.punchscale = 1.1
+        self.punchcwd = 450
+        # stats for punch
         if self._demo_mode:  # Preserve old behavior.
             self._punch_power_scale = 1.2
         else:
-            self._punch_power_scale = 1.0
+            self._punch_power_scale = self.punchscale
         self.fly = self.getactivity().globalsnode.happy_thoughts_mode
         if isinstance(activity, bs.GameActivity):
             self._hockey = activity.map.is_hockey
@@ -340,7 +348,7 @@ class Spaz(bs.Actor):
         if self._demo_mode:  # Preserve old behavior.
             self._punch_cooldown = BASE_PUNCH_COOLDOWN
         else:
-            self._punch_cooldown = 450
+            self._punch_cooldown = self.punchcwd
         self._jump_cooldown = 0
         self._pickup_cooldown = 0
         self._bomb_cooldown = 0
@@ -753,6 +761,8 @@ class Spaz(bs.Actor):
             self.giveitem()
             return
         if self.whiplashed:
+            if not self.node:
+                return
             if not self.hook or not self.hook.node:
                 self._shoot_hook()
                 return
@@ -775,8 +785,6 @@ class Spaz(bs.Actor):
             return
         
         if self.canparry == True:
-            # If we can parry, replace 
-            # our pickup button with parrying.
             self.attempt_parry()
             return
         
@@ -1336,9 +1344,8 @@ class Spaz(bs.Actor):
             self._punch_power_scale = 2.5
             self._punch_cooldown = 700
         else:
-            factory = SpazFactory.get()
-            self._punch_power_scale = 1.7
-            self._punch_cooldown = 700
+            self._punch_power_scale = self.boxingscale
+            self._punch_cooldown = self.boxingcwd
 
     def equip_weak_punches(self) -> None:
         """
@@ -1372,8 +1379,8 @@ class Spaz(bs.Actor):
             self._punch_cooldown = 700
         else:
             factory = SpazFactory.get()
-            self._punch_power_scale = 2.3
-            self._punch_cooldown = 1400
+            self._punch_power_scale = self.knightscale
+            self._punch_cooldown = self.knightcwd
 
     def equip_shields(self, decay: bool = False) -> None:
         """
@@ -1732,7 +1739,6 @@ class Spaz(bs.Actor):
             )
             bs.timer(0.12, flash.delete)
             bs.timer(0.1, self.updatemeter)
-            self.say()
             vol = 3
             if char_name:
                 appearances = bs.app.classic.spaz_appearances
@@ -2047,34 +2053,6 @@ class Spaz(bs.Actor):
 
         # after a bit of delay THEN start fading
         bs.timer(0.1, _fade_step)
-     
-    # Pulse green if healing
-    # ps. started using saved_color so we
-    # don't accidentally override the player's color choice
-    def pulse_green(self, intensity: float = 1.0, time: float = 0.65):
-        if self.node:
-            bs.animate_array(
-                self.node,
-                'color',
-                3,
-                {
-                    0: (0, 2*intensity, 0),
-                    time*0.8: self._saved_color,
-                    time: self._saved_color
-                }
-            )
-            bs.animate_array(
-                self.node,
-                'highlight',
-                3,
-                {
-                    0: (0, 2*intensity, 0),
-                    time*0.8: self._saved_highlight,
-                    time: self._saved_highlight
-                }
-            )
-            if self.earthhptext and self.earthhptext.exists():
-                self.earthhptext.text = str(int(self.hitpoints / 10))
     
     def tellfucked(self):
         """
@@ -2458,7 +2436,7 @@ class Spaz(bs.Actor):
             pos = self.node.position
             vel = self.node.velocity
             srcpl = getattr(self, 'source_player', None)
-            dmult = 51
+            dmult = 76
             damage = self.getspeed() * dmult
             toucher.handlemessage(
                 bs.HitMessage(
@@ -3420,12 +3398,6 @@ class Spaz(bs.Actor):
                             self.curse_explode, msg.get_source_player(bs.Player)
                         ),
                     )
-
-                # Initialize variables early
-                activity = self.getactivity()
-                gnode = activity.globalsnode
-                node = self.node
-                icon = None  # Default if we don't create one
                 
                 # If we're frozen, shatter.. otherwise die if we hit zero
                 if self.frozen and (damage > 1 or self.hitpoints <= 0):
@@ -3443,12 +3415,10 @@ class Spaz(bs.Actor):
                         self.die()
                     elif damage <= 150 and msg.hit_type == 'impact':
                         self.sugarcoat_overlay(sound='OUUHH', image='sugarcoatfall')
-                        self.die()
-                    else:
-                        if random.random() < 0.25:
-                            self.firework_explode()
-                            return # Return to prevent dying from the damage dealt before
-                        self.die()
+                    if random.random() < 0.25:
+                        self.firework_explode()
+                        return
+                    self.die()
 
             # If we're dead, take a look at the smoothed damage value
             # (which gives us a smoothed average of recent damage) and shatter
@@ -3493,12 +3463,12 @@ class Spaz(bs.Actor):
             if self.hardmode:
                 if self.node:
                     bs.emitfx(
-                    position=self.node.position,
-                    velocity=self.node.velocity,
-                    count=20,
-                    spread=1,
-                    emit_type='tendrils',
-                    tendril_type='smoke',
+                        position=self.node.position,
+                        velocity=self.node.velocity,
+                        count=120,
+                        spread=1.35,
+                        emit_type='tendrils',
+                        tendril_type='smoke',
                     )
                     if self.broadcast_death:
                         pname = self.node.name
@@ -3902,6 +3872,9 @@ class Spaz(bs.Actor):
             dropping_bomb = True
             bomb_type = self.bomb_type
         deton = self.deton
+        fuse = 2.0
+        if self.hardmode:
+            fuse = 1.2
         bomb = Bomb(
             position=(pos[0], pos[1] - 0.0, pos[2]),
             velocity=(vel[0], vel[1], vel[2]),
@@ -3909,7 +3882,8 @@ class Spaz(bs.Actor):
             blast_radius=self.blast_radius,
             source_player=self.source_player,
             owner=self.node,
-            manual=deton
+            manual=deton,
+            fuse_time=fuse,
         ).autoretain()
         if deton:
             self.deton_bombs.append(bomb)
@@ -4047,7 +4021,7 @@ class Spaz(bs.Actor):
                 dir_y /= length
                 dir_z /= length
 
-            force = 1.6
+            force = 35
 
             actor.node.handlemessage(
                 'impulse',
@@ -4229,7 +4203,7 @@ class Spaz(bs.Actor):
             mell.add_spaz(30, 'tix', self.node.position, 'popup')
         self.node.shattered = 2 if extreme else 1
 
-    def _hit_self(self, intensity: float, explode_head: bool = False) -> None:
+    def _hit_self(self, intensity: float, explode_head: bool = False):
         if not self.node:
             return
         if explode_head == True:
@@ -4240,9 +4214,11 @@ class Spaz(bs.Actor):
                 scale=1.3,
             ).autoretain()
             bs.getsound('bananasnipe').play(position=self.node.position)
-            if not self.parrying:
-                self.explode_head()
-                mell.add_spaz(120, 'tix', self.node.position, 'popup')
+            if self.parrying or self.node.invincible:
+                self.mpa()
+                return False
+            self.explode_head()
+            mell.add_spaz(120, 'tix', self.node.position, 'popup')
         pos = self.node.position
         self.handlemessage(
             bs.HitMessage(
@@ -4332,8 +4308,8 @@ class Spaz(bs.Actor):
             self._punch_cooldown = BASE_PUNCH_COOLDOWN
         else:
             factory = SpazFactory.get()
-            self._punch_power_scale = 1.0
-            self._punch_cooldown = 450
+            self._punch_power_scale = self.punchscale
+            self._punch_cooldown = self.punchcwd
         self._has_boxing_gloves = False
         if self.node:
             PowerupBoxFactory.get().powerdown_sound.play(

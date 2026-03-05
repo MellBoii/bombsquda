@@ -228,6 +228,7 @@ class Session:
 
         self.lobby = Lobby()
         self.stats = Stats()
+        self.plr_sets = {}
 
         # Instantiate our session globals node which will apply its settings.
         self._sessionglobalsnode = _bascenev1.newnode('sessionglobals')
@@ -714,6 +715,13 @@ class Session:
             if len(choosers) >= min_players:
                 for lch in lobby.get_choosers():
                     self._add_chosen_player(lch)
+                    sets = lobby._player_settings[lch.getplayer().id]
+                    settings = self.plr_sets.setdefault(
+                        lch.getplayer().id, {}
+                    )
+                    for setting in chooser.settings:
+                        settings.setdefault(setting, chooser.settings_options[setting][0])
+                    self.plr_sets[chooser.getplayer().id] = sets
                 lobby.remove_all_choosers()
 
                 # Get our next activity going.
@@ -731,6 +739,13 @@ class Session:
         # Otherwise just add players on the fly.
         else:
             self._add_chosen_player(chooser)
+            sets = lobby._player_settings[chooser.getplayer().id]
+            settings = self.plr_sets.setdefault(
+                chooser.getplayer().id, {}
+            )
+            for setting in chooser.settings:
+                settings.setdefault(setting, chooser.settings_options[setting][0])
+            self.plr_sets[chooser.getplayer().id] = sets
             lobby.remove_chooser(chooser.getplayer())
 
     def transitioning_out_activity_was_freed(
@@ -782,7 +797,6 @@ class Session:
         pass_to_activity = (
             activity.has_begun() and not activity.is_joining_activity
         )
-
         # However, if we're not allowing mid-game joins, don't actually pass;
         # just announce the arrival and say they'll partake next round.
         if pass_to_activity:

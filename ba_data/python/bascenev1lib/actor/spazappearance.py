@@ -18,7 +18,6 @@ def get_appearances(include_locked: bool = False) -> list[str]:
     get_purchased = plus.get_v1_account_product_purchased
     disallowed = []
     if not include_locked:
-        # alternative to updating modpack since it will TAKING TOO LONG
         if not ba.app.config.get("squda_unlockedmel", True):
             disallowed.append('Mel')
             
@@ -256,12 +255,12 @@ def register_appearances() -> None:
     t.earthportrait = 'gracebound'
     t.icon_mask_texture = 'graceIconCM'
     t.head_mesh = 'graceHead'
-    t.torso_mesh = 'noobTorso'
+    t.torso_mesh = 'graceTorso'
     t.pelvis_mesh = 'none'
     t.upper_arm_mesh = 'noobUpperArm'
     t.forearm_mesh = 'none'
     t.hand_mesh = 'none'
-    t.upper_leg_mesh = 'noobUpperLeg'
+    t.upper_leg_mesh = 'graceUpperLeg'
     t.lower_leg_mesh = 'none'
     t.toes_mesh = 'none'
     # kirby voicelines is placeholder (even tho it fits lol)
@@ -435,17 +434,17 @@ def register_appearances() -> None:
     t.upper_leg_mesh = 'bowserUpperLeg'
     t.lower_leg_mesh = 'bowserLowerLeg'
     t.toes_mesh = 'bowserToes'
-    bowser_sounds = ['bowser1', 'bowser2', 'bowser3', 'bowser4']
-    bowser_hit_sounds = ['bowserHit1', 'bowserHit2']
+    bowser_sounds = ['voicelines/bowser/sound' + str(i + 1) + '' for i in range(4)]
+    bowser_hit_sounds = ['voicelines/bowser/hurt' + str(i + 1) + '' for i in range(2)]
     t.jump_sounds = bowser_sounds
     t.attack_sounds = bowser_sounds
-    t.impact_sounds = bowser_hit_sounds
-    t.death_sounds = ['bowserDeath']
-    t.victory_sounds = ['bowserWin']
-    t.gloat_sounds = ['bowserGloat']
     t.pickup_sounds = bowser_sounds
-    t.fall_sounds = ['bowserFall']
-    t.style = 'bowser'
+    t.impact_sounds = bowser_hit_sounds
+    t.death_sounds = ['voicelines/bowser/death']
+    t.victory_sounds = ['voicelines/bowser/win']
+    t.gloat_sounds = ['voicelines/bowser/gloat']
+    t.fall_sounds = ['voicelines/bowser/fall']
+    t.style = 'bones'
     t.default_color = (
         0.996078431372549, 
         0.8372549019607842, 

@@ -471,6 +471,7 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
     @override
     def on_player_join(self, player: PlayerT) -> None:
         super().on_player_join(player)
+        player.set_lobby_config(self.session.plr_sets[player.sessionplayer.id])
 
         # By default, just spawn a dude.
         self.spawn_player(player)
@@ -1052,7 +1053,7 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
     def spawn_player_ball(
         self,
         player: PlayerT,
-        position: Sequence[float] = (0, 5, 0),
+        position: Sequence[float] = (0, 0, 0),
         angle: float | None = None,
     ) -> PlayerBall:
         # pylint: disable=too-many-locals
@@ -1064,9 +1065,21 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         color = player.color
         light_color = babase.normalized_color(color)
         display_color = babase.safecolor(color, target_intensity=0.75)
+        if position == (0, 0, 0):
+            mp = self.map.defs.points
+            spawn_names = [
+                'ffa_spawn1',
+                'ffa_spawn2',
+                'ffa_spawn3',
+                'ffa_spawn4',
+            ]
+            points = [mp[name] for name in spawn_names if name in mp]
+            spawn = random.choice(points)
+            position = spawn[:3]
         spaz = PlayerBall(
             player=player,
             color=color,
+            position=position,
         )
 
         player.actor = spaz
@@ -1074,11 +1087,6 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
 
         spaz.connect_controls_to_player()
         spaz.set_name(name=name, color=color)
-        spaz.handlemessage(
-            StandMessage(
-                position, angle if angle is not None else random.uniform(0, 360)
-            )
-        )
         
         self._spawn_sound.play(position=spaz.node.position)
         light = _bascenev1.newnode('light', attrs={'color': light_color})

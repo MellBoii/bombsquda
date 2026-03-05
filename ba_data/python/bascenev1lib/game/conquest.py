@@ -170,6 +170,7 @@ class ConquestGame(bs.TeamGameActivity[Player, Team]):
     @override
     def on_player_join(self, player: Player) -> None:
         # (Pylint Bug?) pylint: disable=missing-function-docstring
+        player.set_lobby_config(self.session.plr_sets[player.sessionplayer.id])
 
         player.respawn_timer = None
 

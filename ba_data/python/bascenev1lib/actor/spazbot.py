@@ -60,11 +60,27 @@ class SpazBotDiedMessage:
         spazbot: SpazBot,
         killerplayer: bs.Player | None,
         how: bs.DeathType,
+        types: tuple | None = ('generic', None),
     ):
         """Instantiate with given values."""
         self.spazbot = spazbot
         self.killerplayer = killerplayer
         self.how = how
+        self.types = types
+
+class SpazBotHitMessage:
+    """A message saying a bs.SpazBot has been hit."""
+
+    def __init__(
+        self,
+        spazbot: SpazBot,
+        player: bs.Player | None = None,
+        types: tuple | None = ('generic', None),
+    ):
+        """Instantiate with given values."""
+        self.spazbot = spazbot
+        self.player = player
+        self.types = types
 
 
 class SpazBot(Spaz):
@@ -766,7 +782,7 @@ class SpazBot(Spaz):
                     killerplayer = None
                 if activity is not None:
                     activity.handlemessage(
-                        SpazBotDiedMessage(self, killerplayer, msg.how)
+                        SpazBotDiedMessage(self, killerplayer, msg.how, self.last_attacked_type)
                     )
             super().handlemessage(msg)  # Augment standard behavior.
 
@@ -777,6 +793,7 @@ class SpazBot(Spaz):
                 self.last_player_attacked_by = source_player
                 self.last_attacked_time = bs.time()
                 self.last_attacked_type = (msg.hit_type, msg.hit_subtype)
+                self._activity().handlemessage(SpazBotHitMessage(self, source_player, self.last_attacked_type))
             super().handlemessage(msg)
         else:
             super().handlemessage(msg)

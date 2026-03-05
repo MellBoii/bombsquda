@@ -34,12 +34,16 @@ class UKHook(bs.Actor):
         self.material.add_actions(
             conditions=('they_have_material', shared.object_material),
             actions=(
+                ('modify_part_collision', 'collide', True),
+                ('modify_part_collision', 'physical', True),
                 ('message', 'our_node', 'at_connect', TouchedMsg()),
             ),
         )
         self.material.add_actions(
             conditions=('they_have_material', shared.player_material),
             actions=(
+                ('modify_part_collision', 'collide', True),
+                ('modify_part_collision', 'physical', True),
                 ('message', 'our_node', 'at_connect', TouchedMsg()),
             ),
         )
@@ -98,7 +102,7 @@ class UKHook(bs.Actor):
 
         dist = math.sqrt(dx*dx + dy*dy + dz*dz)
 
-        if dist < 1.5:
+        if dist < 0.5:
             self.handlemessage(bs.DieMessage())
             return
         if self.soundloop:

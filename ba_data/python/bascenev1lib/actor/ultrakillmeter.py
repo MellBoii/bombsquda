@@ -16,26 +16,29 @@ SCORE_RANKS = {
     None: (bs.Lstr(resource='ultrakillMeterRankN'), (0.5, 0.5, 0.5), None),
 }
 RANK_ORDER = [None, 'D', 'C', 'B', 'A', 'S', 'SS', 'SSS', 'U']
-
+def clamp(num, min_val, max_val):
+    return max(min(num, max_val), min_val)
 class UltrakillMeter(bs.Actor):
     """
     A style-meter based on Ultrakill's.
     It handles ranking and a bar that depletes over time.
     WARNING: The bar depends on the width of the window.
     So make sure it isn't too wide or too skinny.
+    As for recommendation, I just recommend 
+    you leave the scale as the default.
     """
-
-    # Determines the freshness of a player.
-    # This should be determined by if they're swapping kill methods
-    # (bomb, then punch, then back to bomb,
-    # etc, so they don't just punch infinitely for points).
+    
     freshness: float = 1.5
+    """The amount of freshness we have. 
+    This is controlled in bascenev1._coopgame, 
+    based on a SpazBot's last hit (simply, if the hit is equal to the last hit and 
+    sub-hit type, decrease freshness and vice versa. This should ONLY control how 
+    slow we add to the score. If you want more points, use multiplier."""
 
-    # Multiplies the amount of points you get.
-    # This should be determined by a 
-    # Spaz being mid-air and other factors.
     multiplier: int = 1
-
+    """Multiplier that multiplies how many points we get.
+    Unused for now."""
+    
     def __init__(
         self, 
         position: tuple[float, float] = (490, 0),
@@ -65,9 +68,9 @@ class UltrakillMeter(bs.Actor):
         self._width = width * barscale
         self._height = height * barscale
         self._bar_width = 1 * barscale
-        self._freshbar_dwidth = width / 2 * barscale
+        self._freshbar_dwidth = width / 1.3 * barscale
         self._freshbar_height = 40 * barscale
-        self._freshbar_width = self._freshbar_dwidth / 1.2
+        self._freshbar_width = width / 2 * barscale
         self._bar_tex = self._backing_tex = bs.gettexture('bar')
         self.score: int = 0
         self._rank_index = 0  # corresponds to None
@@ -170,7 +173,7 @@ class UltrakillMeter(bs.Actor):
         self._freshbar_text = bs.newnode(
             'text',
             attrs={
-                'text': '**WIP**',
+                'text': '',
                 'color': (1, 0.9, 0.9),
                 'h_align': 'center',
                 'v_align': 'center',
@@ -191,6 +194,7 @@ class UltrakillMeter(bs.Actor):
         self._freshbar_pos.connectattr('output', self._freshbar.node, 'position')
         self._freshbar_pos.connectattr('output', self._freshbar_text, 'position')
         self._freshbar_pos.connectattr('output', self._freshbacking.node, 'position')
+        self.add_freshness(0)
         
     def add_bar_length(self, length: int | float):
         if self._bar is None:
@@ -206,7 +210,7 @@ class UltrakillMeter(bs.Actor):
             self._bar_scale.input0 = length
             self._bar_width = length
     
-    def set_fbar_length(self, length: int | float, text: str = ''):
+    def set_fbar_length(self, length: int | float, text: str | bs.Lstr = ''):
         if self._freshbar is None:
             self.create_bar()
         if self._freshbar_scale is not None:
@@ -248,10 +252,11 @@ class UltrakillMeter(bs.Actor):
             textnode.position = (textnode.position[0], textnode.position[1] + self.text_spacing)
 
     def on_score_callback(self, newscore):
-        self.score += newscore
+        finalscore = newscore * self.freshness * self.multiplier
+        self.score += finalscore
         if self.bar_timer is None:
             self.bar_timer = bs.Timer(0.1, self.bar_tick, repeat=True)
-        self.add_bar_length(newscore)
+        self.add_bar_length(finalscore)
    
     def _apply_rank(self):
         rank = RANK_ORDER[self._rank_index]
@@ -280,6 +285,24 @@ class UltrakillMeter(bs.Actor):
             bs.getsound('smb1r_rankdown').play()
         # reduce the bar length
         self.add_bar_length(-2)
+    
+    def add_freshness(self, amount: int):
+        """Add **A BIT** of freshness. 
+        Use this instead of setting the value."""
+        self.freshness += amount
+        self.freshness = clamp(self.freshness, 0.0, 1.5)
+        self.freshness = round(self.freshness, 1)
+        subs=[('${COUNT}', str(self.freshness))]
+        # Ouch
+        if self.freshness >= 1.5:
+            sub = bs.Lstr(resource='ultrakillMeterFresh', subs=subs,)
+        elif self.freshness >= 1.0:
+            sub = bs.Lstr(resource='ultrakillMeterUsed', subs=subs,)
+        elif self.freshness >= 0.5:
+            sub = bs.Lstr(resource='ultrakillMeterStale', subs=subs,)
+        elif self.freshness >= 0.0:
+            sub = bs.Lstr(resource='ultrakillMeterDull', subs=subs,)
+        self.set_fbar_length(self._freshbar_dwidth * clamp(self.freshness, 0, 1), sub)
     
     def set_rank(
         self, rank: str | bs.Lstr | None = None, 

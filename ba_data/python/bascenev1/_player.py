@@ -157,6 +157,12 @@ class Player[TeamT: bascenev1.Team]:
         likely error). They should, however, remove any references to
         players/teams/games/etc. which could prevent them from being freed.
         """
+    
+    def set_lobby_config(self, config: dict):
+        """Call to set a player's options from a Lobby. 
+        config must be a dict with a string and a option"""
+        print(f'set {self}\'s config to {config}')
+        self.settings = config
 
     @property
     def team(self) -> TeamT:

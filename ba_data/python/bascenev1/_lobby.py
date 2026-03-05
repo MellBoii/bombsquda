@@ -217,7 +217,12 @@ class Chooser:
         self._settings_index = 0  # which setting we're editing (future-proof)
         self._sound_index = 0  # which sound we're at (also pretty future-proof)
         self._submenu_mode: str | None = None  # None, 'character', 'settings'
-        self._default_boptions = ['grab', 'jump', 'punch', 'bomb']
+        self.settings = ['parry button', 'bomb skin']
+        self.settings_options = {
+            'parry button': ['grab', 'jump', 'punch', 'bomb'],
+            'bomb skin': ['None lol'],
+        }
+        self._ensure_player_settings()
         # Sound list is a list of strings. 
         # Actual sounds are in sound_dict.
         self._sound_list = [
@@ -805,7 +810,19 @@ class Chooser:
             self.handlemessage(ChangeMessage('team', 1))
         else:
             self._set_ready(ready)
+            
+    def _ensure_player_settings(self) -> dict:
+        lobby = self._lobby()
 
+        settings = lobby._player_settings.setdefault(
+            self._sessionplayer.id, {}
+        )
+
+        # Ensure every setting exists
+        for setting in self.settings:
+            settings.setdefault(setting, self.settings_options[setting][0])
+        return settings
+        
     # TODO: should handle this at the engine layer so this is unnecessary.
     def _handle_repeat_message_attack(self) -> None:
         now = babase.apptime()
@@ -860,6 +877,11 @@ class Chooser:
 
         self._update_text()
     
+    def _handle_settings_change2(self, direction: int) -> None:
+        self._settings_index = (self._settings_index + direction) % len(self.settings)
+        self.movesound.play()
+        self._update_text()
+    
     def _handle_character_slider(self, direction: int) -> None:
         self._character_index = (
             self._character_index + direction
@@ -869,13 +891,12 @@ class Chooser:
         self._update_text()
         self._update_icon()
     
-    def _handle_settings_change(self, direction: int) -> None:
-        # Only one setting for now: Parry Button
-        current = self._lobby()._player_settings[self._sessionplayer.id]['buttontoparry']
-        index = self._default_boptions.index(current)
-        index = (index + direction) % len(self._default_boptions)
-        new_value = self._default_boptions[index]
-        self._lobby()._player_settings[self._sessionplayer.id]['buttontoparry'] = new_value
+    def _handle_settings_change(self, direction: int, option: str, options: list) -> None:
+        settings = self._ensure_player_settings()
+        current = settings[option]
+        index = options.index(current)
+        index = (index + direction) % len(options)
+        settings[option] = options[index]
         self.movesound.play()
         self._update_text()
     
@@ -909,6 +930,11 @@ class Chooser:
             # Integrate the menu system into the message system
             # Risky, but it works without assigning input!
             if not self._ready:
+                # Pressing up-down while in a active menu and non submenu changes menu option
+                if msg.what == 'profileindex' and self._menu_active and self._submenu_mode == 'settings':
+                    self._handle_settings_change2(msg.value)
+                    return
+                    
                 # Pressing up-down while in a active menu and non submenu changes menu option
                 if msg.what == 'profileindex' and self._menu_active and self._submenu_mode == None:
                     self._handle_menu_move(msg.value)
@@ -950,7 +976,10 @@ class Chooser:
                     if self._submenu_mode == 'character':
                         self._handle_character_slider(msg.value)
                     elif self._submenu_mode == 'settings':
-                        self._handle_settings_change(msg.value)
+                        self._handle_settings_change(
+                            msg.value, self.settings[self._settings_index], 
+                            self.settings_options[self.settings[self._settings_index]]
+                        )
                     elif self._submenu_mode == 'sound':
                         self._handle_sound_slider(msg.value)
                     return
@@ -1026,10 +1055,11 @@ class Chooser:
                 if self._submenu_mode == 'character':
                     sub = f'{lefta} {self._character_names[self._character_index]} {righta}'
                 elif self._submenu_mode == 'settings':
-                    settings = self._lobby()._player_settings[self._sessionplayer.id]
-                    parry = settings['buttontoparry']
+                    settings = self._ensure_player_settings()
+                    option = self.settings[self._settings_index]
+                    current = settings.get(option, self.settings_options[option][0])
 
-                    sub = f'parry button: {lefta} {parry.upper()} {righta}'
+                    sub = f'{self.settings[self._settings_index]}: {lefta} {current.upper()} {righta}'
                 elif self._submenu_mode == 'sound':
                     sub = f'{lefta} {self._sound_list[self._sound_index]} {righta}'
                 else:
@@ -1280,11 +1310,6 @@ class Lobby:
             Chooser(vpos=self._vpos, sessionplayer=sessionplayer, lobby=self)
         )
         player_id = sessionplayer.id
-
-        if player_id not in self._player_settings:
-            self._player_settings[player_id] = {
-                'buttontoparry': 'grab'
-            }
         self._next_add_team = (self._next_add_team + 1) % len(
             self._sessionteams
         )
@@ -1300,7 +1325,6 @@ class Lobby:
         for chooser in self.choosers:
             if chooser.getplayer() is player:
                 found = True
-
                 # Mark it as dead since there could be more
                 # change-commands/etc coming in still for it; want to
                 # avoid duplicate player-adds/etc.

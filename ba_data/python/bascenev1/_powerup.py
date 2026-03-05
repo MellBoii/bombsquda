@@ -48,14 +48,14 @@ def get_default_powerup_distribution() -> Sequence[tuple[str, int]]:
     # set a powerup's str to debug it
     debug_powerup = None
     base_distribution = {
-        'triple_bombs': 3,
+        'triple_bombs': 2,
         'ice_bombs': 3,
         'punch': 3,
         'impact_bombs': 3,
         'land_mines': 2,
         'sticky_bombs': 3,
         'shield': 2,
-        'health': 2,
+        'health': 3,
         'curse': 1,
         'metal': 1,
         'random': 1,
@@ -64,9 +64,9 @@ def get_default_powerup_distribution() -> Sequence[tuple[str, int]]:
         'deton': 3,
         'shotgun': 2,
         'fireball': 2,
-        'bloxy': 1,
+        'bloxy': 2,
         'hook': 1,
-        'star': 1,
+        'star': 0.5,
     }
     if ba.app.config.get("squda_gamblingmode", True):
         base_distribution['random'] = 9999

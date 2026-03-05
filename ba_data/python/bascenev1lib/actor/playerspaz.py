@@ -18,6 +18,10 @@ from bascenev1lib.actor.popuptext import PopupText
 if TYPE_CHECKING:
     from typing import Any, Sequence, Literal
 
+class GETREALLYFUCKINHARD:
+    """A message from a PlayerSpaz telling something to get REALLY hard. Hardmode."""
+    def __init__(self, spaz: PlayerSpaz):
+        self.spaz = spaz
 
 class PlayerSpazHurtMessage:
     """A message saying a PlayerSpaz was hurt."""
@@ -74,28 +78,35 @@ class PlayerSpaz(Spaz):
         self.last_player_held_by: bs.Player | None = None
         self._player = player
         self._drive_player_position()
-        if self.character == 'Bombgeon Snake Shadow':
-            self.dcl_time = 3
-            self.dashcooldown = bs.Timer(self.dcl_time, self.NINJA_increase, repeat=True)
-            self.grab_power = True
-            self.dashes = 2
-            self.hitpoints = 320
-            self.hitpoints_max = 320
-            self.shield_hitpoints_max = 150
-            self.impact_scale = 0.5
-            self.alrdidtext = False
-            self._punch_power_scale = 1.04
-            self._jump_cooldown = 0.27
-            self.pasheal_timer = bs.Timer(1.5, self.passiveheal, repeat=True)
         if ba.app.config.get("squda_parryalways", True):
             self.canparry = True
         if ba.app.config.get("squda_enablemeter", True):
             bs.timer(0.2, self.create_earth_meter)
         if ba.app.config.get("squda_spazhardmode", True):
-            self.hitpoints = 1
-            self.hitpoints_max = 1
+            self.hitpoints_max = 300
+            self.hitpoints = self.hitpoints_max
             self.hardmode = True
-            bs.getsound('hardmode').play()
+            self._activity().handlemessage(GETREALLYFUCKINHARD(self))
+            # punch stats
+            self.boxingcwd = 1000
+            self.boxingscale = 1.6
+            self.punchscale = 1.05
+            self.punchcwd = 560
+            self._punch_power_scale = self.punchscale
+            self._punch_cooldown = self.punchcwd
+            # punch stats
+            bs.getsound('hardmode').play(position=self.node.position)
+            intensity = 0.8
+            flash_color = (2 * intensity, 0, 0)
+            steps = 12
+            step_time = 0.15
+            anim = {
+                i * step_time: (flash_color if i % 2 == 0 else self._saved_color)
+                for i in range(steps)
+            }
+            bs.animate_array(self.node, 'color', 3, anim)
+            bs.animate_array(self.node, 'highlight', 3, anim)
+            
         
     # Overloads to tell the type system our return type based on doraise val.
 
@@ -187,6 +198,8 @@ class PlayerSpaz(Spaz):
     @override
     def updatemeter(self):
         # FIXME: activity should manage this stuff
+        if self.hardmode and self.hitpoints >= self.hitpoints_max:
+            self.hitpoints = self.hitpoints_max
         if not self.earthmeter:
             return
 
@@ -469,28 +482,6 @@ class PlayerSpaz(Spaz):
             activity = self._activity()
             if activity is not None and self._player.exists():
                 activity.handlemessage(PlayerSpazHurtMessage(self))
-            if self.hardmode:
-                self.die()
-        elif isinstance(msg, bs.PowerupMessage):
-            if self.character == 'Bombgeon Snake Shadow':
-                # if we already did the text, don't do it again to not repeat
-                if self.alrdidtext == True:
-                    return
-                else:
-                    # tell our player we can't pickup powerups as Ninjageon
-                    self.alrdidtext = True
-                    PopupText(
-                        bs.Lstr(resource='geonPowerup'),
-                        position=self.node.position,
-                        color=(1, 0.1, 0.1, 0.9),
-                        scale=1.0,
-                    ).autoretain()
-                    def _resetalrdid():
-                        self.alrdidtext = False
-                    bs.timer(1.0, _resetalrdid)
-                    bs.getsound('error').play()
-                    return
-            super().handlemessage(msg)
         else:
             return super().handlemessage(msg)
         return None

@@ -341,7 +341,7 @@ class Blast(bs.Actor):
         hit_type: str = 'explosion',
         hit_subtype: str = 'normal',
         owner: bs.Node | None = None,
-        nosound: bool = False
+        nosound: bool = False,
     ):
         """Instantiate with given values."""
 
@@ -772,7 +772,8 @@ class Bomb(bs.Actor):
         source_player: bs.Player | None = None,
         owner: bs.Node | None = None,
         nosound: bool = False,
-        manual: bool = False
+        manual: bool = False,
+        fuse_time: int = 2.0,
     ):
         """Create a new Bomb.
 
@@ -803,6 +804,7 @@ class Bomb(bs.Actor):
         self.nosound = nosound
         self.manual = manual
         self.star_hits = 0
+        self.fuse_time = fuse_time
 
         self.texture_sequence: bs.Node | None = None
 
@@ -931,34 +933,9 @@ class Bomb(bs.Actor):
                 fuse_time - 1.7, bs.WeakCall(self.handlemessage, WarnMessage())
             )
             
-        elif self.bomb_type == 'running_bomb':
-            fuse_time = 20.0
-            self.node = bs.newnode(
-                'prop',
-                delegate=self,
-                attrs={
-                    'position': position,
-                    'velocity': velocity,
-                    'body': 'sphere',
-                    'body_scale': self.scale,
-                    'mesh': factory.impact_bomb_mesh,
-                    'shadow_size': 0.3,
-                    'color_texture': factory.impact_tex,
-                    'reflection': 'powerup',
-                    'reflection_scale': [1.5],
-                    'materials': materials,
-                },
-            )
-            self.arm_timer = bs.Timer(
-                0.2, bs.WeakCall(self.handlemessage, ArmMessage())
-            )
-            self.warn_timer = bs.Timer(
-                fuse_time - 1.7, bs.WeakCall(self.handlemessage, WarnMessage())
-            )
-
 
         else:
-            fuse_time = 2.0
+            fuse_time = self.fuse_time
             if self.bomb_type == 'sticky':
                 sticky = True
                 mesh = factory.sticky_bomb_mesh
