@@ -309,7 +309,11 @@ class EliminationGame(bs.TeamGameActivity[Player, Team]):
     def on_player_join(self, player: Player) -> None:
         # (Pylint Bug?) pylint: disable=missing-function-docstring
         player.lives = self._lives_per_player
-        player.set_lobby_config(self.session.plr_sets[player.sessionplayer.id])
+        player.set_lobby_config(
+            self.session.plr_sets[
+                self.session.sessionplayers.index(player.sessionplayer)
+            ]
+        )
 
         if self._solo_mode:
             player.team.spawn_order.append(player)

@@ -471,7 +471,11 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
     @override
     def on_player_join(self, player: PlayerT) -> None:
         super().on_player_join(player)
-        player.set_lobby_config(self.session.plr_sets[player.sessionplayer.id])
+        player.set_lobby_config(
+            self.session.plr_sets[
+                self.session.sessionplayers.index(player.sessionplayer)
+            ]
+        )
 
         # By default, just spawn a dude.
         self.spawn_player(player)

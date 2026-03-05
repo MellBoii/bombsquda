@@ -815,7 +815,7 @@ class Chooser:
         lobby = self._lobby()
 
         settings = lobby._player_settings.setdefault(
-            self._sessionplayer.id, {}
+            bs.getsession().sessionplayers.index(self._sessionplayer), {}
         )
 
         # Ensure every setting exists

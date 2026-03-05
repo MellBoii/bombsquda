@@ -405,6 +405,10 @@ class Spaz(bs.Actor):
         self._saved_color = self.node.color
         self._saved_highlight = self.node.highlight
         self._saved_materials = self.node.color_texture
+        if self.source_player:
+            self.parrybtn = self.source_player.settings['parry button']
+        else:
+            self.parrybtn = 'grab'
 
     @override
     def exists(self) -> bool:
@@ -660,6 +664,9 @@ class Spaz(bs.Actor):
             self.say(wave=True, shouldcelb=True)
         t_ms = int(bs.time() * 1000.0)
         assert isinstance(t_ms, int)
+        if self.canparry == True and self.parrybtn == 'jump':
+            self.attempt_parry()
+            return
         if t_ms - self.last_jump_time_ms >= self._jump_cooldown:
             self.node.jump_pressed = True
             self.last_jump_time_ms = t_ms
@@ -784,7 +791,7 @@ class Spaz(bs.Actor):
             self.update_emerald_indicator()
             return
         
-        if self.canparry == True:
+        if self.canparry == True and self.parrybtn == 'grab':
             self.attempt_parry()
             return
         
@@ -834,6 +841,9 @@ class Spaz(bs.Actor):
             return
         t_ms = int(bs.time() * 1000.0)
         assert isinstance(t_ms, int)
+        if self.canparry == True and self.parrybtn == 'punch':
+            self.attempt_parry()
+            return
         if t_ms - self.last_punch_time_ms >= self._punch_cooldown:
             if self.punch_callback is not None:
                 self.punch_callback(self)
@@ -1174,6 +1184,9 @@ class Spaz(bs.Actor):
             if t_ms - self.last_bomb_time_ms >= self._bomb_cooldown:
                 self._shoot_fireball()
                 return
+        if self.canparry == True and self.parrybtn == 'bomb':
+            self.attempt_parry()
+            return
         if t_ms - self.last_bomb_time_ms >= self._bomb_cooldown:
             self.last_bomb_time_ms = t_ms
             self.node.bomb_pressed = True

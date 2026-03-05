@@ -715,13 +715,13 @@ class Session:
             if len(choosers) >= min_players:
                 for lch in lobby.get_choosers():
                     self._add_chosen_player(lch)
-                    sets = lobby._player_settings[lch.getplayer().id]
+                    sets = lobby._player_settings[self.sessionplayers.index(lch.getplayer())]
                     settings = self.plr_sets.setdefault(
-                        lch.getplayer().id, {}
+                        self.sessionplayers.index(lch.getplayer()), {}
                     )
-                    for setting in chooser.settings:
-                        settings.setdefault(setting, chooser.settings_options[setting][0])
-                    self.plr_sets[chooser.getplayer().id] = sets
+                    for setting in lch.settings:
+                        settings.setdefault(setting, lch.settings_options[setting][0])
+                    self.plr_sets[self.sessionplayers.index(lch.getplayer())] = sets
                 lobby.remove_all_choosers()
 
                 # Get our next activity going.
@@ -739,13 +739,13 @@ class Session:
         # Otherwise just add players on the fly.
         else:
             self._add_chosen_player(chooser)
-            sets = lobby._player_settings[chooser.getplayer().id]
+            sets = lobby._player_settings[self.sessionplayers.index(chooser.getplayer())]
             settings = self.plr_sets.setdefault(
-                chooser.getplayer().id, {}
+                self.sessionplayers.index(chooser.getplayer()), {}
             )
             for setting in chooser.settings:
                 settings.setdefault(setting, chooser.settings_options[setting][0])
-            self.plr_sets[chooser.getplayer().id] = sets
+            self.plr_sets[self.sessionplayers.index(chooser.getplayer())] = sets
             lobby.remove_chooser(chooser.getplayer())
 
     def transitioning_out_activity_was_freed(
