@@ -857,7 +857,8 @@ class FootballCoopGame(bs.CoopGameActivity[Player, Team]):
                     if team is self._bot_team:
                         self.end_game()
                     else:
-                        bs.setmusic(bs.MusicType.VICTORY)
+                        bs.setmusic(None)
+                        bs.getsound('music/coop_victory').play()
 
                         # Completion achievements.
                         assert self._bot_team is not None

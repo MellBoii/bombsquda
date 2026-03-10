@@ -490,138 +490,70 @@ class Stats:
         if killed:
             prec.accum_killed_count += 1
             prec.killed_count += 1
+        SUICIDE_MESSAGES = {
+            'explosion': 'nameSuicideBombText',
+            'impact': 'nameSuicideFallText',
+            'punch': 'nameSuicidePunchText',
+            'fall': 'nameSuicideOOBText',
+            'swoon': 'nameSuicideSwoonText',
+            'fireball': 'nameSuicideFBallText',
+        }
+
+        KILL_MESSAGES = {
+            'explosion': 'nameKillBombText',
+            'impact': 'nameKillFallText',
+            'punch': 'nameKillPunchText',
+            'fall': 'nameKillOOBText',
+            'swoon': 'nameKillSwoonText',
+            'fireball': 'nameKillFBallText',
+        }
         try:
+            def broadcast(resource: str, subs, color, image):
+                _bascenev1.broadcastmessage(
+                    babase.Lstr(resource=resource, subs=subs),
+                    top=True,
+                    color=color,
+                    image=image,
+                )
             if killed and _bascenev1.getactivity().announce_player_deaths:
                 if killer is player:
-                    if killer.actor.lasthittype == 'explosion':
-                        _bascenev1.broadcastmessage(
-                            babase.Lstr(
-                                resource='nameSuicideBombText', subs=[('${NAME}', name)]
-                            ),
-                            top=True,
-                            color=player.color,
-                            image=player.get_icon(),
-                        )
-                    elif killer.actor.lasthittype == 'impact':
-                        _bascenev1.broadcastmessage(
-                            babase.Lstr(
-                                resource='nameSuicideFallText', subs=[('${NAME}', name)]
-                            ),
-                            top=True,
-                            color=player.color,
-                            image=player.get_icon(),
-                        )
-                    elif killer.actor.lasthittype == 'fall':
-                        _bascenev1.broadcastmessage(
-                            babase.Lstr(
-                                resource='nameSuicideOOBText', subs=[('${NAME}', name)]
-                            ),
-                            top=True,
-                            color=player.color,
-                            image=player.get_icon(),
-                        )
-                    elif killer.actor.lasthittype == 'fireball':
-                        _bascenev1.broadcastmessage(
-                            babase.Lstr(
-                                resource='nameSuicideFBallText', subs=[('${NAME}', name)]
-                            ),
-                            top=True,
-                            color=player.color,
-                            image=player.get_icon(),
-                        )
-                    else:
-                        _bascenev1.broadcastmessage(
-                            babase.Lstr(
-                                resource='nameSuicideText', subs=[('${NAME}', name)]
-                            ),
-                            top=True,
-                            color=player.color,
-                            image=player.get_icon(),
-                        )
+                    hit = killer.actor.lasthittype
+                    resource = SUICIDE_MESSAGES.get(hit, 'nameSuicideText')
+
+                    broadcast(
+                        resource,
+                        [('${NAME}', name)],
+                        player.color,
+                        player.get_icon()
+                    )
 
                 elif killer is not None:
+
                     if killer.team is player.team:
-                        _bascenev1.broadcastmessage(
-                            babase.Lstr(
-                                resource='nameBetrayedText',
-                                subs=[
-                                    ('${NAME}', killer.getname()),
-                                    ('${VICTIM}', name),
-                                ],
-                            ),
-                            top=True,
-                            color=killer.color,
-                            image=killer.get_icon(),
+                        broadcast(
+                            'nameBetrayedText',
+                            [('${NAME}', killer.getname()), ('${VICTIM}', name)],
+                            killer.color,
+                            killer.get_icon()
                         )
-                    elif player.actor.lasthittype == 'explosion':
-                        _bascenev1.broadcastmessage(
-                            babase.Lstr(
-                                resource='nameKillBombText', subs=[
-                                    ('${NAME}', killer.getname()),
-                                    ('${VICTIM}', name),
-                                ],
-                            ),
-                            top=True,
-                            color=killer.color,
-                            image=killer.get_icon(),
-                        )
-                    elif player.actor.lasthittype == 'impact':
-                        _bascenev1.broadcastmessage(
-                            babase.Lstr(
-                                resource='nameKillFallText', subs=[
-                                    ('${NAME}', killer.getname()),
-                                    ('${VICTIM}', name),
-                                ],
-                            ),
-                            top=True,
-                            color=killer.color,
-                            image=killer.get_icon(),
-                        )
-                    elif player.actor.lasthittype == 'fall':
-                        _bascenev1.broadcastmessage(
-                            babase.Lstr(
-                                resource='nameKillOOBText', subs=[
-                                    ('${NAME}', killer.getname()),
-                                    ('${VICTIM}', name),
-                                ],
-                            ),
-                            top=True,
-                            color=killer.color,
-                            image=killer.get_icon(),
-                        )
-                    elif player.actor.lasthittype == 'fireball':
-                        _bascenev1.broadcastmessage(
-                            babase.Lstr(
-                                resource='nameKillFBallText', subs=[
-                                    ('${NAME}', killer.getname()),
-                                    ('${VICTIM}', name),
-                                ],
-                            ),
-                            top=True,
-                            color=killer.color,
-                            image=killer.get_icon(),
-                        )
+
                     else:
-                        _bascenev1.broadcastmessage(
-                            babase.Lstr(
-                                resource='nameKilledText',
-                                subs=[
-                                    ('${NAME}', killer.getname()),
-                                    ('${VICTIM}', name),
-                                ],
-                            ),
-                            top=True,
-                            color=killer.color,
-                            image=killer.get_icon(),
+                        hit = player.actor.lasthittype
+                        resource = KILL_MESSAGES.get(hit, 'nameKilledText')
+
+                        broadcast(
+                            resource,
+                            [('${NAME}', killer.getname()), ('${VICTIM}', name)],
+                            killer.color,
+                            killer.get_icon()
                         )
+
                 else:
-                    _bascenev1.broadcastmessage(
-                        babase.Lstr(
-                            resource='nameDiedText', subs=[('${NAME}', name)]
-                        ),
-                        top=True,
-                        color=player.color,
-                        image=player.get_icon(),
+                    broadcast(
+                        'nameDiedText',
+                        [('${NAME}', name)],
+                        player.color,
+                        player.get_icon()
                     )
         except Exception:
             logging.exception('Error announcing kill.')

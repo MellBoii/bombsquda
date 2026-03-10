@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING, override, Tuple
 import babase
 
 import _bascenev1 # type: ignore (because _bascenev1 is c++ layer)
+import asyncio
 from bascenev1lib.actor.emerald import EmeraldActor
 from bascenev1._activity import Activity
 from bascenev1._player import PlayerInfo
@@ -467,15 +468,32 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
             self._setup_tournament_time_limit(
                 max(5, data_t[0]['timeRemaining'])
             )
+            
+    def set_player_config(self, player: PlayerT):
+        try:
+            player.set_lobby_config(
+                self.session.plr_sets[
+                    self.session.sessionplayers.index(player.sessionplayer)
+                ]
+            )
+        except KeyError:
+            bs.debprint(f'Failed to set config for {player.getname()}. Falling back to {self.players[0].getname()}.')
+            bs.broadcastmessage(
+                (
+                    f'WARNING: {player.getname()}\'s settings'
+                    f' were set to {self.players[0].getname()}\'s'
+                    ' due to a error.\nRejoining might fix said'
+                    ' error, and properly use the settings.'
+                ),
+                color=(1, 0, 0),
+            )
+            bs.getsound('error').play()
+            player.set_lobby_config(self.session.plr_sets[0])
 
     @override
     def on_player_join(self, player: PlayerT) -> None:
         super().on_player_join(player)
-        player.set_lobby_config(
-            self.session.plr_sets[
-                self.session.sessionplayers.index(player.sessionplayer)
-            ]
-        )
+        self.set_player_config(player)
 
         # By default, just spawn a dude.
         self.spawn_player(player)

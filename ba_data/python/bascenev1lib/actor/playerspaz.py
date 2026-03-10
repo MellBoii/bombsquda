@@ -86,10 +86,9 @@ class PlayerSpaz(Spaz):
             self.hitpoints_max = 300
             self.hitpoints = self.hitpoints_max
             self.hardmode = True
-            self._activity().handlemessage(GETREALLYFUCKINHARD(self))
             # punch stats
             self.boxingcwd = 1000
-            self.boxingscale = 1.6
+            self.boxingscale = 1.55
             self.punchscale = 1.05
             self.punchcwd = 560
             self._punch_power_scale = self.punchscale

@@ -220,7 +220,7 @@ class Chooser:
         self.settings = ['parry button', 'bomb skin']
         self.settings_options = {
             'parry button': ['grab', 'jump', 'punch', 'bomb'],
-            'bomb skin': ['None lol'],
+            'bomb skin': [None, 'noise bomb', 'familiar', 'kookoo'],
         }
         self._ensure_player_settings()
         # Sound list is a list of strings. 
@@ -312,7 +312,7 @@ class Chooser:
             owner=self._text_node,
             attrs={
                 'position': (-100, self._vpos - self.subspacing),
-                'maxwidth': 160,
+                'maxwidth': 300,
                 'shadow': 0.3,
                 'vr_depth': -20,
                 'h_align': 'left',
@@ -1059,7 +1059,7 @@ class Chooser:
                     option = self.settings[self._settings_index]
                     current = settings.get(option, self.settings_options[option][0])
 
-                    sub = f'{self.settings[self._settings_index]}: {lefta} {current.upper()} {righta}'
+                    sub = f'{self.settings[self._settings_index]}: {lefta} {str(current).upper()} {righta}'
                 elif self._submenu_mode == 'sound':
                     sub = f'{lefta} {self._sound_list[self._sound_index]} {righta}'
                 else:
@@ -1161,8 +1161,8 @@ class Chooser:
             ].icon_mask_texture
         except Exception:
             logging.exception('Error updating char icon list')
-            tex_name = 'neoSpazIcon'
-            tint_tex_name = 'neoSpazIconColorMask'
+            tex_name = 'spazIcon'
+            tint_tex_name = 'spazIconCM'
 
         tex = _bascenev1.gettexture(tex_name)
         tint_tex = _bascenev1.gettexture(tint_tex_name)

@@ -1247,7 +1247,7 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
                 ),
             ).autoretain()
 
-    def do_end(self, outcome: str, delay: float = 0.0) -> None:
+    def do_end(self, outcome: str, delay: float = 0.5) -> None:
         """End the game with the specified outcome."""
         if outcome == 'defeat':
             self.fade_to_red()
@@ -1335,7 +1335,8 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
                 base_delay += 0.85
                 self._winsound.play()
                 bs.cameraflash()
-                bs.setmusic(bs.MusicType.VICTORY)
+                bs.setmusic(None)
+                bs.getsound('music/coop_victory').play()
                 self._game_over = True
 
                 # Can't just pass delay to do_end because our extra bonuses
@@ -1932,9 +1933,6 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
         self._bots.final_celebrate()
         self._game_over = True
         self.do_end('defeat', delay=2.1)
-        bs.getsound('loss').play(3.3)
-        bs.setmusic(None)
-        bs.timer(1.9, lambda: bs.setmusic(bs.MusicType.DEFEAT))
 
     def _checkroundover(self) -> None:
         """Potentially end the round based on the state of the game."""

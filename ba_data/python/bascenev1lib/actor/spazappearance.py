@@ -263,17 +263,14 @@ def register_appearances() -> None:
     t.upper_leg_mesh = 'graceUpperLeg'
     t.lower_leg_mesh = 'none'
     t.toes_mesh = 'none'
-    # kirby voicelines is placeholder (even tho it fits lol)
-    # yeah dude real thanks to the guy who made Kirby Voice Acting
-    t.jump_sounds = ['voicelines/kirby/jump' + str(i + 1) + '' for i in range(3)]
-    kirbyattack = ['voicelines/kirby/attack' + str(i + 1) + '' for i in range(4)]
-    t.attack_sounds = kirbyattack
-    t.pickup_sounds = kirbyattack
-    t.impact_sounds = ['voicelines/kirby/hurt' + str(i + 1) + '' for i in range(6)]
-    t.death_sounds = ['voicelines/kirby/death']
-    t.fall_sounds = ['voicelines/kirby/fall' + str(i + 1) + '' for i in range(2)]
-    t.victory_sounds = ['voicelines/kirby/win' + str(i + 1) + '' for i in range(4)]
-    t.gloat_sounds = ['voicelines/kirby/gloat' + str(i + 1) + '' for i in range(6)]
+    t.jump_sounds = ['voicelines/link/jump' + str(i + 1) + '' for i in range(6)]
+    t.attack_sounds = ['voicelines/link/attack' + str(i + 1) + '' for i in range(6)]
+    t.pickup_sounds = ['voicelines/link/pickup']
+    t.impact_sounds = ['voicelines/link/hurt' + str(i + 1) + '' for i in range(8)]
+    t.death_sounds = ['voicelines/link/death']
+    t.fall_sounds = ['voicelines/link/fall']
+    t.victory_sounds = ['voicelines/link/win']
+    t.gloat_sounds = ['voicelines/link/gloat']
     t.style = 'bones'
     t.default_color = (0, 0, 0)
     t.default_highlight = (1.2, 1.2, 1.2)  

@@ -267,11 +267,13 @@ class ClassicAppSubsystem(babase.AppSubsystem):
             with activity.context:
                 globs = activity.globalsnode
                 if not globs.paused:
-                    bascenev1.getsound('pause').play()
                     globs.paused = True
                     self.savedmusic = globs.music
-                    bascenev1.setmusic(None)
-                    bascenev1.setmusic(bascenev1.MusicType.PAUSE)
+                    bascenev1.getsound('pause').play()
+                    import babase
+                    if babase.app.config.get("squda_pausemusic") == True:
+                        bascenev1.setmusic(None)
+                        bascenev1.setmusic(bascenev1.MusicType.PAUSE)
 
                 # FIXME: This should not be an attr on Actor.
                 activity.paused_text = NodeActor(
@@ -302,11 +304,12 @@ class ClassicAppSubsystem(babase.AppSubsystem):
                 if globs.paused:
                     globs.paused = False
                     bascenev1.getsound('unpause').play()
-                    music_name = self.savedmusic.upper()
-                    if music_name == '':
-                        bascenev1.setmusic(None)
-                    else:
-                        bascenev1.setmusic(getattr(bascenev1.MusicType, music_name))
+                    if babase.app.config.get("squda_pausemusic") == True:
+                        music_name = self.savedmusic.upper()
+                        if music_name == '':
+                            bascenev1.setmusic(None)
+                        else:
+                            bascenev1.setmusic(getattr(bascenev1.MusicType, music_name))
 
                     # FIXME: This should not be an actor attr.
                     activity.paused_text = None

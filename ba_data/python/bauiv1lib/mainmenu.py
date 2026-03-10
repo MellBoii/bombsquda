@@ -85,11 +85,6 @@ class MainMenuWindow(bui.MainWindow):
                 transition=transition, origin_widget=origin_widget
             )
         )
-
-    def _start_credits_activity(self) -> None:
-        """Pushcall a new session (our credits activity)"""
-        from bascenev1lib.creditsroll import CreditsSession as sesh
-        bs.pushcall(lambda: bs.new_host_session(sesh))
         
     def _start_online_activity(self) -> None:
         """Pushcall a new session (our online activity)"""
@@ -504,7 +499,7 @@ class MainMenuWindow(bui.MainWindow):
             autoselect=self._use_autoselect,
             label=bui.Lstr(resource=f'{self._r}.creditsText'),
             transition_delay=thistdelay,
-            on_activate_call=self._start_credits_activity,
+            on_activate_call=self._credits,
         )
 
         self._quit_button: bui.Widget | None
@@ -554,7 +549,19 @@ class MainMenuWindow(bui.MainWindow):
                 origin_widget=self._root_widget,
             )
         )
-
+    
+    def _credits(self) -> None:
+        # pylint: disable=cyclic-import
+        from bauiv1lib.credits import CreditsWindow
+        
+        # no-op if we're not currently in control.
+        if not self.main_window_has_control():
+            return
+            
+        self.main_window_replace(
+            CreditsWindow(origin_widget=self._watch_button),
+        )
+    
     def _howtoplay(self) -> None:
         # pylint: disable=cyclic-import
         from bauiv1lib.help import HelpWindow
@@ -564,7 +571,7 @@ class MainMenuWindow(bui.MainWindow):
             return
 
         self.main_window_replace(
-            HelpWindow(origin_widget=self._credits_button),
+            HelpWindow(origin_widget=self._how_to_play_button),
         )
 
     def _save_state(self) -> None:

@@ -127,6 +127,10 @@ class MusicType(Enum):
     ELIM_DANGER = 'Elim_Danger'
     ELIM_VERSUS = 'Elim_Versus'
     STARMAN = 'Starman'
+    HARDMODE1 = 'HardMode1'
+    HARDMODE2 = 'HardMode2'
+    HARDMODE3 = 'HardMode3'
+    COOP_VICTORY = 'Coop_Victory'
 
 def _get_free_slot(slots: dict) -> int:
     slot = 0
@@ -194,7 +198,7 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
         bs.MusicType.CREDITS: "Sonic Mania Unused Credits - Tee Lopes",
         bs.MusicType.SNESCOURSE: "SNES Battle Course - Mario Kart World",
         bs.MusicType.SNESCOURSE2: "Battle Course - Super Mario Kart",
-        bs.MusicType.DEFEAT: "Blues in Velvet Room - Persona 3",
+        bs.MusicType.DEFEAT: "Faint Courage - Deltarune Chapter 2 OST",
         bs.MusicType.FINALDESTINATION: "Final Destination - Super Smash Bros Melee",
         bs.MusicType.THEFINALE: "In The Finale - Bowser's Inside Story",
         bs.MusicType.WAR: "Thousand March - Mr. Sauceman",
@@ -244,7 +248,10 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
         bs.MusicType.FEEL_THE_FURY: "Feel The Fury - ThatGuyRamon",
         bs.MusicType.RAINBOW_ROAD: "Rainbow Road Pentagon Path Remix - B1itz Lunar",
         bs.MusicType.STARMAN: "Starman (Hurry) - SMB1 Re-Tuned (Super Mario Bros. 1 Remastered)",
-        bs.MusicType.SCARY: "???",
+        bs.MusicType.HARDMODE1: "Stronger Enemies - Undertale OST",
+        bs.MusicType.HARDMODE2: "ASGORE - Undertale OST",
+        bs.MusicType.HARDMODE3: "Song That Might Play When You Fight Sans - Undertale OST",
+        bs.MusicType.COOP_VICTORY: "Zone Clear - Skateboard Sonic (Sonic Robo Blast 2)",
     }
     # Get the music name from the list.
     # If we don't get any, tell the player it's either unknown

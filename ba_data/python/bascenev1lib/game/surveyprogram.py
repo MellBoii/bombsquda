@@ -409,7 +409,6 @@ class SURVEYActivity2(bs.Activity[bs.Player, bs.Team]):
     """Blue background that fades to our logo."""
     _stdassets = bs.Dependency(bs.AssetPackage, 'stdassets@1')
 
-
     def __init__(self, settings: dict):
         super().__init__(settings)
         

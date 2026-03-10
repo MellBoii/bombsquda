@@ -145,6 +145,10 @@ ASSET_SOUNDTRACK_ENTRIES: dict[MusicType, AssetSoundtrackEntry] = {
     MusicType.CRASH_HANDLER: AssetSoundtrackEntry('music/crash_handler'),
     MusicType.SHOP: AssetSoundtrackEntry('music/shop'),
     MusicType.STARMAN: AssetSoundtrackEntry('music/smb1r_star', volume=1.3),
+    MusicType.HARDMODE1: AssetSoundtrackEntry('music/stronger', volume=1.0),
+    MusicType.HARDMODE2: AssetSoundtrackEntry('music/asgore', volume=1.0),
+    MusicType.HARDMODE3: AssetSoundtrackEntry('music/sans', volume=1.0),
+    MusicType.COOP_VICTORY: AssetSoundtrackEntry('music/coop_victory', volume=1.0, loop=False),
     MusicType.MARCHING: AssetSoundtrackEntry(
         'music/runaroundMusic', volume=0.8
     ),

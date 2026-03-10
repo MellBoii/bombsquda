@@ -774,6 +774,7 @@ class Bomb(bs.Actor):
         nosound: bool = False,
         manual: bool = False,
         fuse_time: int = 2.0,
+        skin: str | None = None,
     ):
         """Create a new Bomb.
 
@@ -805,6 +806,7 @@ class Bomb(bs.Actor):
         self.manual = manual
         self.star_hits = 0
         self.fuse_time = fuse_time
+        self.skin = skin
 
         self.texture_sequence: bs.Node | None = None
 
@@ -940,18 +942,24 @@ class Bomb(bs.Actor):
                 sticky = True
                 mesh = factory.sticky_bomb_mesh
                 rtype = 'sharper'
-                rscale = 1.8
+                rscale = 1.4
             else:
                 sticky = False
                 mesh = factory.bomb_mesh
                 rtype = 'sharper'
-                rscale = 1.8
+                rscale = 1.2
             if self.bomb_type == 'ice':
                 tex = factory.ice_tex
             elif self.bomb_type == 'sticky':
                 tex = factory.sticky_tex
             else:
                 tex = factory.regular_tex
+                if self.skin == 'noise bomb':
+                    tex = bs.gettexture('bombNoise')
+                if self.skin == 'familiar':
+                    tex = bs.gettexture('bombFamiliar')
+                if self.skin == 'kookoo':
+                    tex = bs.gettexture('bombKookoo')
             self.node = bs.newnode(
                 'bomb',
                 delegate=self,
@@ -1194,7 +1202,7 @@ class Bomb(bs.Actor):
                         ba.app.classic.ach.award_local_achievement(
                             'When TNT Flies3'
                         )
-                bs.getsound('punchSFX/punchDeath1').play(position=self.node.position)
+                bs.getsound('punchSFX/death').play(position=self.node.position)
                 activity = self._activity()
                 if activity:
                     activity.handlemessage(ReturnMessage())

@@ -493,9 +493,6 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
         else:
             assert self._bots is not None
             self._bots.final_celebrate()
-            bs.getsound('loss').play()
-            bs.setmusic(None)
-            bs.timer(1.9, lambda: bs.setmusic(bs.MusicType.DEFEAT))
             bs.pushcall(bs.WeakCall(self.do_end, 'defeat', delay=2.1))
 
     def _checkroundover(self) -> None:

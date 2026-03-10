@@ -170,12 +170,7 @@ class ConquestGame(bs.TeamGameActivity[Player, Team]):
     @override
     def on_player_join(self, player: Player) -> None:
         # (Pylint Bug?) pylint: disable=missing-function-docstring
-        player.set_lobby_config(
-            self.session.plr_sets[
-                self.session.sessionplayers.index(player.sessionplayer)
-            ]
-        )
-
+        self.set_player_config(player)
         player.respawn_timer = None
 
         # Only spawn if this player's team has a flag currently.

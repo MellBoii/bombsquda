@@ -683,11 +683,11 @@ class PlayerBall(bs.Actor):
             )
             # sfx
             if speed >= 13:
-                bs.getsound('punchSFX/punchDeath1').play()
+                bs.getsound('punchSFX/death').play()
             if speed >= 9:
-                bs.getsound('punchSFX/punchStrong12').play()
+                bs.getsound('punchSFX/strong12').play()
             elif speed >= 5:
-                bs.getsound('punchSFX/superPunch').play()
+                bs.getsound('punchSFX/super').play()
             mag = -270.0 * speed
             self.node.handlemessage(
                 'kick_back',

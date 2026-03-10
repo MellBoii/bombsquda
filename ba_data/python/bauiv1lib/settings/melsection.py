@@ -61,14 +61,13 @@ class MelWindow(bui.MainWindow):
         self._scroll_width = target_width - 30
         self._scroll_height = target_height - 45
         self._sub_width = min(500, self._scroll_width * 0.95)
-        self._sub_height = 880.0
+        self._sub_height = 970.0
         start_y = self._sub_height - 60
         spacing = 2
         scroll_bottom = yoffs - 56 - self._scroll_height
         smallscale = min(2.0, 1.5 * screensize[0] / safesize[0])
         col_x = width * 0.12
         raw_settings = [
-            ("squda_spazfuckedup", "spazBigEyesText", None),
             ("squda_noisepolution", "noisePollutionText", None),
             ("squda_foxyjumpscare", "foxyJumpscareText", None),
             ("squda_gamblingmode", "gamblingModeText", None),
@@ -84,7 +83,9 @@ class MelWindow(bui.MainWindow):
             ("squda_speedrunner", "speedrunTimerText", None),
             ("squda_blood", "enableBloodText", None),
             ("squda_coopnames", "coopNamesText", None),
+            ("squda_pausemusic", "pauseMusicText", None),
             ("squda_showerrors", "showErrorsText", ['randomnoises/noisePolution8', 'win']),
+            ("squda_noonline", "noOnlineText", None),
         ]
         self._settings = [
             (key, text, start_y - i * spacing, sound)

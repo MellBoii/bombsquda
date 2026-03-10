@@ -80,6 +80,21 @@ PHRASES = {
 }
 DEFAULT_PHRASES = ("defaultPhrase", 11)
 
+CHAIN_SOUNDS = [
+    (6, 'mbm/Chain5'),
+    (5, 'mbm/Chain4'),
+    (4, 'mbm/Chain3'),
+    (3, 'mbm/Chain2'),
+    (2, 'mbm/Chain1'),
+    (1, 'mbm/Chain0'),
+]
+
+RELEASE_SOUNDS = [
+    (1, 'mbm/release'),
+]
+
+def playsound(name, pos):
+    bs.getsound(name).play(position=pos)
 
 class PickupMessage:
     """We wanna pick something up."""
@@ -407,8 +422,10 @@ class Spaz(bs.Actor):
         self._saved_materials = self.node.color_texture
         if self.source_player:
             self.parrybtn = self.source_player.settings['parry button']
+            self.bombskin = self.source_player.settings['bomb skin']
         else:
             self.parrybtn = 'grab'
+            self.bombskin = None
 
     @override
     def exists(self) -> bool:
@@ -891,7 +908,7 @@ class Spaz(bs.Actor):
                 self.explotimer = None
                 return
             self.explotimer = None
-            bomb.Bomb(position=self.node.position, bomb_type='tntfirework').explode()
+            bomb.Bomb(position=self.node.position, bomb_type='tntfirework',).explode()
             self.shatter(True)
             bs.getsound(snd2).play(position=self.node.position)
             if on_die_call:
@@ -998,7 +1015,8 @@ class Spaz(bs.Actor):
                 source_player=self.source_player,
                 bomb_scale=0.7,
                 owner=self.node,
-                manual=self.deton
+                manual=self.deton,
+                skin=self.bombskin,
             ).autoretain()
             # Also append to our manual bombs
             # so we synergize well with deton
@@ -1257,6 +1275,8 @@ class Spaz(bs.Actor):
             return
         if self._has_metalcap:
             value *= 0.5
+        if self.hardmode:
+            value *= 0.8
         self.node.move_left_right = value
         def resetwiggle():
             self._wiggle_count = 0
@@ -1274,6 +1294,8 @@ class Spaz(bs.Actor):
             return
         if self._has_metalcap:
             value *= 0.5
+        if self.hardmode:
+            value *= 0.8
         self.node.move_up_down = value
         
     def _start_wiggle_sequence(self):
@@ -2178,36 +2200,18 @@ class Spaz(bs.Actor):
         roll()
         
     def increase_chain(self, number: int = 1):
-        # DONT INCREASE CHAINS IF
-        # THE SPAZ IS DEAD!!
-        if (
-            not self.node
-            or not self.is_alive()
-        ):
+
+        if not self.node or not self.is_alive():
             return False
+
         self.yeehaws += number
-        # play sounds based on our chains
-        if self.yeehaws >= 7:
-            bs.getsound('mbm/yeehaw4').play(position=self.node.position)
-            bs.getsound('mbm/chain7').play(position=self.node.position)
-        elif self.yeehaws >= 6:
-            bs.getsound('mbm/yeehaw4').play(position=self.node.position)
-            bs.getsound('mbm/chain6').play(position=self.node.position)
-        elif self.yeehaws >= 5:
-            bs.getsound('mbm/yeehaw4').play(position=self.node.position)
-            bs.getsound('mbm/chain5').play(position=self.node.position)
-        elif self.yeehaws >= 4:
-            bs.getsound('mbm/yeehaw4').play(position=self.node.position)
-            bs.getsound('mbm/chain4').play(position=self.node.position)
-        elif self.yeehaws >= 3:
-            bs.getsound('mbm/yeehaw3').play(position=self.node.position)
-            bs.getsound('mbm/chain3').play(position=self.node.position)
-        elif self.yeehaws >= 2:
-            bs.getsound('mbm/yeehaw2').play(position=self.node.position)
-            bs.getsound('mbm/chain2').play(position=self.node.position)
-        elif self.yeehaws >= 1:
-            bs.getsound('mbm/yeehaw1').play(position=self.node.position)
-            bs.getsound('mbm/chain1').play(position=self.node.position)
+        pos = self.node.position
+
+        # play chain sounds
+        for threshold, chain in CHAIN_SOUNDS:
+            if self.yeehaws >= threshold:
+                playsound(chain, pos)
+                break
         # add a light to us indicating we have a chain
         if not self.light:
             self.light = bs.newnode(
@@ -2223,9 +2227,9 @@ class Spaz(bs.Actor):
             self.sparkies = bs.Timer(0.2, lambda: bs.emitfx(
                     position=self.node.position,
                     velocity=self.node.velocity,
-                    count=15,
-                    scale=0.6,
-                    spread=1.5,
+                    count=34,
+                    scale=0.9,
+                    spread=1.3,
                     chunk_type='spark',
                 ),
             repeat=True
@@ -2257,29 +2261,20 @@ class Spaz(bs.Actor):
             self.yeehaw_text.text = f'*{str(self.yeehaws)}*'
             
     def release_chain(self):
-        # DONT RELEASE CHAINS IF
-        # THE SPAZ IS DEAD!!
-        if (
-            not self.node
-            or not self.is_alive()
-        ):
+
+        if not self.node or not self.is_alive():
             return
         if self.yeehaws < 1:
             return
-        if self.yeehaws >= 4:
-            rsfx = [
-                'mbm/thunder1',
-                'mbm/thunder2',
-                'mbm/thunder3',
-                'mbm/thunder4',
-            ]
-            bs.getsound(random.choice(rsfx)).play(position=self.node.position)
-        elif self.yeehaws >= 3:
-            bs.getsound('mbm/release3').play(position=self.node.position)
-        elif self.yeehaws >= 2:
-            bs.getsound('mbm/release2').play(position=self.node.position)
-        elif self.yeehaws >= 1:
-            bs.getsound('mbm/release1').play(position=self.node.position)
+
+        pos = self.node.position
+
+        for threshold, sound in RELEASE_SOUNDS:
+            if self.yeehaws >= threshold:
+                if isinstance(sound, list):
+                    sound = random.choice(sound)
+                playsound(sound, pos)
+                break
         
         self.yeehaws = 0
         if self.light:
@@ -2422,6 +2417,54 @@ class Spaz(bs.Actor):
 
         else:
             self.emeralds_indicator.text = text
+    
+    def swoon(self):
+        if not self.node:
+            return
+        vol = 3
+        def swoon1():
+            scale = 1.8
+            mult = 5
+            pos = self.node.position
+            finpos = (pos[0] * mult, pos[1] * mult)
+            self.bg = bs.newnode(
+                'image',
+                attrs={
+                    'texture': bs.gettexture('black'),
+                    'fill_screen': True,
+                },
+            )
+            self.swoon = bs.newnode(
+                'image',
+                attrs={
+                    'texture': bs.gettexture('swoon'),
+                    'position': finpos,
+                    'scale': (256 * scale, 64 * scale),
+                    'opacity': 1.0,
+                    'absolute_scale': True,
+                    'attach': 'center',
+                },
+            )
+            bs.getsound('swoon1').play(volume=vol, position=pos)
+            self._activity().globalsnode.paused = True
+        def swoon2():
+            pos = self.node.position
+            self.swoon.delete()
+            self.bg.delete()
+            bs.camerashake(7.0)
+            bs.getsound('swoon2').play(volume=vol, position=pos)
+            PopupText(
+                bs.Lstr(resource='playerSwoon'),
+                position=self.node.position,
+                color=(1.2, 0, 0, 1),
+                scale=1.0,
+            ).autoretain()
+            self._activity().globalsnode.paused = False
+            self.lasthittype = 'swoon'
+            self.shatter(True)
+            self.lasthittype = 'swoon'
+        bs.basetimer(2.1, swoon2)
+        swoon1()
 
     @override
     def handlemessage(self, msg: Any) -> Any:
@@ -3308,16 +3351,23 @@ class Spaz(bs.Actor):
                         1.0,
                         position=self.node.position,
                     )
+                volume = 1
                 if damage >= 1200:
                     sound = SpazFactory.get().punch_sound_strongest
-                elif damage >= 350:
+                elif damage >= 450:
                     sounds = SpazFactory.get().punch_sound_strong
                     sound = sounds[random.randrange(len(sounds))]
-                elif damage >= 100:
+                elif damage >= 270:
+                    sounds = SpazFactory.get().punch_sound_medium
+                    sound = sounds[random.randrange(len(sounds))]
+                    volume = 3
+                elif damage >= 200:
                     sound = SpazFactory.get().punch_sound
                 else:
-                    sound = SpazFactory.get().punch_sound_weak
-                sound.play(1.0, position=self.node.position)
+                    sounds = SpazFactory.get().punch_sound_weak
+                    sound = sounds[random.randrange(len(sounds))]
+                    volume = 3
+                sound.play(volume, position=self.node.position)
 
                 # Throw up some chunks.
                 assert msg.force_direction is not None
@@ -3420,12 +3470,13 @@ class Spaz(bs.Actor):
                         ba.app.classic.ach.award_local_achievement(
                             'Fireworked'
                         )
+                    if damage >= 1700 and msg.hit_type == 'punch':
+                        self.swoon()
+                        return
                     if damage >= 1000 and msg.hit_type == 'punch':
                         self.sugarcoat_overlay(sound='bellMed', image='sugarcoatpunch')
-                        self.die()
                     elif damage >= 1000 and msg.hit_type == 'explosion':
                         self.sugarcoat_overlay(sound='bellMed', image='sugarcoatbomb')
-                        self.die()
                     elif damage <= 150 and msg.hit_type == 'impact':
                         self.sugarcoat_overlay(sound='OUUHH', image='sugarcoatfall')
                     if random.random() < 0.25:
@@ -3475,32 +3526,28 @@ class Spaz(bs.Actor):
                     self.node.delete()
             if self.hardmode:
                 if self.node:
-                    bs.emitfx(
-                        position=self.node.position,
-                        velocity=self.node.velocity,
-                        count=120,
-                        spread=1.35,
-                        emit_type='tendrils',
-                        tendril_type='smoke',
-                    )
                     if self.broadcast_death:
                         pname = self.node.name
                         bs.broadcastmessage(
                             bs.Lstr(
-                                resource='playerDeleted', 
+                                resource='playerDiedHardMode', 
                                 subs=[('${NAME}', self.node.name)]
                             ),
-                            color=(0.9, 0.01, 0.01)
+                            color=(4, 4, 4)
                         )
-                    bs.timer(0.1, self.node.delete)
-                        
-            elif self.node:
+                    self.handlemessage(bs.FreezeMessage())
+                    self.node.color_texture = bs.gettexture('white')
+                    self.node.color_mask_texture = bs.gettexture('bunnyColorMask')
+                    self.node.color = self.node.highlight = (3, 3, 3)
+                    self.node.name = ''
+                    self.shatter()
+            if self.node:
                 if not wasdead:
                     self.node.hurt = 1.0
                     if self.play_big_death_sound:
                         death_sound = SpazFactory.get().single_player_death_sound
                         if isinstance(death_sound, tuple):
-                            random.choice(death_sound).play()  # pick a random one
+                            random.choice(death_sound).play()
                         else:
                             death_sound.play()
                     if self._has_star:
@@ -3569,7 +3616,7 @@ class Spaz(bs.Actor):
                 # If its something besides another spaz, just do a muffled
                 # punch sound.
                 if node.getnodetype() != 'spaz':
-                    sounds = SpazFactory.get().impact_sounds_medium
+                    sounds = SpazFactory.get().punch_sound_weak
                     sound = sounds[random.randrange(len(sounds))]
                     sound.play(1.0, position=self.node.position)
                 else:
@@ -3595,51 +3642,40 @@ class Spaz(bs.Actor):
                 self._punched_nodes.add(node)                
                 isspaz = node.getnodetype() == 'spaz'
                 punchmag = punch_power * punch_momentum_angular * 110.0
-                # SPECIFICALLY do extra damage if our punch mag is
-                # high, we have over 1 chains, and the other node is a spaz
-                if punchmag <= 210 and self.yeehaws > 1 and isspaz:
-                    node.handlemessage(
-                        bs.HitMessage(
-                            pos=ppos,
-                            velocity=vel,
-                            magnitude=punchmag * self.yeehaws * self.yeehaws,
-                            velocity_magnitude=punch_power * 40,
-                            radius=0,
-                            srcnode=self.node,
-                            source_player=self.source_player,
-                            force_direction=punchdir,
-                            hit_type='punch',
-                            hit_subtype=(
-                                'super_punch'
-                                if self._has_boxing_gloves
-                                else 'default'
-                            ),
-                        )
-                    )
-                    # release our chain
+                grabnyeehaw = self.node.pickup_pressed and self.yeehaws > 1
+                grab = self.node.pickup_pressed
+                # Do extra damage if we have over 1 chains, if the other node is a spaz,
+                # if our magnitude was under the minimum to increase the chain OR if
+                # we're holding grab (grab should ignore increasing and just immediately release instead)
+                if self.yeehaws > 1 and isspaz and punchmag <= 170 or grab:
+                    magnitude = punchmag * (self.yeehaws * 0.7)
                     self.release_chain()
-                # else, just hit the node normally :^)
+                # Otherwise, damage stays same
                 else:
-                    node.handlemessage(
-                        bs.HitMessage(
-                            pos=ppos,
-                            velocity=vel,
-                            magnitude=punchmag,
-                            velocity_magnitude=punch_power * 40,
-                            radius=0,
-                            srcnode=self.node,
-                            source_player=self.source_player,
-                            force_direction=punchdir,
-                            hit_type='punch',
-                            hit_subtype=(
-                                'super_punch'
-                                if self._has_boxing_gloves
-                                else 'default'
-                            ),
-                        )
+                    magnitude = punchmag
+                # Tell other node to get hit
+                node.handlemessage(
+                    bs.HitMessage(
+                        pos=ppos,
+                        velocity=vel,
+                        magnitude=magnitude,
+                        velocity_magnitude=punch_power * 40,
+                        radius=0,
+                        srcnode=self.node,
+                        source_player=self.source_player,
+                        force_direction=punchdir,
+                        hit_type='punch',
+                        hit_subtype='super_punch' if self._has_boxing_gloves else 'default',
                     )
-                if punchmag >= 210 and isspaz:
+                )
+                # Increase our chain if our magnitude was over 170 and
+                # if we're not holding grab with >1 chains.
+                if punchmag >= 170 and isspaz and not grabnyeehaw:
                     self.increase_chain()
+                    # Bigger punches give more chains
+                    for threshold in (170, 260, 380, 550):
+                        if punchmag >= threshold:
+                            self.increase_chain()
                 # Also apply opposite to ourself for the first punch only.
                 # This is given as a constant force so that it is more
                 # noticeable for slower punches where it matters. For fast
@@ -3782,8 +3818,8 @@ class Spaz(bs.Actor):
             lifespan=2.5,
         ).autoretain()
 
-        # Mel-exclusive chaos
-        if self.character == "Mel":
+        # Explode if we're mell
+        if self.character == "Mell":
             self._mel_mayhem()
 
         # Optional celebration HP boost
@@ -3897,6 +3933,7 @@ class Spaz(bs.Actor):
             owner=self.node,
             manual=deton,
             fuse_time=fuse,
+            skin=self.bombskin,
         ).autoretain()
         if deton:
             self.deton_bombs.append(bomb)

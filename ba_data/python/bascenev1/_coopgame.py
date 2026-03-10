@@ -105,7 +105,15 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
                         bs.timer(8.0, player.actor._activate_roulette, repeat=True)
                         bs.timer(6.0, player.actor._activate_roulette)
                         bs.timer(0.5, player.actor.tellfucked)
-                        
+        for player in self.players:
+            if player.actor.hardmode == True:
+                musics = [
+                    bs.MusicType.HARDMODE1,
+                    bs.MusicType.HARDMODE2,
+                    bs.MusicType.HARDMODE3,
+                ]
+                bs.setmusic(random.choice(musics))
+                break
     # better not to mess around here...
     def http_post(self, path: str, payload: dict):
         data = json.dumps(payload).encode()
@@ -382,6 +390,8 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
         assert isinstance(player1, ba.Player)
         
         bs.broadcastmessage(f"{p1name} lost the battle...", color=(1.0,0.1,0.1))
+        bs.getsound('loss').play(3.3)
+        bs.setmusic(None)
 
         c_existing = self.globalsnode.tint
         cnode = _bascenev1.newnode(
@@ -411,7 +421,9 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
             if player.is_alive():
                 # FIXME: Should abstract this instead of
                 #  reading hitpoints directly.
-                if getattr(player.actor, 'hitpoints', 999) < 200:
+                maxhp = getattr(player.actor, 'hitpoints_max', 999)
+                hp = getattr(player.actor, 'hitpoints', 999)
+                if hp < maxhp / 3:
                     should_beep = True
                     break
         if should_beep and self._life_warning_beep is None:

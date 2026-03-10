@@ -120,29 +120,28 @@ class SpazFactory:
             bs.getsound('playerDeath2'),
             bs.getsound('playerDeath3')
         )
-        self.punch_sound_weak = bs.getsound('punchSFX/punchWeak01')
-        self.punch_sound = bs.getsound('punchSFX/punch01')
-        self.punch_sound_strong = (
-            bs.getsound('punchSFX/punchStrong01'),
-            bs.getsound('punchSFX/punchStrong02'),
-            bs.getsound('punchSFX/punchStrong03'),
-            bs.getsound('punchSFX/punchStrong04'),
-            bs.getsound('punchSFX/punchStrong05'),
-            bs.getsound('punchSFX/punchStrong06'),
-            bs.getsound('punchSFX/punchStrong07'),
-            bs.getsound('punchSFX/punchStrong08'),
-            bs.getsound('punchSFX/punchStrong09'),
-            bs.getsound('punchSFX/punchStrong10'),
-            bs.getsound('punchSFX/punchStrong11'),
-            bs.getsound('punchSFX/punchStrong12'),
+        self.punch_sound_weak = (
+            bs.getsound('punchSFX/weak1'),
+            bs.getsound('punchSFX/weak2'),
+            bs.getsound('punchSFX/weak3'),
+            bs.getsound('punchSFX/weak4'),
         )
-        self.punch_sound_stronger = bs.getsound('punchSFX/superPunch')
-        self.punch_sound_strongest = bs.getsound('punchSFX/punchDeath1')
+        self.punch_sound_medium = (
+            bs.getsound('punchSFX/medium1'),
+            bs.getsound('punchSFX/medium2'),
+            bs.getsound('punchSFX/medium3'),
+            bs.getsound('punchSFX/medium4'),
+        )
+        self.punch_sound = bs.getsound('punchSFX/generic')
+        strong = ['punchSFX/strong' + str(i + 1) for i in range(15)]
+        self.punch_sound_strong = [bs.getsound(s) for s in strong]
+        self.punch_sound_stronger = bs.getsound('punchSFX/super')
+        self.punch_sound_strongest = bs.getsound('punchSFX/death')
         self.lobotomy = (
             bs.getsound('lobotomized'),
             bs.getsound('owmyorgans'),
         )
-        self.swish_sound = bs.getsound('punchSFX/punchSwish')
+        self.swish_sound = bs.getsound('punchSFX/swish')
         self.block_sound = bs.getsound('block')
         self.shatter_sound = bs.getsound('shatter')
         self.splatter_sound = bs.getsound('gibbed')

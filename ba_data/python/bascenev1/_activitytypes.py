@@ -94,7 +94,7 @@ class JoinActivity(Activity[EmptyPlayer, EmptyTeam]):
 
         super().on_transition_in()
         self._background = Background(
-            fade_time=0.5, start_faded=True, show_logo=True
+            fade_time=0.5, start_faded=True, show_logo=True,flash=True
         )
         self._tips_text = TipsText()
         self._join_info = self.session.lobby.create_join_info()

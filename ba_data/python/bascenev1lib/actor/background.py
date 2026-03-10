@@ -23,6 +23,7 @@ class Background(bs.Actor):
         fade_time: float = 0.5,
         start_faded: bool = False,
         show_logo: bool = False,
+        flash: bool = False,
     ):
         super().__init__()
         self._dying = False
@@ -45,6 +46,22 @@ class Background(bs.Actor):
                     'color': (1, 1, 1),
                 },
             )
+            if flash:
+                bright = (1.8, 1.8, 1.8)
+                dark = (0.5, 0.5, 0.5)
+                bs.animate_array(
+                    self.node, 
+                    'color',
+                    3,
+                    {
+                        0.0: dark,
+                        0.3: dark,
+                        2.0: bright,
+                        2.3: bright,
+                        4.0: dark,
+                    },
+                    loop=True,
+                )
             if not start_faded:
                 bs.animate(
                     self.node,
@@ -71,6 +88,22 @@ class Background(bs.Actor):
                         'absolute_scale': False,
                     },
                 )
+                if flash:
+                    bright = (0.6, 0.6, 0.6)
+                    dark = (0.15, 0.15, 0.15)
+                    bs.animate_array(
+                        self.logo, 
+                        'color',
+                        3,
+                        {
+                            0.0: dark,
+                            0.3: dark,
+                            2.0: bright,
+                            2.3: bright,
+                            4.0: dark,
+                        },
+                        loop=True,
+                    )
                 self.node.connectattr('opacity', self.logo, 'opacity')
                 # add jitter/pulse for a stop-motion-y look unless we're in VR
                 # in which case stillness is better

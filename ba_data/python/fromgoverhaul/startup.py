@@ -68,6 +68,8 @@ class Startup():
         "squda_spaztokens": 5,
         "squda_showerrors": False,
         "squda_foxyjumpscare": False,
+        "squda_pausemusic": True,
+        "squda_noonline": False,
     }
     # "setdefault" to create config settings
     # won't affect already existing ones.
@@ -211,9 +213,8 @@ class Startup():
                     print('Connecting to the BombSquda server failed.')
                     loopt._connection_success_logged = False
                     loopt._connection_failed_logged = True
-
-    threading.Thread(target=loop, daemon=True).start()
-
+    if not ba.app.config.get('squda_noonline'):
+        threading.Thread(target=loop, daemon=True).start()
     bs.debprint('everything should be good to go :3')
     
 

@@ -174,7 +174,7 @@ class CreditsActivity(bs.GameActivity[bs.Player, bs.Team]):
         # Create the text node off-screen at the bottom
         self._text_node = bs.newnode("text", attrs={
             "text": bs.Lstr(
-                resource='creditsText', 
+                resource='activityCreditsText', 
                 subs=[
                     ('${NAME}', self.you)
                 ]
