@@ -18,7 +18,6 @@ import time
 if TYPE_CHECKING:
     from typing import Any, Sequence
 
-
 class Player(bs.Player['Team']):
     """Our player type for this game."""
 
@@ -212,7 +211,7 @@ class TestActivity(bs.TeamGameActivity[Player, Team]):
                 2: {
                     "character": "spaz",
                     "expression": "angry",
-                    "name": "Newbie",
+                    "name": "Newbie", 
                     "text": "Shut up.{pause=0.2} I'm gonna fucking kill you.",
                     "sound": "diagvoice/spaz",
                 },
