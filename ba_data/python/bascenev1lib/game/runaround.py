@@ -479,18 +479,18 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
             
         self.setup_low_life_warning_sound()
         self._update_scores()
-        
-        self.earthmover = bs.NodeActor(
-            bs.newnode(
-                'terrain',
-                attrs={
-                    'mesh': bs.getmesh('earthmover'),
-                    'color': (1.0, 1.0, 1.0),
-                    'lighting': True,
-                    'color_texture': bs.gettexture('earthmover'),
-                },
+        if self._preset in {Preset.ENDLESS, Preset.ENDLESS_TOURNAMENT}:
+            self.earthmover = bs.NodeActor(
+                bs.newnode(
+                    'terrain',
+                    attrs={
+                        'mesh': bs.getmesh('earthmover'),
+                        'color': (1.0, 1.0, 1.0),
+                        'lighting': True,
+                        'color_texture': bs.gettexture('earthmover'),
+                    },
+                )
             )
-        )
 
         # Our TNT spawner (if applicable).
         if self._have_tnt:
