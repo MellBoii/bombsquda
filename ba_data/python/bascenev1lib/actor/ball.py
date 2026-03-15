@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, overload, override
 
 import math
+import random
 
 import bascenev1 as bs
 import bascenev1lib as bslib
@@ -81,7 +82,6 @@ class PlayerBall(bs.Actor):
             ),
             actions=(
                 ('message', 'our_node', 'at_connect', CollideMessage(1)),
-                ('message', 'our_node', 'at_disconnect', CollideMessage(-1)),
             ),
         )
         self.roller_material.add_actions(
@@ -585,6 +585,17 @@ class PlayerBall(bs.Actor):
                 if msg.flat_damage 
                 else msg.magnitude / 0.5
             )
+            if msg.hit_type == 'explosion':
+                damage *= random.uniform(0.1, 0.3)
+            elif msg.hit_type == 'collision':
+                damage /= 0.5
+            elif msg.hit_type == 'punch':
+                damage /= 0.25
+            # print(damage)
+            # print(f'hit_type: {msg.hit_type}')
+            # print(f'hit_subtype: {msg.hit_subtype}')
+            # print(f'fd: {msg.flat_damage}')
+            # print(f'mag: {msg.magnitude}')
             self.hitpoints -= damage
             if self.hitpoints <= 0:
                 self.die()
@@ -666,6 +677,8 @@ class PlayerBall(bs.Actor):
             node = bs.getcollision().opposingnode
             actor = node.getdelegate(bs.Actor)
             speed = self.getspeed()
+            if not actor or not node:
+                return
             if speed <= 4.5:
                 # dont hit when slow
                 return
@@ -673,32 +686,27 @@ class PlayerBall(bs.Actor):
                 bs.HitMessage(
                     pos=self.node.position,
                     velocity=self.node.velocity,
-                    magnitude=speed,
-                    velocity_magnitude=speed,
+                    magnitude=speed * 0.5,
+                    velocity_magnitude=speed / 0.5,
                     radius=0,
                     srcnode=self.node,
                     source_player=self.source_player,
-                    force_direction=self.node.velocity,                           
+                    force_direction=self.node.velocity,
+                    hit_type='collision',
+                    hit_subtype='ball',
                 )
             )
             # sfx
-            if speed >= 13:
-                bs.getsound('punchSFX/death').play()
-            if speed >= 9:
-                bs.getsound('punchSFX/strong12').play()
+            if speed >= 15:
+                bs.getsound('punchSFX/death').play(position=self.node.position)
+            if speed >= 11:
+                sfx = ['punchSFX/strong' + str(i + 1) + '' for i in range(15)]
+                bs.getsound(random.choice(sfx)).play(position=self.node.position)
             elif speed >= 5:
-                bs.getsound('punchSFX/super').play()
-            mag = -270.0 * speed
-            self.node.handlemessage(
-                'kick_back',
-                self.node.position[0],
-                self.node.position[1],
-                self.node.position[2],
-                self.node.velocity[0],
-                self.node.velocity[1],
-                self.node.velocity[2],
-                mag,
-            )
+                sfx = ['punchSFX/medium' + str(i + 1) + '' for i in range(4)]
+                bs.getsound(random.choice(sfx)).play(position=self.node.position)
+            mag = -170.0 * (speed * 0.5)
+            self.dash(x=mag, y=35)
         else:
             return super().handlemessage(msg)
         return None
