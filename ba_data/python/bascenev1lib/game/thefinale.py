@@ -44,6 +44,7 @@ from bascenev1lib.actor.spazbot import (
     LauncherBot,
     ralsieBot,
     MelisoBot,
+    BuddieBot,
 )
 
 if TYPE_CHECKING:
@@ -138,6 +139,7 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
             ExplodeyBot: SpawnInfo(0.10, 0.02, 0.002),
             ralsieBot: SpawnInfo(0.10, 0.04, 0.002),
             MelisoBot: SpawnInfo(0.07, 0.03, 0.002),
+            BuddieBot: SpawnInfo(0.15, 0.08, 0.0015),
         }
 
     @override
@@ -152,9 +154,6 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
     @override
     def on_begin(self) -> None:
         super().on_begin()
-
-        bs.getsound('theFinaleStart').play() 
-
         # Spit out a few powerups and start dropping more shortly.
         self._drop_powerups(standard_points=True)
         bs.timer(2.0, bs.WeakCall(self._start_powerup_drops))
@@ -218,6 +217,8 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
             else 3.3
         )
         self._bot_update_interval = time - 0.3 * (len(self.players))
+        if self._bot_update_interval <= 0:
+            self._bot_update_interval = 1.2
         self._bot_update_timer = bs.Timer(
             self._bot_update_interval, bs.WeakCall(self._update_bots)
         )
@@ -225,10 +226,10 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
         if not self.easymode:
             self._update_bots()
             self._update_bots()
-        if len(self.players) > 2:
+        if len(self.players) >= 2:
             self._update_bots()
             self._update_bots()
-        if len(self.players) > 3:
+        if len(self.players) >= 4:
             self._update_bots()
 
     def _drop_powerup(self, index: int, poweruptype: str | None = None) -> None:
@@ -420,13 +421,13 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
             ],
         )
         self.points_text.text = ptext_lstr
-        if score >= 500:
+        if score >= 650:
             if self._alrdidach2 == True:
                 return
             self._alrdidach2 = True
             self._award_achievement('The Halfway Mark')
             OverheadText(bs.Lstr(resource='finaleOverhead3'))
-        if score >= 250:
+        if score >= 350:
             if self._alrdidach1 == True:
                 return
             self._alrdidach1 = True

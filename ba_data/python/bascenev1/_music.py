@@ -50,6 +50,7 @@ class MusicType(Enum):
     VICTORYFINAL = 'VictoryFinal'
     CHAR_SELECT = 'Char_Select'
     CHAR_SELECT2 = 'Char_Select2'
+    CHAR_SELECT3 = 'Char_Select3'
     CHAR_SELECT_F = 'Char_Select_F'
     TUTORIAL = 'Tutorial'
     RUN_AWAY = 'Run_Away'
@@ -138,7 +139,7 @@ def _get_free_slot(slots: dict) -> int:
         slot += 1
     return slot  
   
-def show_music_now_playing(music_type: bs.MusicType) -> None:
+def show_music_now_playing(music_type: bs.MusicType | str) -> None:
     """Display current music on screen."""
     from bascenev1lib.actor.text import Text
     from bascenev1lib.actor.image import Image
@@ -164,6 +165,7 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
         bs.MusicType.EPICFAST: "Starvation V2 - T_heonlywhitesofa",
         bs.MusicType.CHAR_SELECT: "Overworld Map - Mario Kart World",
         bs.MusicType.CHAR_SELECT2: "Your Name, Please - EarthBound Dimensions",
+        bs.MusicType.CHAR_SELECT3: "Slot Machine - Super Mario 3D World",
         bs.MusicType.CHAR_SELECT_F: "Sky Map - Mario Kart World",
         bs.MusicType.TUTORIAL: "Go Go Go Summer, Nobuhamu - Tetr.io",
         bs.MusicType.ONLINE: "Across The World - Tyron",

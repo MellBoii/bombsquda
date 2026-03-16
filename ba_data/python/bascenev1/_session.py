@@ -738,7 +738,6 @@ class Session:
 
         # Otherwise just add players on the fly.
         else:
-            self._add_chosen_player(chooser)
             sets = lobby._player_settings[self.sessionplayers.index(chooser.getplayer())]
             settings = self.plr_sets.setdefault(
                 self.sessionplayers.index(chooser.getplayer()), {}
@@ -746,6 +745,7 @@ class Session:
             for setting in chooser.settings:
                 settings.setdefault(setting, chooser.settings_options[setting][0])
             self.plr_sets[self.sessionplayers.index(chooser.getplayer())] = sets
+            self._add_chosen_player(chooser)
             lobby.remove_chooser(chooser.getplayer())
 
     def transitioning_out_activity_was_freed(

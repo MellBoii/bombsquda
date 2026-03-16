@@ -211,6 +211,7 @@ class Chooser:
         self._profilename = ''
         self._profilenames: list[str] = []
         self._ready: bool = False
+        self._front: bool = True
         # --- Custom menu attrs ---
         self._menu_active = False
         self._menu_index = 0  # which menu option we're at
@@ -304,6 +305,7 @@ class Chooser:
                 'h_align': 'left',
                 'v_align': 'center',
                 'v_attach': 'top',
+                'front': self._front,
             },
         )
         
@@ -319,7 +321,8 @@ class Chooser:
                 'v_align': 'center',
                 'v_attach': 'top',
                 'opacity': 0.5,
-                'color': (1, 1, 1)
+                'color': (1, 1, 1),
+                'front': self._front,
             },
         )
         animate(self._text_node, 'scale', {0: 0, 0.1: 1.0})
@@ -332,6 +335,7 @@ class Chooser:
                 'mask_texture': self._mask_texture,
                 'vr_depth': -10,
                 'attach': 'topCenter',
+                'front': self._front,
             },
         )
 

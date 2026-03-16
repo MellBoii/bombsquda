@@ -1275,8 +1275,6 @@ class Spaz(bs.Actor):
             return
         if self._has_metalcap:
             value *= 0.5
-        if self.hardmode:
-            value *= 0.8
         self.node.move_left_right = value
         def resetwiggle():
             self._wiggle_count = 0
@@ -1294,8 +1292,6 @@ class Spaz(bs.Actor):
             return
         if self._has_metalcap:
             value *= 0.5
-        if self.hardmode:
-            value *= 0.8
         self.node.move_up_down = value
         
     def _start_wiggle_sequence(self):
@@ -1425,18 +1421,6 @@ class Spaz(bs.Actor):
         if not self.node:
             logging.exception('Can\'t equip shields; no node.')
             return
-        # Prevent players from getting shields 
-        # if they're on hardmode (so that it's not too easy).
-        if self.hardmode:
-            PopupText(
-                bs.Lstr(resource='noShield'),
-                position=self.node.position,
-                color=(1, 0.1, 0.1, 0.9),
-                scale=1.0,
-            ).autoretain()
-            bs.getsound('error').play(position=self.node.position)
-            return
-
         factory = SpazFactory.get()
         if self.shield is None:
             self.shield = bs.newnode(
@@ -1445,7 +1429,12 @@ class Spaz(bs.Actor):
                 attrs={'color': self.node.color, 'radius': 1.3},
             )
             self.node.connectattr('position_center', self.shield, 'position')
-        self.shield_hitpoints = self.shield_hitpoints_max = 1000
+        if self.hardmode:
+            hp = 300
+            decay = False
+        else:
+            hp = 1000
+        self.shield_hitpoints = self.shield_hitpoints_max = hp
         self.shield_decay_rate = factory.shield_decay_rate if decay else 0
         self.shield.hurt = 0
         pos = self.node.position
@@ -2101,19 +2090,19 @@ class Spaz(bs.Actor):
         ).autoretain()
         def text2():
             PopupText(
-            bs.Lstr(resource='gambText2'),
-            position=self.node.position,
-            color=(1, 0.4, 0.4, 0.9),
-            scale=1.0,
+                bs.Lstr(resource='gambText2'),
+                position=self.node.position,
+                color=(1, 0.4, 0.4, 0.9),
+                scale=1.0,
             ).autoretain()
             bs.getsound('error').play(position=self.node.position)
             bs.setmusic(None)
         def text3():
             PopupText(
-            bs.Lstr(resource='gambText3'),
-            position=self.node.position,
-            color=(1, 0.4, 0.4, 0.9),
-            scale=1.0,
+                bs.Lstr(resource='gambText3'),
+                position=self.node.position,
+                color=(1, 0.4, 0.4, 0.9),
+                scale=1.0,
             ).autoretain()
             bs.timer(0.5, lambda: bs.setmusic(bs.MusicType.GAMBLING))
             char_name = getattr(self, 'character', None)
@@ -2222,7 +2211,7 @@ class Spaz(bs.Actor):
                     'color': (1.0, 0.8, 0.4),
                 },
             )
-            self.node.connectattr('position', self.light, 'position')
+            self.node.connectattr('torso_position', self.light, 'position')
         if not self.sparkies:
             self.sparkies = bs.Timer(0.2, lambda: bs.emitfx(
                     position=self.node.position,
@@ -2424,7 +2413,7 @@ class Spaz(bs.Actor):
         vol = 3
         def swoon1():
             scale = 1.8
-            mult = 5
+            mult = 15
             pos = self.node.position
             finpos = (pos[0] * mult, pos[1] * mult)
             self.bg = bs.newnode(
@@ -2457,7 +2446,7 @@ class Spaz(bs.Actor):
                 bs.Lstr(resource='playerSwoon'),
                 position=self.node.position,
                 color=(1.2, 0, 0, 1),
-                scale=1.0,
+                scale=1.4,
             ).autoretain()
             self._activity().globalsnode.paused = False
             self.lasthittype = 'swoon'
@@ -2922,7 +2911,7 @@ class Spaz(bs.Actor):
                 )
                 return True
             if (
-                msg.hit_subtype == 'non_hurt_self_blast' 
+                msg.hit_subtype == 'non_self_hurt' 
                 and msg.bombowner == self.node
             ):
                 return True
@@ -3479,7 +3468,7 @@ class Spaz(bs.Actor):
                         self.sugarcoat_overlay(sound='bellMed', image='sugarcoatbomb')
                     elif damage <= 150 and msg.hit_type == 'impact':
                         self.sugarcoat_overlay(sound='OUUHH', image='sugarcoatfall')
-                    if random.random() < 0.25:
+                    if random.random() < 0.15:
                         self.firework_explode()
                         return
                     self.die()
@@ -3524,26 +3513,25 @@ class Spaz(bs.Actor):
             if msg.immediate:
                 if self.node:
                     self.node.delete()
-            if self.hardmode:
-                if self.node:
-                    if self.broadcast_death:
-                        pname = self.node.name
-                        bs.broadcastmessage(
-                            bs.Lstr(
-                                resource='playerDiedHardMode', 
-                                subs=[('${NAME}', self.node.name)]
-                            ),
-                            color=(4, 4, 4)
-                        )
-                    self.handlemessage(bs.FreezeMessage())
-                    self.node.color_texture = bs.gettexture('white')
-                    self.node.color_mask_texture = bs.gettexture('bunnyColorMask')
-                    self.node.color = self.node.highlight = (3, 3, 3)
-                    self.node.name = ''
-                    self.shatter()
             if self.node:
                 if not wasdead:
-                    self.node.hurt = 1.0
+                    if self.hardmode:
+                        if self.broadcast_death:
+                            pname = self.node.name
+                            bs.broadcastmessage(
+                                bs.Lstr(
+                                    resource='playerDiedHardMode', 
+                                    subs=[('${NAME}', pname)]
+                                ),
+                                color=(4, 4, 4)
+                            )
+                        self.handlemessage(bs.FreezeMessage())
+                        self.node.death_sounds = [bs.getsound('trublank')]
+                        self.node.color_texture = bs.gettexture('white')
+                        self.node.color_mask_texture = bs.gettexture('bunnyColorMask')
+                        self.node.color = self.node.highlight = (3, 3, 3)
+                        self.node.name = ''
+                        self.node.hurt = 1.0
                     if self.play_big_death_sound:
                         death_sound = SpazFactory.get().single_player_death_sound
                         if isinstance(death_sound, tuple):
@@ -4150,6 +4138,9 @@ class Spaz(bs.Actor):
         """Break the poor spaz into little bits."""
         if self.shattered:
             return
+        if self.hardmode:
+            self.handlemessage(bs.DieMessage())
+            return
         if self.parrying:
             self.mpa()
             PopupText(
@@ -4197,10 +4188,6 @@ class Spaz(bs.Actor):
                 scale=0.3,
                 spread=0.2,
                 chunk_type='ice',
-            )
-            SpazFactory.get().shatter_sound.play(
-                1.0,
-                position=self.node.position,
             )
         else:
             sounds = ['gibbed', 'gibbed2']

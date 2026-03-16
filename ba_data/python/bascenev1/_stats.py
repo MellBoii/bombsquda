@@ -506,6 +506,7 @@ class Stats:
             'fall': 'nameKillOOBText',
             'swoon': 'nameKillSwoonText',
             'fireball': 'nameKillFBallText',
+            'collision': 'nameKillBalledText',
         }
         try:
             def broadcast(resource: str, subs, color, image):

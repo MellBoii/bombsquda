@@ -129,6 +129,13 @@ class AchievementSubsystem:
                 award=5,
             ),
             Achievement(
+                'Mustachioed',
+                'achievementStomped',
+                (1, 1, 1),
+                '',
+                award=15,
+            ),
+            Achievement(
                 'When TNT Flies3',
                 'achievementFly',
                 (1, 1, 1),
@@ -600,8 +607,10 @@ class Achievement:
         *,
         award: int,
         hard_mode_only: bool = False,
+        retro: bool = False,
     ):
         self._name = name
+        self.retro = retro
         self._icon_name = icon_name
         assert len(icon_color) == 3
         self._icon_color = icon_color + (1.0,)
@@ -1277,14 +1286,18 @@ class Achievement:
             return
 
         if sound:
-            bascenev1.getsound('achievement').play(host_only=True)
+            if self.retro:
+                bascenev1.getsound('achRetro').play()
+            else:
+                bascenev1.getsound('achievement').play()
         else:
             bascenev1.timer(
-                0.5, lambda: bascenev1.getsound('ding').play(host_only=True)
+                0.5, lambda: bascenev1.getsound('ding').play()
             )
 
         in_time = 0.300
         out_time = 3.5
+        host_only = False
 
         base_vr_depth = 200
 
@@ -1321,7 +1334,7 @@ class Achievement:
         ).autoretain()
         objs.append(obj)
         assert obj.node
-        obj.node.host_only = True
+        obj.node.host_only = host_only
         obj = Image(
             bascenev1.gettexture('light'),
             position=(-180, 60 + y_offs),
@@ -1336,7 +1349,7 @@ class Achievement:
         ).autoretain()
         objs.append(obj)
         assert obj.node
-        obj.node.host_only = True
+        obj.node.host_only = host_only
         obj.node.premultiplied = True
         combine = bascenev1.newnode(
             'combine', owner=obj.node, attrs={'size': 2}
@@ -1378,7 +1391,7 @@ class Achievement:
         ).autoretain()
         objs.append(obj)
         assert obj.node
-        obj.node.host_only = True
+        obj.node.host_only = host_only
 
         # Flash.
         color = self.get_icon_color(True)
@@ -1410,21 +1423,23 @@ class Achievement:
         }
         bascenev1.animate(combine, 'input2', keys)
         combine.connectattr('output', obj.node, 'color')
-
+        if self.retro:
+            texture = bascenev1.gettexture('achBorderRetro')
+        else:
+            texture = bascenev1.gettexture('achievementOutline')
         obj = Image(
-            bascenev1.gettexture('achievementOutline'),
-            mesh_transparent=bascenev1.getmesh('achievementOutline'),
-            position=(-180, 60 + y_offs),
+            texture,
+            position=(-180, 55 + y_offs),
             front=True,
             attach=Image.Attach.BOTTOM_CENTER,
             vr_depth=base_vr_depth,
             transition=Image.Transition.IN_BOTTOM,
             transition_delay=in_time,
             transition_out_delay=out_time,
-            scale=(100, 100),
+            scale=(150, 150),
         ).autoretain()
         assert obj.node
-        obj.node.host_only = True
+        obj.node.host_only = host_only
 
         # Flash.
         color = (2, 1.4, 0.4, 1)
@@ -1476,7 +1491,7 @@ class Achievement:
         ).autoretain()
         objs.append(objt)
         assert objt.node
-        objt.node.host_only = True
+        objt.node.host_only = host_only
 
         objt = Text(
             self.display_name,
@@ -1494,72 +1509,7 @@ class Achievement:
         ).autoretain()
         objs.append(objt)
         assert objt.node
-        objt.node.host_only = True
-
-        # objt = Text(
-        #     babase.charstr(babase.SpecialChar.TICKET),
-        #     position=(-120 - 170 + 5, 75 + y_offs - 20),
-        #     front=True,
-        #     v_attach=Text.VAttach.BOTTOM,
-        #     h_align=Text.HAlign.CENTER,
-        #     v_align=Text.VAlign.CENTER,
-        #     transition=Text.Transition.IN_BOTTOM,
-        #     vr_depth=base_vr_depth,
-        #     transition_delay=in_time,
-        #     transition_out_delay=out_time,
-        #     flash=True,
-        #     color=(0.5, 0.5, 0.5, 1),
-        #     scale=3.0,
-        # ).autoretain()
-        # objs.append(objt)
-        # assert objt.node
-        # objt.node.host_only = True
-
-        # print('FIXME SHOW ACH CHEST3')
-        # objt = Text(
-        #     '+' + str(self.get_award_ticket_value()),
-        #     position=(-120 - 180 + 5, 80 + y_offs - 20),
-        #     v_attach=Text.VAttach.BOTTOM,
-        #     front=True,
-        #     h_align=Text.HAlign.CENTER,
-        #     v_align=Text.VAlign.CENTER,
-        #     transition=Text.Transition.IN_BOTTOM,
-        #     vr_depth=base_vr_depth,
-        #     flatness=0.5,
-        #     shadow=1.0,
-        #     transition_delay=in_time,
-        #     transition_out_delay=out_time,
-        #     flash=True,
-        #     color=(0, 1, 0, 1),
-        #     scale=1.5,
-        # ).autoretain()
-        # objs.append(objt)
-
-        assert objt.node
-        objt.node.host_only = True
-
-        # Add the 'x 2' if we've got pro.
-        # if app.classic.accounts.have_pro():
-        #     objt = Text(
-        #         'x 2',
-        #         position=(-120 - 180 + 45, 80 + y_offs - 50),
-        #         v_attach=Text.VAttach.BOTTOM,
-        #         front=True,
-        #         h_align=Text.HAlign.CENTER,
-        #         v_align=Text.VAlign.CENTER,
-        #         transition=Text.Transition.IN_BOTTOM,
-        #         vr_depth=base_vr_depth,
-        #         flatness=0.5,
-        #         shadow=1.0,
-        #         transition_delay=in_time,
-        #         transition_out_delay=out_time,
-        #         flash=True,
-        #         color=(0.4, 0, 1, 1),
-        #         scale=0.9,
-        #     ).autoretain()
-        #     objs.append(objt)
-        #     assert objt.node
-        #     objt.node.host_only = True
+        objt.node.host_only = host_only
 
         objt = Text(
             self.description_complete,
@@ -1576,7 +1526,7 @@ class Achievement:
         ).autoretain()
         objs.append(objt)
         assert objt.node
-        objt.node.host_only = True
+        objt.node.host_only = host_only
 
         for actor in objs:
             bascenev1.timer(

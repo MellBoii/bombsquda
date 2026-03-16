@@ -586,42 +586,12 @@ class PlayWindow(bui.MainWindow):
         # no-op if we're not currently in control.
         if not self.main_window_has_control():
             return
-            
-        # Show the submenu instead of jumping directly to browser
-        if ba.app.config.get("squda_canopencredits", True):
-            self.dialog += 1
-            if self.dialog == 1:    
-                ba.screenmessage('I\'m not going there again.', color=(0.5, 0.25, 1.0))
-                bui.getsound('spazAttack04').play()
-            elif self.dialog == 2:
-                ba.screenmessage('No seriously. I\'m not gonna go there.', color=(0.5, 0.25, 1.0))
-                bui.getsound('spazAttack03').play()
-            elif self.dialog == 3:
-                ba.screenmessage('Why the hell do you wanna go back there anyways??', color=(0.5, 0.25, 1.0))
-                bui.getsound('spazImpact02').play()
-            elif self.dialog == 4:
-                ba.screenmessage('Okay FINE. I\'ll go check if there\'s anyone there.\nAtleast so you\'ll stop fuckin\' bothering me.', color=(0.5, 0.25, 1.0))
-                bui.getsound('spazImpact04').play()
-                ba.apptimer(3.0, lambda: ba.screenmessage('..okay yeah they\'re DEFINETLY still there.', color=(0.5, 0.25, 1.0)))
-                ba.apptimer(3.0, lambda: bui.getsound('spazImpact03').play())
-                ba.apptimer(3.2, lambda: bs.setmusic(None))
-                ba.apptimer(5.5, lambda: ba.screenmessage('Well, guess I\'ll have to go there.\n AGAIN.', color=(0.5, 0.25, 1.0)))
-                ba.apptimer(5.5, lambda: bui.getsound('spazAttack02').play())
-                ba.apptimer(7.7, lambda: self.main_window_replace(CoopSubMenu(origin_widget=self._coop_button,nobackout=True)))
-                ba.apptimer(7.7, lambda: bui.getsound('swish').play())
-                ba.apptimer(8.4, lambda: bs.setmusic(bs.MusicType.MENU))
-                ba.apptimer(8.5, lambda: ba.screenmessage('You re-unlocked Co-op.'))
-                ba.apptimer(8.5, lambda: bui.getsound('ding').play())
-                ba.app.config['squda_canopencredits'] = False
-                ba.app.config.commit()
-            else:
-                raise TypeError(f'Dialog number is {self.dialog}; it should ONLY be 5 and not above.\nWhat the fuck are you doing?')
-        else:    
-            self.main_window_replace(
-                CoopSubMenu(
-                    origin_widget=self._coop_button,
-                )
+             
+        self.main_window_replace(
+            CoopSubMenu(
+                origin_widget=self._coop_button,
             )
+        )
 
     def _team_tourney(self) -> None:
         # pylint: disable=cyclic-import
@@ -905,19 +875,6 @@ class CoopSubMenu(bui.MainWindow):
             v_align='center',
             size=(0, 0),
         )
-    # now unused
-    def saythingyr(self):
-        if self.dialog == 1:
-            ba.screenmessage('Nope. We\'re going back there. Whether you like it or not.', color=(0.5, 0.25, 1.0))
-            bui.getsound('spazAttack02').play()
-            self.dialog += 1
-        elif self.dialog == 2:
-            ba.screenmessage('Just get in the dang thingy already.', color=(0.5, 0.25, 1.0))
-            bui.getsound('spazFall02').play()
-            self.dialog += 1
-        elif self.dialog == 3:
-            ba.screenmessage('MOVEEEEE ITTTTTTTTT!!!!!!!!!!!!!!', color=(1.0, 0.25, 0.25))
-            bui.getsound('spazFall03').play()
     
     @override
     def get_main_window_state(self) -> bui.MainWindowState:
@@ -946,9 +903,7 @@ class CoopSubMenu(bui.MainWindow):
         # no-op if we're not currently in control.
         if not self.main_window_has_control():
             return
-        from bauiv1lib.coop.altbrowser import CoopBrowserWindow
-        self.main_window_replace(
-            CoopBrowserWindow(
-                origin_widget=self._root_widget,
-            )
-        )
+        gfha = bs.get_foreground_host_activity
+        with gfha().context:
+            gfha()._trigger_custom_cutscene()
+        bui.containerwidget(edit=self._root_widget, transition='out_scale')

@@ -174,10 +174,8 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
             )
         ImageJumper.jump_image(self.modpack_name.node)
         ImageJumper.jump_image(self.splashtext.node)
-        bs.getsound('randomnoises/noisePolution5').play()
-        bs.getsound('didnotfinish').play()
         bs.setmusic(None)
-        bs.timer(0.01, lambda: bs.camerashake(9.0), repeat=True)
+        bs.timer(0.01, lambda: bs.camerashake(3), repeat=True)
         rsfx = [
             'explosion01',
             'explosion02',
@@ -188,10 +186,21 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         bs.timer(0.2, bs.getsound(random.choice(rsfx)).play, repeat=True)
         bs.timer(0.1, bs.getsound(random.choice(rsfx)).play, repeat=True)
         bs.timer(0.4, bs.getsound(random.choice(rsfx)).play, repeat=True)
-        bs.timer(0.5, bs.getsound(random.choice(rsfx)).play, repeat=True)
-        bs.timer(0.6, bs.getsound(random.choice(rsfx)).play, repeat=True)
         self._logo_node.texture = bs.gettexture('logoDies')
-        self.splashtext.node.text = 'ow.'
+    
+    def _trigger_custom_cutscene(self):
+        bs.setmusic(None)
+        def shake():
+            bs.getsound('swoon1').play()
+            bs.camerashake(6)
+        def start_activity():
+            from bascenev1lib.activity.altcoopintro import ACISession
+            bs.pushcall(lambda: bs.new_host_session(ACISession))
+        bs.timer(0.8, shake)
+        bs.timer(2.8, shake)
+        bs.timer(3.8, shake)
+        bs.timer(4.8, self.do_quit)
+        bs.timer(7.8, start_activity)
     
     def overheadtxt(self, chance: int = 0.2):
         text = ba.Lstr(

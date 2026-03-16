@@ -11,6 +11,7 @@ class LoopingImageAnimation:
         position: tuple = (0, 0),
         loop: bool = True,
         attach: str = "center",
+        front: bool = False,
     ):
         self.prefix = prefix
         self.frame_count = frame_count
@@ -28,6 +29,7 @@ class LoopingImageAnimation:
                 "position": position,
                 "opacity": 1.0,
                 "attach": attach,
+                "front": front,
             },
         )
 

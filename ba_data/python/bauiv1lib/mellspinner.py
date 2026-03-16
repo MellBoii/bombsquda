@@ -1,4 +1,5 @@
 """Some custom spinners :trol:"""
+from __future__ import annotations
 import bauiv1 as bui
 
 class DefaultSpinner:

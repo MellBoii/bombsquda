@@ -373,11 +373,6 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
             # Report new achievements to the game-service.
             plus.report_achievement(achievement_name)
 
-            # ...and to our account.
-            plus.add_v1_account_transaction(
-                {'type': 'ACHIEVEMENT', 'name': achievement_name}
-            )
-
             # Now bring up a celebration banner.
             ach.announce_completion(sound=sound)
 

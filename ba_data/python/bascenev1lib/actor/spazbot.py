@@ -893,8 +893,7 @@ class LauncherBot(SpazBot):
     color = (0.30, 0.30, 0.30)
     highlight = (0.80, 0.15, 0.15)
     default_bomb_count = 5
-    default_bomb_type = 'impact'
-    default_boxing_gloves = False
+    default_boxing_gloves = True
     punchiness = 0.7
     throw_rate = 1.3
     run = True
@@ -1228,15 +1227,34 @@ class MelisoBot(StickyBot):
     highlight = (0, 0.7, 0)
     punchiness = 0.5
     throwiness = 1.0
-    run = False
     throw_dist_min = 4.0
-    throw_dist_max = 25.0
-    throw_rate = 3.0
+    throw_dist_max = 15.0
+    throw_rate = 1.7
     default_bomb_type = 'sticky'
-    default_bomb_count = 4
+    default_bomb_count = 5
     points_mult = 3
     # 1 emerald, cuz fuck you
     force_emeralds = 1
+
+class BuddieBot(StickyBot):
+    """Triple impact bomb bot with
+    a HUGE throw rate.
+    category: Bot Classes
+    """
+    
+    namelist = ['buddie-bot']
+    character = 'Buddie'
+    color = (0.9, 0.1, 0.1)
+    highlight = (1, 0.9, 0)
+    punchiness = 0.5
+    throwiness = 1.35
+    throw_dist_min = 5.0
+    throw_dist_max = 13.0
+    throw_rate = 9.0
+    default_bomb_type = 'impact'
+    default_bomb_count = 3
+    points_mult = 2
+    force_emeralds = 3
 
 class ralsieBot(SpazBot):
     """ralsei who runs and fucking kills you (with ice too)

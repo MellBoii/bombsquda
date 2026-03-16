@@ -43,6 +43,7 @@ class PortalRadio(bs.Actor):
             attrs={
                 'sound': bs.getsound(music),
                 'volume': volume,
+                'music': True,
                 'position': self.node.position,
             }
         )

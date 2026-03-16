@@ -273,14 +273,16 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
             'sound', 
             attrs={
                 'sound': _bascenev1.getsound('metalMusic'),
-                'volume': 0.0
+                'volume': 0.0,
+                'music': True,
             }
         )
         self.dancin_sound = _bascenev1.newnode(
             'sound', 
             attrs={
                 'sound': _bascenev1.getsound('homeroLoop'),
-                'volume': 0.0
+                'volume': 0.0,
+                'music': True,
             }
         )
         self._standard_metal_tick_timer = _bascenev1.Timer(

@@ -114,19 +114,6 @@ class InventoryWindow(bui.MainWindow):
             textcolor=(0.75, 0.7, 0.8),
             on_activate_call=self._player_profiles_press,
         )
-        yoffs -= 60
-        button_width = 200
-        bui.buttonwidget(
-            parent=self._root_widget,
-            position=(self._width * 0.5 - button_width * 0.5, yoffs - 210),
-            autoselect=True,
-            size=(button_width, 60),
-            label=bui.Lstr(resource='customstoreText'),
-            color=(0.55, 0.5, 0.6),
-            icon=bui.gettexture('storeIcon'),
-            textcolor=(0.75, 0.7, 0.8),
-            on_activate_call=self._open_store,
-        )
         bui.imagewidget(
             parent=self._root_widget,
             position=(self._width * image_mult - xoffs, yoffs - 265),

@@ -982,7 +982,7 @@ class PublicGatherTab(GatherTab):
                     if self._have_server_list_response:
                         bui.textwidget(
                             edit=self._join_status_text,
-                            text=bui.Lstr(resource='errorText'),
+                            text=bui.Lstr(resource='notGatheredText'),
                         )
                         bui.spinnerwidget(
                             edit=self._join_status_spinner, visible=False
