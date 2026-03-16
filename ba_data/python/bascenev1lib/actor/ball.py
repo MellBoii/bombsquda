@@ -424,8 +424,8 @@ class PlayerBall(bs.Actor):
     def on_run(self, value: float):
         if value <= 0:
             self.speed = self.initial_speed / self.multipliernt
-        elif value >= 0:
-            self.speed = self.initial_speed
+        elif value > 0:
+            self.speed = self.initial_speed * 2
     
     def _apply_movement(self):
         if not self.node:

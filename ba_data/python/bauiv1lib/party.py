@@ -56,7 +56,7 @@ class PartyWindow(bui.Window):
                     (200, -10)
                     if uiscale is bui.UIScale.SMALL
                     else (
-                        (260, 0) if uiscale is bui.UIScale.MEDIUM else (465, -170)
+                        (260, 0) if uiscale is bui.UIScale.MEDIUM else (415, -145)
                     )
                 ),
             ),

@@ -66,7 +66,7 @@ def get_default_powerup_distribution() -> Sequence[tuple[str, int]]:
         'fireball': 2,
         'bloxy': 2,
         'hook': 1,
-        'star': 0.5,
+        'star': 1,
     }
     if ba.app.config.get("squda_gamblingmode", True):
         base_distribution['random'] = 9999

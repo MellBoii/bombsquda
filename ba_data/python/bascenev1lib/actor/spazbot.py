@@ -1450,10 +1450,26 @@ class SpazBotSet:
                     )
             except Exception:
                 logging.exception('Error on bot-set _update.')
+        # If player points are empty, we put 
+        # in bots to keep the action goin.
+        if player_pts == []:
+            for bot in bot_list:
+                pts = []
+                for other in bot_list:
+                    if other is not bot:
+                        pts.append(
+                            (
+                                bs.Vec3(other.node.position),
+                                bs.Vec3(other.node.velocity),
+                            )
+                        )
 
-        for bot in bot_list:
-            bot.set_player_points(player_pts)
-            bot.update_ai()
+                bot.set_player_points(pts)
+                bot.update_ai()
+        else:
+            for bot in bot_list:
+                bot.set_player_points(player_pts)
+                bot.update_ai()
 
     def clear(self) -> None:
         """Immediately clear out any bots in the set."""

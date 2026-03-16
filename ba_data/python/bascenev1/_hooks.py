@@ -46,6 +46,8 @@ def handle_command(msg: str, roster_entry: dict, client_id: int) -> None:
     parts = msg.split()
     cmd = parts[0].lower()
     activity = bs.get_foreground_host_activity()
+    if not activity:
+        return msg
 
     if cmd == '/kill':
         if not is_sp:
@@ -121,37 +123,46 @@ def handle_command(msg: str, roster_entry: dict, client_id: int) -> None:
                 with activity.context:
                     activity.end_game()
             return None
-
+        players = activity.players
+        try:
+            player = players[client_id]
+        except IndexError:
+            player = None
         # In Multiplayer, do voting
-        if account_id in _end_votes:
-            bs.chatmessage(f'{display}: you already voted.')
+        if not player:
+            bs.chatmessage(f'{display}, you have to be in-game to vote!')
             return None
-        
-        if _end_votes == []:
+        if client_id in _end_votes:
+            bs.chatmessage(f'{player.getname()}, you already voted!')
+            return None
+        if not _end_votes:
             global reset_timer
             with activity.context:
                 bs.getsound('vote_started').play()
-            reset_timer = bs.Timer(5, reset_end_votes)
+            reset_timer = ba.AppTimer(8, reset_end_votes)
         else:
             with activity.context:
                 bs.getsound('vote_added').play()
-        _end_votes.add(account_id)
+            reset_timer = ba.AppTimer(8, reset_end_votes)
+        _end_votes.add(client_id)
             
         voters = _end_votes
         needed = len(bs.get_game_roster())
         current = len(_end_votes)
-
-        bs.broadcastmessage(
-            f'{display} voted to end the game '
-            f'({current}/{needed})'
-        )
+        
+        with activity.context:
+            bs.broadcastmessage(
+                f'{player.getname()} voted to end the game '
+                f'({current}/{needed})'
+            )
 
         # ── Majority reached ─────────────────────────
         if current >= needed:
-            bs.broadcastmessage('Vote passed! Ending activity.')
             _end_votes.clear()
             if activity:
                 with activity.context:
+                    bs.broadcastmessage('Vote passed! Ending activity.')
+                    reset_timer = None
                     bs.getsound('vote_passed').play()
                     activity.end_game()
     else:
@@ -160,19 +171,22 @@ def handle_command(msg: str, roster_entry: dict, client_id: int) -> None:
     return None
 
 def reset_end_votes():
+    activity = bs.get_foreground_host_activity()
     bs.broadcastmessage("The vote was canceled (not enough votes).")
     _end_votes.clear()
-    with bs.get_foreground_host_activity().context:
+    with activity.context:
         bs.getsound('vote_failed').play()
 
 def filter_chat_message(msg: str, client_id: int) -> str | None:
     roster = bs.get_game_roster()
     activity = bs.get_foreground_host_activity()
+    if not activity:
+        return msg
     # ── Singleplayer fallback ────────────────────
     if not roster:
         plus = bui.app.plus
         fake_entry = {
-            'client_id': -1,
+            'client_id': 0,
             'display_string': plus.get_v1_account_display_string(),
             'account_id': None,
             'is_admin': True,
@@ -183,7 +197,7 @@ def filter_chat_message(msg: str, client_id: int) -> str | None:
             return handle_command(
                 msg=msg,
                 roster_entry=fake_entry,
-                client_id=-1
+                client_id=0
             )
         if activity:
             with activity.context:
@@ -192,8 +206,7 @@ def filter_chat_message(msg: str, client_id: int) -> str | None:
                     # whoever's sending the message is P1.
                     player = activity.players[0]
                     player.actor.say(msg)
-                except Exception:
-                    print(e)
+                except Exception as e:
                     pass
         return msg
 
@@ -207,24 +220,21 @@ def filter_chat_message(msg: str, client_id: int) -> str | None:
         return None
 
     display = roster_entry.get('display_string', 'Unknown Player')
-    account_id = roster_entry.get('account_id')
-    if not account_id:
-        print('{display} has no account id, they probably aren\'t logged in!')
+    client_id = roster_entry.get('client_id')
+    player_id = roster_entry.get('players')[0].get('id')
 
     if msg.startswith('/'):
         return handle_command(
             msg=msg,
             roster_entry=roster_entry,
-            client_id=client_id
+            client_id=player_id
         )
     if activity:
         with activity.context:
             try:
-                player = activity.players[client_id + 1]
+                player = activity.players[player_id]
                 player.actor.say(msg)
             except Exception as e:
-                print(e)
-                print(client_id)
                 pass
     return msg
 
