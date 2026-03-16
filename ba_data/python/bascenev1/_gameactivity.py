@@ -1085,7 +1085,7 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
             points = [mp[name] for name in spawn_names if name in mp]
             spawn = random.choice(points)
             position = spawn[:3]
-            position[1] += 1.5
+            position = (position[0], position[1] + 1.5, position[2])
         spaz = PlayerBall(
             player=player,
             color=color,
