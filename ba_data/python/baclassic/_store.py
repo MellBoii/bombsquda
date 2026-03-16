@@ -117,6 +117,7 @@ class StoreSubsystem:
                 'characters.sonic': {'character': 'Sonic'},
                 'characters.kirby': {'character': 'Kirby'},
                 'characters.tails': {'character': 'Tails'},
+                'characters.buddie': {'character': 'Buddie'},
                 'merch': {},
                 'pro': {},
                 'maps.lake_frigid': {'map_type': maps.LakeFrigid},
@@ -380,6 +381,7 @@ class StoreSubsystem:
                     'characters.sonic',
                     'characters.kirby',
                     'characters.tails',
+                    'characters.buddie',
                 ]
             }
         ]

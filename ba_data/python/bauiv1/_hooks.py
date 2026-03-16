@@ -58,9 +58,17 @@ def root_ui_achievements_button_press() -> None:
 
 
 def root_ui_store_button_press() -> None:
-    from bauiv1._appsubsystem import UIV1AppSubsystem
-
-    _root_ui_button_press(UIV1AppSubsystem.RootUIElement.STORE_BUTTON)
+    from bauiv1lib.store.browser import StoreBrowserWindow
+    import babase as ba
+    ui = ba.app.ui_v1
+    wind = ui.get_main_window()
+    if not wind.main_window_has_control():
+        return
+    wind.main_window_replace(
+        StoreBrowserWindow(
+            show_tab=StoreBrowserWindow.TabID.CHARACTERS,
+        )
+    )
 
 
 def root_ui_chest_slot_0_press() -> None:

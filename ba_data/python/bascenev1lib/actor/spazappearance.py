@@ -632,6 +632,32 @@ def register_appearances() -> None:
     t.style = 'agent'
     t.default_color = (0.87, 0.44, 0.15)
     t.default_highlight = (0.46, 0.26, 0.54)
+    
+    # now here's the real buddy ###################################
+    t = Appearance('Buddie')
+    t.color_texture = 'buddieColor'
+    t.color_mask_texture = 'buddieColorMask'
+    t.icon_texture = 'buddieIcon'
+    t.earthportrait = 'budbound'
+    t.icon_mask_texture = 'buddieIconCM'
+    t.head_mesh = 'buddieHead'
+    t.torso_mesh = 'buddieTorso'
+    t.pelvis_mesh = 'none'
+    t.upper_arm_mesh = 'buddieUpperArm'
+    t.forearm_mesh = 'buddieForeArm'
+    t.hand_mesh = 'buddieHand'
+    t.upper_leg_mesh = 'buddieUpperLeg'
+    t.lower_leg_mesh = 'buddieLowerLeg'
+    t.toes_mesh = 'buddieToes'
+    t.jump_sounds = ['voicelines/ocap/jump' + str(i + 1) + '' for i in range(4)]
+    t.attack_sounds = ['voicelines/ocap/punch' + str(i + 1) + '' for i in range(4)]
+    t.impact_sounds = ['voicelines/ocap/hurt1']
+    t.death_sounds = ['voicelines/ocap/death' + str(i + 1) + '' for i in range(2)]
+    t.pickup_sounds = ['voicelines/ocap/pickup' + str(i + 1) + '' for i in range(4)]
+    t.fall_sounds = ['voicelines/ocap/fall' + str(i + 1) + '' for i in range(3)]
+    t.style = 'bones'
+    t.default_color = (251 / 255, 242 / 255, 51 / 255)
+    t.default_highlight = (43 / 255, 41 / 255, 65 / 255)
 
     # The Original      Spaz ###################################
     t = Appearance('OG Spaz')
