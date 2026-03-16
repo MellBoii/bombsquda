@@ -69,5 +69,5 @@ def print_live_object_warnings(
         
 def debprint(text):
     """Prints ONLY if we have debug prints on."""
-    if babase.app.config.get("squda_debugprints", True):
+    if babase.app.config.get("squda_debugprints", False):
         print(text)

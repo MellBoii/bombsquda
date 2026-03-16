@@ -77,6 +77,7 @@ PHRASES = {
     "Noob": ("noobPhrase", 3),
     "OG Spaz": ("ogspPhrase", 5),
     "Homer": ("homerPhrase", 8),
+    "Buddie": ("budPhrase", 20),
 }
 DEFAULT_PHRASES = ("defaultPhrase", 11)
 
@@ -1626,8 +1627,6 @@ class Spaz(bs.Actor):
         ]
         points = [mp[name] for name in spawn_names if name in mp]
         if not points:
-            bs.debprint(f'{self.node.name} tried to tp to safety but the map')
-            bs.debprint('on does not have any ffa spawn points.')
             self.die()
             return
         self.node.handlemessage(
@@ -2545,18 +2544,15 @@ class Spaz(bs.Actor):
         if isinstance(msg, EmeraldMessage):
             if self.issuper:
                 bs.getsound('player_unready').play(position=self.node.position)
-                bs.debprint(f'{self.node.name}: We\'re super, so not collecting a emerald.')
                 return
             
             if msg.current not in self.emeralds:
                 self.emeralds.append(msg.current)
                 bs.getsound('s3_blsp').play(position=self.node.position)
-                bs.debprint(f'{self.node.name} collected emerald {msg.current}.')
                 msg.srcnode.handlemessage(bs.DieMessage())
 
             if len(self.emeralds) == 7:
                 bs.getsound('cd_alright').play(position=self.node.position)
-                bs.debprint(f'{self.node.name} got {len(self.emeralds)} emeralds.')
                 PopupText(
                     bs.Lstr(
                         resource='grabSuper', 
@@ -2570,7 +2566,6 @@ class Spaz(bs.Actor):
                 ).autoretain()
 
             else:
-                bs.debprint(f'{self.node.name} tried to collect {msg.current}, but it already has it')
                 bs.getsound('player_unready').play(position=self.node.position)
             self.update_emerald_indicator()
             

@@ -39,6 +39,7 @@ from bascenev1._gameactivity import GameActivity
 from bascenev1lib.creditsroll import CreditsActivity
 from bascenev1lib.game.thefinale import TheFinaleGame
 from bascenev1lib.game.onslaught import Preset
+import fromgoverhaul.mell_resources as melly
 import bauiv1 as bui
 
 portal_id = "1419400467707859136"
@@ -69,12 +70,13 @@ class RichPresence:
         def __init__(self):           
             self.presence = Presence(portal_id)
             self.mode = 'menu'
-            self._r = "Rich Presence"
+            self._r = "rpc"
             self.starting_time = int(time.time())
             self.map = None
             self.last_mode = None
             babase.apptimer(1, self.update)
         def update(self):
+            babase.apptimer(0.1, self.check)
             try:
                 try:
                     sesssion = (
@@ -104,14 +106,16 @@ class RichPresence:
 
 
                 if self.mode == 'menu':
+                    lstr = babase.Lstr(resource=f'{babase.app.ui_v1.get_main_window()._r}.rpcText')
                     self.presence.set(
                     {  
                         
                         "details": 'l👀king around the menu..',
                         "assets": {
                             "large_image": "logo",
-
+                            "large_text": f"BombSquda v{melly.version}\nlinebreak",
                         },
+                        "state": lstr.evaluate(),
                         "timestamps": {"start": self.starting_time},
                     }
                 )
@@ -124,6 +128,7 @@ class RichPresence:
                         "details": 'afk in the menu..',
                         "assets": {
                             "large_image": "logo",
+                            "large_text": f"BombSquda v{melly.version}\nlinebreak",
                         },
                         "timestamps": {"start": self.starting_time},
                     }
@@ -142,20 +147,7 @@ class RichPresence:
                         'playin ' + bs.get_foreground_host_activity().name
                         if not isinstance(bs.get_foreground_host_session(), bs.CoopSession)
                         else(
-                            f"score: {bs.get_foreground_host_activity()._score} (lost)"
-                            if bs.get_foreground_host_activity().has_ended() == True 
-                            and not bs.get_foreground_host_activity().globalsnode.music == 'VictoryFinal'
-                            else(
-                                f"score: {bs.get_foreground_host_activity()._score} (won)"
-                                if bs.get_foreground_host_activity().globalsnode.music == 'Victory'
-                                else(
-                                    f"score: {bs.get_foreground_host_activity()._score} (won)"
-                                    if bs.get_foreground_host_activity().globalsnode.music == 'VictoryFinal'
-                                    else(
-                                        f"score: {bs.get_foreground_host_activity()._score}"
-                                    )
-                                )
-                            )
+                            f"SCORE: {bs.get_foreground_host_activity()._score} RANK: {bs.get_foreground_host_activity().ultrameter._rank}"
                         ),
                         "state": 'Party',
                         "assets": {
@@ -183,10 +175,9 @@ class RichPresence:
                 elif self.mode == 'lobby':
                     self.presence.set(
                     {  
-                        "details": 'choosing profiles',
+                        "details": 'selecting characters',
                         "state": 'Party',
                         "assets": {
-                            "large_image": 'logo',
                             "large_text": 'The Lobby',
                             "small_image": sesssion_image,
                             "small_text": sesssion,
@@ -253,9 +244,8 @@ class RichPresence:
                     self.presence.set(
                         {  
                         "details": 
-                            'watching the credits.',
+                            'watching the credits',
                         "assets": {
-                            "large_image": 'logo',
                             "small_image": 'replay'
                         },
                         "timestamps": {"start": self.starting_time},
@@ -264,9 +254,8 @@ class RichPresence:
                     
             except Exception as e:
                 # comment this out for now.
-                # print(f'Error updating rich presence. ({e})')
+                bs.debprint(f'Error updating rich presence. ({e})')
                 pass
-            babase.apptimer(0.1, self.check)
         
         def check(self):
             try:
@@ -277,11 +266,22 @@ class RichPresence:
             if map_name:
                self.map = map_name
             
-            
-            if bui.get_input_idle_time() > 30 and self.mode in (
-                'menu', 'menu_idle'
+            if isinstance(bs.get_foreground_host_activity(), JoinActivity):
+                self.mode = 'lobby'
+                self.last_mode = 'lobby'
+                self.starting_time = int(time.time())  
+            elif isinstance(bs.get_foreground_host_activity(), GameActivity):
+                self.mode = 'gameplay'
+                self.last_mode = 'gameplay'
+                self.starting_time = int(time.time())
+            elif bui.get_input_idle_time() >= 30 and self.mode in (
+                'menu'
             ):
                 self.mode = 'menu_idle'
+            elif bui.get_input_idle_time() <= 30 and self.mode in (
+                'menu_idle'
+            ):
+                self.mode = 'menu'
             elif bs.get_connection_to_host_info_2() and self.last_mode != 'online':
                 self.mode = 'online'
                 self.starting_time = int(time.time())
@@ -293,25 +293,14 @@ class RichPresence:
                 self.mode = 'replay'
                 self.last_mode = 'replay'
                 self.starting_time = int(time.time())  
-            elif isinstance(
-                bs.get_foreground_host_activity(),
-                GameActivity
-                ) and self.last_mode != 'gameplay':
-                self.mode = 'gameplay'
-                self.last_mode = 'gameplay'
-                self.starting_time = int(time.time())
-            elif isinstance(bs.get_foreground_host_activity(), MainMenuActivity) and self.last_mode != 'menu':
+            elif isinstance(bs.get_foreground_host_activity(), MainMenuActivity):
                 self.mode = 'menu'
                 self.last_mode = 'menu'
                 self.starting_time = int(time.time())               
             elif isinstance(bs.get_foreground_host_activity(), CreditsActivity):
                 self.mode = 'credits'
                 self.last_mode = 'credits'
-                self.starting_time = int(time.time())    
-            elif isinstance(bs.get_foreground_host_activity(), JoinActivity):
-                self.mode = 'lobby'
-                self.last_mode = 'lobby'
-                self.starting_time = int(time.time())    
+                self.starting_time = int(time.time())      
             
             babase.apptimer(0.25, self.update)
 

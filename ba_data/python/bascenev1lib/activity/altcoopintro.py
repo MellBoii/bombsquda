@@ -60,6 +60,7 @@ class ACIActivity(bs.GameActivity[bs.Player, bs.Team]):
                 'sound': bs.getsound('music/thefall'),
                 'volume': 5,
                 'positional': False,
+                'music': True,
             }
         )
         bs.animate_array(

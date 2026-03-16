@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 class TeamSeriesVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
     """Final score screen for a team series."""
 
-    # Dont' play music by default; (we do manually after a delay).
+    # Don't play music by default; (we do manually after a delay).
     default_music = None
 
     def __init__(self, settings: dict):
@@ -87,24 +87,20 @@ class TeamSeriesVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
             else 'Teams Series Victory Screen'
         )
         assert bs.app.classic is not None
-        if bs.app.ui_v1.uiscale is bs.UIScale.LARGE:
-            sval = bs.Lstr(resource='pressAnyKeyButtonPlayAgainText')
-        else:
-            sval = bs.Lstr(resource='pressAnyButtonPlayAgainText')
         self._show_up_next = False
-        self._custom_continue_message = sval
+        self._custom_continue_message = ''
         super().on_begin()
         winning_sessionteam = self.settings_raw['winner']
 
         # Pause a moment before playing victory music.
-        bs.timer(0.6, bs.WeakCall(self._play_victory_music))
+        bs.timer(0.4, bs.WeakCall(self._play_victory_music))
         bs.timer(
             4.3, bs.WeakCall(self._show_winner, self.settings_raw['winner'])
         )
-        bs.timer(4.5, self._score_display_sound.play)
-        bs.timer(4.5, lambda: bs.getsound('achievement').play())
-        bs.timer(4.5, lambda: bs.getsound('cheer2').play())
-        bs.timer(4.5, self.start_bombs)
+        bs.timer(4.3, self._score_display_sound.play)
+        bs.timer(4.3, lambda: bs.getsound('achievement').play())
+        bs.timer(4.3, lambda: bs.getsound('cheer2').play())
+        bs.timer(4.3, self.start_bombs)
         bs.timer(38.0, lambda: bs.setmusic(bs.MusicType.SCORES))
 
         # Score / Name / Player-record.
@@ -218,7 +214,7 @@ class TeamSeriesVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
             v_align=Text.VAlign.CENTER,
             maxwidth=300,
             color=(0.5, 0.5, 0.5, 1.0),
-            position=(0, 220),
+            position=(0, 310),
             scale=1.2,
             transition=Text.Transition.IN_TOP_SLOW,
             h_align=Text.HAlign.CENTER,
@@ -299,7 +295,9 @@ class TeamSeriesVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
                     transition_delay=tval,
                 ).autoretain()
                 tval += 4 * t_incr
-
+        xoffs = 0
+        if self._is_ffa:
+            xoffs = 150
         # Most violent.
         most_kills = 0
         for entry in player_entries:
@@ -313,7 +311,7 @@ class TeamSeriesVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
                 color=(0.5, 0.5, 0.5, 1.0),
                 v_align=Text.VAlign.CENTER,
                 maxwidth=300,
-                position=(180, ts_height / 2 - 150 + v_extra + 15),
+                position=(180 + xoffs, ts_height / 2 - 150 + v_extra + 15),
                 transition=Text.Transition.IN_LEFT,
                 h_align=Text.HAlign.LEFT,
                 transition_delay=tval,
@@ -331,7 +329,7 @@ class TeamSeriesVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
                         )
                     ],
                 ),
-                position=(260, ts_height / 2 - 150 - 15 + v_extra),
+                position=(260 + xoffs, ts_height / 2 - 150 - 15 + v_extra),
                 color=(0.3, 0.3, 0.3, 1.0),
                 scale=0.6,
                 h_align=Text.HAlign.LEFT,
@@ -342,7 +340,7 @@ class TeamSeriesVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
 
             Image(
                 mvp.get_icon(),
-                position=(233, ts_height / 2 - 150 - 30 - 46 + 25 + v_extra),
+                position=(233 + xoffs, ts_height / 2 - 150 - 30 - 46 + 25 + v_extra),
                 scale=(50, 50),
                 transition=Image.Transition.IN_LEFT,
                 transition_delay=tval,
@@ -350,7 +348,7 @@ class TeamSeriesVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
             assert mvp_name is not None
             Text(
                 bs.Lstr(value=mvp_name),
-                position=(270, ts_height / 2 - 150 - 30 - 36 + v_extra + 15),
+                position=(270 + xoffs, ts_height / 2 - 150 - 30 - 36 + v_extra + 15),
                 h_align=Text.HAlign.LEFT,
                 v_align=Text.VAlign.CENTER,
                 maxwidth=180,
@@ -374,7 +372,7 @@ class TeamSeriesVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
                 color=(0.5, 0.5, 0.5, 1.0),
                 v_align=Text.VAlign.CENTER,
                 maxwidth=300,
-                position=(180, ts_height / 2 - 300 + v_extra + 15),
+                position=(180 + xoffs, ts_height / 2 - 300 + v_extra + 15),
                 transition=Text.Transition.IN_LEFT,
                 h_align=Text.HAlign.LEFT,
                 transition_delay=tval,
@@ -392,7 +390,7 @@ class TeamSeriesVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
                         )
                     ],
                 ),
-                position=(260, ts_height / 2 - 300 - 15 + v_extra),
+                position=(260 + xoffs, ts_height / 2 - 300 - 15 + v_extra),
                 h_align=Text.HAlign.LEFT,
                 scale=0.6,
                 color=(0.3, 0.3, 0.3, 1.0),
@@ -402,7 +400,7 @@ class TeamSeriesVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
             tval += 4 * t_incr
             Image(
                 mkp.get_icon(),
-                position=(233, ts_height / 2 - 300 - 30 - 46 + 25 + v_extra),
+                position=(233 + xoffs, ts_height / 2 - 300 - 30 - 46 + 25 + v_extra),
                 scale=(50, 50),
                 transition=Image.Transition.IN_LEFT,
                 transition_delay=tval,
@@ -410,7 +408,7 @@ class TeamSeriesVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
             assert mkp_name is not None
             Text(
                 bs.Lstr(value=mkp_name),
-                position=(270, ts_height / 2 - 300 - 30 - 36 + v_extra + 15),
+                position=(270 + xoffs, ts_height / 2 - 300 - 30 - 36 + v_extra + 15),
                 h_align=Text.HAlign.LEFT,
                 v_align=Text.VAlign.CENTER,
                 color=bs.safecolor(mkp.team.color + (1,)),
@@ -422,6 +420,8 @@ class TeamSeriesVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
 
         # Now show individual scores.
         tdelay = tval
+        if self._is_ffa:
+            ts_h_offs -= xoffs
         Text(
             bs.Lstr(resource='finalScoresText'),
             color=(0.5, 0.5, 0.5, 1.0),
@@ -467,7 +467,21 @@ class TeamSeriesVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
                 transition=Text.Transition.IN_RIGHT,
                 transition_delay=tdelay,
             ).autoretain()
-
+        self.entries = player_entries
+        # Ew
+        try:
+            self.p1 = player_entries[0][2]
+        except:
+            self.p1 = None
+        try:
+            self.p2 = player_entries[1][2]
+        except:
+            self.p2 = None
+        try:
+            self.p3 = player_entries[2][2]
+        except:
+            self.p3 = None
+        self._show_places()
         bs.timer(15.0, bs.WeakCall(self._show_tips))
 
     def _show_tips(self) -> None:
@@ -479,6 +493,83 @@ class TeamSeriesVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
         # Make sure we don't stomp on the next activity's music choice.
         if not self.is_transitioning_out():
             bs.setmusic(bs.MusicType.VICTORY)
+    
+    def _show_places(self):
+        from bascenev1lib.actor.spazfactory import SpazFactory
+        fac = SpazFactory.get()
+
+        scale = 1.1
+        start_y = -700
+
+        def _spawn_place(player, x, final_y, delay, name, xoffset):
+            if not player:
+                return
+
+            def _create():
+                node = bs.newnode(
+                    'image',
+                    attrs={
+                        'texture': bs.gettexture('white'),
+                        'position': (x, start_y),
+                        'scale': (128 * scale, 128 * scale),
+                        'opacity': 1.0,
+                        'absolute_scale': True,
+                        'attach': 'center',
+                    },
+                )
+
+                node.texture = fac.get_media(player.character)['earthportrait']
+
+                podium = bs.newnode(
+                    'image',
+                    attrs={
+                        'texture': bs.gettexture('white'),
+                        'position': (x + xoffset, start_y - 384 * scale),
+                        'scale': (128 * scale, 512 * scale),
+                        'opacity': 1.0,
+                        'absolute_scale': True,
+                        'attach': 'center',
+                    },
+                )
+                podium.color = player.player.color
+
+                mathnode = bs.newnode(
+                    'math',
+                    owner=node,
+                    attrs={'input1': (x + xoffset, -324 * scale), 'operation': 'add'},
+                )
+
+                node.connectattr('position', mathnode, 'input2')
+                mathnode.connectattr('output', podium, 'position')
+
+                bs.animate_array(
+                    node,
+                    'position',
+                    2,
+                    {
+                        0: (x, start_y),
+                        3: (x, final_y),
+                    },
+                )
+
+                setattr(self, f"{name}node", node)
+                setattr(self, f"{name}podium", podium)
+
+            bs.timer(delay, _create)
+        
+        eh = 240
+        p1_y = 240 - eh
+        p2_y = 190 - eh
+        p3_y = 140 - eh
+
+        # spawn order (3rd → 2nd → 1st)
+        if self.p3:
+            _spawn_place(self.p3, -180, p3_y, 0.0, "p3", 180)
+        if self.p2:
+            _spawn_place(self.p2, 180, p2_y, 0.5, "p2", -180)
+        if self.p1:
+            _spawn_place(self.p1, 0, p1_y, 1.0, "p1", 0)
+        
 
     def _show_winner(self, team: bs.SessionTeam) -> None:
         from bascenev1lib.actor.image import Image
@@ -494,68 +585,40 @@ class TeamSeriesVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
                 jitter=1.0,
                 maxwidth=250,
             ).autoretain()
-        else:
-            offs_v = -80
-            assert isinstance(self.session, bs.MultiTeamSession)
-            series_length = self.session.get_ffa_series_length()
-            icon: dict | None
-            # Pull live player info if they're still around.
-            if len(team.players) == 1:
-                icon = team.players[0].get_icon()
-                player_name = team.players[0].getname(full=True, icon=False)
-            # Otherwise use the special info we stored when we came in.
-            elif (
-                self._ffa_top_player_info is not None
-                and self._ffa_top_player_info[0] >= series_length
-            ):
-                icon = self._ffa_top_player_info[2]
-                player_name = self._ffa_top_player_info[1]
+            s_extra = 1.0 if self._is_ffa else 1.0
+
+            # Some languages say "FOO WINS" differently for teams vs players.
+            if isinstance(self.session, bs.FreeForAllSession):
+                wins_resource = 'seriesWinLine1PlayerText'
             else:
-                icon = None
-                player_name = 'Player Not Found'
+                wins_resource = 'seriesWinLine1TeamText'
+            wins_text = bs.Lstr(resource=wins_resource)
 
-            if icon is not None:
-                i = Image(
-                    icon,
-                    position=(0, 143),
-                    scale=(100, 100),
-                ).autoretain()
-                assert i.node
-                bs.animate(i.node, 'opacity', {0.0: 0.0, 0.25: 1.0})
-
+            # Temp - if these come up as the english default, fall-back to the
+            # unified old form which is more likely to be translated.
             ZoomText(
-                bs.Lstr(value=player_name),
-                position=(0, 97 + offs_v + (0 if icon is not None else 60)),
+                wins_text,
+                position=(0, -10 + offs_v),
                 color=team.color,
-                scale=1.15,
+                scale=0.70 * s_extra,
+                jitter=1.0,
+                maxwidth=300,
+            ).autoretain()
+            ZoomText(
+                bs.Lstr(resource='seriesWinLine2Text'),
+                position=(0, -110 + offs_v),
+                scale=1.0 * s_extra,
+                color=team.color,
                 jitter=1.0,
                 maxwidth=250,
             ).autoretain()
 
-        s_extra = 1.0 if self._is_ffa else 1.0
-
-        # Some languages say "FOO WINS" differently for teams vs players.
-        if isinstance(self.session, bs.FreeForAllSession):
-            wins_resource = 'seriesWinLine1PlayerText'
         else:
-            wins_resource = 'seriesWinLine1TeamText'
-        wins_text = bs.Lstr(resource=wins_resource)
-
-        # Temp - if these come up as the english default, fall-back to the
-        # unified old form which is more likely to be translated.
-        ZoomText(
-            wins_text,
-            position=(0, -10 + offs_v),
-            color=team.color,
-            scale=0.70 * s_extra,
-            jitter=1.0,
-            maxwidth=300,
-        ).autoretain()
-        ZoomText(
-            bs.Lstr(resource='seriesWinLine2Text'),
-            position=(0, -110 + offs_v),
-            scale=1.0 * s_extra,
-            color=team.color,
-            jitter=1.0,
-            maxwidth=250,
-        ).autoretain()
+            ZoomText(
+                bs.Lstr(resource='winsSeriesPlayerText', subs=[('${NAME}', team.name)]),
+                position=(0, 220),
+                color=team.color,
+                scale=1.15,
+                jitter=1.2,
+                maxwidth=800,
+            ).autoretain()

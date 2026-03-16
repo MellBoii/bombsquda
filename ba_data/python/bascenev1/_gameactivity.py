@@ -254,20 +254,20 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         # significantly boost emerald drop
         # chance in coop (so bots get a chance, and
         # so do players)
-        self.emerald_time = (
+        self._emerald_time = (
             0.9 if isinstance(
                 self.session, 
                 bs.CoopSession
             ) else 1.0
         )
-        self.emerald_chance = (
+        self._emerald_chance = (
             0.5 if isinstance(
                 self.session, 
                 bs.CoopSession
             ) else 0.35
         )
-        self.emerald_drop_timer = bs.Timer(
-            self.emerald_time, babase.WeakCall(self.emerald_drop), repeat=True
+        self._emerald_drop_timer = bs.Timer(
+            self._emerald_time, babase.WeakCall(self._emerald_drop), repeat=True
         )
         self.metal_sound = _bascenev1.newnode(
             'sound', 
@@ -285,11 +285,8 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
                 'music': True,
             }
         )
-        self._standard_metal_tick_timer = _bascenev1.Timer(
-            0.1, babase.WeakCall(self.metal_tick), repeat=True
-        )
-        self._standard_dancin_tick_timer = _bascenev1.Timer(
-            0.1, babase.WeakCall(self.dance_tick), repeat=True
+        self._music_tick_timer = _bascenev1.Timer(
+            0.1, babase.WeakCall(self._music_tick), repeat=True
         )
 
     @property
@@ -698,28 +695,11 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
             keys = {0.5: 0, 1.0: 1.0, 2.5: 1.0, 4.0: 0.0}
             animate(cnode, 'input3', keys)
             _bascenev1.timer(4.0, dnode.delete)
-
-    def metal_tick(self):
-        """ 
-        Tick every few seconds. Used for 
-        the Metal Cap Music. 
-        """
-        if self.is_transitioning_out():
-            self.metal_players = []
-            return
-        
-        if self.metal_players:
-            if self.metal_sound:
-                self.metal_sound.volume = 2.0
-                self.metal_sound.position = self.metal_players[0].node.position
-        else:
-            if self.metal_sound:
-                self.metal_sound.volume = 0.0
     
-    def emerald_drop(self):
+    def _emerald_drop(self):
         if not self.allow_emeralds:
             return
-        if random.random() < self.emerald_chance:
+        if random.random() < self._emerald_chance:
             mp = self.map.defs.points
             spawn_names = [
                 'ffa_spawn1',
@@ -744,25 +724,30 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
             self.new_emerald = EmeraldActor(
                 (pos[0], pos[1] + 2, pos[2])
             )
-            self.emeralds.append(self.new_emerald)
-            
-    # FIXME: unify this and metal_tick
-    def dance_tick(self):
-        """
-        tick for wiggle dance
-        """
+            self.emeralds.append(self.new_emerald) 
+    
+    def _music_tick(self):
         if self.is_transitioning_out():
+            self.metal_players = []
             self.dancing_players = []
             return
         
+        if self.metal_players:
+            if self.metal_sound:
+                self.metal_sound.volume = 10.0
+                self.metal_sound.position = self.metal_players[0].node.position
+        else:
+            if self.metal_sound:
+                self.metal_sound.volume = 0.0
+                
         if self.dancing_players:
             if self.dancin_sound:
-                self.dancin_sound.volume = 2.0
+                self.dancin_sound.volume = 10.0
                 self.dancin_sound.position = self.dancing_players[0].node.position
         else:
             if self.dancin_sound:
                 self.dancin_sound.volume = 0.0
-
+                
     def _show_tip(self) -> None:
         # pylint: disable=too-many-locals
         from bascenev1._gameutils import animate, GameTip
@@ -1100,6 +1085,7 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
             points = [mp[name] for name in spawn_names if name in mp]
             spawn = random.choice(points)
             position = spawn[:3]
+            position[1] += 1.5
         spaz = PlayerBall(
             player=player,
             color=color,

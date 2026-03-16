@@ -41,7 +41,8 @@
     "unlinkLegacyV1AccountsText": "Unlink Legacy (V1) Accounts",
     "v2LinkInstructionsText": "Use this link to create an account or sign in.",
     "viaAccount": "(via account ${NAME})",
-    "youAreSignedInAsText": "your ID is:"
+    "youAreSignedInAsText": "your ID is:",
+	"rpcText": "viewing Account Settings"
   },
   "achievementChallengesText": "Achievement Challenges",
   "achievementText": "Achievement",
@@ -406,7 +407,8 @@
   "activatedText": "${THING} activated.",
   "addGameWindow": {
     "getMoreGamesText": "Get More Games...",
-    "titleText": "Add Game"
+    "titleText": "Add Game",
+	"rpcText": "adding a game to a playlist"
   },
   "addToFavoritesText": "Add to Favorites",
   "addedToFavoritesText": "Added '${NAME}' to Favorites.",
@@ -423,7 +425,8 @@
     "soundVolumeText": "Sound Volume",
     "soundtrackButtonText": "Soundtracks",
     "soundtrackDescriptionText": "(assign your own music to play during games)",
-    "titleText": "Audio"
+    "titleText": "Audio",
+    "rpcText": "setting Audio"
   },
   "spazPhrase1": "Gottem.",
   "spazPhrase2": "Yippiee!",
@@ -491,6 +494,26 @@
   "defaultPhrase9": "Best of the bunch!",
   "defaultPhrase10": "Boo-yah!",
   "defaultPhrase11": "Not bad!",
+  "budPhrase1": "Huh. Normally I'm the one who dies first.",
+  "budPhrase2": "Would you look at that. I got good!",
+  "budPhrase3": "Really. Really now? You reeaally thought that would work?",
+  "budPhrase4": "I hope your medical bill isn't as high as my ego.",
+  "budPhrase5": "Imagine. Couldn't be me.",
+  "budPhrase6": "Pffft-",
+  "budPhrase7": "Your mother would've done better than THAT!",
+  "budPhrase8": "budPhrase8",
+  "budPhrase9": "Better learn every tech.",
+  "budPhrase10": "DID YOU SEE THAT?! That was AWESOME!!",
+  "budPhrase11": "I'll go crack Mell's mom after this one.",
+  "budPhrase12": "You better scramble like an egg before \nyou get folded like an omelette!",
+  "budPhrase13": "Yeah, uh... Good luck recovering from that one.",
+  "budPhrase14": "You should love yourself NOW!!",
+  "budPhrase15": "Phew, that was close.",
+  "budPhrase16": "Did you see that 👀",
+  "budPhrase17": "Nicey dicey!",
+  "budPhrase18": "Easy Peasy Lemon Squeezy",
+  "budPhrase19": "I guess it's \"hardy hardy lemon farty\" for you to survive.",
+  "budPhrase20": "You should love yourself NOW!!",
   "cheeredPlayer": "The audience cheered ${NAME} on!",
   "melDies": "ow.",
   "melDiesnt": "nope, not today",
@@ -567,7 +590,8 @@
   "activityCreditsText": "Vibapop - Kris, Susie, and Ralsei's Models\nnote.swiper - Ripping the roblox rig model\nNotCleanAgain - Roaring Knight model\n@smiteis on sketchfab - The Chaos Emeralds' Models\nSounds from various meme and game \nsources like stock sounds, vine, \nsuper smash bros, super mario \nbros, sonic, and other stuff\nBuddie - Voicing Orangecap, and also \nthe graphics for the sponge timer\nQUICK DISCLAIMER: All of the music from\nthis modpack is not a original piece but rather\ntaken from other media. All credits are shown in \nthe right corner with the 'Now Playing'.\nVery special thanks to Lemon for being one of \nthe VERY first to test my modpack at it's \ninitial stage, giving a lot of feedback n ideas, \nand to everyone in the Gummy's Studio and Lemon's World server.\nThis modpack has exclusively been a wild 'joyride'\nfor me to make, and i liked how it really \nwent from something basic \nto what was in concept <3\n\n\nAnd of course, ${NAME}...\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nThanks for playing",
   "creditsWindow": {
 	"text": "BombSquda: Mell's stupid Modpack\n\n---- Credits ----\n\nVibapop: Models for Kris, Susie, and Ralsei\nnote.swiper: Roblox R6 Rig Model\nNotCleanAgain: Roaring Knight's Model\n@smiteis on SketchFab: Chaos Emerald Models\nSounds from various pieces of media and game sources\nNon-original music from various sources\nOriginal game by Eric Froemling\n\n---- Special Thanks ----\n\n-- Friends --\n\nLemon\nBuddie\nt33nage_d1sast3r\nGummyBoiYT\n\n-- Contributors --\n\nGummyBoiYT\nBuddie\n\n-- Members of Lemon World (where i post devlogs) --\n\n ggMustaGD01, temp, SoK, Achston, Lemon,\nYunoHo_Chan, Karanveer, e328, Boomcatto, \nYuribloxsquad16, and t33nage_d1sast3r",
-	"titleText": "BombSquda's Credits"
+	"titleText": "BombSquda's Credits",
+	"rpcText": "looking at credits"
   },
   "boomboxWindowText": "Welcome to the Boombox.\nThis allows you to play any of the game's music\nINCLUDING whenever in a online party. \nSelect a MusicType and press play to start.",
   "bsRemoteConfigureInAppText": "${REMOTE_APP_NAME} is configured in the app itself.",
@@ -601,12 +625,14 @@
     "ps3Text": "PS3 Controllers",
     "titleText": "Controllers",
     "wiimotesText": "Wiimotes",
-    "xbox360Text": "Xbox 360 Controllers"
+    "xbox360Text": "Xbox 360 Controllers",
+	"rpcText": "setting Controller Settings"
   },
   "configGamepadSelectWindow": {
     "androidNoteText": "Note: controller support varies by device and Android version.",
     "pressAnyButtonText": "Press any button on the controller\n you want to configure...",
-    "titleText": "Configure Controllers"
+    "titleText": "Configure Controllers",
+	"rpcText": "setting Controller Settings"
   },
   "configGamepadWindow": {
     "advancedText": "Advanced",
@@ -654,7 +680,8 @@
   },
   "configKeyboardWindow": {
     "configuringText": "Configuring ${DEVICE}",
-    "keyboard2NoteText": "Note: most keyboards can only register a few keypresses at\nonce, so having a second keyboard player may work better\nif there is a separate keyboard attached for them to use.\nNote that you'll still need to assign unique keys to the\ntwo players even in that case."
+    "keyboard2NoteText": "Note: most keyboards can only register a few keypresses at\nonce, so having a second keyboard player may work better\nif there is a separate keyboard attached for them to use.\nNote that you'll still need to assign unique keys to the\ntwo players even in that case.",
+	"rpcText": "setting Keyboard settings"
   },
   "configTouchscreenWindow": {
     "actionControlScaleText": "Action Control Scale",
@@ -683,7 +710,8 @@
     "forIOSText": "for iOS:",
     "getItForText": "Get ${REMOTE_APP_NAME} for iOS at the Apple App Store\nor for Android at the Google Play Store or Amazon Appstore",
     "googlePlayText": "Google Play",
-    "titleText": "Using Mobile Devices as Controllers:"
+    "titleText": "Using Mobile Devices as Controllers:",
+	"rpcText": "setting Controller Settings"
   },
   "continuePurchaseText": "Continue for ${PRICE}?",
   "continueText": "Continue",
@@ -724,7 +752,8 @@
     "tournamentInfoText": "Compete for high scores with\nother players in your league.\n\nPrizes are awarded to the top scoring\nplayers when tournament time expires.",
     "welcome1Text": "Welcome to ${LEAGUE}. You can improve your\nleague rank by earning star ratings, completing\nachievements, and winning trophies in tournaments.",
     "welcome2Text": "You can also earn tickets from many of the same activities.\nTickets can be used to unlock new characters, maps, and\nmini-games, to enter tournaments, and more.",
-    "yourPowerRankingText": "Your Power Ranking:"
+    "yourPowerRankingText": "Your Power Ranking:",
+	"rpcText": "browsing the Co-op campaign"
   },
   "copyConfirmText": "Copied to clipboard.",
   "copyOfText": "${NAME} copy",
@@ -749,7 +778,8 @@
     "stressTestRoundDurationText": "Round Duration",
     "stressTestTitleText": "Multiplayer Testing",
     "titleText": "Benchmarks & Multiplayer Testing",
-    "totalReloadTimeText": "Total reload time: ${TIME} (see log for details)"
+    "totalReloadTimeText": "Total reload time: ${TIME} (see log for details)",
+	"rpcText": "checking Benchmarks & Debugging"
   },
   "defaultGameListNameText": "Default ${PLAYMODE} Playlist",
   "defaultNewGameListNameText": "My ${PLAYMODE} Playlist",
@@ -785,7 +815,8 @@
     "nameText": "Name",
     "removeGameText": "Remove\nGame",
     "saveText": "Save List",
-    "titleText": "Playlist Editor"
+    "titleText": "Playlist Editor",
+	"rpcText": "making a playlist"
   },
   "editProfileWindow": {
     "accountProfileInfoText": "This special profile has a name\nand icon based on your account.\n\n${ICONS}\n\nCreate custom profiles to use\ndifferent names or custom icons.",
@@ -892,10 +923,12 @@
     "seriesLengthText": "Series Length",
     "showTutorialText": "Show Tutorial",
     "shuffleGameOrderText": "Shuffle Game Order",
-    "titleText": "Customize ${TYPE} Playlists"
+    "titleText": "Customize ${TYPE} Playlists",
+	"rpcText": "looking at Playlists"
   },
   "gameSettingsWindow": {
-    "addGameText": "Add Game"
+    "addGameText": "Add Game",
+	"rpcText": "setting a game's settings"
   },
   "gamesToText": "${WINCOUNT} games to ${LOSECOUNT}",
   "gatherWindow": {
@@ -999,7 +1032,8 @@
     "wifiDirectOpenWiFiSettingsText": "Open Wi-Fi Settings",
     "wifiDirectText": "Wi-Fi Direct",
     "worksBetweenAllPlatformsText": "(works between all platforms)",
-    "youHaveBeenSentAPromoCodeText": "You have been sent a ${APP_NAME} promo code:"
+    "youHaveBeenSentAPromoCodeText": "You have been sent a ${APP_NAME} promo code:",
+	"rpcText": "looking at Gather"
   },
   "getTicketsWindow": {
     "freeText": "FREE!",
@@ -1051,9 +1085,11 @@
     "titleText": "potato",
     "tvBorderText": "fov toggle",
     "verticalSyncText": "vsync",
-    "visualsText": "everything"
+    "visualsText": "everything",
+	"rpcText": "setting Graphics"
   },
   "helpWindow": {
+	"rpcText": "viewing How to Play",
     "bombInfoText": "- Bomb -\nCan deal quite the explosive damage \n(get it?)\n but can result in killing thyself.",
     "bombInfoTextScale": 0.6,
     "canHelpText": "well, ${APP_NAME} can surely help with that!",
@@ -1286,7 +1322,8 @@
     "leavePartyText": "ragequit buttn",
     "quitText": "get outt",
     "resumeText": "continue",
-    "settingsText": "Settings"
+    "settingsText": "Settings",
+	"rpcText": "at the Main Menu screen"
   },
   "makeItSoText": "Make it So",
   "mapSelectGetMoreMapsText": "Get More Maps...",
@@ -1391,6 +1428,7 @@
   "playText": "start gaming",
   "rerollText": "reroll!",
   "playWindow": {
+	"rpcText": "selecting a mode",
     "oneToFourPlayersText": "1-4 players",
     "titleText": "which mode bro?",
     "twoToEightPlayersText": "2-8 players",
@@ -1442,7 +1480,8 @@
   "pressToSelectTeamText": "press ${BUTTONS} to select a team",
   "promoCodeWindow": {
     "codeText": "Code",
-    "enterText": "Enter"
+    "enterText": "Enter",
+	"rpcText": "Code entering Window"
   },
   "promoSubmitErrorText": "Error submitting code; check your internet connection",
   "ps3ControllersWindow": {
@@ -1549,7 +1588,8 @@
     "controllersText": "controller fucked",
     "graphicsText": "quality bad",
     "playerProfilesMovedText": "Note: Player Profiles have moved to the Account window in the main menu.",
-    "titleText": "ok so \nwhat problem"
+    "titleText": "ok so \nwhat problem",
+	"rpcText": "setting Settings"
   },
   "melWindow": {
     "titleText": "bombsquda config",
@@ -1570,7 +1610,8 @@
     "showErrorsText": "show errors onscreen",
     "pauseMusicText": "music on pause menu",
     "noOnlineText": "no online functionality",
-    "foxyJumpscareText": "random chance for foxy jumpscare"
+    "foxyJumpscareText": "random chance for foxy jumpscare",
+	"rpcText": "changin' BombSquda Settings"
   },
   "SURVEYWindow": {
     "titleText": "SURVEY PROGRAM"
@@ -1611,7 +1652,11 @@
     "translationInformMe": "Inform me when my language needs updates",
     "translationNoUpdateNeededText": "bombsquad's languages are updated.",
     "translationUpdateNeededText": "please update your bombsquad's languages!!",
-    "vrTestingText": "VR Testing"
+    "vrTestingText": "VR Testing",
+	"rpcText": "setting Advanced Settings"
+  },
+  "settingsDevTools": {
+	"rpcText": "Dev Tools"
   },
   "shareText": "Share",
   "sharingText": "Sharing...",
@@ -1680,7 +1725,8 @@
     "totalWorthText": "*** ${TOTAL_WORTH} value! ***",
     "upgradeQuestionText": "Upgrade?",
     "winterSpecialText": "Winter Special",
-    "youOwnThisText": "- you own this -"
+    "youOwnThisText": "- you own this -",
+	"rpcText": "checkin out the Store"
   },
   "storeDescriptionText": "8 Player Party Game Madness!\n\nBlow up your friends (or the computer) in a tournament of explosive mini-games such as Capture-the-Flag, Bomber-Hockey, and Epic-Slow-Motion-Death-Match!\n\nSimple controls and extensive controller support make it easy for up to 8 people to get in on the action; you can even use your mobile devices as controllers via the free ‘BombSquad Remote’ app!\n\nBombs Away!\n\nCheck out www.froemling.net/bombsquad for more info.\n",
   "storeDescriptions": {
@@ -1703,8 +1749,11 @@
   "testBuildErrorText": "This test build is no longer active; please check for a new version.",
   "modpackName": "Mell's stupid Modpack",
   "notGatheredText": "FIXME: make public servers work on BombSquda",
-  "quitFuckinGame": "quit game",
-  "pressStart": "PRESS A KEY/BUTTON",
+  "titleWindow": {
+	"quitFuckinGame": "quit game",
+	"pressStart": "PRESS A KEY/BUTTON",
+	"rpcText": "at the Titlescreen"
+  },
   "npUnknownMusic": "TBA/Unknown",
   "npPlaying": "Now playing: ${MUSIC}",
   "menuOverhead1": "According to all known laws of aviation, there is no way a bee should be able to fly.",
@@ -2386,7 +2435,8 @@
     "replayRenameErrorText": "Error renaming replay.",
     "sharedReplaysText": "replays shared with me",
     "titleText": "replays",
-    "watchReplayButtonText": "play"
+    "watchReplayButtonText": "play",
+	"rpcText": "looking at Replays"
   },
   "waveText": "Wave",
   "finalePoints": "Points to win: ${NUM}",
@@ -2396,6 +2446,7 @@
   "wellSureText": "Well Sure!",
   "whatIsThisText": "whats this",
   "winsPlayerText": "${NAME} winner!",
+  "winsSeriesPlayerText": "${NAME} wins the series!",
   "winsTeamText": "${NAME} winner!",
   "winsText": "${NAME} winner!",
   "workspaceSyncErrorText": "Error syncing ${WORKSPACE}. See log for details.",

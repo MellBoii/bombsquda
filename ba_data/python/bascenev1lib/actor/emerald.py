@@ -69,7 +69,6 @@ class EmeraldActor(bs.Actor):
         from bascenev1lib.actor.spaz import Spaz
         all_types = [f"emerald{i}" for i in range(1, 8)]
 
-        # bs.debprint(f"\n{self}: Calculating fairest emerald...")
 
         # Initialize counts
         counts = {e: 0 for e in all_types}
@@ -83,24 +82,16 @@ class EmeraldActor(bs.Actor):
                 continue
 
             emeralds = getattr(actor, "emeralds", [])
-            # bs.debprint(f"  Spaz {actor} has: {emeralds}")
 
             for e in emeralds:
                 if e in counts:
                     counts[e] += 1
-
-        # bs.debprint("  Ownership counts:")
-        # for e, c in counts.items():
-        #     bs.debprint(f"    {e}: {c}")
-
+                    
         min_count = min(counts.values())
-        # bs.debprint(f"  Minimum ownership count: {min_count}")
 
         candidates = [e for e, c in counts.items() if c == min_count]
-        # bs.debprint(f"  Candidate emeralds: {candidates}")
 
         chosen = random.choice(candidates)
-        # bs.debprint(f"  >>> Selected emerald: {chosen}\n")
 
         return chosen
     # msg must be any so we don't get circular import issues

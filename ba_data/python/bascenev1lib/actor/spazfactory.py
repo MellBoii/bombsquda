@@ -356,6 +356,9 @@ class SpazFactory:
                 'upper_leg_mesh': bs.getmesh(char.upper_leg_mesh),
                 'lower_leg_mesh': bs.getmesh(char.lower_leg_mesh),
                 'toes_mesh': bs.getmesh(char.toes_mesh),
+                'earthportrait': bs.gettexture(char.earthportrait),
+                'EBlose': bs.gettexture(char.EBlose),
+                'EBwin': bs.gettexture(char.EBwin),
             }
         else:
             media = self.spaz_media[character]
