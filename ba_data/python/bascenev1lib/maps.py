@@ -53,7 +53,7 @@ class Nothing(bs.Map):
     """
     # Well kill me. We need defs, so that's
     # technically something...
-    from bascenev1lib.mapdata import rampage as defs
+    from bascenev1lib.mapdata import snes as defs
     
     @override
     @classmethod

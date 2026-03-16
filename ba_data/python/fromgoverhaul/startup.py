@@ -115,6 +115,7 @@ class Startup():
         globals['ga'] = bs.getactivity
         globals['gp'] = bs.getplayers
         globals['gs'] = bs.getsession
+        globals['mell'] = mell
         bs.debprint('console globals done!')
     # call it
     auto_module_import()

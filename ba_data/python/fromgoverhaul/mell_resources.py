@@ -132,6 +132,18 @@ def add_spaz(
     else:
         raise TypeError(f"{notif_type} is a incorrect notification type.\nAllowed: ['screen', 'popup']")
 
+def die_main_menu(safeguard: bool = True):
+    import babase as ba
+    import bauiv1 as bui
+    from bauiv1lib.mainmenu import MainMenuWindow
+    windo = ba.app.ui_v1.get_main_window()
+    if not isinstance(windo, MainMenuWindow) and safeguard:
+        raise Exception('Not in the main menu. Disable safeguard to bypass.')
+        return
+    if not windo.main_window_has_control():
+        return
+    with ba.ContextRef.empty():
+        bui.containerwidget(edit=windo._root_widget, transition='out_scale')
 
 # keeping this here for later
 

@@ -20,7 +20,27 @@ import fromgoverhaul.mell_resources as mell
 from bascenev1lib.game.surveyprogram import SURVEYActivity
 from bascenev1lib.actor.cutsceneplayer import CutscenePlayer
 from bascenev1lib.gameutils import SharedObjects
-from bascenev1lib.maps import SNESBattleCourse1
+from bascenev1._messages import PlayerDiedMessage, StandMessage
+from bascenev1lib.actor.spazbot import (
+    SpazBotSet,
+    SpazBotDiedMessage,
+    BomberBot,
+    BomberBotPro,
+    BrawlerBot,
+    BrawlerBotPro,
+    TriggerBot,
+    TriggerBotPro,
+    ChargerBot,
+    StickyBot,
+    ExplodeyBot,
+    KNIGHTBot,
+    RaymanBot,
+    LauncherBot,
+    ralsieBot,
+    MelisoBot,
+    BuddieBot,
+)
+from bascenev1lib.game.thefinale import SpawnInfo
 
 if TYPE_CHECKING:
     from typing import Any
@@ -28,13 +48,20 @@ if TYPE_CHECKING:
     import bacommon.bs
 
 
-class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
+class MainMenuActivity(bs.GameActivity[bs.Player, bs.Team]):
     """Activity showing the rotating main menu bg stuff."""
 
     _stdassets = bs.Dependency(bs.AssetPackage, 'stdassets@1')
 
     _did_initial_transition = False
-
+    suppress_zoomtext = True
+    name = ''
+    
+    @override
+    @classmethod
+    def get_supported_maps(cls, sessiontype: type[bs.Session]) -> list[str]:
+        return ['Nothing']
+        
     def __init__(self, settings: dict):
         super().__init__(settings)
         self._logo_node: bs.Node | None = None
@@ -64,6 +91,138 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         self.month = self.today2.month
         self.christmas = self.month == 12 and self.day == 25
         self.aprilfools = self.month == 4 and self.day == 1
+        self.allow_emeralds = False
+        self._bot_spawn_types = {
+            BomberBot: SpawnInfo(1.00, 0.00, 0.000),
+            BomberBotPro: SpawnInfo(0.00, 0.05, 0.001),
+            BrawlerBot: SpawnInfo(1.00, 0.00, 0.000),
+            BrawlerBotPro: SpawnInfo(0.00, 0.05, 0.001),
+            TriggerBot: SpawnInfo(0.30, 0.00, 0.000),
+            TriggerBotPro: SpawnInfo(0.10, 0.05, 0.001),
+            LauncherBot: SpawnInfo(0.10, 0.05, 0.001),
+            ChargerBot: SpawnInfo(0.40, 0.05, 0.000),
+            RaymanBot: SpawnInfo(0.40, 0.05, 0.000),
+            StickyBot: SpawnInfo(0.10, 0.03, 0.001),
+            ExplodeyBot: SpawnInfo(0.10, 0.02, 0.002),
+            ralsieBot: SpawnInfo(0.10, 0.04, 0.002),
+            MelisoBot: SpawnInfo(0.07, 0.03, 0.002),
+            BuddieBot: SpawnInfo(0.15, 0.08, 0.0015),
+        }
+        self._bots = SpazBotSet()
+    
+    @override
+    def spawn_player(self, player: bs.Player) -> bascenev1.Actor:
+        """Spawn *something* for the provided player.
+
+        The default implementation simply calls
+        :meth:`spawn_player_spaz()`.
+        """
+        assert player  # Dead references should never be passed as args.
+        # tell every player to refresh their meter
+        # in the case of player overriding
+        for otherplayer in self.players:
+            if otherplayer.actor:
+                otherplayer.actor.refresh_earth_meter()
+        if self.globalsnode.camera_mode == 'rotate':
+            self.globalsnode.camera_mode = 'follow'
+            for nodeactor in self._word_actors:
+                bs.animate(nodeactor.node, 'opacity', {0: 1, 0.7: 0})
+            bs.animate(self.modpack_name.node, 'opacity', {0: 1, 0.7: 0})
+            bs.animate(self.splashtext.node, 'opacity', {0: 1, 0.7: 0})
+        return self.spawn_player_spaz(player, position = (0, 5, 0))
+    
+    @override
+    def on_player_leave(self, player: bs.Player):
+        if len(self.players) <= 0:
+            self.globalsnode.camera_mode = 'rotate'
+            for nodeactor in self._word_actors:
+                bs.animate(nodeactor.node, 'opacity', {0: 0, 0.7: 1})
+            bs.animate(self.modpack_name.node, 'opacity', {0: 0, 0.7: 1})
+            bs.animate(self.splashtext.node, 'opacity', {0: 0, 0.7: 1})
+            self._bots.clearslowly()
+        super().on_player_leave(player)
+    
+    def _update_bots(self):
+        if len(self.players) <= 0:
+            return
+        botspawnpts: list[Sequence[float]] = [
+            [-6.0, 4.0, 2.14],
+            [1.0, 1.8, -3.14],
+            [2.0, 2.7, -5.14],
+            [-5.0, 3.1, 0.14],
+            [6.0, 3.1, 4.14],
+            [-2.0, 3.1, -8.14],
+            [2.0, 3.1, 8.14],
+        ]
+        dists = [1.0, 1.7, 0.7]
+        playerpts: list[Sequence[float]] = []
+        for player in self.players:
+            try:
+                if player.is_alive():
+                    assert isinstance(player.actor, PlayerSpaz)
+                    assert player.actor.node
+                    playerpts.append(player.actor.node.position)
+            except Exception:
+                logging.exception('Error updating bots.')
+        # for i in range(3):
+            # for playerpt in playerpts:
+                # dists[i] += abs(playerpt[0] - botspawnpts[i][0])
+            # dists[i] += random.random() * 5.0  # Minor random variation.
+        # if dists[0] > dists[1] and dists[0] > dists[2]:
+            # spawnpt = botspawnpts[0]
+        # elif dists[1] > dists[2]:
+            # spawnpt = botspawnpts[1]
+        # else:
+            # spawnpt = botspawnpts[2]
+        spawnpt = random.choice(botspawnpts)
+
+        spawnpt = (
+            spawnpt[0] + 3.0 * (random.random() - 0.5),
+            spawnpt[1],
+            2.0 * (random.random() - 0.5) + spawnpt[2],
+        )
+
+        # Normalize our bot type total and find a random number within that.
+        total = 0.0
+        for spawninfo in self._bot_spawn_types.values():
+            total += spawninfo.spawnrate
+        randval = random.random() * total
+
+        # Now go back through and see where this value falls.
+        total = 0
+        bottype: type[SpazBot] | None = None
+        for spawntype, spawninfo in self._bot_spawn_types.items():
+            total += spawninfo.spawnrate
+            if randval <= total:
+                bottype = spawntype
+                break
+        spawn_time = 1.0
+        assert bottype is not None
+        self._bots.spawn_bot(bottype, pos=spawnpt, spawn_time=spawn_time)
+
+        # After every spawn we adjust our ratios slightly to get more
+        # difficult.
+        for spawninfo in self._bot_spawn_types.values():
+            spawninfo.spawnrate += spawninfo.increase
+            spawninfo.increase += spawninfo.dincrease
+    
+    @override
+    def handlemessage(self, msg: Any) -> Any:
+        if isinstance(msg, PlayerDiedMessage):
+            # pylint: disable=cyclic-import
+            from bascenev1lib.actor.spaz import Spaz
+
+            player = msg.getplayer(self.playertype)
+            killer = msg.getkillerplayer(self.playertype)
+            self.respawn_player(player)
+
+            # Inform our stats of the demise.
+            self.stats.player_was_killed(
+                player, killed=msg.killed, killer=killer
+            )
+        else:
+            return super().handlemessage(msg)
+        return None
     
     @override
     def on_transition_in(self) -> None:
@@ -159,6 +318,9 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
 
         self._attract_mode_timer = bs.Timer(
             3.12, self._update_attract_mode, repeat=True
+        )
+        self._bot_update_timer = bs.Timer(
+            2.3, self._update_bots, repeat=True
         )
 
         app.classic.invoke_main_menu_ui()
@@ -708,7 +870,7 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
             return
         with self.context:
             _preload1()
-        bui.apptimer(0.1, self.menu_music)        
+        bui.apptimer(0.1, self.menu_music)  
 
     def _update_attract_mode(self) -> None:
         if bui.app.classic is None:
