@@ -1287,6 +1287,26 @@ class Spaz(bs.Actor):
         # start doin it if we wiggled around so much
         if self._wiggle_count > 14:
             self._start_wiggle_sequence()
+            if random.random() < 0.2:
+                bs.emitfx(
+                    position=self.node.position,
+                    velocity=self.node.velocity,
+                    count=50,
+                    scale=0.8,
+                    spread=0.6,
+                    chunk_type='spark',
+                )
+            if random.random() < 0.05:
+                prefix = 'wigglePhrase'
+                count = 5
+                list = [bs.Lstr(resource=f"{prefix}{i}") for i in range(1, count + 1)]
+                chosen = random.choice(list)
+                PopupText(
+                    chosen,
+                    position=self.node.position,
+                    color=(random.random(), random.random(), random.random(), 0.6),
+                    scale=1.1,
+                ).autoretain()
             self.resettimer = bs.Timer(0.5, self._stop_wiggle_sequence)
      
     def on_move_up_down(self, value: float) -> None:
