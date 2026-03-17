@@ -259,7 +259,7 @@ class PlayerSpaz(Spaz):
 
         def make_image(tex, scale):
             return bs.newnode('image', attrs={
-                'texture': bs.gettexture(tex),
+                'texture': tex,
                 'absolute_scale': True,
                 'position': (self.meterx, self.metery),
                 'attach': 'center',
@@ -267,15 +267,8 @@ class PlayerSpaz(Spaz):
                 'scale': scale,
                 'color': (1, 1, 1),
             })
-        char_name = self.character
-        appearances = bs.app.classic.spaz_appearances
-        appearance = appearances[char_name]
-        if hasattr(appearance, 'earthportrait') and appearance.earthportrait:
-            self.charimage = appearance.earthportrait
-        else:
-            self.charimage = appearance.icon_texture
-        self.earthchar = make_image(self.charimage, (80, 80))
-        self.earthmeter = make_image('earthmeter', (150, 150))
+        self.earthchar = make_image(self.media['earthportrait'], (80, 80))
+        self.earthmeter = make_image(bs.gettexture('earthmeter'), (150, 150))
 
         self.earthmetertext = bs.newnode('text', attrs={
             'text': self.node.name,
@@ -317,7 +310,6 @@ class PlayerSpaz(Spaz):
             self.earthsptext,
             self.earthhptext
         ]
-
         for node in nodes:
             if node and node.exists():
                 node.position = (self.meterx, self.metery)
@@ -344,7 +336,9 @@ class PlayerSpaz(Spaz):
             self.earthsptext
         ):
             if node and node.exists():
-                ImageJumper.jump_image(node, 420, 70, -1500)
+                ImageJumper.jump_image(node, 220, 230, -1500)
+        if self.earthchar and self.earthchar.exists():
+            self.earthchar.texture = self.media['EBlose']
         if self.earthhptext and self.earthhptext.exists():
             self.earthhptext.delete()
     def disconnect_controls_from_player(self) -> None:

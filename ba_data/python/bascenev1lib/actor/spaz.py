@@ -276,6 +276,7 @@ class Spaz(bs.Actor):
             extras_material.append(pam)
 
         media = factory.get_media(character)
+        self.media = media
         punchmats = (factory.punch_material, shared.attack_material)
         pickupmats = (factory.pickup_material, shared.pickup_material)
         self.node: bs.Node = bs.newnode(
@@ -1738,7 +1739,6 @@ class Spaz(bs.Actor):
             self.super_flash = bs.Timer(endtime, flash_func, repeat=True) 
             self.super_sparkies = bs.Timer(endtime + 0.2, self.super_spark, repeat=True) 
             bs.camerashake(intensity=5.0)
-            char_name = getattr(self, 'character', None)
             hurtiness = 4.2
             flash_color = (1.0, 0.8, 0.4)
             light = bs.newnode(
@@ -1762,26 +1762,6 @@ class Spaz(bs.Actor):
             )
             bs.timer(0.12, flash.delete)
             bs.timer(0.1, self.updatemeter)
-            vol = 3
-            if char_name:
-                appearances = bs.app.classic.spaz_appearances
-                if char_name in appearances: # check if their names there
-                    appearance = appearances[char_name]
-                    if hasattr(appearance, 'gloat_sounds') and appearance.gloat_sounds:
-                         # play the character's gloat voiceline(s)
-                        sound = random.choice(appearance.gloat_sounds)
-                        bs.getsound(sound).play(volume=vol, position=self.node.position)
-                    else:
-                        if hasattr(appearance, 'victory_sounds') and appearance.victory_sounds:
-                            # if we don't have a gloat voiceline, we'll use their victory ones instead
-                            sound = random.choice(appearance.victory_sounds)
-                            bs.getsound(sound).play(volume=vol, position=self.node.position)
-                        else:
-                            # this character doesn't have a victory voiceline too. we'll play the default one.
-                            bs.getsound('win').play(volume=vol, position=self.node.position)
-                else: # didn't find this character's name in appearances
-                    bs.getsound('error').play(volume=vol, position=self.node.position) 
-                    raise ValueError(f"Character name '{char_name}' not found in appearances.")
             # buff our spaz
             self.hitpoints_max = 2500
             self.hitpoints = 2500
@@ -1801,6 +1781,7 @@ class Spaz(bs.Actor):
             bs.animate(self.instructimage, 'opacity',
                        {0.1: 1.0, 4.5: 1.0, 6.2: 0.0})
             bs.timer(10.0, self.instructimage.delete)
+            random.choice(self.media['gloat_sounds']).play(position=self.node.position)
             if not shouldntsetmusic:
                 # music setters (character based)
                 gnode = self.activity.globalsnode
@@ -2543,16 +2524,16 @@ class Spaz(bs.Actor):
                 
         if isinstance(msg, EmeraldMessage):
             if self.issuper:
-                bs.getsound('player_unready').play(position=self.node.position)
+                bs.getsound('emerald_reject').play(position=self.node.position)
                 return
             
             if msg.current not in self.emeralds:
                 self.emeralds.append(msg.current)
-                bs.getsound('s3_blsp').play(position=self.node.position)
+                bs.getsound('emerald_collect').play(position=self.node.position)
                 msg.srcnode.handlemessage(bs.DieMessage())
 
             if len(self.emeralds) == 7:
-                bs.getsound('cd_alright').play(position=self.node.position)
+                bs.getsound('emerald_alert').play(position=self.node.position)
                 PopupText(
                     bs.Lstr(
                         resource='grabSuper', 
@@ -2566,7 +2547,7 @@ class Spaz(bs.Actor):
                 ).autoretain()
 
             else:
-                bs.getsound('player_unready').play(position=self.node.position)
+                bs.getsound('emerald_collect').play(position=self.node.position)
             self.update_emerald_indicator()
             
         elif isinstance(msg, bs.PickedUpMessage):
@@ -3718,19 +3699,7 @@ class Spaz(bs.Actor):
         elif isinstance(msg, bs.CelebrateMessage):
             if self.node:
                 self.node.handlemessage('celebrate', int(msg.duration * 1000))
-
-                char_name = getattr(self, 'character', None)
-                if char_name:
-                    appearances = bs.app.classic.spaz_appearances
-                    if char_name in appearances:
-                        appearance = appearances[char_name]
-                        if hasattr(appearance, 'victory_sounds') and appearance.victory_sounds:
-                            sound = random.choice(appearance.victory_sounds)
-                            bs.getsound(sound).play(position=self.node.position)
-                        else:
-                            bs.getsound('win').play(position=self.node.position)
-                    else:
-                        bs.getsound('error').play(position=self.node.position)
+                random.choice(self.media['victory_sounds']).play(position=self.node.position)
         else:
             return super().handlemessage(msg)
         return None

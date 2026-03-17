@@ -9,6 +9,7 @@ from typing import override, TYPE_CHECKING
 import bascenev1 as bs
 import random
 from bascenev1lib.actor.bomb import Bomb
+from bascenev1lib.actor.nodejumper import ImageJumper
 
 from bascenev1lib.activity.multiteamscore import MultiTeamScoreScreenActivity
 
@@ -469,18 +470,13 @@ class TeamSeriesVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
             ).autoretain()
         self.entries = player_entries
         # Ew
-        try:
-            self.p1 = player_entries[0][2]
-        except:
-            self.p1 = None
-        try:
-            self.p2 = player_entries[1][2]
-        except:
-            self.p2 = None
-        try:
-            self.p3 = player_entries[2][2]
-        except:
-            self.p3 = None
+        places = []
+        for i in range(3):  # change 3 to however many places you want
+            try:
+                places.append(player_entries[i][2])
+            except IndexError:
+                places.append(None)
+        self.p1, self.p2, self.p3 = places
         self._show_places()
         bs.timer(15.0, bs.WeakCall(self._show_tips))
 
@@ -574,6 +570,8 @@ class TeamSeriesVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
     def _show_winner(self, team: bs.SessionTeam) -> None:
         from bascenev1lib.actor.image import Image
         from bascenev1lib.actor.zoomtext import ZoomText
+        from bascenev1lib.actor.spazfactory import SpazFactory
+        fac = SpazFactory.get()
 
         if not self._is_ffa:
             offs_v = 0.0
@@ -612,7 +610,6 @@ class TeamSeriesVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
                 jitter=1.0,
                 maxwidth=250,
             ).autoretain()
-
         else:
             ZoomText(
                 bs.Lstr(resource='winsSeriesPlayerText', subs=[('${NAME}', team.name)]),
@@ -622,3 +619,18 @@ class TeamSeriesVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
                 jitter=1.2,
                 maxwidth=800,
             ).autoretain()
+            if self.p1:
+                self.p1node.texture = fac.get_media(self.p1.player.character)['EBwin']
+                random.choice(fac.get_media(self.p1.player.character)['victory_sounds']).play()
+            if self.p2 and not self.p3:
+                self.p2node.texture = fac.get_media(self.p2.player.character)['EBlose']
+                if self.p2.player.character == 'John Grace':
+                    bs.getsound('gibbed').play()
+                    ImageJumper.jump_image(self.p2node, 620, 230, -1100)
+                bs.timer(0.8, random.choice(fac.get_media(self.p2.player.character)['death_sounds']).play)
+            if self.p3:
+                self.p3node.texture = fac.get_media(self.p3.player.character)['EBlose']
+                if self.p3.player.character == 'John Grace':
+                    bs.getsound('gibbed').play()
+                    ImageJumper.jump_image(self.p3node, 620, 230, -1100)
+                bs.timer(0.8, random.choice(fac.get_media(self.p3.player.character)['death_sounds']).play)

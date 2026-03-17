@@ -345,6 +345,8 @@ class SpazFactory:
                 'death_sounds': [bs.getsound(s) for s in char.death_sounds],
                 'pickup_sounds': [bs.getsound(s) for s in char.pickup_sounds],
                 'fall_sounds': [bs.getsound(s) for s in char.fall_sounds],
+                'victory_sounds': [bs.getsound(s) for s in char.victory_sounds],
+                'gloat_sounds': [bs.getsound(s) for s in char.gloat_sounds],
                 'color_texture': bs.gettexture(char.color_texture),
                 'color_mask_texture': bs.gettexture(char.color_mask_texture),
                 'head_mesh': bs.getmesh(char.head_mesh),
