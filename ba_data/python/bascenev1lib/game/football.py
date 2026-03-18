@@ -399,7 +399,7 @@ class FootballCoopGame(bs.CoopGameActivity[Player, Team]):
     """Co-op variant of football."""
 
     name = 'Football'
-    tips = ['Use the pick-up button to grab the flag < ${PICKUP} >']
+    tips = ['footballPickupTip']
     scoreconfig = bs.ScoreConfig(
         scoretype=bs.ScoreType.MILLISECONDS, version='B'
     )

@@ -150,6 +150,13 @@ class AchievementSubsystem:
                 award=5,
             ),
             Achievement(
+                'Hard Head',
+                'achievementHardHead',
+                (1, 1, 1),
+                '',
+                award=5,
+            ),
+            Achievement(
                 'Sharing is Caring',
                 'achievementSharingIsCaring',
                 (1, 1, 1),
@@ -409,7 +416,6 @@ class AchievementSubsystem:
                 (2, 1.5, 0.3),
                 'Default:The Finale',
                 award=20,
-                hard_mode_only=True,
             ),
             Achievement(
                 'The Halfway Mark',
@@ -417,7 +423,6 @@ class AchievementSubsystem:
                 (2, 1.5, 0.3),
                 'Default:The Finale',
                 award=40,
-                hard_mode_only=True,
             ),
             Achievement(
                 'I am the BombSquad:tm:',
@@ -425,7 +430,6 @@ class AchievementSubsystem:
                 (2, 1.5, 0.3),
                 'Default:The Finale',
                 award=60,
-                hard_mode_only=True,
             ),
             Achievement(
                 'Onslaught Master',

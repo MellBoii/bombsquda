@@ -73,13 +73,12 @@ class TipsText(bs.Actor):
         next_tip = bs.Lstr(
             translate=(
                 'tips',
-                (
-                    bs.app.classic.get_next_tip()
-                    if bs.app.classic is not None
-                    else ''
-                ),
+                bs.app.classic.get_next_tip()
             ),
-            subs=[('${REMOTE_APP_NAME}', get_remote_app_name()),('${YOU}', plus.get_v1_account_display_string())],
+            subs=[
+                ('${REMOTE_APP_NAME}', get_remote_app_name()),
+                ('${YOU}', plus.get_v1_account_display_string())
+            ],
         )
         spc = self._message_spacing
         assert self.node

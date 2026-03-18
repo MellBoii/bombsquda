@@ -64,7 +64,7 @@ FEEL_THE_FURY = [
     ('Oh, oh', 201.02),
     ('Can you feel the fury?', 206.45),
 ]
-screams = ['screams/scream' + str(i + 1) + '' for i in range(10)]
+screams = ['screams/scream' + str(i + 1) + '' for i in range(15)]
 server = "https://bombsquda.tailc76b25.ts.net"
 version = '2.1'
 update_date = '2/21/2026'
@@ -77,8 +77,8 @@ def add_spaz(
     notif_type: str = 'screen',
 ):
     """
-    A config change function; made to
-    just simplify changing a amount of currency.
+    A config change function; made to just simplify 
+    changing a amount of currency. Use in gameplay and such.
     As per suggested, it adds the specified amount to a 'spaz' currency
     (eg. spaztickets, spaztokens, and stuff that can be added later...)
     """
@@ -111,7 +111,7 @@ def add_spaz(
                     scale=1.4,
                     lifespan=3.5,
                 ).autoretain()
-                bs.getsound('cashRegister2').play(volume=2.0, position=text_pos)
+                bs.getsound('gainCur').play(volume=1.7, position=text_pos)
         else:
             raise TypeError("Notification type was 'popup' but no text_pos was given or no activity exists")
     elif notif_type == 'screen':

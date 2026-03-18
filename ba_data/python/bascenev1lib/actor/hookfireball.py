@@ -221,7 +221,7 @@ class Fireball(bs.Actor):
         self.bscale = 0.9
         self.material = bs.Material()
         self.owner = owner
-        self.hurtpoints = random.randint(50, 200)
+        self.hurtpoints = random.randint(100, 350)
         shared = SharedObjects.get()
         self.material.add_actions(
             conditions=('they_have_material', shared.object_material),

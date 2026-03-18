@@ -61,8 +61,7 @@ class TheLastStandGame(bs.CoopGameActivity[Player, Team]):
     name = 'The Last Stand'
     description = 'Final glorious epic slow motion battle to the death.'
     tips = [
-        'This level never ends, but a high score here\n'
-        'will earn you eternal respect throughout the world.'
+        'lastStandTip'
     ]
 
     # Show messages when players die since it matters here.

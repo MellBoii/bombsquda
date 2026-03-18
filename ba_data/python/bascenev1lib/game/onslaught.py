@@ -273,7 +273,7 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
                 customdata['_showed_onslaught_landmine_tip'] = True
                 self.tips = [
                     bs.GameTip(
-                        'Land-mines are a good way to stop speedy enemies.',
+                        'onslaughtMinesTip',
                         icon=bs.gettexture('powerupLandMines'),
                         sound=bs.getsound('ding'),
                     )
@@ -286,8 +286,7 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
                 customdata['_showed_onslaught_tnt_tip'] = True
                 self.tips = [
                     bs.GameTip(
-                        'Take out a group of enemies by\n'
-                        'setting off a bomb near a TNT box.',
+                        'onslaughtTNTTip',
                         icon=bs.gettexture('tnt'),
                         sound=bs.getsound('ding'),
                     )
@@ -300,8 +299,7 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
                 customdata['_showed_onslaught_curse_tip'] = True
                 self.tips = [
                     bs.GameTip(
-                        'Curse boxes turn you into a ticking time bomb.\n'
-                        'The only cure is to quickly grab a health-pack.',
+                        'onslaughtCurseTip',
                         icon=bs.gettexture('powerupCurse'),
                         sound=bs.getsound('ding'),
                     )

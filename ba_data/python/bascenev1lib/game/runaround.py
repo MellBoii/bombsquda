@@ -112,9 +112,9 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
     name = 'Runaround'
     description = 'Prevent enemies from reaching the exit.'
     tips = [
-        'Jump just as you\'re throwing to get bombs up to the highest levels.',
-        'No, you can\'t get up on the ledge. You have to throw bombs.',
-        'Whip back and forth to get more distance on your throws..',
+        'runaroundTip1',
+        'runaroundTip2',
+        'runaroundTip3',
     ]
     default_music = bs.MusicType.MARCHING
 
