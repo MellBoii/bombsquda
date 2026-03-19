@@ -1912,7 +1912,7 @@ class Space(bs.Map):
     @override
     @classmethod
     def get_preview_texture_name(cls) -> str:
-        return 'alwaysLandPreview'
+        return 'spaceMapPreview'
 
     @override
     @classmethod

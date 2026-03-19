@@ -2032,7 +2032,7 @@ class Spaz(bs.Actor):
             if not self.node or not self.is_alive():
                 self.healTimer = None
                 return
-            self.hitpoints += 15
+            self.hitpoints += 30
             self.updatemeter()
             bs.getsound('heal').play(position=self.node.position)
             if self.hitpoints >= self.hitpoints_max - 450:
@@ -3824,7 +3824,7 @@ class Spaz(bs.Actor):
         ).autoretain()
 
         # Explode if we're mell
-        if self.character == "Mell":
+        if self.character == "Mell" and shouldcelb:
             self._mel_mayhem()
 
         # Optional celebration HP boost
