@@ -70,6 +70,10 @@ class Startup():
         "squda_foxyjumpscare": False,
         "squda_pausemusic": True,
         "squda_noonline": False,
+        "squda_ch1name": "NEWBIE",
+        "squda_ch2name": "KRIS",
+        "squda_ch3name": "SNAKESHADOW",
+        "squda_ch4name": "NOOB",
     }
     # "setdefault" to create config settings
     # won't affect already existing ones.

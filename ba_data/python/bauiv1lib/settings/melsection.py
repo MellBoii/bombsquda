@@ -99,7 +99,7 @@ class MelWindow(bui.MainWindow):
                 size=(width, height),
                 toolbar_visibility=(
                     'menu_minimal'
-                    if uiscale is bui.UIScale.SMALL
+                    if uiscale is bui.UIScale.SMALL or first_time
                     else 'menu_full'
                 ),
                 scale=scale,

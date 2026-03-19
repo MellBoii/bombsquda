@@ -16,22 +16,22 @@ if TYPE_CHECKING:
 SURVEY_STEPS = [
     dict(
         prompt="It's your first time here, so let's start.\nChoose your space marine's name.",
-        texture="spazbound",
+        texture="earthbound/spazbound",
         cfg="squda_ch1name",
     ),
     dict(
         prompt="Now, name this knight.",
-        texture="krisbound",
+        texture="earthbound/krisbound",
         cfg="squda_ch2name",
     ),
     dict(
         prompt="Name the ninja.",
-        texture="snakebound",
+        texture="earthbound/snakebound",
         cfg="squda_ch3name",
     ),
     dict(
         prompt="And finally, choose the last one's name.",
-        texture="noobbound",
+        texture="earthbound/noobbound",
         cfg="squda_ch4name",
     ),
 ]
