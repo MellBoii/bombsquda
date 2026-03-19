@@ -131,12 +131,29 @@ class PlayerBall(bs.Actor):
         self.last_player_attacked_by = None
         self.max_hitpoints = 1000
         self.hitpoints = self.max_hitpoints
+        self.hardmode = False
+        self.spindashes = 0
+        self.spindashing = False
+        self.spindash_timer = None
         self.set_hp(
             (
                 f'{str(int(self.hitpoints / 10))}'
                 f'/{str(int(self.max_hitpoints / 10))}'
             )
         )
+        self.hold_sfx = None
+        self.hold_text = None
+        self.fastfall_timer = None
+        self.drift_sfx = bs.newnode(
+            'sound',
+            owner=self.node,
+            attrs={
+                'sound': bs.getsound('drift'),
+                'volume': 0,
+                'position': self.node.position,
+            }
+        )
+        self.node.connectattr('position', self.drift_sfx, 'position')
 
     # Overloads to tell the type system our return type based on doraise val.
     @overload
@@ -263,11 +280,115 @@ class PlayerBall(bs.Actor):
         """Does nothing."""
         del shouldntsetmusic
         pass
+    
+    def fast_fall(self):
+        if not self.node:
+            return
+        mnode = bs.newnode(
+            'math',
+            owner=self.node,
+            attrs={'input1': (0, 0.65, 0), 'operation': 'add'},
+        )
+        self.node.connectattr('position', mnode, 'input2')
+        if not self.hold_text:
+            self.hold_text = bs.newnode(
+                'text',
+                owner=self.node,
+                attrs={
+                    'text': 'HOLD!',
+                    'in_world': True,
+                    'shadow': 1.0,
+                    'flatness': 1.0,
+                    'opacity': 1.0,
+                    'scale': 0.015,
+                    'h_align': 'center',
+                },
+            )
+            mnode.connectattr('output', self.hold_text, 'position')
+        if not self.hold_sfx:
+            self.hold_sfx = bs.newnode(
+                'sound',
+                owner=self.node,
+                attrs={
+                    'sound': bs.getsound('hold'),
+                    'volume': 1,
+                    'position': self.node.position,
+                }
+            )
+            self.node.connectattr('position', self.hold_sfx, 'position')
+        def fall():
+            if not self.node:
+                self.fastfall_timer = None
+                return
+            if self.standing:
+                self.fastfall_timer = None
+                self.dash(y=25)
+                self.hold_sfx.volume = 0
+                self.hold_sfx.delete()
+                self.hold_text.delete()
+                bs.getsound('bounce').play(position=self.node.position)
+            self.dash(y=-50)
+        self.fastfall_timer = bs.Timer(0.001, fall, repeat=True)
+        
+    
+    def on_bomb_press(self):
+        if not self.node:
+            return
+        if not self.standing:
+            self.fast_fall()
+            return
+        if self.getspeed() <= 0.8:
+            self.spindash()
+    
+    def on_bomb_release(self):
+        if not self.node:
+            return
+        if self.spindashing:
+            self.unspindash()
+    
+    def unspindash(self):
+        if not self.node:
+            return
+        self.dash(45 * self.spindashes)
+        bs.getsound('spinzoom').play(position=self.node.position)
+        self.spindashes = 0
+        self.spindash_timer = None
+        self.spindashing = False
+    
+    def spindash(self):
+        self.spindashing = True
+        def rsp():
+            if not self.node:
+                self.spindash_timer = None
+                return
+            if self.spindashes >= 10:
+                self.spindash_timer = None
+            bs.getsound('spindash').play(position=self.node.position)
+            self.spindashes += 1
+            bs.emitfx(
+                position=self.node.position,
+                chunk_type='spark',
+                count=30,
+                scale=0.5,
+                spread=0.12,
+            )
+        rsp()
+        self.spindash_timer = bs.Timer(0.3, rsp, repeat=True)
+    
+    def on_punch_press(self):
+        if not self.node:
+            return
+        if not self.standing:
+            if self.can_thok:
+                self.dash(x=250)
+                bs.getsound('srb2_thok').play()
+                self.can_thok = False
+            return
 
     def getspeed(self, 
             should_abs: bool = True, 
             decimals: int = 2, 
-            ignore_y: bool = True
+            ignore_y: bool = False
         ):
         """
         Calculate the speed of the actor based on velocity components.
@@ -314,6 +435,9 @@ class PlayerBall(bs.Actor):
         player.assigninput(bs.InputType.UP_DOWN, self.on_up_down)
         player.assigninput(bs.InputType.LEFT_RIGHT, self.on_left_right)
         player.assigninput(bs.InputType.JUMP_PRESS, self.on_jump)
+        player.assigninput(bs.InputType.BOMB_PRESS, self.on_bomb_press)
+        player.assigninput(bs.InputType.PUNCH_PRESS, self.on_punch_press)
+        player.assigninput(bs.InputType.BOMB_RELEASE, self.on_bomb_release)
         player.assigninput(bs.InputType.RUN, self.on_run)
         # We don't need these (our actor is not complex). 
         # Comment just so we can revert if needed.
@@ -430,7 +554,7 @@ class PlayerBall(bs.Actor):
     def _apply_movement(self):
         if not self.node:
             return
-
+    
         x = self.move_x
         z = self.move_z
 
@@ -439,18 +563,41 @@ class PlayerBall(bs.Actor):
         if mag > 1.0:
             x /= mag
             z /= mag
+        speed = self.speed
 
         self.impulse(
-            x=x * self.speed,
-            z=z * self.speed
+            x=x * speed,
+            z=z * speed
         )
+        # --- Resistance / volume logic ---
+        if not self.standing:
+            # Not standing → mute
+            if self.drift_sfx:
+                self.drift_sfx.volume = 0.0
+            return
+
+        vx, _, vz = self.node.velocity
+
+        vmag = (vx * vx + vz * vz) ** 0.5
+        if vmag < 0.01 or mag < 0.01:
+            resistance = 0.0
+        else:
+            # Normalize velocity
+            vx /= vmag
+            vz /= vmag
+
+            # Dot product
+            dot = (x * vx + z * vz)
+
+            # Convert to resistance (0 → 1)
+            resistance = max(0.0, -dot)
+
+        # Apply to volume (tweak multiplier if needed)
+        if self.drift_sfx:
+            self.drift_sfx.volume = resistance
     
     def on_jump(self):
         if not self.standing:
-            if self.can_thok:
-                self.dash(x=250)
-                bs.getsound('srb2_thok').play()
-                self.can_thok = False
             return
         self.dash(y=150)
         bs.getsound('deek').play()

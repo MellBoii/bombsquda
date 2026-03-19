@@ -3276,7 +3276,7 @@ class Spaz(bs.Actor):
                 chance = 0.2  # 20% chance for all, set to 90% if you wanna test
 
                 if random.random() < 0.18:  # 18% chance of SMAAAASH!!ing
-                    damage *= 1.4
+                    damage *= 1.7
                     # Play sound.
                     bs.getsound('smaash').play(position=self.node.position)
                     # Get important values.
