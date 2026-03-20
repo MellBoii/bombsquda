@@ -27,6 +27,7 @@ from bascenev1lib.actor.spazfactory import SpazFactory
 from bascenev1lib.actor.particles import BloodParticle, ConfettiParticle, SparkParticle
 from bascenev1lib.actor.hookfireball import UKHook, Fireball
 from bascenev1lib.actor.emerald import TouchedMsg
+from bascenev1lib.actor.image_looped import LoopingImageAnimation
 from bascenev1lib.gameutils import SharedObjects
 import fromgoverhaul.mell_resources as mell
 import babase as ba
@@ -38,6 +39,7 @@ POWERUP_WEAR_OFF_TIME = 27000
 POWERUP_WEAR_OFF_TIME2 = 15000
 POWERUP_WEAR_OFF_TIME3 = 10000
 POWERUP_WEAR_OFF_TIME_STAR = 22000
+POWERUP_WEAR_OFF_TIME_K = 65000
 
 # Obsolete - just used for demo guy now.
 BASE_PUNCH_POWER_SCALE = 1.2
@@ -232,6 +234,15 @@ class Spaz(bs.Actor):
         self.shotgun_shots = 0
         self.fireballs = 0
         self.hook = None
+        self.kookoo_head = None
+        self.kookoo_arm = None
+        self.kookoo_exists = None
+        self.kookood = None
+        self.kookoo_vibe_checkin = None
+        self.kookoo_time_text = None
+        self.kookoo_vibe_checkin_num = 0
+        self.kookoo_vibe_checkin_end = 0
+        self.moving = False
 
         self.source_player = source_player
         self._dead = False
@@ -269,7 +280,7 @@ class Spaz(bs.Actor):
         self.explotimer = None
         self.wiggledancetimer = None
         self.parryshield = None
-        self.hardmode = None
+        self.hardmode = False
 
         if can_accept_powerups:
             pam = PowerupBoxFactory.get().powerup_accept_material
@@ -707,6 +718,82 @@ class Spaz(bs.Actor):
             return
         self.node.jump_pressed = False
     
+    def scary_text(
+        self, 
+        text: str,
+        xpos: int = 0, 
+        color: tuple[float, float, float] = (1, 0.9, 0.9),
+        scale: int = 0.013,
+        spacing_x: int = 0.18,
+        spacing_y: int = 0.35,
+        endtime: int = 5,
+    ):
+        """
+        Show some "scary text". Ah!
+        :param text: the text. you know
+        :param xpos: the offset where the text will start
+        :param color: color of the text
+        :param scale: scale of the **LETTERS**. this means you'll have to adjust spacing!
+        :param spacing_x: x spacing of the letters
+        :param spacing_y: y spacing of the letters
+        :param endtime: time the text animates out
+        """
+        start_x_base = xpos
+        start_x = start_x_base # start x
+        line_offset = 0  # how many lines down we are
+        nodelist = []
+        for letter in text:
+            # handle line break
+            if letter == '\n':
+                start_x = start_x_base
+                line_offset += 1
+                continue
+            # position is based on start x which is also spacing
+            # y is above our head, and it also uses line offsets
+            # z never gets changed
+            position = (
+                self.node.position[0] + start_x,
+                self.node.position[1] + 1.3 - (line_offset * spacing_y),
+                self.node.position[2],
+            )
+            # create a node for em
+            node = bs.newnode(
+                'text',
+                owner=self.node,
+                attrs={
+                    'text': letter,
+                    'in_world': True,
+                    'color': color,
+                    'scale': scale,
+                    'h_align': 'center',
+                    'position': position,
+                },
+            )
+            # animate in then out
+            bs.animate(node, 'opacity', {
+                0.0: 0,
+                1.0: 1,
+                endtime - 1: 1,
+                endtime: 0,
+            })
+            # append to node list so we can delete later
+            nodelist.append(node)
+            # shake the node
+            mell.shake_node(
+                node,
+                duration=endtime + 1,
+                interval=0.01,
+                intensity=0.035,
+                array_num=3
+            )
+            def delete_all():
+                for node in nodelist:
+                    if node and node.exists():
+                        node.delete()
+            bs.timer(endtime, delete_all)
+            # add spacing
+            start_x += spacing_x
+    
     def attempt_parry(self):
         """
         Called upon when attempting a parry;
@@ -996,7 +1083,7 @@ class Spaz(bs.Actor):
             self._roulette_active = False
             return
         self._roulette_active = False
-        baditems = ['curse', 'spongebob']
+        baditems = ['curse', 'spongebob', 'kookoo']
         gooditems = ['metal', 'punch']
         if self._roulette_current in baditems:
             bs.getsound('baditem').play(position=self.node.position)
@@ -1314,6 +1401,7 @@ class Spaz(bs.Actor):
         if self._has_metalcap:
             value *= 0.5
         self.node.move_left_right = value
+        self.moving = value >= 0.2
         def resetwiggle():
             self._wiggle_count = 0
         # detect any significant fast changes to the value
@@ -1351,6 +1439,7 @@ class Spaz(bs.Actor):
         if self._has_metalcap:
             value *= 0.5
         self.node.move_up_down = value
+        self.moving = value >= 0.2
         
     def _start_wiggle_sequence(self):
         if self.wiggling == True:
@@ -2168,6 +2257,8 @@ class Spaz(bs.Actor):
             'strong': factory.tex_strong,
             'spongebob': factory.tex_spongebob,
             'shotgun': factory.tex_shotgun,
+            'star': factory.tex_star,
+            'kookoo': factory.tex_kookoo,
         }
 
         return texture_map.get(ptype, bs.gettexture('white'))
@@ -2203,6 +2294,9 @@ class Spaz(bs.Actor):
             # Use factory distribution
             ptype = factory.get_random_powerup_type()
             self._roulette_current = ptype
+            if random.random() < 0.07:
+                ptype = 'kookoo'
+                self._roulette_current = 'kookoo'
 
             # Update billboard texture dynamically
             tex = self._get_texture_for_powerup(factory, ptype)
@@ -2488,6 +2582,197 @@ class Spaz(bs.Actor):
             self.lasthittype = 'swoon'
         bs.basetimer(2.1, swoon2)
         swoon1()
+        
+    def _kookoo_go_byebye(self):
+        pos = self.kookoo_head.node.position
+        scale = self.kookoo_head.node.scale
+        self.kookoo_head.node.delete()
+        self.kookoo_head = LoopingImageAnimation(
+            'ktransb', 
+            frame_count=5, 
+            frame_delay=0.03, 
+            scale=scale, 
+            position=pos,
+            loop=False,
+            attach="bottomCenter",
+        )
+        self.kookoo_time_text.delete()
+        def killemall():
+            self.kookoo_head.node.delete()
+            self.kookoo_time_text.delete()
+            self.kookoo_head = None
+            self.kookoo_time_text = None
+            self.kookoo_exists = False
+        bs.getsound('klive').play(volume=2, position=self.node.position)
+        bs.timer(0.2, killemall)
+    
+    def _kookoo_death(self):
+        pos = self.kookoo_head.node.position
+        scale = self.kookoo_head.node.scale
+        self.kookoo_head.node.delete()
+        self.kookoo_head = LoopingImageAnimation(
+            'ktransb', 
+            frame_count=5, 
+            frame_delay=0.03, 
+            scale=scale, 
+            position=pos,
+            loop=False,
+            attach="bottomCenter",
+        )
+        self.kookood = False
+        self.kookoo_time_text.delete()
+        def killemall():
+            self.kookoo_head.node.delete()
+            self.kookoo_time_text.delete()
+            self.kookoo_head = None
+            self.kookoo_time_text = None
+            self.kookoo_exists = False
+        bs.timer(0.2, killemall)
+        bs.getsound('kdie').play(volume=2, position=self.node.position)
+        def die():
+            self.handlemessage(bs.FreezeMessage())
+            self.die()
+            self.node.death_sounds = [bs.getsound('trublank')]
+            self.node.color_texture = bs.gettexture('white')
+            self.node.color_mask_texture = bs.gettexture('crossOutMask')
+            self.node.color = self.node.highlight = (0, 0, 1)
+            self.node.name = ''
+            self.node.hurt = 1.0
+        bs.timer(0.1, die)
+        
+    def _kookoo_start_ticking(self, speed: int = 0.8):
+        pos = self.kookoo_head.node.position
+        scale = self.kookoo_head.node.scale
+        self.kookoo_head.node.delete()
+        self.kookoo_head = LoopingImageAnimation(
+            'ktick', 
+            frame_count=2, 
+            frame_delay=0.06, 
+            scale=scale,
+            position=pos,
+            loop=True,
+            attach="bottomCenter",
+        )
+        self.kookoo_arm.node.delete()
+        self.kookoo_arm = None
+        def tick():
+            if not self.node or not self.is_alive():
+                self.kookoo_ticker = None
+                self.kookood = False
+                self.kookoo_head.node.delete()
+                self.kookoo_time_text.delete()
+                self.kookoo_head = None
+                self.kookoo_time_text = None
+                self.kookoo_exists = False
+                return
+            if self.kookoo_vibe_checkin_num >= self.kookoo_vibe_checkin_end:
+                if self.node.hold_node or self.moving:
+                    self._kookoo_death()
+                elif self.shield:
+                    print('oh my god break this guys shield')
+                else:
+                    self._kookoo_go_byebye()
+                self.kookoo_ticker = None
+                self.kookoo_vibe_checkin_num = 0
+                kookoos = self._activity().kookoos
+                kookoos.pop(self._slot, None)
+                return
+            self.kookoo_vibe_checkin_num += 1
+            bs.getsound(f'ktick{self.kookoo_vibe_checkin_num}').play(volume=2, position=self.node.position)
+            self.kookoo_time_text.text = str(self.kookoo_vibe_checkin_num)
+            mell.shake_node(
+                self.kookoo_time_text,
+                duration=speed - 0.3,
+                interval=0.01,
+                intensity=0.1,
+            )
+        tick()
+        self.kookoo_ticker = bs.Timer(speed, tick, repeat=True)
+    
+    def _kookoo_vibe_check(self):
+        if random.random() >= 0.1 or self.kookoo_exists or not self.kookood:
+            return
+        if not hasattr(self._activity(), 'kookoos'):
+            self._activity().kookoos = {}
+        def _get_free_slot(kookoos: dict) -> int:
+            slot = 0
+            while slot in kookoos:
+                slot += 1
+            return slot
+        self.kookoo_exists = True
+        kookoos = self._activity().kookoos
+        self._slot = _get_free_slot(kookoos)      
+        kookoos[self._slot] = self
+        spacing = 140
+        y = 300 + (self._slot * spacing)
+        x = -500
+        scale = 200
+        self.kookoo_vibe_checkin_end = random.randint(5, 12)
+        def create_arm():
+            self.kookoo_arm = LoopingImageAnimation(
+                'karm_appear', 
+                frame_count=5, 
+                frame_delay=0.07, 
+                scale=(scale, scale), 
+                position=(x, y),
+                loop=False,
+                attach="bottomCenter",
+            )
+        def arm_point():
+            self.kookoo_arm.node.delete()
+            self.kookoo_arm = LoopingImageAnimation(
+                'karm_point', 
+                frame_count=3, 
+                frame_delay=0.07, 
+                scale=(scale, scale), 
+                position=(x, y),
+                loop=True,
+                attach="bottomCenter",
+            )
+            self.kookoo_time_text =  bs.newnode(
+                'text',
+                owner=self.node,
+                attrs={
+                    'text': str(self.kookoo_vibe_checkin_end),
+                    'scale': 1.5,
+                    'color': (0, 0.6, 1),
+                    'h_align': 'center',
+                    'position': (x - 3, y - 28),
+                    'v_attach': 'bottom',
+                    'front': True,
+                },
+            )
+            bs.animate(self.kookoo_time_text, 'opacity', {
+                0.0: 0,
+                0.5: 1,
+            })
+        def arm_out():
+            self.kookoo_arm.node.delete()
+            self.kookoo_arm = LoopingImageAnimation(
+                'karm_out', 
+                frame_count=6, 
+                frame_delay=0.07, 
+                scale=(scale, scale), 
+                position=(x, y),
+                loop=False,
+                attach="bottomCenter",
+            )
+        def pointysound():
+            bs.getsound('kwarnin').play(position=self.node.position)
+        self.kookoo_head = LoopingImageAnimation(
+            'ktrans', 
+            frame_count=5, 
+            frame_delay=0.06, 
+            scale=(scale, scale), 
+            position=(x, y),
+            loop=False,
+            attach="bottomCenter",
+        )
+        bs.timer(0.1, create_arm)
+        bs.timer(0.2, pointysound)
+        bs.timer(0.35, arm_point)
+        bs.timer(1.5, arm_out)
+        bs.timer(1.9, self._kookoo_start_ticking)
 
     @override
     def handlemessage(self, msg: Any) -> Any:
@@ -2628,6 +2913,36 @@ class Spaz(bs.Actor):
                 return True
             if self.pick_up_powerup_callback is not None:
                 self.pick_up_powerup_callback(self)
+            if msg.poweruptype == 'kookoo':
+                self.scary_text(
+                    (
+                        'You feel your attention\nsharpening too much... Kookoo haunts you.'
+                        '\nLet go of any items and\nstand still when it shows up.'
+                    ),
+                    color=(0, 0, 1),
+                    xpos=-5,
+                    endtime=7,
+                    spacing_y=0.55,
+                    spacing_x=0.17,
+                )
+                tex = PowerupBoxFactory.get().tex_kookoo
+                self.node.mini_billboard_2_texture = tex
+                t_ms = int(bs.time() * 1000.0)
+                assert isinstance(t_ms, int)
+                self.node.mini_billboard_2_start_time = t_ms
+                self.node.mini_billboard_2_end_time = (
+                    t_ms + POWERUP_WEAR_OFF_TIME_K
+                )
+                self._kookoo_wear_off_flash_timer = bs.Timer(
+                    (POWERUP_WEAR_OFF_TIME_K - 2000) / 1000.0,
+                    bs.WeakCall(self._kookoo_wear_off_flash),
+                )
+                self._multi_bomb_wear_off_timer = bs.Timer(
+                    POWERUP_WEAR_OFF_TIME_K / 1000.0,
+                    bs.WeakCall(self._kookoo_wear_off),
+                )
+                self.kookoo_vibe_checkin = bs.Timer(1.0, self._kookoo_vibe_check, repeat=True)
+                self.kookood = True
             if msg.poweruptype == 'triple_bombs':
                 tex = PowerupBoxFactory.get().tex_bomb
                 self._flash_billboard(tex)
@@ -3698,7 +4013,7 @@ class Spaz(bs.Actor):
                 if punchmag >= 170 and isspaz and not grabnyeehaw:
                     self.increase_chain()
                     # Bigger punches give more chains
-                    for threshold in (170, 260, 380, 550):
+                    for threshold in (170, 260, 380, 550, 880, 1050):
                         if punchmag >= threshold:
                             self.increase_chain()
                 # Also apply opposite to ourself for the first punch only.
@@ -4272,6 +4587,11 @@ class Spaz(bs.Actor):
                 )
             mell.add_spaz(30, 'tix', self.node.position, 'popup')
         self.node.shattered = 2 if extreme else 1
+    
+    def _kill_kookoo_if_he_still_exists(self):
+        """Does what it says."""
+        if self.kookoo_exists:
+            print('hi')
 
     def _hit_self(self, intensity: float, explode_head: bool = False):
         if not self.node:
@@ -4459,7 +4779,22 @@ class Spaz(bs.Actor):
             PowerupBoxFactory.get().powerdown_sound.play(
                 position=self.node.position,
             )
-            self.node.billboard_opacity = 0.0   
+            self.node.billboard_opacity = 0.0
+    
+    def _kookoo_wear_off_flash(self) -> None:
+        if self.node:
+            self.node.billboard_texture = PowerupBoxFactory.get().tex_kookoo
+            self.node.billboard_opacity = 1.0
+            self.node.billboard_cross_out = True
+            
+    def _kookoo_wear_off(self) -> None:
+        self.kookood = False
+        self._kill_kookoo_if_he_still_exists()
+        if self.node:
+            PowerupBoxFactory.get().powerdown_sound.play(
+                position=self.node.position,
+            )
+            self.node.billboard_opacity = 0.0
             
     def _metal_wear_off_flash(self) -> None:
         if self.node:

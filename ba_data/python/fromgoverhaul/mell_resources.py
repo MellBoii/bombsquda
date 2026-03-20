@@ -150,7 +150,8 @@ def shake_node(
     node, 
     intensity: float = 10.0, 
     duration: float = 1.0, 
-    interval: float = 0.02
+    interval: float = 0.02,
+    array_num: int = 2,
 ):
     """
     Shake a node.
@@ -161,6 +162,7 @@ def shake_node(
         interval: How fast will it go.
     """
     import bascenev1 as bs
+    import random
     if node is None:
         return
 
@@ -184,10 +186,17 @@ def shake_node(
         # Random offset around original position
         offset_x = random.uniform(-current_intensity, current_intensity)
         offset_y = random.uniform(-current_intensity, current_intensity)
-        node.position = (
-            original_pos[0] + offset_x,
-            original_pos[1] + offset_y,
-        )
+        if array_num == 2:
+            node.position = (
+                original_pos[0] + offset_x,
+                original_pos[1] + offset_y,
+            )
+        else:
+            node.position = (
+                original_pos[0] + offset_x,
+                original_pos[1] + offset_y,
+                original_pos[2]
+            )
 
         step += 1
         bs.timer(interval, _update_shake)

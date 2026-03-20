@@ -1160,6 +1160,8 @@
     "powerupStarDescriptionText": "A super star that makes you \ninvincible, faster, and push anything \nthat you come into contact with!",
 	"powerupDetonNameText": "Detonator",
     "powerupDetonDescriptionText": "A switch that explodes all your bombs manually! \nMakes your bombs not explode automatically, \nand you press GRAB to activate it.",
+	"curseKookooNameText": "Kookoo",
+    "curseKookooDescriptionText": "Well, that's... odd. That's not supposed to be here.\nDon't worry, you probably won't encounter upon \nit... maybe. Don't push your *luck*.",
     "powerupsSubtitleText": "well, obviously, every modpack needs them!",
     "powerupsSubtitleTextScale": 0.8,
     "powerupsText": "Powerups",

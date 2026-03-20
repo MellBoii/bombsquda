@@ -597,6 +597,7 @@ class HelpWindow(bui.MainWindow):
             'powerupBloxy',
             'powerupHook',
             'powerupStar',
+            'curseKookoo',
         ]:
             name = bui.Lstr(resource=f'{self._r}.' + tex + 'NameText')
             desc = bui.Lstr(resource=f'{self._r}.' + tex + 'DescriptionText')
@@ -886,6 +887,8 @@ class HelpWindow(bui.MainWindow):
             bui.getsound('smb1_fireball').play()
         elif text == 'powerupStar':
             bui.getsound('smb1r_timerlow').play()
+        elif text == 'curseKookoo':
+            bui.getsound('kwarnin').play()
         else:
             print(f'HelpWindow error: {text} not in plpwpsound')
             bui.getsound('error').play()

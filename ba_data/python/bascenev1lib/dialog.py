@@ -36,9 +36,9 @@ class DialogueChoiceBox(bs.Actor):
             self.nodes.append(node)
 
         self.hand = LoopingImageAnimation(
-            'mario_hand/frame', 
-            frame_count=21, 
-            frame_delay=0.04, 
+            'spazhand', 
+            frame_count=7, 
+            frame_delay=0.06, 
             scale=(60, 60), 
             position=(base_x + 30, base_y),
             loop=True,
