@@ -154,6 +154,7 @@ class PlayerBall(bs.Actor):
             }
         )
         self.node.connectattr('position', self.drift_sfx, 'position')
+        
 
     # Overloads to tell the type system our return type based on doraise val.
     @overload
@@ -499,6 +500,7 @@ class PlayerBall(bs.Actor):
         if not self.node:
             return
         v = self.node.velocity
+        input = [self.move_x*2, self.move_z*2]
         x = x
         y = y
         if x == 0 and y == 0:
@@ -511,7 +513,7 @@ class PlayerBall(bs.Actor):
                 self.node.position[1], 
                 self.node.position[2],
                 0, 25, 0, x, 0.05, 0, 0,
-                v[0]*15*2, 0, v[2]*15*2
+                input[0]*15*2, 0, input[1]*15*2
             )
         if y != 0:
             self.node.handlemessage('impulse', 
