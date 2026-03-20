@@ -98,13 +98,17 @@ class PlayerSpaz(Spaz):
             intensity = 0.8
             flash_color = (2 * intensity, 0, 0)
             steps = 12
-            step_time = 0.15
+            step_time = 0.12
             anim = {
                 i * step_time: (flash_color if i % 2 == 0 else self._saved_color)
                 for i in range(steps)
             }
+            anim2 = {
+                i * step_time: (flash_color if i % 2 == 0 else self._saved_highlight)
+                for i in range(steps)
+            }
             bs.animate_array(self.node, 'color', 3, anim)
-            bs.animate_array(self.node, 'highlight', 3, anim)
+            bs.animate_array(self.node, 'highlight', 3, anim2)
             
         
     # Overloads to tell the type system our return type based on doraise val.

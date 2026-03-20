@@ -233,7 +233,7 @@ def filter_chat_message(msg: str, client_id: int) -> str | None:
         with activity.context:
             try:
                 player = activity.players[player_id]
-                player.actor.say(msg)
+                player.actor.say(msg, melblow=False)
             except Exception as e:
                 pass
     return msg

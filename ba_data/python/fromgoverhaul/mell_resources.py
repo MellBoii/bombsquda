@@ -145,6 +145,55 @@ def die_main_menu(safeguard: bool = True):
     with ba.ContextRef.empty():
         bui.containerwidget(edit=windo._root_widget, transition='out_scale')
 
+# wow... old code...
+def shake_node(
+    node, 
+    intensity: float = 10.0, 
+    duration: float = 1.0, 
+    interval: float = 0.02
+):
+    """
+    Shake a node.
+    Args:
+        node: The node to shake (like your image or text).
+        intensity: How strong shall we shake.
+        duration: How much it shall take before stopping.
+        interval: How fast will it go.
+    """
+    import bascenev1 as bs
+    if node is None:
+        return
+
+    original_pos = tuple(node.position)
+    total_steps = int(duration / interval)
+    step = 0
+
+    def _update_shake():
+        nonlocal step
+        if not node or step >= total_steps:
+            # Snap back to original position at the end
+            if node:
+                node.position = original_pos
+            return
+
+        # Calculate diminishing shake strength (optional)
+        progress = step / total_steps
+        falloff = 1.0 - progress
+        current_intensity = intensity * falloff
+
+        # Random offset around original position
+        offset_x = random.uniform(-current_intensity, current_intensity)
+        offset_y = random.uniform(-current_intensity, current_intensity)
+        node.position = (
+            original_pos[0] + offset_x,
+            original_pos[1] + offset_y,
+        )
+
+        step += 1
+        bs.timer(interval, _update_shake)
+
+    _update_shake()
+
 # keeping this here for later
 
 # def send_friend_request(name: str):

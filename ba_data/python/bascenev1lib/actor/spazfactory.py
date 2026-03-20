@@ -118,7 +118,8 @@ class SpazFactory:
         self.single_player_death_sound = (
             bs.getsound('playerDeath'),
             bs.getsound('playerDeath2'),
-            bs.getsound('playerDeath3')
+            bs.getsound('playerDeath3'),
+            bs.getsound('playerDeath4'),
         )
         self.punch_sound_weak = (
             bs.getsound('punchSFX/weak1'),

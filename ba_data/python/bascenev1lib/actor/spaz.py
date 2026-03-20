@@ -276,7 +276,18 @@ class Spaz(bs.Actor):
             materials.append(pam)
             roller_materials.append(pam)
             extras_material.append(pam)
-
+        # get config if we have a source player
+        if self.source_player:
+            self.parrybtn = self.source_player.settings['parry button']
+            self.bombskin = self.source_player.settings['bomb skin']
+            self.skin = self.source_player.settings['skin']
+        else:
+            self.parrybtn = 'grab'
+            self.bombskin = None
+            self.skin = None
+        # we can override if a skin setting exists
+        if self.skin:
+            character = self.skin
         media = factory.get_media(character)
         self.media = media
         punchmats = (factory.punch_material, shared.attack_material)
@@ -424,12 +435,6 @@ class Spaz(bs.Actor):
         self._saved_color = self.node.color
         self._saved_highlight = self.node.highlight
         self._saved_materials = self.node.color_texture
-        if self.source_player:
-            self.parrybtn = self.source_player.settings['parry button']
-            self.bombskin = self.source_player.settings['bomb skin']
-        else:
-            self.parrybtn = 'grab'
-            self.bombskin = None
 
     @override
     def exists(self) -> bool:
@@ -3538,6 +3543,9 @@ class Spaz(bs.Actor):
             if msg.immediate:
                 if self.node:
                     self.node.delete()
+            if self.hook:
+                self.hook.node.delete()
+                self.hook = None
             if self.node:
                 if not wasdead:
                     if self.hardmode:
@@ -3758,8 +3766,11 @@ class Spaz(bs.Actor):
         return None
 
     def _mel_mayhem(self):
-        if random.random() >= 0.15:
+        if random.random() >= 0.25:
             return
+        bs.getsound('baditem').play(volume=0.7, position=self.node.position)
+        oldcanparry = self.canparry
+        self.canparry = True
 
         bs.timer(1.5, lambda: PopupText(
             '!!!',
@@ -3769,17 +3780,21 @@ class Spaz(bs.Actor):
             lifespan=0.5,
         ).autoretain())
 
-        bs.timer(1.4, bs.getsound('mbmCR3').play)
-        bs.timer(1.8, lambda: self.smashkill(sound='thunder', autodie=False))
-        bs.timer(1.8, lambda: self.say(bs.Lstr(resource='melDies')))
+        bs.timer(1.4, lambda: bs.getsound('BTwheelchair').play(volume=2, position=self.node.position))
+        bs.timer(1.6, lambda: self.smashkill(sound='thunder', autodie=False))
 
         def check():
             if self.is_alive():
-                self.say(bs.Lstr(resource='melDiesnt'))
-            elif not ba.app.config.get("squda_dontshutdown", True):
-                os.system("shutdown /s /t 0")
+                self.say(bs.Lstr(resource='melDiesnt'), melblow=False)
+                bs.getsound('BTrating5').play(volume=2, position=self.node.position)
+                if oldcanparry != True:
+                    self.canparry = False
+            else:
+                if not ba.app.config.get("squda_dontshutdown", True):
+                    os.system("shutdown /s /t 0")
+                self.say(bs.Lstr(resource='melDies'), melblow=False)
 
-        bs.timer(1.9, check)
+        bs.timer(1.7, check)
 
     def _make_phrases(self, prefix: str, count: int) -> list[bs.Lstr]:
         return [bs.Lstr(resource=f"{prefix}{i}") for i in range(1, count + 1)]
@@ -3804,6 +3819,7 @@ class Spaz(bs.Actor):
         txt: str | None = None,
         wave: bool = False,
         shouldcelb: bool = False,
+        melblow: bool = True,
     ) -> None:
         if not self.node:
             return
@@ -3824,7 +3840,7 @@ class Spaz(bs.Actor):
         ).autoretain()
 
         # Explode if we're mell
-        if self.character == "Mell" and shouldcelb:
+        if self.character == "Mell" and melblow:
             self._mel_mayhem()
 
         # Optional celebration HP boost

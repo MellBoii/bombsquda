@@ -218,10 +218,11 @@ class Chooser:
         self._settings_index = 0  # which setting we're editing (future-proof)
         self._sound_index = 0  # which sound we're at (also pretty future-proof)
         self._submenu_mode: str | None = None  # None, 'character', 'settings'
-        self.settings = ['parry button', 'bomb skin']
+        self.settings = ['parry button', 'bomb skin', 'skin']
         self.settings_options = {
             'parry button': ['grab', 'jump', 'punch', 'bomb'],
             'bomb skin': [None, 'noise bomb', 'familiar', 'kookoo'],
+            'skin': [None],
         }
         self._ensure_player_settings()
         # Sound list is a list of strings. 
@@ -1049,13 +1050,12 @@ class Chooser:
         else:
             name_text = babase.Lstr(value=self._getname(full=True))
             self._text_node.text = name_text
+            lefta = babase.charstr(babase.SpecialChar.LEFT_ARROW)
+            righta = babase.charstr(babase.SpecialChar.RIGHT_ARROW)
+            upa = babase.charstr(babase.SpecialChar.UP_ARROW)
+            downa = babase.charstr(babase.SpecialChar.DOWN_ARROW)
 
             if self._menu_active:
-                lefta = babase.charstr(babase.SpecialChar.LEFT_ARROW)
-                righta = babase.charstr(babase.SpecialChar.RIGHT_ARROW)
-                upa = babase.charstr(babase.SpecialChar.UP_ARROW)
-                downa = babase.charstr(babase.SpecialChar.DOWN_ARROW)
-                
                 if self._submenu_mode == 'character':
                     sub = f'{lefta} {self._character_names[self._character_index]} {righta}'
                 elif self._submenu_mode == 'settings':
@@ -1063,14 +1063,14 @@ class Chooser:
                     option = self.settings[self._settings_index]
                     current = settings.get(option, self.settings_options[option][0])
 
-                    sub = f'{self.settings[self._settings_index]}: {lefta} {str(current).upper()} {righta}'
+                    sub = f'{downa} {self.settings[self._settings_index]} {upa}: {lefta} {str(current).upper()} {righta}'
                 elif self._submenu_mode == 'sound':
                     sub = f'{lefta} {self._sound_list[self._sound_index]} {righta}'
                 else:
                     options = ['ready', 'settings', 'character', 'sound']
                     sub = f'{upa}{options[self._menu_index]}{downa}'
             else:
-                sub = 'choose profile'
+                sub = f'{downa}choose profile{upa}'
 
             self._subtext_node.text = sub
 
