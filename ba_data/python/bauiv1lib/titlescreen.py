@@ -21,8 +21,7 @@ class TitleWindow(bui.MainWindow):
         origin_widget: bui.Widget | None = None,
         transition: str | None = 'in_right',
         showcase_mode: bool = False
-        ):
-        bui.set_party_window_open(True)
+    ):
         self._width = 0
         assert bui.app.classic is not None
         uiscale = bui.app.ui_v1.uiscale
@@ -38,12 +37,18 @@ class TitleWindow(bui.MainWindow):
         )
         if showcase_mode:
             return
+        lstr = (
+            bui.Lstr(resource=f'{self._r}.pressStart') 
+            if uiscale is not bui.UIScale.SMALL else 
+            bui.Lstr(resource=f'{self._r}.tapStart')
+        )
+        scale = 2.5 if uiscale is bui.UIScale.SMALL else 1.8
         self._title_text = bui.textwidget(
             parent=self._root_widget,
             position=(0, -150),
             size=(0, 0),
-            scale=1.8,
-            text=ba.Lstr(resource=f'{self._r}.pressStart'),
+            scale=scale,
+            text=lstr,
             color=(1, 1, 1),
             h_align='center',
             v_align='center',
@@ -71,7 +76,7 @@ class TitleWindow(bui.MainWindow):
             color=(0.8, 0.4, 0.4),
             scale=0.8,
             text_scale=1.3,
-            label=ba.Lstr(resource=f'{self._r}.quitFuckinGame'),
+            label=bui.Lstr(resource=f'{self._r}.quitFuckinGame'),
             on_activate_call=self.quit_window,
         )
         bui.containerwidget(edit=self._root_widget, cancel_button=self.quit_btn)

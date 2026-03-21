@@ -36,9 +36,9 @@ if TYPE_CHECKING:
     from typing import Any, Sequence, Callable
 
 POWERUP_WEAR_OFF_TIME = 27000
-POWERUP_WEAR_OFF_TIME2 = 15000
+POWERUP_WEAR_OFF_TIME2 = 19000
 POWERUP_WEAR_OFF_TIME3 = 10000
-POWERUP_WEAR_OFF_TIME_STAR = 22000
+POWERUP_WEAR_OFF_TIME_STAR = 9000
 POWERUP_WEAR_OFF_TIME_K = 65000
 
 # Obsolete - just used for demo guy now.
@@ -1696,6 +1696,42 @@ class Spaz(bs.Actor):
     def _activate_star(self):
         if not self.node:
             return
+        if self.issuper:
+            if not self.node:
+                return
+            vol = 2
+            def swoon1():
+                scale = 3
+                self.bg = bs.newnode(
+                    'image',
+                    attrs={
+                        'texture': bs.gettexture('black'),
+                        'fill_screen': True,
+                    },
+                )
+                self.swoon = bs.newnode(
+                    'image',
+                    attrs={
+                        'texture': bs.gettexture('spaz_prowler'),
+                        'scale': (256 * scale, 256 * scale),
+                        'opacity': 1.0,
+                        'absolute_scale': True,
+                        'attach': 'center',
+                    },
+                )
+                bs.animate(self.swoon, 'opacity', {
+                    0.0: 0,
+                    0.5: 1,
+                })
+                bs.getsound('theFinaleStart').play(volume=vol)
+            def swoon2():
+                self.swoon.delete()
+                self.bg.delete()
+                self.die()
+                self.node.delete()
+            bs.basetimer(2.1, swoon2)
+            swoon1()
+            return
         if self._has_star:
             return
         gnode = self.activity.globalsnode
@@ -2274,6 +2310,7 @@ class Spaz(bs.Actor):
             'spongebob': factory.tex_spongebob,
             'shotgun': factory.tex_shotgun,
             'star': factory.tex_star,
+            'random': factory.tex_random,
             'kookoo': factory.tex_kookoo,
         }
 
@@ -2808,15 +2845,9 @@ class Spaz(bs.Actor):
                     spread=0.6,
                     chunk_type='spark',
                 )
-                texts = [
-                    'DIDYOUTHINKTHATWOULDWORK?',
-                    'PAYBETTERATTENTION.',
-                    'HANDSOFF.',
-                    'NO.',
-                ]
                 # say something just because we want to
                 self.scary_text(
-                    random.choice(texts),
+                    bs.Lstr(resource=f'kookooBreaksShield{random.randint(1, 4)}').evaluate(),
                     color=(0, 0, 1),
                     xpos=0,
                     endtime=4,
@@ -2839,7 +2870,7 @@ class Spaz(bs.Actor):
         if random.random() >= 0.01 or self.kookood or not self.node or not self.is_alive():
             return
         self.scary_text(
-            'hi :3',
+            bs.Lstr(resource='kookooRandomlyAttatches').evaluate(),
             color=(0, 0, 1),
             xpos=0,
             endtime=4,
@@ -3119,10 +3150,7 @@ class Spaz(bs.Actor):
                 self.pick_up_powerup_callback(self)
             if msg.poweruptype == 'kookoo':
                 self.scary_text(
-                    (
-                        'You feel your attention\nsharpening too much... Kookoo haunts you.'
-                        '\nLet go of any items and\nstand still when it shows up.'
-                    ),
+                    bs.Lstr(resource='kookooAppears').evaluate(),
                     color=(0, 0, 1),
                     xpos=-5,
                     endtime=7,

@@ -237,6 +237,8 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
             poweruptype = PowerupBoxFactory.get().get_random_powerup_type(
                 excludetypes=self._excludepowerups
             )
+        if not poweruptype:
+            return
         PowerupBox(
             position=self.map.powerup_spawn_points[index],
             poweruptype=poweruptype,
@@ -275,13 +277,13 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
                     -self._powerup_spread[1], self._powerup_spread[1]
                 ),
             )
-
+            r = PowerupBoxFactory.get().get_random_powerup_type(
+                excludetypes=self._excludepowerups
+            )
             # Drop one random one somewhere.
             powerupbox.PowerupBox(
                 position=drop_pt,
-                poweruptype=PowerupBoxFactory.get().get_random_powerup_type(
-                    excludetypes=self._excludepowerups
-                ),
+                poweruptype=r
             ).autoretain()
             
     def _award_completion_bonus(self) -> None:

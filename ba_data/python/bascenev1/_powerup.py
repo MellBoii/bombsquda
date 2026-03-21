@@ -68,10 +68,8 @@ def get_default_powerup_distribution() -> Sequence[tuple[str, int]]:
         'hook': 1,
         'star': 1,
     }
-    if ba.app.config.get("squda_gamblingmode", True):
-        base_distribution['random'] = 9999
-
-    if debug_powerup:
-        for key in base_distribution:
-            base_distribution[key] = 9999 if key == debug_powerup else 0
+    cfg = ba.app.config.get("squda_powerup_dist", {})
+    for key in base_distribution:
+        if key in cfg:
+            base_distribution[key] = cfg[key]
     return tuple(base_distribution.items())

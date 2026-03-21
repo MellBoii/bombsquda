@@ -207,6 +207,8 @@ class PowerupBoxFactory:
                 ptype = 'health'
             else:
                 while True:
+                    if len(self._powerupdist) <= 0:
+                        return None
                     ptype = self._powerupdist[
                         random.randint(0, len(self._powerupdist) - 1)
                     ]
@@ -254,8 +256,15 @@ class PowerupBox(bs.Actor):
 
         see bs.Powerup.poweruptype for valid type strings.
         """
-
         super().__init__()
+        if poweruptype is None:
+            self = None
+            return
+        # ugliest sanity check but eh
+        if not isinstance(poweruptype, str): 
+            if None in poweruptype:
+                self = None
+                return
         shared = SharedObjects.get()
         factory = PowerupBoxFactory.get()
         self.poweruptype = poweruptype

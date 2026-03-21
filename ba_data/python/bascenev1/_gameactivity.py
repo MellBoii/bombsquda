@@ -1123,10 +1123,10 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
     def _standard_drop_powerup(self, index: int, expire: bool = True) -> None:
         # pylint: disable=cyclic-import
         from bascenev1lib.actor.powerupbox import PowerupBox, PowerupBoxFactory
-
+        randompwr = PowerupBoxFactory.get().get_random_powerup_type()
         PowerupBox(
             position=self.map.powerup_spawn_points[index],
-            poweruptype=PowerupBoxFactory.get().get_random_powerup_type(),
+            poweruptype=randompwr,
             expire=expire,
         ).autoretain()
 

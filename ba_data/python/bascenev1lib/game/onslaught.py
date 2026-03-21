@@ -1200,6 +1200,8 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
         poweruptype = PowerupBoxFactory.get().get_random_powerup_type(
             forcetype=poweruptype, excludetypes=self._excluded_powerups
         )
+        if not poweruptype:
+            return
         PowerupBox(
             position=self.map.powerup_spawn_points[index],
             poweruptype=poweruptype,
@@ -1236,13 +1238,13 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
                     -self._powerup_spread[1], self._powerup_spread[1]
                 ),
             )
-
+            r = PowerupBoxFactory.get().get_random_powerup_type(
+                excludetypes=self._excluded_powerups
+            )
             # Drop one random one somewhere.
             PowerupBox(
                 position=point,
-                poweruptype=PowerupBoxFactory.get().get_random_powerup_type(
-                    excludetypes=self._excluded_powerups
-                ),
+                poweruptype=r,
             ).autoretain()
 
     def do_end(self, outcome: str, delay: float = 0.5) -> None:

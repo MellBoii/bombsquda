@@ -777,6 +777,8 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
             poweruptype = PowerupBoxFactory.get().get_random_powerup_type(
                 excludetypes=self._exclude_powerups
             )
+        if not poweruptype:
+            return
         PowerupBox(
             position=self.map.powerup_spawn_points[index],
             poweruptype=poweruptype,
@@ -822,12 +824,13 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
             )
 
             # drop one random one somewhere..
+            r = PowerupBoxFactory.get().get_random_powerup_type(
+                excludetypes=self._exclude_powerups + extra_excludes
+            )
             assert self._exclude_powerups is not None
             PowerupBox(
                 position=pos,
-                poweruptype=PowerupBoxFactory.get().get_random_powerup_type(
-                    excludetypes=self._exclude_powerups + extra_excludes
-                ),
+                poweruptype=r
             ).autoretain()
 
     @override

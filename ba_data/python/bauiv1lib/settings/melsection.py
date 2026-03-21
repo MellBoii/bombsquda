@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Sequence, override
+from bauiv1lib.settings.powerups import PowerupSetupWindow
 import logging
 
 import bauiv1 as bui
@@ -50,6 +51,7 @@ class MelWindow(bui.MainWindow):
         # We're a generally widescreen shaped window, so bump our
         # overall scale up a bit when screen width is wider than safe
         # bounds to take advantage of the extra space.
+        smallscale = min(2.0, 1.5 * screensize[0] / safesize[0])
         scale = (
             smallscale
             if uiscale is bui.UIScale.SMALL
@@ -61,11 +63,10 @@ class MelWindow(bui.MainWindow):
         self._scroll_width = target_width - 30
         self._scroll_height = target_height - 45
         self._sub_width = min(500, self._scroll_width * 0.95)
-        self._sub_height = 1030.0
+        self._sub_height = 1230.0
         start_y = self._sub_height - 60
         spacing = 2
         scroll_bottom = yoffs - 56 - self._scroll_height
-        smallscale = min(2.0, 1.5 * screensize[0] / safesize[0])
         col_x = width * 0.12
         raw_settings = [
             ("squda_noisepolution", "noisePollutionText", None),
@@ -162,7 +163,7 @@ class MelWindow(bui.MainWindow):
 
         bui.textwidget(
             parent=self._root_widget,
-            position=(0, yoffs - (45 if uiscale is bui.UIScale.SMALL else 35)),
+            position=(0, yoffs - (55 if uiscale is bui.UIScale.SMALL else 35)),
             size=(width, 25),
             text=bui.Lstr(resource=f'{self._r}.titleText'),
             color=bui.app.ui_v1.title_color,
@@ -190,6 +191,16 @@ class MelWindow(bui.MainWindow):
                 text=bui.Lstr(resource=f"{self._r}.{label_key}"),
                 on_value_change_call=bui.Call(self._set_config, key, sound=playsound),
             )
+        row += 1
+        y = start_y - row * row_height
+        self.powerup_setup = bui.buttonwidget(
+            parent=self._subcontainer,
+            position=(col_x, y),
+            size=(320, 40),
+            text_scale=1.0,
+            label=bui.Lstr(resource=f'{self._r}.powerupSetup'),
+            on_activate_call=self._open_powerup_setup,
+        )
 
     
     def changefont(self) -> None:
@@ -202,10 +213,8 @@ class MelWindow(bui.MainWindow):
         # SOMETHING AND I DON'T EVEN KNOW THAT!!
         app = babase.app
         platform = app.classic.platform
-        if platform not in ['windows', 'linux']:
-            bs.screenmessage('twinny. this clearly renames files. it doesnt work on non-windows.')
-            return
-        local = os.getcwd() + '\\ba_data'
+       
+        local = bui.app.env.data_directory + '\\ba_data'
         textures = local + '\\textures\\'
         os.rename(textures + 'fontSmall0.dds', textures + 'oldefont.dds')
         os.rename(textures + 'fontBig.dds', textures + 'oldefont2.dds')
@@ -244,4 +253,11 @@ class MelWindow(bui.MainWindow):
         return bui.BasicMainWindowState(
             create_call=lambda t, o, ft=self._first_time:
                 MelWindow._create(t, o, ft)
+        )
+    
+    def _open_powerup_setup(self):
+        self.main_window_replace(
+            PowerupSetupWindow(
+                origin_widget=self._root_widget
+            )
         )
