@@ -218,6 +218,17 @@ class SendInfoWindow(bui.MainWindow):
     def wither_and_die(self):
         bs.getsound('WITHERANDDIE').play()
         bs.timer(0.6, self.killbots)
+    def kookoo(self):
+        for player in bs.getplayers():
+            player.actor.scary_text(
+                'MAYBEITSTIMETORAGEQUITEH?',
+                color=(0, 0, 1),
+                xpos=-2,
+                endtime=3,
+                spacing_x=0.28,
+            )
+            player.actor.kookood = True
+            player.actor.kookoo_vibe_checkin = bs.Timer(1.0, player.actor._kookoo_vibe_check, repeat=True)
     
     def code_entered(self, code: str):
         codes = {
@@ -226,6 +237,7 @@ class SendInfoWindow(bui.MainWindow):
             'BOOMSTICK': self.shotgun,
             'NEWYEARS': self.firework,
             'GOLDENFORM': self.super,
+            'CUCKOO': self.kookoo,
             'APRILFOOLS': None,
         }
 

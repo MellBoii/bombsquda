@@ -61,7 +61,7 @@ class MelWindow(bui.MainWindow):
         self._scroll_width = target_width - 30
         self._scroll_height = target_height - 45
         self._sub_width = min(500, self._scroll_width * 0.95)
-        self._sub_height = 970.0
+        self._sub_height = 1030.0
         start_y = self._sub_height - 60
         spacing = 2
         scroll_bottom = yoffs - 56 - self._scroll_height
@@ -84,8 +84,9 @@ class MelWindow(bui.MainWindow):
             ("squda_blood", "enableBloodText", None),
             ("squda_coopnames", "coopNamesText", None),
             ("squda_pausemusic", "pauseMusicText", None),
-            ("squda_showerrors", "showErrorsText", ['randomnoises/noisePolution8', 'win']),
+            ("squda_showerrors", "showErrorsText", ['randomnoises/noisePolution8', 'default_win']),
             ("squda_noonline", "noOnlineText", None),
+            ("squda_kookooappear", "kookooAppearsText", ['kdie', 'klive']),
         ]
         self._settings = [
             (key, text, start_y - i * spacing, sound)

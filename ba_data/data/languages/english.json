@@ -136,6 +136,11 @@
       "descriptionFullComplete": "Tried to use multiple metal caps. It doesn't work.",
       "name": "Metal Top Hat"
     },
+	"Multidance": {
+      "descriptionFull": "Have every player alive do a wiggle dance. (+4 players)",
+      "descriptionFullComplete": "Had every player alive wiggle dance. (+4 players)",
+      "name": "'Party' Game"
+    },
     "Last Stand God": {
       "description": "Score 1000 points",
       "descriptionComplete": "Scored 1000 points",
@@ -177,27 +182,6 @@
       "descriptionFull": "Score 500 points on ${LEVEL}",
       "descriptionFullComplete": "Scored 500 points on ${LEVEL}",
       "name": "The Halfway Mark"
-    },
-    "Standin so Far": {
-      "description": "Get 1050 points",
-      "descriptionComplete": "And i won't give up!",
-      "descriptionFull": "Get 1050 points on ${LEVEL}",
-      "descriptionFullComplete": "Got 1050 points on ${LEVEL}",
-      "name": "Standin' so far..."
-    },
-    "Almost there": {
-      "description": "Score 2150 points",
-      "descriptionComplete": "Kinda... sorta?? Just keep going.",
-      "descriptionFull": "score 2150 points on ${LEVEL}.",
-      "descriptionFullComplete": "scored 2150 points on ${LEVEL}.",
-      "name": "Almost There!"
-    },
-    "Broke Free": {
-      "description": "Score 4000 points",
-      "descriptionComplete": "Scored 4000 points and won.",
-      "descriptionFull": "Score 4000 points on ${LEVEL}",
-      "descriptionFullComplete": "Scored 4000 points on ${LEVEL}",
-      "name": "Broke Free"
     },
     "Mine Games": {
       "description": "Kill 3 bad guys with land-mines",
@@ -1496,7 +1480,7 @@
   "promoCodeWindow": {
     "codeText": "Code",
     "enterText": "Enter",
-	"rpcText": "Code entering Window"
+	"rpcText": "entering a Code"
   },
   "promoSubmitErrorText": "Error submitting code; check your internet connection",
   "ps3ControllersWindow": {
@@ -1626,6 +1610,7 @@
     "pauseMusicText": "music on pause menu",
     "noOnlineText": "no online functionality",
     "foxyJumpscareText": "random chance for foxy jumpscare",
+    "kookooAppearsText": "randomly get a kookoo sometimes",
 	"rpcText": "changin' BombSquda Settings"
   },
   "SURVEYWindow": {
@@ -1671,7 +1656,7 @@
 	"rpcText": "setting Advanced Settings"
   },
   "settingsDevTools": {
-	"rpcText": "Dev Tools"
+	"rpcText": "dev tool-ing i guess"
   },
   "shareText": "Share",
   "sharingText": "Sharing...",

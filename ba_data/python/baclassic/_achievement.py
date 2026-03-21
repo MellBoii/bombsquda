@@ -134,6 +134,14 @@ class AchievementSubsystem:
                 (1, 1, 1),
                 '',
                 award=15,
+                retro=True,
+            ),
+            Achievement(
+                'Multidance',
+                'achievementWiggler',
+                (1, 1, 1),
+                '',
+                award=15,
             ),
             Achievement(
                 'When TNT Flies3',
