@@ -1508,7 +1508,7 @@ class Spaz(bs.Actor):
                 materials = getattr(self.node, attr)
                 if factory.curse_material not in materials:
                     setattr(
-                        self.node, attr, materials + (factory.curse_material)
+                        self.node, attr, materials + (factory.curse_material,)
                     )
 
             # None specifies no time limit.
@@ -1727,15 +1727,10 @@ class Spaz(bs.Actor):
             def swoon2():
                 self.swoon.delete()
                 self.bg.delete()
-                self.handlemessage(
-                    bs.HitMessage(
-                        flat_damage=150,
-                        pos=pos,
-                        force_direction=self.node.velocity,
-                    )
-                )
+                self.hitpoints += 1400
+                bomb.Bomb(position=self.node.position, bomb_type='tnt',).explode()
                 bs.getsound('explosion01').play(volume=2.0, position=self.node.position)
-                self.impulse(x=-235, y=200)
+                self.impulse(x=-1345, y=800)
             bs.basetimer(2.1, swoon2)
             swoon1()
             return
