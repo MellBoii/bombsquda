@@ -1508,7 +1508,7 @@ class Spaz(bs.Actor):
                 materials = getattr(self.node, attr)
                 if factory.curse_material not in materials:
                     setattr(
-                        self.node, attr, materials + (factory.curse_material,)
+                        self.node, attr, materials + (factory.curse_material)
                     )
 
             # None specifies no time limit.
@@ -4583,6 +4583,8 @@ class Spaz(bs.Actor):
 
     def curse_explode(self, source_player: bs.Player | None = None) -> None:
         """Explode the poor spaz spectacularly."""
+        if not self._cursed or not self.node:
+            return
         # Prevent dying from a curse explosion if we parried it.
         if self.parrying == True:
             # Show visual text to tell us we parried the explosion.
@@ -4596,20 +4598,6 @@ class Spaz(bs.Actor):
             bs.getsound('bellHigh').play(position=self.node.position)
             bs.getsound('orchestraHit2').play(position=self.node.position)
             self._cursed = False
-            # Remove cursed material.
-            factory = SpazFactory.get()
-            for attr in ['materials', 'roller_materials']:
-                materials = getattr(self.node, attr)
-                if factory.curse_material in materials:
-                    setattr(
-                        self.node,
-                        attr,
-                        tuple(
-                            m
-                            for m in materials
-                            if m != factory.curse_material
-                        ),
-                    )
             self.node.curse_death_time = 0
             # Still explode, but won't hurt us due to parrying.
             Blast(
@@ -4623,22 +4611,21 @@ class Spaz(bs.Actor):
             ).autoretain()
             # Don't explode.
             return
-        if self._cursed and self.node:
-            self.shatter(extreme=True)
-            self.die()
-            activity = self._activity()
-            bs.getsound('crazyOver').play(position=self.node.position) # play the last sound (it syncs with the usual curse sound)
-            if activity:
-                Blast(
-                    position=self.node.position,
-                    velocity=self.node.velocity,
-                    blast_radius=3.0,
-                    blast_type='normal',
-                    source_player=(
-                        source_player if source_player else self.source_player
-                    ),
-                ).autoretain()
-            self._cursed = False
+        self.shatter(extreme=True)
+        self.die()
+        activity = self._activity()
+        bs.getsound('crazyOver').play(position=self.node.position) # play the last sound (it syncs with the usual curse sound)
+        if activity:
+            Blast(
+                position=self.node.position,
+                velocity=self.node.velocity,
+                blast_radius=3.0,
+                blast_type='normal',
+                source_player=(
+                    source_player if source_player else self.source_player
+                ),
+            ).autoretain()
+        self._cursed = False
 
     def drop_emeralds(self) -> None:
         """
