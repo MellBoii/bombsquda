@@ -388,8 +388,16 @@ class Blast(bs.Actor):
                 'big': (self.blast_type == 'tnt'),
             },
         )
-        if self.blast_type == 'ice':
-            explosion.color = (0, 0.05, 0.4)
+        expcolor = (
+            (0, 0.6, 1.0) if self.blast_type == 'ice' 
+            else (0, 0, 1.5) if self.blast_type == 'kookoo' 
+            else (0, 1, 0.6) if self.blast_type == 'familiar' 
+            else (0, 1.2, 0.1) if self.blast_type == 'sticky' 
+            else (1, 0.6, 0) if self.blast_type == 'noise' 
+            else None
+        )
+        if expcolor:
+            explosion.color = expcolor
 
         bs.timer(1.0, explosion.delete)
 
@@ -618,7 +626,13 @@ class Blast(bs.Actor):
             # It looks better if we delay a bit.
             bs.timer(0.05, emit)
 
-        lcolor = (0.6, 0.6, 1.0) if self.blast_type == 'ice' else (1, 0.3, 0.1)
+        lcolor = (
+            (0.6, 0.6, 1.0) if self.blast_type == 'ice' 
+            else (0, 0, 1) if self.blast_type == 'kookoo' 
+            else (0, 1, 0.3) if self.blast_type == 'familiar' 
+            else (1, 0.7, 0) if self.blast_type == 'noise' 
+            else (1, 0.3, 0.1)
+        )
         light = bs.newnode(
             'light',
             attrs={
@@ -673,8 +687,16 @@ class Blast(bs.Actor):
                 'big': (self.blast_type == 'tnt'),
             },
         )
-        if self.blast_type == 'ice':
-            scorch.color = (0.4, 0.9, 1.8)
+        scrcolor = (
+            (0.4, 0.9, 1.8) if self.blast_type == 'ice' 
+            else (0, 0.2, 1.3) if self.blast_type == 'kookoo' 
+            else (0, 0.8, 0.1) if self.blast_type == 'familiar' 
+            else (0, 0.6, 0) if self.blast_type == 'sticky' 
+            else (0.6, 0.3, 0) if self.blast_type == 'noise' 
+            else None
+        )
+        if scrcolor:
+            scorch.color = scrcolor
 
         bs.animate(scorch, 'presence', {3.000: 1, 13.000: 0})
         bs.timer(13.0, scorch.delete)
@@ -683,12 +705,9 @@ class Blast(bs.Actor):
             factory.hiss_sound.play(position=light.position)
 
         lpos = light.position
-        if self.blast_type == 'running_bomb':
-            bs.getsound('thunderDamage').play()
-        else:
-            if self.nosound != True:
-                factory.random_explode_sound().play(position=lpos)
-                factory.debris_fall_sound.play(position=lpos)
+        if self.nosound != True:
+            factory.random_explode_sound().play(position=lpos)
+            factory.debris_fall_sound.play(position=lpos)
 
         bs.camerashake(intensity=5.0 if self.blast_type in ('tnt', 'tntfirework') else 1.0)
 
@@ -940,7 +959,7 @@ class Bomb(bs.Actor):
             fuse_time = self.fuse_time
             if self.bomb_type == 'sticky':
                 sticky = True
-                mesh = factory.sticky_bomb_mesh
+                mesh = factory.bomb_mesh
                 rtype = 'sharper'
                 rscale = 1.4
             else:
@@ -956,10 +975,13 @@ class Bomb(bs.Actor):
                 tex = factory.regular_tex
                 if self.skin == 'noise bomb':
                     tex = bs.gettexture('bombNoise')
+                    self.bomb_type = 'noise'
                 if self.skin == 'familiar':
                     tex = bs.gettexture('bombFamiliar')
+                    self.bomb_type = 'familiar'
                 if self.skin == 'kookoo':
                     tex = bs.gettexture('bombKookoo')
+                    self.bomb_type = 'kookoo'
             self.node = bs.newnode(
                 'bomb',
                 delegate=self,

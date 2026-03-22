@@ -406,7 +406,7 @@ class HelpWindow(bui.MainWindow):
             color=(1, 0.7, 0.3),
             selectable=False,
             enable_sound=False,
-            on_activate_call=bui.getsound('punchSFX/superPunch').play,
+            on_activate_call=bui.getsound('punchSFX/generic').play,
         )
 
         txt_scale = getres(f'{self._r}.punchInfoTextScale')
@@ -434,7 +434,7 @@ class HelpWindow(bui.MainWindow):
             color=(1, 0.3, 0.3),
             selectable=False,
             enable_sound=False,
-            on_activate_call=bui.getsound('fuse01').play,
+            on_activate_call=bui.getsound('explosion01').play,
         )
 
         txt = bui.Lstr(resource=f'{self._r}.bombInfoText').evaluate()
@@ -852,9 +852,7 @@ class HelpWindow(bui.MainWindow):
         elif text == 'powerupShield':
             bui.getsound('shieldUp').play()
         elif text == 'powerupBomb':
-            bui.getsound('explosion01').play()
-            bui.getsound('explosion02').play()
-            bui.getsound('explosion03').play()
+            bui.getsound('fuse01').play()
         elif text == 'powerupHealth':
             bui.getsound('healthPowerup').play()
         elif text == 'powerupIceBombs':
@@ -886,7 +884,7 @@ class HelpWindow(bui.MainWindow):
         elif text == 'powerupFireball':
             bui.getsound('smb1_fireball').play()
         elif text == 'powerupStar':
-            bui.getsound('smb1r_timerlow').play()
+            bui.getsound('smb1_kick').play()
         elif text == 'curseKookoo':
             bui.getsound('kwarnin').play()
         else:

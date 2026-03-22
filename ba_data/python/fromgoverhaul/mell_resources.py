@@ -1,136 +1,90 @@
 """ 
-Common-ish resources that are either 
-too long or should be easier to edit here.
-It has stuff like lyrics, the server address, and such.
+Resources that should be easier to edit in a shared code,
+like lists, server address, game version, and some useful functions.
 """
-# Lyrics for Feel The Fury
-FEEL_THE_FURY = [
-    ("C'mon, bring it!", 12.33),
-    ('How are you him? Can you please explain it?', 27.29),
-    ('No matter who you are, you just cannot fake it', 28.65),
-    ("Livin' on the edge of reality", 30.33),
-    ('If you mess with my friends, you gonna mess with me', 31.96),
-    ('You destroy my home, you invade this land', 33.93),
-    ('Listen real close so you understand', 35.52),
-    ('Tougher than leather, we in this together', 37.15),
-    ("You're never gonna win, team Knuckles forever!", 38.75),
-    ('Pick up the pace, let me see what you got now', 40.76),
-    ("Keep it real short, this will end, that's my vow", 42.21),
-    ('No time for the fake, only real ones allowed', 44.03),
-    ('Stand in my way, watch me tear through the crowd', 45.61),
-    ('Left right, left right, left right, down', 47.34),
-    ('Left right, left right, left right, down', 49.03),
-    ("You got another thing coming if you think I'll quit", 50.99),
-    ('Can you feel the fury, that primal rage?', 53.25),
-    ('It holds me back every day, this urge with no release', 55.91),
-    ('Will you feel the fury and show me what was taken', 59.6),
-    ('Shaken, that had made you this way?', 63.07),
-    ('Can you feel the fury that has held me back?', 66.53),
-    ("Stopped me from seeing the way, but I won't hold back now", 69.48),
-    ('Can you feel the fury? So please, just let this be', 73.24),
-    ('The way that I can honor their names', 76.2),
-    ("You can't have it all, no matter how much you want it", 94.75),
-    ("Some things in life, you just can't flaunt it", 96.33),
-    ("I see through, no need for the frontin'", 98.12),
-    ("You need a mask, that's the only assumption", 99.66),
-    ("The truth hits hard, but it's what you need", 101.39),
-    ('Stay steady on your grind, let your actions lead', 102.89),
-    ("No time for the fake, I'm too busy stayin' true", 104.61),
-    ('Keep it real, real, real', 106.29),
-    ("Time's ticking low, let's go another round", 108.21),
-    ('Victory in sight, hear that champion sound', 109.66),
-    ("Fueling up the fire, you can't keep me down", 111.4),
-    ('Push past my limits turning fate all around', 113.03),
-    ('Left right, left right, left right, down', 114.81),
-    ('Left right, left right, left right, down', 116.64),
-    ("If you think this is over, you're wrong", 118.32),
-    ("We're just getting started", 119.86),
-    ('Can you feel the fury, that primal rage?', 120.84),
-    ('It holds me back every day, this urge with no release', 123.55),
-    ('Will you feel the fury and show me what was taken', 127.01),
-    ('Shaken, that had made you this way?', 130.51),
-    ('Can you feel the fury that has held me back?', 134.02),
-    ("Stopped me from seeing the way, but I won't hold back now", 137.06),
-    ('Can you feel the fury? So please, just let this be', 140.57),
-    ('The way that I can honor their names', 143.8),
-    ('Can you feel the fury, that primal rage?', 174.8),
-    ('It holds me back every day, this urge with no release', 177.65),
-    ('Will you feel the fury and show me what was taken', 181.2),
-    ('Shaken, that had made you this way?', 184.57),
-    ('Can you feel the fury that has held me back?', 188.3),
-    ("Stopped me from seeing the way, but I won't hold back now", 191.25),
-    ('Can you feel the fury? So please, just let this be', 194.76),
-    ('The way that I can honor their names', 197.74),
-    ('Oh, oh', 201.02),
-    ('Can you feel the fury?', 206.45),
-]
 screams = ['screams/scream' + str(i + 1) + '' for i in range(15)]
 server = "https://bombsquda.tailc76b25.ts.net"
 version = '2.1'
 update_date = '2/21/2026'
-currencies = ['tix', 'tokens']
 
 def add_spaz(
-    amount: int | float = 50, 
-    currency: str = 'tix', 
-    text_pos = None,
+    amount: int | float = 50,
+    currency: str = 'tix',
+    text_pos=None,
     notif_type: str = 'screen',
 ):
-    """
-    A config change function; made to just simplify 
-    changing a amount of currency. Use in gameplay and such.
-    As per suggested, it adds the specified amount to a 'spaz' currency
-    (eg. spaztickets, spaztokens, and stuff that can be added later...)
-    """
     import bascenev1 as bs
     import babase as ba
-    # Return if currency not in current currency types
-    if currency not in currencies:
-        raise TypeError(f'{currency} is a incorrect custom currency type. \nAllowed: {currencies} (tix is short for tickets)')
-        return
-    # Change config
-    ba.app.config[f'squda_spaz{currency}'] += amount
-    ba.app.config.apply_and_commit()
-    # Show text if we have a position and activity
-    activity = bs.get_foreground_host_activity()
-    glyph = (
-        ba.charstr(ba.SpecialChar.OUYA_BUTTON_Y) # tickets
-        if currency == 'tix' else
-        ba.charstr(ba.SpecialChar.OUYA_BUTTON_A) # tokens
-        if currency == 'tokens' else
-        ba.charstr(ba.SpecialChar.TICKET) # placeholder
-    )
-    if notif_type == 'popup':
-        if text_pos and activity:
-            with activity.context:
-                from bascenev1lib.actor.popuptext import PopupText
-                PopupText(
-                    f'+{amount}{glyph}',
-                    position=text_pos,
-                    color=(0.643, 0.4, 0.961),
-                    scale=1.4,
-                    lifespan=3.5,
-                ).autoretain()
-                bs.getsound('gainCur').play(volume=1.7, position=text_pos)
-        else:
-            raise TypeError("Notification type was 'popup' but no text_pos was given or no activity exists")
-    elif notif_type == 'screen':
-        display = (
-            f'{glyph} {bs.Lstr(resource='spazTickets').evaluate()}' if currency == 'tix'
-            else f'{glyph} {bs.Lstr(resource='spazTokens').evaluate()}' if currency == 'tokens'
-            else f'{glyph} {bs.Lstr(resource='unknownCurrency').evaluate()}'
+    # gotta leave here otherwise doesn't work
+    CURRENCIES = {
+        'tix': {
+            'config_key': 'squda_spaztix',
+            'glyph': ba.SpecialChar.OUYA_BUTTON_Y,
+            'resource': 'spazTickets',
+        },
+        'tokens': {
+            'config_key': 'squda_spaztokens',
+            'glyph': ba.SpecialChar.OUYA_BUTTON_A,
+            'resource': 'spazTokens',
+        },
+    }
+
+    # validate whether said currency is in ours
+    if currency not in CURRENCIES:
+        raise TypeError(
+            f"{currency} is invalid. Allowed: {list(CURRENCIES.keys())}"
         )
-        bs.broadcastmessage(bs.Lstr(
-                resource='wonCustomCurrency', 
+
+    data = CURRENCIES[currency]
+
+    # Safely update config
+    config_key = data['config_key']
+    ba.app.config[config_key] = ba.app.config.get(config_key, 0) + amount
+    ba.app.config.apply_and_commit()
+
+    # Shared values
+    glyph = ba.charstr(data['glyph'])
+    activity = bs.get_foreground_host_activity()
+    prefix = '+' if amount > 0 else '-'
+
+    # popup messages
+    if notif_type == 'popup':
+        # raise error if no activity
+        if not (text_pos and activity):
+            raise TypeError("Popup requires text_pos and active activity")
+
+        with activity.context:
+            from bascenev1lib.actor.popuptext import PopupText
+
+            PopupText(
+                f'{prefix}{amount}{glyph}',
+                position=text_pos,
+                color=(0.643, 0.4, 0.961),
+                scale=1.4,
+                lifespan=3.5,
+            ).autoretain()
+
+            bs.getsound('gainCur').play(volume=1.7, position=text_pos)
+
+    # screen messages
+    elif notif_type == 'screen':
+        display = f"{glyph} {bs.Lstr(resource=data['resource']).evaluate()}"
+
+        bs.broadcastmessage(
+            bs.Lstr(
+                resource='wonCustomCurrency',
                 subs=[
                     ('${AMOUNT}', str(amount)),
                     ('${CURRENCY}', display),
-                ]
-            ),
+                ],
+            )
         )
         bs.getsound('cashRegister2').play(volume=2.0)
+    # not in valid types
     else:
-        raise TypeError(f"{notif_type} is a incorrect notification type.\nAllowed: ['screen', 'popup']")
+        raise TypeError(
+            f"{notif_type} invalid. Allowed: ['screen', 'popup']"
+        )
 
 def die_main_menu(safeguard: bool = True):
     import babase as ba
@@ -145,6 +99,43 @@ def die_main_menu(safeguard: bool = True):
     with ba.ContextRef.empty():
         bui.containerwidget(edit=windo._root_widget, transition='out_scale')
 
+def get_texture_for_powerup(factory, ptype: str):
+    """Get a texture from a powerup string from a factory.
+    Doesn't specifically have to be PowerupBoxFactory, 
+    but you should use that."""
+    import babase as ba
+    texture_map = {
+        'triple_bombs': factory.tex_bomb,
+        'punch': factory.tex_punch,
+        'ice_bombs': factory.tex_ice_bombs,
+        'sticky_bombs': factory.tex_sticky_bombs,
+        'shield': factory.tex_shield,
+        'impact_bombs': factory.tex_impact_bombs,
+        'health': factory.tex_health,
+        'land_mines': factory.tex_land_mines,
+        'curse': factory.tex_curse,
+        'metal': factory.tex_metal,
+        'deton': factory.tex_deton,
+        'hook': factory.tex_hook,
+        'fireball': factory.tex_fireball,
+        'bloxy': factory.tex_bloxy,
+        'strong': factory.tex_strong,
+        'spongebob': factory.tex_spongebob,
+        'shotgun': factory.tex_shotgun,
+        'star': factory.tex_star,
+        'random': factory.tex_random,
+        'kookoo': factory.tex_kookoo,
+    }
+    if ptype not in texture_map:
+        print(f'ERROR: {ptype} is not in the texture map. Please add it to mell_resources.\ndumbass')
+        # get whether we should use ui with..
+        # ..a context error. okay.
+        try:
+            return bs.gettexture('white')
+        except ba.ContextError:
+            return bui.gettexture('white')
+    return texture_map.get(ptype)
+
 # wow... old code...
 def shake_node(
     node, 
@@ -155,15 +146,16 @@ def shake_node(
 ):
     """
     Shake a node.
-    Args:
-        node: The node to shake (like your image or text).
-        intensity: How strong shall we shake.
-        duration: How much it shall take before stopping.
-        interval: How fast will it go.
+    :param node: The node to shake (like your image or text).
+    :param intensity: How strong shall we shake.
+    :param duration: Duration of the shake.
+    :param interval: The interval it updates at. Lower values are smoother but 
+    often can go fast, and higher values are staticky but slower.
+    :param array_num: Number of arrays. Using anything other than 2 uses 3 array numbers.
     """
     import bascenev1 as bs
     import random
-    if node is None:
+    if not node:
         return
 
     original_pos = tuple(node.position)
@@ -192,6 +184,7 @@ def shake_node(
                 original_pos[1] + offset_y,
             )
         else:
+            # we don't shake z pos, so it's not really weird
             node.position = (
                 original_pos[0] + offset_x,
                 original_pos[1] + offset_y,

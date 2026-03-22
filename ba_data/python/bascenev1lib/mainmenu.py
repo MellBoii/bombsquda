@@ -364,7 +364,7 @@ class MainMenuActivity(bs.GameActivity[bs.Player, bs.Team]):
         bs.timer(4.8, self.do_quit)
         bs.timer(7.8, start_activity)
     
-    def overheadtxt(self, chance: int = 0.2):
+    def overheadtxt(self, chance: int = 0.09):
         text = ba.Lstr(
             resource=f'menuOverhead{random.randint(1, 14)}', 
             subs=[

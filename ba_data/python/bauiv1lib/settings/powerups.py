@@ -3,6 +3,7 @@ from typing import override
 
 import bascenev1 as bs
 import bauiv1 as bui
+import fromgoverhaul.mell_resources as mell
 
 class PowerupSetupWindow(bui.MainWindow):
     def __init__(
@@ -75,6 +76,7 @@ class PowerupSetupWindow(bui.MainWindow):
         self.tex_land_mines = bui.gettexture('powerupLandMines')
         self.tex_curse = bui.gettexture('powerupCurse')
         self.tex_random = bui.gettexture('powerupRandom')
+        self.tex_kookoo = bui.gettexture('curseKookoo')
         
         self._powerups = dict(bs._powerup.get_default_powerup_distribution())
         self._scroll = bui.scrollwidget(
@@ -111,7 +113,7 @@ class PowerupSetupWindow(bui.MainWindow):
             offset = 30
             y = len(self._powerups) * 60 - i * 60 - offset
             x = 150
-            tex = self._get_texture_for_powerup(ptype)
+            tex = mell.get_texture_for_powerup(self, ptype)
             # icon
             bui.imagewidget(
                 parent=self._sub,
@@ -141,32 +143,6 @@ class PowerupSetupWindow(bui.MainWindow):
 
         cfg['squda_powerup_dist'] = custom
         cfg.apply_and_commit()
-
-    def _get_texture_for_powerup(self, ptype: str):
-        factory = self
-        texture_map = {
-            'triple_bombs': factory.tex_bomb,
-            'punch': factory.tex_punch,
-            'ice_bombs': factory.tex_ice_bombs,
-            'sticky_bombs': factory.tex_sticky_bombs,
-            'shield': factory.tex_shield,
-            'impact_bombs': factory.tex_impact_bombs,
-            'health': factory.tex_health,
-            'land_mines': factory.tex_land_mines,
-            'curse': factory.tex_curse,
-            'metal': factory.tex_metal,
-            'deton': factory.tex_deton,
-            'hook': factory.tex_hook,
-            'fireball': factory.tex_fireball,
-            'bloxy': factory.tex_bloxy,
-            'strong': factory.tex_strong,
-            'spongebob': factory.tex_spongebob,
-            'shotgun': factory.tex_shotgun,
-            'star': factory.tex_star,
-            'random': factory.tex_random,
-        }
-
-        return texture_map.get(ptype, bui.gettexture('white'))
     
     @override
     def get_main_window_state(self) -> bui.MainWindowState:

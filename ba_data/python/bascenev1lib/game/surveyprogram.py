@@ -62,7 +62,7 @@ class BaseSurveyWindow(bui.MainWindow):
             refresh_on_screen_size_changes=uiscale is bui.UIScale.SMALL,
         )
 
-        bui.textwidget(
+        self.title = bui.textwidget(
             parent=self._root_widget,
             position=(15, self._yoffs - (70 if uiscale is bui.UIScale.SMALL else 60)),
             size=(width, 25),

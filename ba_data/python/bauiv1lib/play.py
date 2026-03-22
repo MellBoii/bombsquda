@@ -795,47 +795,45 @@ class CoopSubMenu(bui.MainWindow):
         self._r = 'playWindow'
         
         uiscale = bui.app.ui_v1.uiscale
-        # JESUS THAT IS A LOT OF CALCULATIONS
-        # it doesn't even help! the ui still
-        # somewhat looks fuckin ugly!!
-        self._width = (
-            1500 if uiscale is bui.UIScale.SMALL 
-            else 920 if uiscale is bui.UIScale.MEDIUM else 720
+        self._width = 1000 if uiscale is bui.UIScale.SMALL else 720
+        self._height = 500 if uiscale is bui.UIScale.SMALL else 400
+        screensize = bui.get_virtual_screen_size()
+        safesize = bui.get_virtual_safe_area_size()
+        smallscale = min(2.0, 1.5 * screensize[0] / safesize[0])
+        scale = smallscale if uiscale is bui.UIScale.SMALL else 1.3 if uiscale is bui.UIScale.MEDIUM else 1.0
+        super().__init__(
+            root_widget=bui.containerwidget(
+                size=(self._width, self._height),
+                scale=scale,
+                toolbar_visibility=(
+                    'menu_minimal'
+                    if uiscale is bui.UIScale.SMALL
+                    else 'menu_full'
+                ),
+            ),
+            transition=transition,
+            origin_widget=origin_widget,
+            refresh_on_screen_size_changes=True,
         )
-        self._height = (
-            1000
-            if uiscale is bui.UIScale.SMALL
-            else 600 if uiscale is bui.UIScale.MEDIUM else 400
-        )
-        self._root_widget = bui.containerwidget(
-            size=(self._width, self._height),
-            transition='in_right',
-            parent=bui.get_special_widget('overlay_stack'),
-            on_cancel_call=self.main_window_back
-        )
-        buttonscale = (
-            2.0 if uiscale is bui.UIScale.SMALL 
-            else 1.5 if uiscale is bui.UIScale.MEDIUM else 1.2
-        )
+        buttonscale = 1.2 if uiscale is not bui.UIScale.SMALL else 1.5
         buttonX = (
-            self._width * 0.36 if uiscale is bui.UIScale.SMALL
-            else self._width * 0.35 if uiscale is bui.UIScale.MEDIUM
-            else self._width * 0.34
+            self._width * 0.34 if uiscale is not 
+            bui.UIScale.SMALL else self._width * 0.36
         )
-        textY = (
-            380
-            if uiscale is bui.UIScale.SMALL
-            else 280 if uiscale is bui.UIScale.MEDIUM else 180
-        )   
-        bbtn_width = (
-            self._width - 1450 if uiscale is bui.UIScale.SMALL
-            else self._width - 900 if uiscale is bui.UIScale.MEDIUM 
-            else self._width - 700
+        textY = 180 if uiscale is not bui.UIScale.SMALL else 200
+        bbtn_width = self._width - 700
+        bbtn_height = self._height - 50
+        textwidth = self._width * 0.5 if uiscale is not bui.UIScale.SMALL else self._width * 0.51
+        bui.textwidget(
+            parent=self._root_widget,
+            position=(textwidth, self._height / 2.5 + textY),
+            scale=buttonscale,
+            text=bui.Lstr(resource=f'{self._r}.whichCampaign'),
+            h_align='center',
+            v_align='center',
+            size=(0, 0),
         )
-        bbtn_height = (
-            self._height - 250 if uiscale is bui.UIScale.SMALL 
-            else self._height - 50
-        )
+        
         bui.buttonwidget(
             parent=self._root_widget,
             label=bui.Lstr(resource=f'{self._r}.regularCampaign'),
@@ -854,27 +852,24 @@ class CoopSubMenu(bui.MainWindow):
             scale=buttonscale,
             on_activate_call=self._custom_campaign,
         )
-        self._back_button = bui.buttonwidget(
-            parent=self._root_widget,
-            position=(bbtn_width, bbtn_height),
-            size=(60, 50),
-            scale=2.8 if uiscale is bui.UIScale.SMALL else 1.2,
-            label=bui.charstr(bui.SpecialChar.BACK),
-            button_type='backSmall',
-            on_activate_call=self.main_window_back,
-        )
-        bui.containerwidget(
-            edit=self._root_widget, cancel_button=self._back_button
-        )
-        bui.textwidget(
-            parent=self._root_widget,
-            position=(self._width * 0.5, self._height / 2.5 + textY),
-            scale=buttonscale,
-            text=bui.Lstr(resource=f'{self._r}.whichCampaign'),
-            h_align='center',
-            v_align='center',
-            size=(0, 0),
-        )
+        if uiscale is bui.UIScale.SMALL:
+            self._back_button = None
+            bui.containerwidget(
+                edit=self._root_widget, on_cancel_call=self.main_window_back
+            )
+        else:
+            self._back_button = bui.buttonwidget(
+                parent=self._root_widget,
+                position=(bbtn_width, bbtn_height),
+                size=(60, 50),
+                scale=1.2,
+                label=bui.charstr(bui.SpecialChar.BACK),
+                button_type='backSmall',
+                on_activate_call=self.main_window_back,
+            )
+            bui.containerwidget(
+                edit=self._root_widget, cancel_button=self._back_button
+            )
     
     @override
     def get_main_window_state(self) -> bui.MainWindowState:

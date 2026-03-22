@@ -1727,8 +1727,15 @@ class Spaz(bs.Actor):
             def swoon2():
                 self.swoon.delete()
                 self.bg.delete()
-                self.die()
-                self.node.delete()
+                self.handlemessage(
+                    bs.HitMessage(
+                        flat_damage=150,
+                        pos=pos,
+                        force_direction=self.node.velocity,
+                    )
+                )
+                bs.getsound('explosion01').play(volume=2.0, position=self.node.position)
+                self.impulse(x=-235, y=200)
             bs.basetimer(2.1, swoon2)
             swoon1()
             return
@@ -2290,32 +2297,6 @@ class Spaz(bs.Actor):
         bs.timer(2.0, text2)
         bs.timer(4.0, text3)
         
-    def _get_texture_for_powerup(self, factory, ptype: str):
-        texture_map = {
-            'triple_bombs': factory.tex_bomb,
-            'punch': factory.tex_punch,
-            'ice_bombs': factory.tex_ice_bombs,
-            'sticky_bombs': factory.tex_sticky_bombs,
-            'shield': factory.tex_shield,
-            'impact_bombs': factory.tex_impact_bombs,
-            'health': factory.tex_health,
-            'land_mines': factory.tex_land_mines,
-            'curse': factory.tex_curse,
-            'metal': factory.tex_metal,
-            'deton': factory.tex_deton,
-            'hook': factory.tex_hook,
-            'fireball': factory.tex_fireball,
-            'bloxy': factory.tex_bloxy,
-            'strong': factory.tex_strong,
-            'spongebob': factory.tex_spongebob,
-            'shotgun': factory.tex_shotgun,
-            'star': factory.tex_star,
-            'random': factory.tex_random,
-            'kookoo': factory.tex_kookoo,
-        }
-
-        return texture_map.get(ptype, bs.gettexture('white'))
-        
     def _activate_roulette(self):
         """Start rolling for a random powerup."""
         if self._roulette_active:
@@ -2353,7 +2334,7 @@ class Spaz(bs.Actor):
                 self._roulette_current = 'kookoo'
 
             # Update billboard texture dynamically
-            tex = self._get_texture_for_powerup(factory, ptype)
+            tex = mell.get_texture_for_powerup(factory, ptype)
             if tex:
                 self.node.billboard_texture = tex
                 self.node.billboard_opacity = 1.0
@@ -2647,6 +2628,7 @@ class Spaz(bs.Actor):
         # transition in persay idk man
         self.kookoo_head = LoopingImageAnimation(
             'ktransb', 
+            'ktransbCM', 
             frame_count=5, 
             frame_delay=0.03, 
             scale=scale, 
@@ -2654,6 +2636,8 @@ class Spaz(bs.Actor):
             loop=False,
             attach="bottomCenter",
         )
+        self.kookoo_head.node.tint_color = self.kookoo_color
+        self.kookoo_head.node.tint2_color = self.kookoo_high
         # delete time
         self.kookoo_time_text.delete()
         # play sound
@@ -2672,6 +2656,7 @@ class Spaz(bs.Actor):
         # animation
         self.kookoo_head = LoopingImageAnimation(
             'ktransb', 
+            'ktransbCM', 
             frame_count=5, 
             frame_delay=0.03, 
             scale=scale, 
@@ -2679,6 +2664,8 @@ class Spaz(bs.Actor):
             loop=False,
             attach="bottomCenter",
         )
+        self.kookoo_head.node.tint_color = self.kookoo_color
+        self.kookoo_head.node.tint2_color = self.kookoo_high
         # ok since spaz dead we don't need to show up anymore
         self.kookood = False
         # delete the time text
@@ -2714,6 +2701,7 @@ class Spaz(bs.Actor):
         # ticking animation
         self.kookoo_head = LoopingImageAnimation(
             'ktick', 
+            'ktickCM', 
             frame_count=2, 
             frame_delay=0.06, 
             scale=scale,
@@ -2721,6 +2709,8 @@ class Spaz(bs.Actor):
             loop=True,
             attach="bottomCenter",
         )
+        self.kookoo_head.node.tint_color = self.kookoo_color
+        self.kookoo_head.node.tint2_color = self.kookoo_high
         # delete arm
         self.kookoo_arm.node.delete()
         self.kookoo_arm = None
@@ -2730,8 +2720,10 @@ class Spaz(bs.Actor):
             if not self.node or not self.is_alive():
                 self.kookoo_ticker = None
                 self.kookood = False
-                self.kookoo_head.node.delete()
-                self.kookoo_time_text.delete()
+                if self.kookoo_head.node:
+                    self.kookoo_head.node.delete()
+                if self.kookoo_head.node:
+                    self.kookoo_time_text.delete()
                 self.kookoo_head = None
                 self.kookoo_time_text = None
                 self.kookoo_exists = False
@@ -2764,7 +2756,7 @@ class Spaz(bs.Actor):
                 self.kookoo_time_text,
                 duration=speed - 0.3,
                 interval=0.01,
-                intensity=0.1,
+                intensity=4,
             )
         tick()
         self.kookoo_ticker = bs.Timer(speed, tick, repeat=True)
@@ -2776,6 +2768,8 @@ class Spaz(bs.Actor):
             self.kookoo_head.node.delete()
         if self.kookoo_time_text:
             self.kookoo_time_text.delete()
+        if self.kookoo_name_text:
+            self.kookoo_name_text.delete()
         # set everything to nothing
         # (wow that sounds stupid)
         if self.kookoo_head:
@@ -2794,6 +2788,7 @@ class Spaz(bs.Actor):
         # transition in
         self.kookoo_head = LoopingImageAnimation(
             'ktransb', 
+            'ktransbCM', 
             frame_count=5, 
             frame_delay=0.03, 
             scale=scale, 
@@ -2801,6 +2796,8 @@ class Spaz(bs.Actor):
             loop=False,
             attach="bottomCenter",
         )
+        self.kookoo_head.node.tint_color = self.kookoo_color
+        self.kookoo_head.node.tint2_color = self.kookoo_high
         # delete time text
         self.kookoo_time_text.delete()
         # get like WAY faster to kinda signify we're doin something
@@ -2810,12 +2807,21 @@ class Spaz(bs.Actor):
             self.kookoo_head.node.delete()
             self.kookoo_head = LoopingImageAnimation(
                 'khead', 
+                'kheadCM', 
                 frame_count=3, 
                 frame_delay=0.01, 
                 scale=scale, 
                 position=pos,
                 loop=True,
                 attach="bottomCenter",
+            )
+            self.kookoo_head.node.tint_color = self.kookoo_color
+            self.kookoo_head.node.tint2_color = self.kookoo_high
+            mell.shake_node(
+                self.kookoo_head.node,
+                duration=0.2,
+                interval=0.0001,
+                intensity=15,
             )
         # sound
         bs.getsound('kbreak').play(volume=2, position=self.node.position)
@@ -2917,19 +2923,29 @@ class Spaz(bs.Actor):
             return slot
         self.kookoo_exists = True
         kookoos = self._activity().kookoos
-        self._slot = _get_free_slot(kookoos)   
+        self._slot = _get_free_slot(kookoos)
+        if len(kookoos) > 0:
+            self.kookoo_color = self.node.color
+            self.kookoo_high = self.node.highlight
+        else:
+            self.kookoo_color = (0, 0, 1)
+            self.kookoo_high = (0, 0, 0.8)
         kookoos[self._slot] = self
         spacing = 140
         # we can make our position with the spacing now
-        y = 300 + (self._slot * spacing)
+        y = 100 + (self._slot * spacing)
         x = -500
         scale = 200
+        for threshold in (6, 12, 14, 18):
+            if len(kookoos) >= threshold:
+                x += 200
         # generate a random number we'll check at
-        self.kookoo_vibe_checkin_end = random.randint(5, 12)
+        self.kookoo_vibe_checkin_end = random.randint(4, 13)
         # create our arm (animation)
         def create_arm():
             self.kookoo_arm = LoopingImageAnimation(
-                'karm_appear', 
+                'karm_appear',
+                'karm_appearCM',
                 frame_count=5, 
                 frame_delay=0.07, 
                 scale=(scale, scale), 
@@ -2937,11 +2953,14 @@ class Spaz(bs.Actor):
                 loop=False,
                 attach="bottomCenter",
             )
+            self.kookoo_arm.node.tint_color = self.kookoo_color
+            self.kookoo_arm.node.tint2_color = self.kookoo_high
         # animate arm pointing
         def arm_point():
             self.kookoo_arm.node.delete()
             self.kookoo_arm = LoopingImageAnimation(
                 'karm_point', 
+                'karm_pointCM', 
                 frame_count=3, 
                 frame_delay=0.07, 
                 scale=(scale, scale), 
@@ -2949,6 +2968,8 @@ class Spaz(bs.Actor):
                 loop=True,
                 attach="bottomCenter",
             )
+            self.kookoo_arm.node.tint_color = self.kookoo_color
+            self.kookoo_arm.node.tint2_color = self.kookoo_high
             # create the text for the timer
             self.kookoo_time_text =  bs.newnode(
                 'text',
@@ -2956,9 +2977,22 @@ class Spaz(bs.Actor):
                 attrs={
                     'text': str(self.kookoo_vibe_checkin_end),
                     'scale': 1.5,
-                    'color': (0, 0.6, 1),
+                    'color': self.kookoo_color,
                     'h_align': 'center',
                     'position': (x - 3, y - 28),
+                    'v_attach': 'bottom',
+                    'front': True,
+                },
+            )
+            self.kookoo_name_text =  bs.newnode(
+                'text',
+                owner=self.node,
+                attrs={
+                    'text': f'({self.node.name})',
+                    'scale': 1.0,
+                    'color': self.node.color,
+                    'h_align': 'center',
+                    'position': (x - 3, y - 90),
                     'v_attach': 'bottom',
                     'front': True,
                 },
@@ -2968,11 +3002,16 @@ class Spaz(bs.Actor):
                 0.0: 0,
                 0.5: 1,
             })
+            bs.animate(self.kookoo_name_text, 'opacity', {
+                0.3: 0,
+                0.6: 0.5,
+            })
         # animate arm out
         def arm_out():
             self.kookoo_arm.node.delete()
             self.kookoo_arm = LoopingImageAnimation(
                 'karm_out', 
+                'karm_outCM', 
                 frame_count=6, 
                 frame_delay=0.07, 
                 scale=(scale, scale), 
@@ -2980,12 +3019,15 @@ class Spaz(bs.Actor):
                 loop=False,
                 attach="bottomCenter",
             )
+            self.kookoo_arm.node.tint_color = self.kookoo_color
+            self.kookoo_arm.node.tint2_color = self.kookoo_high
         # play a sound
         def pointysound():
             bs.getsound('kwarnin').play(position=self.node.position)
         # animate in i guess
         self.kookoo_head = LoopingImageAnimation(
             'ktrans', 
+            'ktransCM', 
             frame_count=5, 
             frame_delay=0.06, 
             scale=(scale, scale), 
@@ -2993,6 +3035,8 @@ class Spaz(bs.Actor):
             loop=False,
             attach="bottomCenter",
         )
+        self.kookoo_head.node.tint_color = self.kookoo_color
+        self.kookoo_head.node.tint2_color = self.kookoo_high
         # schedule all those
         bs.timer(0.1, create_arm)
         bs.timer(0.2, pointysound)

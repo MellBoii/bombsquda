@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Sequence, override
-from bauiv1lib.settings.powerups import PowerupSetupWindow
 import logging
 
 import bauiv1 as bui
@@ -68,6 +67,8 @@ class MelWindow(bui.MainWindow):
         spacing = 2
         scroll_bottom = yoffs - 56 - self._scroll_height
         col_x = width * 0.12
+        if uiscale is bui.UIScale.SMALL:
+            col_x -= 40
         raw_settings = [
             ("squda_noisepolution", "noisePollutionText", None),
             ("squda_foxyjumpscare", "foxyJumpscareText", None),
@@ -192,15 +193,27 @@ class MelWindow(bui.MainWindow):
                 on_value_change_call=bui.Call(self._set_config, key, sound=playsound),
             )
         row += 1
+        size = (350, 40)
         y = start_y - row * row_height
         self.powerup_setup = bui.buttonwidget(
             parent=self._subcontainer,
             position=(col_x, y),
-            size=(320, 40),
+            size=size,
             text_scale=1.0,
             label=bui.Lstr(resource=f'{self._r}.powerupSetup'),
             on_activate_call=self._open_powerup_setup,
         )
+        if not first_time:
+            row += 1
+            y = start_y - row * row_height
+            self.name_setup = bui.buttonwidget(
+                parent=self._subcontainer,
+                position=(col_x, y),
+                size=size,
+                text_scale=1.0,
+                label=bui.Lstr(resource=f'{self._r}.nameSetup'),
+                on_activate_call=self._open_name_setup,
+            )
 
     
     def changefont(self) -> None:
@@ -241,6 +254,10 @@ class MelWindow(bui.MainWindow):
 
     def _continue(self) -> None:
         from bascenev1lib.game.surveyprogram import SurveyIntroWindow
+        # no-op if we're not currently in control.
+        if not self.main_window_has_control():
+            return
+            
         self.main_window_replace(
             SurveyIntroWindow(
                 transition='in_right',
@@ -248,16 +265,34 @@ class MelWindow(bui.MainWindow):
                 step=1,
             )
         )
+        
+    def _open_name_setup(self):
+        from bauiv1lib.settings.rename_survey import NameSurveyAllWindow
+        # no-op if we're not currently in control.
+        if not self.main_window_has_control():
+            return
+            
+        self.main_window_replace(
+            NameSurveyAllWindow(
+                origin_widget=self._root_widget
+            )
+        )
+    
+    def _open_powerup_setup(self):
+        from bauiv1lib.settings.powerups import PowerupSetupWindow
+        # no-op if we're not currently in control.
+        if not self.main_window_has_control():
+            return
+            
+        self.main_window_replace(
+            PowerupSetupWindow(
+                origin_widget=self._root_widget
+            )
+        )
+        
     @override
     def get_main_window_state(self):
         return bui.BasicMainWindowState(
             create_call=lambda t, o, ft=self._first_time:
                 MelWindow._create(t, o, ft)
-        )
-    
-    def _open_powerup_setup(self):
-        self.main_window_replace(
-            PowerupSetupWindow(
-                origin_widget=self._root_widget
-            )
         )

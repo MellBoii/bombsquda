@@ -4,9 +4,10 @@ import bascenev1 as bs
 class LoopingImageAnimation:
     def __init__(
         self,
-        prefix: str = "animframe",  # example: animframe1, animframe2, ...
+        prefix: str = "animframe",
+        cmprefix: str | None = None,
         frame_count: int = 12,
-        frame_delay: float = 0.1,   # seconds between frames
+        frame_delay: float = 0.1,
         scale: tuple = (300, 300),
         position: tuple = (0, 0),
         loop: bool = True,
@@ -14,16 +15,22 @@ class LoopingImageAnimation:
         front: bool = False,
     ):
         self.prefix = prefix
+        self.cmprefix = cmprefix
         self.frame_count = frame_count
         self.frame_delay = frame_delay
         self.loop = loop
         self._current_frame = 1
+        if self.cmprefix:
+            tint_texture = bs.gettexture(f"{self.cmprefix}{self._current_frame}")
+        else:
+            tint_texture = None
 
         # Create the image node.
         self.node = bs.newnode(
             "image",
             attrs={
                 "texture": bs.gettexture(f"{self.prefix}{self._current_frame}"),
+                "tint_texture": tint_texture,
                 "absolute_scale": True,
                 "scale": scale,
                 "position": position,
@@ -53,8 +60,12 @@ class LoopingImageAnimation:
                 return
 
         tex_name = f"{self.prefix}{self._current_frame}"
+        if self.cmprefix:
+            ttex_name = f"{self.cmprefix}{self._current_frame}"
         try:
             self.node.texture = bs.gettexture(tex_name)
+            if self.cmprefix:
+                self.node.tint_texture = bs.gettexture(ttex_name)
         except Exception as e:
             print(f"[LoopingImageAnimation] Got error {e} while changing texture to {tex_name}")
             self._timer = None
