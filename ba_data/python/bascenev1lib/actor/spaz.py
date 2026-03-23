@@ -247,7 +247,7 @@ class Spaz(bs.Actor):
         self.spongebob_timer = None
         self._wiggle_count = 0
         self.wiggling = False
-        self.light = None
+        self.charge_flash = None
         self.sparkies = None
         self.super_flash = None
         self.actor_type = 'spaz'
