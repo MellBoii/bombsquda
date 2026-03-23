@@ -77,6 +77,7 @@ class PowerupSetupWindow(bui.MainWindow):
         self.tex_curse = bui.gettexture('powerupCurse')
         self.tex_random = bui.gettexture('powerupRandom')
         self.tex_kookoo = bui.gettexture('curseKookoo')
+        self.tex_dozer = bui.gettexture('curseDozer')
         
         self._powerups = dict(bs._powerup.get_default_powerup_distribution())
         self._scroll = bui.scrollwidget(

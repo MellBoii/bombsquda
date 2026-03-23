@@ -144,7 +144,10 @@ class SpazBot(Spaz):
 
     def __init__(self) -> None:
         """Instantiate a spaz-bot."""
-        self.name = random.choice(self.namelist)
+        if ba.app.config.get("squda_botnames"):
+            self.name = random.choice(self.namelist)
+        else:
+            self.name = ''
         super().__init__(
             color=self.color,
             highlight=self.highlight,
@@ -1058,7 +1061,7 @@ class KNIGHTBot(SpazBot):
     # knight starts WITH 5 EMERALDS
     # so they are objectively more powerful
     # than other classes
-    forced_emeralds = 5
+    forced_emeralds = 3
 
 
 class BouncyBot(SpazBot):

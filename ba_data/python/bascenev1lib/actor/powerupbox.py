@@ -139,6 +139,7 @@ class PowerupBoxFactory:
         self.tex_land_mines = bs.gettexture('powerupLandMines')
         self.tex_curse = bs.gettexture('powerupCurse')
         self.tex_kookoo = bs.gettexture('curseKookoo')
+        self.tex_dozer = bs.gettexture('curseDozer')
         self.health_powerup_sounds = (
             bs.getsound('healthPowerup'),
             bs.getsound('healthPowerup2'),

@@ -125,6 +125,7 @@ def get_texture_for_powerup(factory, ptype: str):
         'star': factory.tex_star,
         'random': factory.tex_random,
         'kookoo': factory.tex_kookoo,
+        'dozer': factory.tex_dozer,
     }
     if ptype not in texture_map:
         print(f'ERROR: {ptype} is not in the texture map. Please add it to mell_resources.\ndumbass')

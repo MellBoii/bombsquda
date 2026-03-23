@@ -6,7 +6,7 @@ import random
 from bascenev1lib.actor.image_looped import LoopingImageAnimation
 
 class Kookoo(bs.Actor):
-    """remember the number, empty your hand when it hits."""
+    """clock mf"""
     def __init__(self, actor: bs.Actor):
         """initiate. actor should normally 
         be a spaz, and also a weakref to it.
@@ -23,14 +23,20 @@ class Kookoo(bs.Actor):
         self._scale = 0
         self.tick_timer = None
         self.exists2 = False
+        self.name_text = None
+        self.time_text = None
+        self._slot = 0
     
-    def _check(self, chance: int = 0.9, speed: int = 0.8):
+    def _check(self, chance: int = 0.1, speed: int = 0.8):
         # don't appear if below our chance
         if (
             random.random() >= chance 
             or self.exists2
             or not self.actor().kookood
         ):
+            if not self.actor():
+                self.stop()
+                return
             if not self.actor().kookood:
                 self.stop()
             return
@@ -169,13 +175,8 @@ class Kookoo(bs.Actor):
         delay: int = 0.05,
         repeat: bool = True,
     ):
-        if not self.head or not self.head.node:
-            pos = (self._x, self._y)
-            scale = (self._scale, self._scale)
-        else:
-            # get our last position
-            pos = self.head.node.position
-            scale = self.head.node.scale
+        pos = (self._x, self._y)
+        scale = (self._scale, self._scale)
         # delete ye olde head
         if self.head:
             self.head.node.delete()
@@ -205,11 +206,7 @@ class Kookoo(bs.Actor):
         if self.tick_number >= self.end_time:
             if self.actor().shield:
                 self._break_shield()
-            elif (
-                self.actor().node.hold_node or 
-                abs(self.actor().last_x) >= 0.2 
-                or abs(self.actor().last_y) >= 0.2
-            ):
+            elif self.actor().node.hold_node:
                 self._death()
             else:
                 self._survived()
@@ -284,6 +281,8 @@ class Kookoo(bs.Actor):
             self.name_text.delete()
         self.exists2 = False
         # pop us from the "spacing" list
+        if not hasattr(self._activity(), 'entities'):
+            self._activity().entities = {}
         entities = self._activity().entities
         entities.pop(self._slot, None)  
         

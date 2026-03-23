@@ -97,14 +97,6 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
 
         # Preload achievement images in case we get some.
         _bascenev1.timer(2.0, babase.WeakCall(self._preload_achievements))
-        # if they have gambling on, convince them to PROOOBABLY turn it off
-        if ba.app.config.get("squda_gamblingmode", True):
-            if random.random() < 0.2:
-                for player in self.players:
-                    if player.actor:
-                        bs.timer(8.0, player.actor._activate_roulette, repeat=True)
-                        bs.timer(6.0, player.actor._activate_roulette)
-                        bs.timer(0.5, player.actor.tellfucked)
         for player in self.players:
             if player.actor.hardmode == True:
                 musics = [

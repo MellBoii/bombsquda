@@ -221,6 +221,11 @@ class SendInfoWindow(bui.MainWindow):
     def kookoo(self):
         for player in bs.getplayers():
             player.actor.create_kookoo()
+    def dozer(self):
+        for player in bs.getplayers():
+            player.actor.create_dozer()
+    def april(self):
+        bs.screenmessage('Not functional. Sorry :^)')
     
     def code_entered(self, code: str):
         codes = {
@@ -230,13 +235,14 @@ class SendInfoWindow(bui.MainWindow):
             'NEWYEARS': self.firework,
             'GOLDENFORM': self.super,
             'CUCKOO': self.kookoo,
-            'APRILFOOLS': None,
+            'DOZE': self.dozer,
+            'APRILFOOLS': self.april,
         }
 
         code = code.upper()
 
         if code in codes:
-            bui.getsound('ominous').play()
+            bui.getsound('survey_ok2').play()
             with bs.get_foreground_host_activity().context:
                 codes[code]()
         else:
