@@ -11,6 +11,7 @@ import logging
 from typing import TYPE_CHECKING, override
 
 import bascenev1 as bs
+import babase as ba
 from bascenev1lib.actor.spaz import Spaz
 from bascenev1lib.actor.bomb import Bomb
 from bascenev1._gameactivity import EmeraldActor
