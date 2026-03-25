@@ -46,7 +46,6 @@ class PowerupAcceptMessage:
 def get_default_powerup_distribution() -> Sequence[tuple[str, int]]:
     """Standard set of powerups."""
     # set a powerup's str to debug it
-    debug_powerup = None
     base_distribution = {
         'triple_bombs': 2,
         'ice_bombs': 3,
@@ -73,3 +72,27 @@ def get_default_powerup_distribution() -> Sequence[tuple[str, int]]:
         if key in cfg:
             base_distribution[key] = cfg[key]
     return tuple(base_distribution.items())
+
+def get_powerup_dist2():
+    be_distribution = {
+        'triple_bombs': 2,
+        'ice_bombs': 3,
+        'punch': 3,
+        'impact_bombs': 3,
+        'land_mines': 2,
+        'sticky_bombs': 3,
+        'shield': 2,
+        'health': 3,
+        'curse': 1,
+        'metal': 1,
+        'random': 1,
+        'spongebob': 2,
+        'strong': 3,
+        'deton': 3,
+        'shotgun': 2,
+        'fireball': 2,
+        'bloxy': 2,
+        'hook': 1,
+        'star': 1,
+    }
+    return tuple(be_distribution.items())

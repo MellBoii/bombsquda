@@ -121,7 +121,7 @@ ENTITY_CONFIG = {
         'wear_off': '_dozer_wear_off',
         'kill': '_kill_dozer_if_it_still_exists',
         'texture': lambda: PowerupBoxFactory.get().tex_dozer,
-    }
+    },
     'ire': {
         'attr_flag': 'ired',
         'attr_obj': 'ire',
@@ -130,7 +130,7 @@ ENTITY_CONFIG = {
         'wear_off': '_ire_wear_off',
         'kill': '_kill_ire_if_it_still_exists',
         'texture': lambda: PowerupBoxFactory.get().tex_ire,
-    }
+    },
 }
 
 def playsound(name, pos):
@@ -273,6 +273,7 @@ class Spaz(bs.Actor):
         self.hook = None
         self.kookood = None
         self.dozered = None
+        self.ired = None
         self.last_x = 0
         self.last_y = 0
 
@@ -1116,7 +1117,7 @@ class Spaz(bs.Actor):
             self._roulette_active = False
             return
         self._roulette_active = False
-        baditems = ['curse', 'spongebob', 'kookoo']
+        baditems = ['curse', 'spongebob', 'kookoo', 'dozer', 'ire',]
         gooditems = ['metal', 'punch']
         if self._roulette_current in baditems:
             bs.getsound('baditem').play(position=self.node.position)
@@ -2312,7 +2313,7 @@ class Spaz(bs.Actor):
                 return
 
             # Use factory distribution
-            ptype = factory.get_random_powerup_type()
+            ptype = factory.get_random_powerup_type2()
             self._roulette_current = ptype
             chance = 0.1
             if random.random() < chance:
@@ -2873,7 +2874,7 @@ class Spaz(bs.Actor):
             elif msg.poweruptype == 'ire':
                 self.scary_text(
                     bs.Lstr(resource='ireAppears').evaluate(),
-                    color=(1, 1, 0.1),
+                    color=(1, 1, 1),
                     xpos=-5,
                     endtime=7,
                     spacing_y=0.55,

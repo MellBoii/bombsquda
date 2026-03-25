@@ -114,6 +114,7 @@ class PowerupBoxFactory:
         to get a shared instance.
         """
         from bascenev1 import get_default_powerup_distribution
+        from bascenev1._powerup import get_powerup_dist2
 
         shared = SharedObjects.get()
         self._lastpoweruptype: str | None = None
@@ -177,9 +178,14 @@ class PowerupBoxFactory:
         )
 
         self._powerupdist: list[str] = []
+        self._powerupdist2: list[str] = []
         for powerup, freq in get_default_powerup_distribution():
             for _i in range(int(freq)):
                 self._powerupdist.append(powerup)
+        
+        for powerup, freq in get_powerup_dist2():
+            for _i in range(int(freq)):
+                self._powerupdist2.append(powerup)
                 
 
     def get_random_powerup_type(
@@ -217,6 +223,23 @@ class PowerupBoxFactory:
                     if ptype not in excludetypes:
                         break
         self._lastpoweruptype = ptype
+        return ptype
+    
+    def get_random_powerup_type2(
+        self,
+        forcetype: str | None = None,
+        excludetypes: list[str] | None = None,
+    ) -> str:
+        if excludetypes is None:
+            excludetypes = []
+        while True:
+            if len(self._powerupdist2) <= 0:
+                return None
+            ptype = self._powerupdist2[
+                random.randint(0, len(self._powerupdist2) - 1)
+            ]
+            if ptype not in excludetypes:
+                break
         return ptype
 
     @classmethod
