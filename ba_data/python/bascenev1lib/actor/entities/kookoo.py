@@ -26,6 +26,36 @@ class Kookoo(bs.Actor):
         self.name_text = None
         self.time_text = None
         self._slot = 0
+
+    def _get_free_space(self):
+        # ok... get a free space based on how many of us
+        # there are
+        if not hasattr(self._activity(), 'entities'):
+            self._activity().entities = {}
+        def _get_free_slot(entities: dict) -> int:
+            slot = 0
+            while slot in entities:
+                slot += 1
+            return slot
+        self.exists2 = True
+        entities = self._activity().entities
+        self._slot = _get_free_slot(entities)
+        if len(entities) > 0:
+            self.color = self.actor().node.color
+            self.high = self.actor().node.highlight
+        else:
+            self.color = (1, 1, 0.2)
+            self.high = (0, 0, 0)
+        entities[self._slot] = self
+        spacing = 140
+        # we can make our position with the spacing now
+        y = 100 + (self._slot * spacing)
+        x = -500
+        for threshold in (6, 12, 14, 18):
+            if len(entities) >= threshold:
+                x += 200
+        self._x = x
+        self._y = y
     
     def _check(self, chance: int = 0.1, speed: int = 0.8):
         # don't appear if below our chance
@@ -43,36 +73,9 @@ class Kookoo(bs.Actor):
         if not self.actor().node:
             self._delete()
             return
-        # ok... get a free space based on how many of us
-        # there are
-        if not hasattr(self._activity(), 'entities'):
-            self._activity().entities = {}
-        def _get_free_slot(kookoos: dict) -> int:
-            slot = 0
-            while slot in kookoos:
-                slot += 1
-            return slot
-        self.exists2 = True
-        kookoos = self._activity().entities
-        self._slot = _get_free_slot(kookoos)
-        if len(kookoos) > 0:
-            self.color = self.actor().node.color
-            self.high = self.actor().node.highlight
-        else:
-            self.color = (0, 0, 1)
-            self.high = (0, 0, 0.8)
-        kookoos[self._slot] = self
-        spacing = 140
-        # we can make our position with the spacing now
-        y = 100 + (self._slot * spacing)
-        x = -500
-        self._x = x
-        self._y = y
+        self._get_free_space()
         scale = 200
         self._scale = scale
-        for threshold in (6, 12, 14, 18):
-            if len(kookoos) >= threshold:
-                x += 200
         # generate a random number we'll check at
         self.end_time = random.randint(4, 13)
         # create our arm (animation)
@@ -83,7 +86,7 @@ class Kookoo(bs.Actor):
                 frame_count=5, 
                 frame_delay=0.07, 
                 scale=(scale, scale), 
-                position=(x, y),
+                position=(self._x, self._y),
                 loop=False,
                 attach="bottomCenter",
             )
@@ -98,7 +101,7 @@ class Kookoo(bs.Actor):
                 frame_count=3, 
                 frame_delay=0.07, 
                 scale=(scale, scale), 
-                position=(x, y),
+                position=(self._x, self._y),
                 loop=True,
                 attach="bottomCenter",
             )
@@ -113,7 +116,7 @@ class Kookoo(bs.Actor):
                     'scale': 1.5,
                     'color': self.color,
                     'h_align': 'center',
-                    'position': (x - 3, y - 28),
+                    'position': (self._x - 3, self._y - 28),
                     'v_attach': 'bottom',
                     'front': True,
                 },
@@ -126,7 +129,7 @@ class Kookoo(bs.Actor):
                     'scale': 1.0,
                     'color': self.actor().node.color,
                     'h_align': 'center',
-                    'position': (x - 3, y - 90),
+                    'position': (self._x - 3, self._y - 90),
                     'v_attach': 'bottom',
                     'front': True,
                 },
@@ -144,12 +147,12 @@ class Kookoo(bs.Actor):
         def arm_out():
             self.arm.node.delete()
             self.arm = LoopingImageAnimation(
-                'karm_out', 
-                'karm_outCM', 
-                frame_count=6, 
-                frame_delay=0.07, 
-                scale=(scale, scale), 
-                position=(x, y),
+                'karm_out',
+                'karm_outCM',
+                frame_count=6,
+                frame_delay=0.07,
+                scale=(scale, scale),
+                position=(self._x, self._y),
                 loop=False,
                 attach="bottomCenter",
             )

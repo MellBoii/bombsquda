@@ -224,6 +224,9 @@ class SendInfoWindow(bui.MainWindow):
     def dozer(self):
         for player in bs.getplayers():
             player.actor.create_dozer()
+    def ire(self):
+        for player in bs.getplayers():
+            player.actor.create_ire()
     def april(self):
         bs.screenmessage('Not functional. Sorry :^)')
     
@@ -236,6 +239,7 @@ class SendInfoWindow(bui.MainWindow):
             'GOLDENFORM': self.super,
             'CUCKOO': self.kookoo,
             'DOZE': self.dozer,
+            'WRATHFUL': self.ire,
             'APRILFOOLS': self.april,
         }
 

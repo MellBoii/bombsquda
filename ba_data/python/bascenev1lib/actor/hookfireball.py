@@ -1,4 +1,4 @@
-""" for a Hook, and a fireball. Combined!"""
+"""script for a Hook, and a fireball. Combined!"""
 import random
 import bascenev1 as bs
 import math

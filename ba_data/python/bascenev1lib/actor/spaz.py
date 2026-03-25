@@ -36,6 +36,7 @@ import babase as ba
 
 from bascenev1lib.actor.entities.kookoo import Kookoo
 from bascenev1lib.actor.entities.dozer import Dozer
+from bascenev1lib.actor.entities.ire import Ire
 
 
 if TYPE_CHECKING:
@@ -120,6 +121,15 @@ ENTITY_CONFIG = {
         'wear_off': '_dozer_wear_off',
         'kill': '_kill_dozer_if_it_still_exists',
         'texture': lambda: PowerupBoxFactory.get().tex_dozer,
+    }
+    'ire': {
+        'attr_flag': 'ired',
+        'attr_obj': 'ire',
+        'class': Ire,
+        'flash': '_ire_wear_off_flash',
+        'wear_off': '_ire_wear_off',
+        'kill': '_kill_ire_if_it_still_exists',
+        'texture': lambda: PowerupBoxFactory.get().tex_ire,
     }
 }
 
@@ -401,7 +411,6 @@ class Spaz(bs.Actor):
         self.instructimage = None
         self.cansay = False
         self.lasthittype = None
-        # FIXME: don't use 'letimer' as a name; be more specific.
         self.letimer = None
         self.letimer2 = None
         self.timesparried = 0
@@ -1912,15 +1921,6 @@ class Spaz(bs.Actor):
         bs.timer(0.4, lambda: self.super_spark(1.0, 15, 25))
 
     def _super(self, shouldntsetmusic: bool = False) -> None:
-        """ 
-        Give this spaz the 'Super' effect;
-        this is a big buff with a flashy effect and music change.
-        Set shouldntsetmusic to True to 
-        prevent the music change, which is useful for 
-        when we want to activate super but we're 
-        already playing super music (like if we got super 
-        while already being super).
-        """
         if self.node:
             activity = self.getactivity()
             gnode = activity.globalsnode
@@ -1983,9 +1983,14 @@ class Spaz(bs.Actor):
             bs.timer(0.12, flash.delete)
             bs.timer(0.1, self.updatemeter)
             # buff our spaz
-            self.hitpoints_max = 2500
-            self.hitpoints = 2500
-            self.equip_shields()
+            if self.hardmode:
+                self.hitpoints_max = 500
+                self.hitpoints = 500
+            else:
+                self.hitpoints_max = 2500
+                self.hitpoints = 2500
+            if not self.hardmode:
+                self.equip_shields()
             self.equip_boxing_gloves()
             self.canparry = True
             self.instructimage = bs.newnode('image', 
@@ -2561,6 +2566,15 @@ class Spaz(bs.Actor):
         else:
             self.emeralds_indicator.text = text
     
+    def hardmode_death(self):
+        self.handlemessage(bs.FreezeMessage())
+        self.node.death_sounds = [bs.getsound('trublank')]
+        self.node.color_texture = bs.gettexture('white')
+        self.node.color_mask_texture = bs.gettexture('bunnyColorMask')
+        self.node.color = self.node.highlight = (3, 3, 3)
+        self.node.name = ''
+        self.node.hurt = 1.0
+    
     def swoon(self):
         if not self.node:
             return
@@ -2830,7 +2844,7 @@ class Spaz(bs.Actor):
             elif msg.poweruptype == 'dozer':
                 self.scary_text(
                     bs.Lstr(resource='dozerAppears').evaluate(),
-                    color=(0, 0, 1),
+                    color=(1, 1, 0.1),
                     xpos=-5,
                     endtime=7,
                     spacing_y=0.55,
@@ -2855,6 +2869,36 @@ class Spaz(bs.Actor):
                 self.dozer = Dozer(actor=weakref.ref(self))
                 self.dozer.start()
                 self.dozered = True
+                
+            elif msg.poweruptype == 'ire':
+                self.scary_text(
+                    bs.Lstr(resource='ireAppears').evaluate(),
+                    color=(1, 1, 0.1),
+                    xpos=-5,
+                    endtime=7,
+                    spacing_y=0.55,
+                    spacing_x=0.17,
+                )
+                tex = PowerupBoxFactory.get().tex_ire
+                self.node.mini_billboard_2_texture = tex
+                t_ms = int(bs.time() * 1000.0)
+                assert isinstance(t_ms, int)
+                self.node.mini_billboard_2_start_time = t_ms
+                self.node.mini_billboard_2_end_time = (
+                    t_ms + POWERUP_WEAR_OFF_TIME_K
+                )
+                self._ire_wear_off_flash_timer = bs.Timer(
+                    (POWERUP_WEAR_OFF_TIME_K - 2000) / 1000.0,
+                    bs.WeakCall(self._dozer_wear_off_flash),
+                )
+                self._ire_wear_off_timer = bs.Timer(
+                    POWERUP_WEAR_OFF_TIME_K / 1000.0,
+                    bs.WeakCall(self._ire_wear_off),
+                )
+                self.ire = Ire(actor=weakref.ref(self))
+                self.ire.start()
+                self.ired = True
+                
             elif msg.poweruptype == 'triple_bombs':
                 tex = PowerupBoxFactory.get().tex_bomb
                 self._flash_billboard(tex)
@@ -3785,13 +3829,7 @@ class Spaz(bs.Actor):
                                 ),
                                 color=(4, 4, 4)
                             )
-                        self.handlemessage(bs.FreezeMessage())
-                        self.node.death_sounds = [bs.getsound('trublank')]
-                        self.node.color_texture = bs.gettexture('white')
-                        self.node.color_mask_texture = bs.gettexture('bunnyColorMask')
-                        self.node.color = self.node.highlight = (3, 3, 3)
-                        self.node.name = ''
-                        self.node.hurt = 1.0
+                        self.hardmode_death()
                     if self.play_big_death_sound:
                         death_sound = SpazFactory.get().single_player_death_sound
                         if isinstance(death_sound, tuple):
@@ -4695,7 +4733,7 @@ class Spaz(bs.Actor):
     
     def _dozer_wear_off_flash(self) -> None:
         if self.node:
-            self.node.billboard_texture = PowerupBoxFactory.get().tex_kookoo # placeholder
+            self.node.billboard_texture = PowerupBoxFactory.get().tex_dozer # placeholder
             self.node.billboard_opacity = 1.0
             self.node.billboard_cross_out = True
         
@@ -4704,6 +4742,23 @@ class Spaz(bs.Actor):
         self.dozer.stop()
         self._kill_dozer_if_it_still_exists()
         self.dozer = None
+        if self.node:
+            PowerupBoxFactory.get().powerdown_sound.play(
+                position=self.node.position,
+            )
+            self.node.billboard_opacity = 0.0
+    
+    def _ire_wear_off_flash(self) -> None:
+        if self.node:
+            self.node.billboard_texture = PowerupBoxFactory.get().tex_ire # placeholder
+            self.node.billboard_opacity = 1.0
+            self.node.billboard_cross_out = True
+        
+    def _ire_wear_off(self) -> None:
+        self.ired = False
+        self.ire.stop()
+        self._kill_ire_if_it_still_exists()
+        self.ire = None
         if self.node:
             PowerupBoxFactory.get().powerdown_sound.play(
                 position=self.node.position,
@@ -4722,16 +4777,25 @@ class Spaz(bs.Actor):
             bs.getsound('playerLeft').play(volume=2, position=self.node.position)
             self.dozer._delete()
     
+    def _kill_ire_if_it_still_exists(self):
+        """Does what it says."""
+        if self.ire.exists2:
+            bs.getsound('playerLeft').play(volume=2, position=self.node.position)
+            self.ire._delete()
+    
     # debug helpers
     def create_kookoo(self):
         self.kookoo = Kookoo(actor=weakref.ref(self))
         self.kookoo.start()
         self.kookood = True
-    
     def create_dozer(self):
         self.dozer = Dozer(actor=weakref.ref(self))
         self.dozer.start()
         self.dozered = True
+    def create_ire(self):
+        self.ire = Ire(actor=weakref.ref(self))
+        self.ire.start()
+        self.ired = True
     # debug helpers
             
     def _metal_wear_off_flash(self) -> None:

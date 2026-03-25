@@ -381,14 +381,16 @@ class MainMenuWindow(bui.MainWindow):
             transition_delay=thistdelay,
             on_activate_call=self._howtoplay,
         )
+        bxoffs = -20 if uiscale is bui.UIScale.LARGE else 140
+        byoffs = -10 if uiscale is bui.UIScale.LARGE else 90
         self.boomboxbtn = bui.buttonwidget(
             parent=self._root_widget,
-            position=(-self._width - 10, -self._height),
-            button_type='square',
-            size=(180, 80),
-            label='music player',
+            position=(-self._width + bxoffs, -self._height + byoffs),
+            size=(160, 80),
+            icon=bui.gettexture('boombox_icon'),
+            label=bui.Lstr(resource=f'{self._r}.boomboxText'),
             transition_delay=thistdelay,
-            autoselect=True,
+            autoselect=False,
             on_activate_call=self.boombox_press
         )
         bui.widget(
