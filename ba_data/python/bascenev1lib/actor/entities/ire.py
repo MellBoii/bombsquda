@@ -1,4 +1,4 @@
-"""i"""
+"""Script for Ire, the entity that forces a spaz to jump (at correct timing) or die."""
 from __future__ import annotations
 import bascenev1 as bs
 import fromgoverhaul.mell_resources as mell
@@ -6,11 +6,10 @@ import random
 from bascenev1lib.actor.image_looped import LoopingImageAnimation
 
 class Ire(bs.Actor):
-    """it's pronounced eye-r-uh!"""
+    """spaz must jump when it strikes, or he dies
+    'it's pronounced eye-r-uh!', was what this docstring originally said
+    (and yes, that's how it's pronounced and i'm standing by that)"""
     def __init__(self, actor: bs.Actor):
-        """initiate. actor should normally 
-        be a spaz, and also a weakref to it.
-        make sure to call start() so we start acting"""
         super().__init__()
         self.actor = actor
         self.color = None
@@ -35,7 +34,6 @@ class Ire(bs.Actor):
             while slot in entities:
                 slot += 1
             return slot
-        self.exists2 = True
         entities = self._activity().entities
         self._slot = _get_free_slot(entities)
         # we can also get the player's color here
@@ -46,13 +44,12 @@ class Ire(bs.Actor):
             self.color = (1, 1, 1)
             self.high = (0, 0, 0)
         entities[self._slot] = self
+        max_per_column = 5
+        col = self._slot // max_per_column
+        row = self._slot % max_per_column
         spacing = 140
-        # we can make our position with the spacing now
-        y = 100 + (self._slot * spacing)
-        x = -500
-        for threshold in (6, 12, 14, 18):
-            if len(entities) >= threshold:
-                x += 200
+        x = -500 + (col * 200)
+        y = 100 + (row * spacing)
         self._x = x
         self._y = y
     
@@ -96,14 +93,22 @@ class Ire(bs.Actor):
         self.head.node.tint2_color = self.high
     
     def _check(self, chance = 0.12):
-        # don't appear if below our chance
-        # (and user doesn't have our status)
+        # Ire will do some checks of whether the actor exists, 
+        # whether the actor has a node, 
+        # whether the actor is alive and still kicking, 
+        # whether the actor should have Ire's status, 
+        # and whether the chance is exactly the one we should pop up with.
+        # This is obviously to prevent us from appearing where we'll bug out,
+        # or maybe when we shouldn't appear.
         if (
             random.random() >= chance 
             or self.exists2
             or not self.actor().ired
+            or not self.actor()
+            or not self.actor().node
+            or not self.actor().is_alive()
         ):
-            if not self.actor():
+            if not self.actor() or not self.actor().is_alive() or not self.actor().node:
                 self.stop()
                 return
             if not self.actor().ired:
@@ -115,6 +120,7 @@ class Ire(bs.Actor):
         self._get_free_space()
         scale = 200
         self._scale = scale
+        self.exists2 = True
         self.recreate_head('iappr', frames=3, delay=0.08, repeat=True)
         self.name_text =  bs.newnode(
             'text',
@@ -157,17 +163,35 @@ class Ire(bs.Actor):
     def _death(self):
         bs.getsound('ideath').play(1.2)
         self.recreate_head('istatic', frames=4, delay=0.03, repeat=True)
+        mell.shake_node(
+            self.head.node,
+            duration=0.6,
+            interval=0.0001,
+            intensity=2,
+        )
+        bs.timer(0.6, lambda: mell.shake_node(
+                self.head.node,
+                duration=0.6,
+                interval=0.0001,
+                intensity=7,
+            )
+        )
         def die():
             if self.actor().parrying:
-                self.actor().sugarcoat_overlay(sound='dingSmall', image='sugarcoatparry')
+                self.actor().sugarcoat_overlay(sound='bellMed', image='sugarcoatparry')
                 self.actor().mpa()
+                self.actor().smashkill(sound='thunder', autodie=False)
+                self._delete()
                 return
             self.actor().ired = False
             # we reuse hardmode's death because it's similar
             self.actor().hardmode_death()
             self.actor().die()
+            self.actor().impulse(y=500)
+            self._delete()
+            bs.getsound('shatter_worse').play(1.2)
         bs.timer(1.2, die)
-        bs.timer(1.13, self.actor().wheelchair_warning)
+        bs.timer(1.1, self.actor().wheelchair_warning)
     
     def _anim_attack(self):
         self.recreate_head('iatk', frames=4, delay=0.05, repeat=False)
@@ -179,12 +203,12 @@ class Ire(bs.Actor):
         self.recreate_head('iready', frames=3, delay=0.06, repeat=True)
         dict = {
             0: self.color,
-            0.1: (3, 0, 0),
+            0.1: (5, 0, 0),
             0.3: self.color,
         }
         dict2 = {
             0: self.high,
-            0.1: (7, 0, 0),
+            0.1: (12, 0, 0),
             0.3: self.high,
         }
         bs.animate_array(self.head.node, 'tint_color', 3, dict)
@@ -198,4 +222,15 @@ class Ire(bs.Actor):
     def stop(self):
         self.check_timer = None
         self._delete()
-        
+    
+    def handlemessage(self, msg: Any):
+        if isinstance(msg, bs.DieMessage):
+            # we'll check if the spaz still exists and has us, and if it doesn't we can stop
+            if self.actor() and self.actor().node and not self.actor().ired:
+                self.stop()
+            elif not self.actor() or not self.actor().node:
+                self.stop()
+            else:
+                self._delete()
+        else:
+            super().handlemessage(msg) # Augment standard behavior.

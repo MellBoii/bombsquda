@@ -381,7 +381,9 @@ class MainMenuActivity(bs.GameActivity[bs.Player, bs.Team]):
             bs.screenmessage("Happy April Fools!", color=(1, 0, 0))
             bs.getsound('error').play()
             return
-        self.menu_music()
+        custom = bui.app.config.get('squda_menumusic')
+        if not custom or custom == 'None':
+            self.menu_music()
         random.seed(time.time())
         cfgget = ba.app.config.get
         c1name = cfgget('squda_ch1name')
@@ -857,9 +859,12 @@ class MainMenuActivity(bs.GameActivity[bs.Player, bs.Team]):
     def menu_music(self) -> None:
         assert bs.app.classic is not None
         music_choices = ['MENU' + str(i + 1) for i in range(17)]
-        if self.aprilfools:
-            music_choices = ['MENU67']
         chosen = random.choice(music_choices)
+        custom = bui.app.config.get('squda_menumusic')
+        if custom and custom != 'None':
+            chosen = custom
+        if self.aprilfools:
+            chosen = 'MENU67'
         self.chosen_music = getattr(bs.MusicType, chosen)
         bs.setmusic(self.chosen_music)
         

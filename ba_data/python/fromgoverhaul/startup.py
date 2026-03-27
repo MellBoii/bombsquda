@@ -5,7 +5,7 @@ import baclassic as bsc
 import os
 import bauiv1 as bui
 from .discordrp_handler import RichPresence
-from typing import Sequence
+from typing import Sequence, override
 import json
 import urllib
 import _babase
@@ -71,11 +71,13 @@ class Startup():
         "squda_pausemusic": True,
         "squda_noonline": False,
         "squda_randomgrace": False,
+        "squda_entitychance": 0.1,
         "squda_botnames": True,
         "squda_ch1name": "NEWBIE",
         "squda_ch2name": "KRIS",
         "squda_ch3name": "SNAKESHADOW",
         "squda_ch4name": "NOOB",
+        "squda_menumusic": 'None',
     }
     # "setdefault" to create config settings
     # won't affect already existing ones.

@@ -86,19 +86,6 @@ def add_spaz(
             f"{notif_type} invalid. Allowed: ['screen', 'popup']"
         )
 
-def die_main_menu(safeguard: bool = True):
-    import babase as ba
-    import bauiv1 as bui
-    from bauiv1lib.mainmenu import MainMenuWindow
-    windo = ba.app.ui_v1.get_main_window()
-    if not isinstance(windo, MainMenuWindow) and safeguard:
-        raise Exception('Not in the main menu. Disable safeguard to bypass.')
-        return
-    if not windo.main_window_has_control():
-        return
-    with ba.ContextRef.empty():
-        bui.containerwidget(edit=windo._root_widget, transition='out_scale')
-
 def get_texture_for_powerup(factory, ptype: str):
     """Get a texture from a powerup string from a factory.
     Doesn't specifically have to be PowerupBoxFactory, 
@@ -127,6 +114,7 @@ def get_texture_for_powerup(factory, ptype: str):
         'kookoo': factory.tex_kookoo,
         'dozer': factory.tex_dozer,
         'ire': factory.tex_ire,
+        'sorrow': factory.tex_sorrow,
     }
     if ptype not in texture_map:
         print(f'ERROR: {ptype} is not in the texture map. Please add it to mell_resources.\ndumbass')

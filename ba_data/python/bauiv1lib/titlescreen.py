@@ -68,17 +68,25 @@ class TitleWindow(bui.MainWindow):
             enable_sound=False,
             on_activate_call=self.close,
         )
+        self.join_btn = bui.buttonwidget(
+            parent=self._root_widget,
+            position=(-600, -250),
+            size=(200, 80),
+            scale=0.8,
+            text_scale=1.3,
+            label=bui.Lstr(resource=f'{self._r}.goIngame'),
+            on_activate_call=self.close_out,
+        )
         self.quit_btn = bui.buttonwidget(
             parent=self._root_widget,
             position=(-600, -310),
             size=(200, 80),
-            textcolor=(1, 1, 1),
-            color=(0.8, 0.4, 0.4),
             scale=0.8,
             text_scale=1.3,
             label=bui.Lstr(resource=f'{self._r}.quitFuckinGame'),
             on_activate_call=self.quit_window,
         )
+        bui.widget(edit=self.join_btn, down_widget=self.quit_btn)
         bui.containerwidget(edit=self._root_widget, cancel_button=self.quit_btn)
         
     def close(self) -> None:
@@ -110,6 +118,10 @@ class TitleWindow(bui.MainWindow):
                 origin_widget=self._root_widget,
             )
         )
+    
+    def close_out(self):
+        bui.screenmessage('remember to press a button to join the game :3\nyou can always back out via the pause menu')
+        bui.containerwidget(edit=self._root_widget, transition='out_scale')
         
     def quit_window(self):
         # pylint: disable=cyclic-import

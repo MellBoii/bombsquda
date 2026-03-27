@@ -169,6 +169,7 @@ class BombFactory:
         self.hiss_sound = bs.getsound('hiss')
         self.debris_fall_sound = bs.getsound('debrisFall')
         self.wood_debris_fall_sound = bs.getsound('woodDebrisFall')
+        self.fuse_timer = None
 
         self.explode_sounds = (
             bs.getsound('explosion01'),
@@ -1012,7 +1013,7 @@ class Bomb(bs.Actor):
         if self.bomb_type not in ('land_mine', 'tnt', 'tntfirework'):
             assert fuse_time is not None
             if not self.manual:
-                bs.timer(
+                self.fuse_timer = bs.Timer(
                     fuse_time, bs.WeakCall(self.handlemessage, ExplodeMessage())
                 )
 
@@ -1021,7 +1022,15 @@ class Bomb(bs.Actor):
             'mesh_scale',
             {0: 0, 0.2: 1.3 * self.scale, 0.26: self.scale},
         )
-
+    
+    def defuse(self):
+        if self.node.getnodetype() != 'bomb':
+            return
+        factory = BombFactory.get()
+        factory.hiss_sound.play(position=self.node.position)
+        bs.animate(self.node, 'fuse_length', {0.0: self.node.fuse_length, 0.2: 1.0})
+        self.fuse_timer = None
+        
     def get_source_player[PlayerT: bs.Player](
         self, playertype: type[PlayerT]
     ) -> PlayerT | None:

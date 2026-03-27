@@ -1,4 +1,4 @@
-"""clock"""
+"""Script for Kookoo, where Spaz has to let go of anything when it's time."""
 from __future__ import annotations
 import bascenev1 as bs
 import fromgoverhaul.mell_resources as mell
@@ -6,11 +6,10 @@ import random
 from bascenev1lib.actor.image_looped import LoopingImageAnimation
 
 class Kookoo(bs.Actor):
-    """clock mf"""
+    """spaz must let go of all held 
+    items or he faces a terrible faaatee...
+    oh, and also memorizing. can't forget that!"""
     def __init__(self, actor: bs.Actor):
-        """initiate. actor should normally 
-        be a spaz, and also a weakref to it.
-        make sure to call start() so we start acting"""
         super().__init__()
         self.actor = actor
         self.color = None
@@ -44,27 +43,29 @@ class Kookoo(bs.Actor):
             self.color = self.actor().node.color
             self.high = self.actor().node.highlight
         else:
-            self.color = (1, 1, 0.2)
-            self.high = (0, 0, 0)
+            self.color = (0, 0, 1)
+            self.high = (0, 0, 0.7)
         entities[self._slot] = self
+        max_per_column = 5
+        col = self._slot // max_per_column
+        row = self._slot % max_per_column
         spacing = 140
-        # we can make our position with the spacing now
-        y = 100 + (self._slot * spacing)
-        x = -500
-        for threshold in (6, 12, 14, 18):
-            if len(entities) >= threshold:
-                x += 200
+        x = -500 + (col * 200)
+        y = 100 + (row * spacing)
         self._x = x
         self._y = y
     
     def _check(self, chance: int = 0.1, speed: int = 0.8):
-        # don't appear if below our chance
+        # do some checks to prevent us from appearing in bad situations
         if (
             random.random() >= chance 
             or self.exists2
             or not self.actor().kookood
+            or not self.actor()
+            or not self.actor().node
+            or not self.actor().is_alive()
         ):
-            if not self.actor():
+            if not self.actor() or not self.actor().is_alive() or not self.actor().node:
                 self.stop()
                 return
             if not self.actor().kookood:
@@ -220,7 +221,8 @@ class Kookoo(bs.Actor):
             
         self.tick_number += 1
         bs.getsound(f'ktick{self.tick_number}').play()
-        self.time_text.text = str(self.tick_number)
+        if self.time_text:
+            self.time_text.text = str(self.tick_number)
         mell.shake_node(
             self.time_text,
             duration=speed - 0.3,
@@ -236,8 +238,9 @@ class Kookoo(bs.Actor):
         def die():
             # if parrying, DON'T die.
             if self.actor().parrying:
-                self.actor().sugarcoat_overlay(sound='dingSmall', image='sugarcoatparry')
+                self.actor().sugarcoat_overlay(sound='bellMed', image='sugarcoatparry')
                 self.actor().mpa()
+                self.actor().smashkill(sound='thunder', autodie=False)
                 return
             self.actor().kookood = False
             self.actor().kookoo_death()
@@ -343,4 +346,16 @@ class Kookoo(bs.Actor):
         bs.timer(0.4, self._delete)
         bs.timer(0.3, breakem)
         bs.timer(0.41, retick)
+    
+    def handlemessage(self, msg: Any):
+        if isinstance(msg, bs.DieMessage):
+            # we'll check if the spaz still exists and has us, and if it doesn't we can stop
+            if self.actor() and self.actor().node and not self.actor().kookood:
+                self.stop()
+            elif not self.actor() or not self.actor().node:
+                self.stop()
+            else:
+                self._delete()
+        else:
+            super().handlemessage(msg) # Augment standard behavior.
     

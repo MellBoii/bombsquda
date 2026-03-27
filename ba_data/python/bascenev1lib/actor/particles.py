@@ -4,13 +4,12 @@ import random
 from bascenev1lib.gameutils import SharedObjects
 from typing import Any, Sequence, override
 class FootingMessage:
-    """
-    Message class representing the footing state of an actor.
-    Attributes:
-        footing: The current footing state of the actor.
-    """
     def __init__(self, footing):
         self.footing = footing
+
+class TouchedMessage:
+    def __init__(self, state):
+        self.state = state
 
 class ParticleActor(bs.Actor):
     """Base class for a particle."""
@@ -103,6 +102,11 @@ class ParticleActor(bs.Actor):
                 'materials': (self.material, obj_mat),
             },
         )
+        bs.animate(
+            self.node,
+            'mesh_scale',
+            {0: 0, 0.1: self.bscale},
+        )
         self.dead = False
 
     @override
@@ -157,7 +161,7 @@ class BloodParticle(ParticleActor):
             },
         )
         scorch.color = (1.3, 0, 0)
-        bs.animate(scorch, 'presence', {3: self.bscale, 13: 0})
+        bs.animate(scorch, 'presence', {3: self.bscale, 7: 0})
         bs.timer(13.0, scorch.delete)
 
     @override
@@ -246,4 +250,150 @@ class SparkParticle(ParticleActor):
         else:
             return super().handlemessage(msg)
         return None
+
+
+
+   
+
+class BloodRaindrop(bs.Actor):
+    """bloody-red raindrops used by sorrow. can put out 
+    bombs and will make a red scorch where it lands"""
+    def __init__(self, position: Sequence[float]):
+        super().__init__()
+        # mats
+        shared = SharedObjects.get()
+        obj_mat = shared.object_material
+        # Footing material is not used by us; It is only here
+        # so it can be handled by another actor.
+        footing_material = shared.footing_material
+        object_material = shared.object_material
+        region_material = shared.region_material
+        self.material = bs.Material()
+        self.material.add_actions(
+            conditions=('they_have_material', footing_material),
+            actions=(
+                ('message', 'our_node', 'at_connect', FootingMessage(1)),
+                ('message', 'our_node', 'at_disconnect', FootingMessage(-1)),
+            ),
+        )
+        self.material.add_actions(
+            conditions=('they_have_material', object_material),
+            actions=(
+                ('message', 'our_node', 'at_connect', TouchedMessage(1)),
+            ),
+        )
+        self.material.add_actions(
+            conditions=( 
+                ('they_are_different_node_than_us',),
+                'and',
+                ('they_dont_have_material', region_material),
+                'or',
+                ('they_dont_have_material', footing_material),
+            ),
+            actions=('modify_node_collision', 'collide', False),
+        )
+        self.material.add_actions(
+            conditions=( 
+                ('they_are_different_node_than_us',),
+                'and',
+                ('they_have_material', region_material),
+                'or',
+                ('they_have_material', footing_material),
+                'or',
+                ('they_have_material', object_material),
+            ),
+            actions=('modify_node_collision', 'collide', True),
+        )
+        # node
+        self.mesh = bs.getmesh('bomb')
+        self.tex = bs.gettexture('blood')
+        self.bscale = 0.5
+        self.mscale = 0.5
+        self.spawn_pos = position
+        self.body = 'sphere'
+        self.node = bs.newnode(
+            'prop',
+            delegate=self,
+            attrs={
+                'body': self.body,
+                'body_scale': self.bscale,
+                'mesh_scale': self.mscale,
+                'position': self.spawn_pos,
+                'mesh': self.mesh,
+                'light_mesh': self.mesh,
+                'shadow_size': self.bscale - 0.1,
+                'color_texture': self.tex,
+                'reflection': 'powerup',
+                'reflection_scale': [0.6],
+                'materials': (self.material, obj_mat),
+            },
+        )
+        bs.animate(
+            self.node,
+            'mesh_scale',
+            {0: 0, 0.1: self.bscale},
+        )
+        self.dead = False
+
+    @override
+    def is_alive(self) -> bool:
+        """check if we're alive. simple."""
+        return not self.dead
+    
+    def die(self, immediate: bool = False):
+        """shortcut to call diemessage, where we die"""
+        self.handlemessage(bs.DieMessage(immediate=immediate))
         
+    def make_scorch(self):
+        """taint the ground of whereever we go..."""
+        pos = self.node.position
+        antimulti = 0.9
+        scorch = bs.newnode(
+            'scorch',
+            attrs={
+                'position': pos,
+                'size': self.bscale * antimulti,
+            },
+        )
+        scorch.color = (1.3, 0, 0)
+        bs.animate(scorch, 'presence', {3: self.bscale * antimulti, 5: 0})
+        bs.timer(5.0, scorch.delete)
+
+    @override
+    def handlemessage(self, msg: Any) -> Any:
+        """Message handler"""
+        assert not self.expired
+        if isinstance(msg, FootingMessage):
+            pos = self.node.position
+            self.make_scorch()
+            bs.getsound('bdrip').play(position=pos)
+            self.die()
+        elif isinstance(msg, TouchedMessage):
+            from bascenev1lib.actor.bomb import Bomb
+            toucher = bs.getcollision().opposingnode
+            actor = toucher.getdelegate(Bomb)
+            if (
+                not toucher
+                or not actor
+            ):
+                return
+            # the drops of sorrow wither away a explosive device's will to explode...
+            # basically, defuse any bombs we come in contact with.
+            actor.defuse() 
+            self.die()
+        elif isinstance(msg, bs.DieMessage):
+            if not self.node or not self.is_alive():
+                return
+            if msg.immediate:
+                self.node.delete()
+            else:
+                bs.animate(self.node, 'mesh_scale', {0: self.mscale, 0.1: 0})
+                bs.timer(0.1, self.node.delete)
+            self.dead = True
+        elif isinstance(msg, bs.OutOfBoundsMessage):
+            if not self.node:
+                return
+            self.handlemessage(bs.DieMessage(immediate=True))
+        else:
+            return super().handlemessage(msg)
+        return None

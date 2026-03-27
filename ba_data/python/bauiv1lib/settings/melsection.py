@@ -11,6 +11,7 @@ import bauiv1 as bui
 import bascenev1 as bs
 import os
 import babase
+from bauiv1lib.popup import PopupMenu
 
 if TYPE_CHECKING:
     from typing import Callable
@@ -192,8 +193,71 @@ class MelWindow(bui.MainWindow):
                 text=bui.Lstr(resource=f"{self._r}.{label_key}"),
                 on_value_change_call=bui.Call(self._set_config, key, sound=playsound),
             )
+            
+        size = (350, 50)
+        
         row += 1
-        size = (350, 40)
+        y = start_y - row * row_height
+        xoffset = 70
+        bui.textwidget(
+            parent=self._subcontainer,
+            position=(col_x - xoffset, y + 25),
+            size=(0, 0),
+            text=bui.Lstr(resource=f"{self._r}.entityChance"),
+            maxwidth=300,
+            scale=0.8,
+            h_align='left',
+            v_align='center',
+        )
+        choices = [0.1, 0.3, 0.5, 0.8, 1.0]
+        def _format_chance(c: float) -> str:
+            text = f"{c:.1f}".rstrip('0').rstrip('.')
+            newtext = text.replace('.', '')
+            return newtext
+        choices_display = [
+            bui.Lstr(resource=f"{self._r}.chance{_format_chance(c)}")
+            for c in choices
+        ]
+        self._entity_chance_popup = PopupMenu(
+            parent=self._subcontainer,
+            position=(col_x + 280 - xoffset, y),
+            width=250,
+            autoselect=False,
+            on_value_change_call=bui.WeakCall(self._chance_choice),
+            choices=choices,
+            choices_display=choices_display,
+            button_size=(200, 50),
+            current_choice=bui.app.config.get("squda_entitychance"),
+        )
+        
+        
+        row += 1
+        y = start_y - row * row_height
+        bui.textwidget(
+            parent=self._subcontainer,
+            position=(col_x - xoffset, y + 25),
+            size=(0, 0),
+            text=bui.Lstr(resource=f"{self._r}.menuMusic"),
+            maxwidth=300,
+            scale=0.8,
+            h_align='left',
+            v_align='center',
+        )
+        choices = [str(None)]
+        choices.extend('MENU' + str(i + 1) for i in range(17))
+        self._music_popup = PopupMenu(
+            parent=self._subcontainer,
+            position=(col_x + 280 - xoffset, y),
+            width=250,
+            autoselect=False,
+            on_value_change_call=bui.WeakCall(self._music_choice),
+            choices=choices,
+            button_size=(200, 50),
+            current_choice=bui.app.config.get("squda_menumusic"),
+        )
+        
+        
+        row += 1
         y = start_y - row * row_height
         self.powerup_setup = bui.buttonwidget(
             parent=self._subcontainer,
@@ -237,6 +301,24 @@ class MelWindow(bui.MainWindow):
         os.rename(textures + 'oldefont2.dds', textures + 'fontBigALT.dds')
         bs.screenmessage('doing media reload to apply change...')
         bui.app.classic.run_media_reload_benchmark()
+    
+    def _chance_choice(self, choice):
+        key = "squda_entitychance"
+        cfg = bui.app.config
+        cfg[key] = choice
+        cfg.apply_and_commit()
+        bs.debprint(f'{key} changed into {choice}')
+    
+    def _music_choice(self, choice):
+        from bascenev1lib.mainmenu import MainMenuActivity
+        key = "squda_menumusic"
+        cfg = bui.app.config
+        cfg[key] = choice
+        cfg.apply_and_commit()
+        bs.debprint(f'{key} changed into {choice}')
+        activity = bs.get_foreground_host_activity()
+        if isinstance(activity, MainMenuActivity):
+            activity.menu_music()
 
     def _set_config(self, key: str, val: bool, sound: bool = False) -> None:
         cfg = bui.app.config

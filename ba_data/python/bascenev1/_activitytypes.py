@@ -100,19 +100,22 @@ class JoinActivity(Activity[EmptyPlayer, EmptyTeam]):
         self._join_info = self.session.lobby.create_join_info()
         babase.set_analytics_screen('Joining Screen')
 
-        # ok i finally got this working lol...
-        # should perhaps prevent from setting
-        if isinstance(bs.get_foreground_host_session(), bs.CoopSession):
+        if isinstance(self.session, bs.CoopSession):
+            musics = [MusicType.COOP_SELECT]
+            
             sessionname = self.session.campaign_level_name
             if sessionname == 'The Finale':
-                setmusic(MusicType.CHAR_SELECT_F)
-                return
-        musics = [
-            MusicType.CHAR_SELECT,
-            MusicType.CHAR_SELECT2,
-            MusicType.CHAR_SELECT3,
-            MusicType.TUTORIAL,
-        ]
+                musics = [MusicType.FINALE_SELECT]
+                
+        elif isinstance(self.session, bs.DualTeamSession):
+            musics = [
+                MusicType.TEAMS_SELECT1,
+                MusicType.TEAMS_SELECT2,
+            ]
+        else:
+            musics = [
+                MusicType.FFA_SELECT1,
+            ]
         setmusic(random.choice(musics))
 
 

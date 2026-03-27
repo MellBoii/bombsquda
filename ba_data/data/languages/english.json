@@ -521,6 +521,7 @@
   "kookooAppears": "You feel your attention\nsharpening too much... Kookoo haunts you.\nLet go of any items when it shows up.",
   "dozerAppears": "Your pride felt way stronger\nthan it even was... Dozer haunts you.\nStand still, don't move when it shows up.",
   "ireAppears": "Your massive amounts of violence\nin the past now worry you... Ire haunts you.\nWhen it attacks, don't stay on ground.",
+  "sorrowAppears": "You feel a massive dread\nagainst your own self... Sorrow haunts you.\nWhen it's raining, hold something above you.",
   "graceRandomAttach": "You feel the \npresence of ${ENTITY}...",
   "kookooBreaksShield1": "DIDYOUTHINKTHATWOULDWORK?",
   "kookooBreaksShield2": "FORGETTINGSOMETHING?",
@@ -1622,6 +1623,13 @@
     "botNamesText": "bots have names",
     "powerupSetup": "powerup settings",
     "nameSetup": "rename characters",
+    "entityChance": "chance for entities appearing",
+    "menuMusic": "menu music preference",
+	"chance01": "negligible (10%)",
+	"chance03": "often (30%)",
+	"chance05": "way too often.. (50%)",
+	"chance08": "guaranteed!!! (80%)",
+	"chance1": "THEY'RE ALREADY HERE!?? (100%)",
 	"rpcText": "changin' BombSquda Settings"
   },
   "renameWindow": {
@@ -1789,6 +1797,7 @@
   "notGatheredText": "FIXME: make public servers work on BombSquda",
   "titleWindow": {
 	"quitFuckinGame": "quit game",
+	"goIngame": "enter minigame",
 	"pressStart": "PRESS A KEY/BUTTON",
 	"tapStart": "TAP THE SCREEN",
 	"rpcText": "at the Titlescreen"

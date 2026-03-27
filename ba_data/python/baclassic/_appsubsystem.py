@@ -395,6 +395,9 @@ class ClassicAppSubsystem(babase.AppSubsystem):
             # It may be possible we're on the main menu but the screen
             # is faded so fade back in.
             babase.fade_screen(True)
+            babase.pushcall(
+                babase.Call(bascenev1.new_host_session, MainMenuSession)
+            )
             return
 
         _benchmark.stop_stress_test()  # Stop stress-test if in progress.

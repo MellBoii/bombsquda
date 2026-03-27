@@ -61,10 +61,13 @@ ASSET_SOUNDTRACK_ENTRIES: dict[MusicType, AssetSoundtrackEntry] = {
     MusicType.VICTORYFINAL: AssetSoundtrackEntry(
         'music/victoryFinal', volume=1.4, loop=False
     ),
-    MusicType.CHAR_SELECT: AssetSoundtrackEntry('music/charSelectMusic', volume=1.0),
-    MusicType.CHAR_SELECT2: AssetSoundtrackEntry('music/charSelect2', volume=1.0),
-    MusicType.CHAR_SELECT3: AssetSoundtrackEntry('music/charSelect3', volume=1.0),
-    MusicType.CHAR_SELECT_F: AssetSoundtrackEntry('music/charSelectFinale', volume=1.0),
+    ##########
+    MusicType.COOP_SELECT: AssetSoundtrackEntry('music/coopSelect', volume=1.0),
+    MusicType.FINALE_SELECT: AssetSoundtrackEntry('music/finaleSelect', volume=1.0),
+    MusicType.FFA_SELECT1: AssetSoundtrackEntry('music/ffaSelect1', volume=1.0),
+    MusicType.TEAMS_SELECT1: AssetSoundtrackEntry('music/teamsSelect1', volume=1.0),
+    MusicType.TEAMS_SELECT2: AssetSoundtrackEntry('music/teamsSelect2', volume=1.0),
+    ###########
     MusicType.TUTORIAL: AssetSoundtrackEntry('music/tutorial', volume=1.4),
     MusicType.RUN_AWAY: AssetSoundtrackEntry('music/runAwayMusic', volume=1.0),
     MusicType.METALCAPTIME: AssetSoundtrackEntry('music/metalMusicALT', volume=2.0),

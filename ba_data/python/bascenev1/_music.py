@@ -48,10 +48,11 @@ class MusicType(Enum):
     MENU67 = 'MENU67'
     VICTORY = 'Victory'
     VICTORYFINAL = 'VictoryFinal'
-    CHAR_SELECT = 'Char_Select'
-    CHAR_SELECT2 = 'Char_Select2'
-    CHAR_SELECT3 = 'Char_Select3'
-    CHAR_SELECT_F = 'Char_Select_F'
+    COOP_SELECT = 'Coop_Select'
+    FINALE_SELECT = 'Finale_Select'
+    FFA_SELECT1 = 'FFA_Select1'
+    TEAMS_SELECT1 = 'Teams_Select1'
+    TEAMS_SELECT2 = 'Teams_Select2'
     TUTORIAL = 'Tutorial'
     RUN_AWAY = 'Run_Away'
     MODULATINGTIME = 'ModulatingTime'
@@ -163,10 +164,13 @@ def show_music_now_playing(music_type: bs.MusicType | str) -> None:
         bs.MusicType.TO_THE_DEATHFAST: "Daniel Bautista - Flight of the Bumblebee",
         bs.MusicType.EPIC: "Nocturne no. 2 in E-Flat major, op. 9 no. 2",
         bs.MusicType.EPICFAST: "Starvation V2 - T_heonlywhitesofa",
-        bs.MusicType.CHAR_SELECT: "Overworld Map - Mario Kart World",
-        bs.MusicType.CHAR_SELECT2: "Your Name, Please - EarthBound Dimensions",
-        bs.MusicType.CHAR_SELECT3: "Slot Machine - Super Mario 3D World",
-        bs.MusicType.CHAR_SELECT_F: "Sky Map - Mario Kart World",
+        ##################
+        bs.MusicType.COOP_SELECT: "Map Medley (Super Mario Bros. 3) - Mario Kart World",
+        bs.MusicType.FINALE_SELECT: "Map Medley (Super Mario Bros. 3) - Mario Kart World",
+        bs.MusicType.FFA_SELECT1: "Your Name, Please - EarthBound Dimensions",
+        bs.MusicType.TEAMS_SELECT1: "Map Medley (Super Mario World) - Mario Kart World",
+        bs.MusicType.TEAMS_SELECT2: "Slot Machine - Super Mario 3D World",
+        ##################
         bs.MusicType.TUTORIAL: "Go Go Go Summer, Nobuhamu - Tetr.io",
         bs.MusicType.ONLINE: "Online Menu - Mario Kart Wii",
         bs.MusicType.D_RUNNIN: "Runnin from Evil - Doom II", 

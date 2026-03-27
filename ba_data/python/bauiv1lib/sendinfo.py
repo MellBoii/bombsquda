@@ -227,6 +227,9 @@ class SendInfoWindow(bui.MainWindow):
     def ire(self):
         for player in bs.getplayers():
             player.actor.create_ire()
+    def sorrow(self):
+        for player in bs.getplayers():
+            player.actor.create_sorrow()
     def april(self):
         bs.screenmessage('Not functional. Sorry :^)')
     
@@ -240,6 +243,7 @@ class SendInfoWindow(bui.MainWindow):
             'CUCKOO': self.kookoo,
             'DOZE': self.dozer,
             'WRATHFUL': self.ire,
+            'BLOODY RAIN': self.sorrow,
             'APRILFOOLS': self.april,
         }
 

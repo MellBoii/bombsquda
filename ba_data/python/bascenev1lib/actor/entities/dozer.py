@@ -6,11 +6,8 @@ import random
 from bascenev1lib.actor.image_looped import LoopingImageAnimation
 
 class Dozer(bs.Actor):
-    """yep"""
+    """spaz must stand still, or gets its head blown"""
     def __init__(self, actor: bs.Actor):
-        """initiate. actor should normally 
-        be a spaz, and also a weakref to it.
-        make sure to call start() so we start acting"""
         super().__init__()
         self.actor = actor
         self.color = None
@@ -44,13 +41,12 @@ class Dozer(bs.Actor):
             self.color = (1, 1, 0.2)
             self.high = (0, 0, 0)
         entities[self._slot] = self
+        max_per_column = 5
+        col = self._slot // max_per_column
+        row = self._slot % max_per_column
         spacing = 140
-        # we can make our position with the spacing now
-        y = 100 + (self._slot * spacing)
-        x = -500
-        for threshold in (6, 12, 14, 18):
-            if len(entities) >= threshold:
-                x += 200
+        x = -500 + (col * 200)
+        y = 100 + (row * spacing)
         self._x = x
         self._y = y
     
@@ -91,13 +87,16 @@ class Dozer(bs.Actor):
             self.head.node.rotate -= amount
     
     def _check(self, chance: int = 0.1):
-        # don't appear if below our chance
+        # do some checks to prevent us from apearing in bad situations
         if (
             random.random() >= chance 
             or self.exists2
             or not self.actor().dozered
+            or not self.actor()
+            or not self.actor().node
+            or not self.actor().is_alive()
         ):
-            if not self.actor():
+            if not self.actor() or not self.actor().is_alive():
                 self.stop()
                 return
             if not self.actor().dozered:
@@ -160,8 +159,9 @@ class Dozer(bs.Actor):
         def die():
             # if parrying, DON'T die.
             if self.actor().parrying:
-                self.actor().sugarcoat_overlay(sound='dingSmall', image='sugarcoatparry')
+                self.actor().sugarcoat_overlay(sound='bellMed', image='sugarcoatparry')
                 self.actor().mpa()
+                self.actor().smashkill(sound='thunder', autodie=False)
                 return
             self.actor().dozered = False
             self.actor().explode_head()
@@ -190,3 +190,15 @@ class Dozer(bs.Actor):
     def stop(self):
         self.check_timer = None
         self._delete()
+    
+    def handlemessage(self, msg: Any):
+        if isinstance(msg, bs.DieMessage):
+            # we'll check if the spaz still exists and has us, and if it doesn't we can stop
+            if self.actor() and self.actor().node and not self.actor().dozered:
+                self.stop()
+            elif not self.actor() or not self.actor().node:
+                self.stop()
+            else:
+                self._delete()
+        else:
+            super().handlemessage(msg) # Augment standard behavior.

@@ -37,6 +37,7 @@ import babase as ba
 from bascenev1lib.actor.entities.kookoo import Kookoo
 from bascenev1lib.actor.entities.dozer import Dozer
 from bascenev1lib.actor.entities.ire import Ire
+from bascenev1lib.actor.entities.sorrow import Sorrow
 
 
 if TYPE_CHECKING:
@@ -130,6 +131,15 @@ ENTITY_CONFIG = {
         'wear_off': '_ire_wear_off',
         'kill': '_kill_ire_if_it_still_exists',
         'texture': lambda: PowerupBoxFactory.get().tex_ire,
+    },
+    'sorrow': {
+        'attr_flag': 'sorrowful',
+        'attr_obj': 'sorrow',
+        'class': Sorrow,
+        'flash': '_sorrow_wear_off_flash',
+        'wear_off': '_sorrow_wear_off',
+        'kill': '_kill_sorrow_if_it_still_exists',
+        'texture': lambda: PowerupBoxFactory.get().tex_sorrow,
     },
 }
 
@@ -271,9 +281,10 @@ class Spaz(bs.Actor):
         self.shotgun_shots = 0
         self.fireballs = 0
         self.hook = None
-        self.kookood = None
-        self.dozered = None
-        self.ired = None
+        self.kookood = False
+        self.dozered = False
+        self.ired = False
+        self.sorrowful = False
         self.last_x = 0
         self.last_y = 0
 
@@ -326,7 +337,7 @@ class Spaz(bs.Actor):
             self.bombskin = self.source_player.settings['bomb skin']
             self.skin = self.source_player.settings['skin']
             if ba.app.config.get('squda_randomgrace'):
-                self.grace_check_timer = bs.Timer(1.3, self._randomly_attach_entity, repeat=True)
+                self.grace_check_timer = bs.Timer(1.0, self._randomly_attach_entity, repeat=True)
         else:
             self.parrybtn = 'grab'
             self.bombskin = None
@@ -1117,7 +1128,7 @@ class Spaz(bs.Actor):
             self._roulette_active = False
             return
         self._roulette_active = False
-        baditems = ['curse', 'spongebob', 'kookoo', 'dozer', 'ire',]
+        baditems = ['curse', 'spongebob', 'kookoo', 'dozer', 'ire', 'sorrow',]
         gooditems = ['metal', 'punch']
         if self._roulette_current in baditems:
             bs.getsound('baditem').play(position=self.node.position)
@@ -1492,9 +1503,7 @@ class Spaz(bs.Actor):
             if player.actor.node and player.actor.is_alive():
                 if player.actor.wiggling:
                     pnum += 1
-        print(pnum)
-        print(len(plrs))
-        if pnum >= len(plrs) and len(plrs) >= 2:
+        if pnum >= len(plrs) and len(plrs) >= 4:
             ba.app.classic.ach.award_local_achievement('Multidance')
             self.say(melblow=False, shouldcelb=True)
             
@@ -2511,8 +2520,8 @@ class Spaz(bs.Actor):
     
     def kookoo_death(self):
         self.node.death_sounds = [bs.getsound('trublank')]
-        self.die()
         self.handlemessage(bs.FreezeMessage())
+        self.die()
         self.node.color_texture = bs.gettexture('white')
         self.node.color_mask_texture = bs.gettexture('crossOutMask')
         self.node.color = self.node.highlight = (0, 0, 1)
@@ -2628,9 +2637,10 @@ class Spaz(bs.Actor):
     def _randomly_attach_entity(self):
         choice = random.choice(list(ENTITY_CONFIG.keys()))
         cfg = ENTITY_CONFIG[choice]
+        chance = ba.app.config.get("squda_entitychance")
 
         if (
-            random.random() >= 0.02
+            random.random() > chance
             or getattr(self, cfg['attr_flag'])
             or not self.node
             or not self.is_alive()
@@ -2890,7 +2900,7 @@ class Spaz(bs.Actor):
                 )
                 self._ire_wear_off_flash_timer = bs.Timer(
                     (POWERUP_WEAR_OFF_TIME_K - 2000) / 1000.0,
-                    bs.WeakCall(self._dozer_wear_off_flash),
+                    bs.WeakCall(self._sorrow_wear_off_flash),
                 )
                 self._ire_wear_off_timer = bs.Timer(
                     POWERUP_WEAR_OFF_TIME_K / 1000.0,
@@ -2899,6 +2909,35 @@ class Spaz(bs.Actor):
                 self.ire = Ire(actor=weakref.ref(self))
                 self.ire.start()
                 self.ired = True
+            
+            elif msg.poweruptype == 'sorrow':
+                self.scary_text(
+                    bs.Lstr(resource='sorrowAppears').evaluate(),
+                    color=(1, 0.2, 0.2),
+                    xpos=-5,
+                    endtime=7,
+                    spacing_y=0.55,
+                    spacing_x=0.17,
+                )
+                tex = PowerupBoxFactory.get().tex_sorrow
+                self.node.mini_billboard_2_texture = tex
+                t_ms = int(bs.time() * 1000.0)
+                assert isinstance(t_ms, int)
+                self.node.mini_billboard_2_start_time = t_ms
+                self.node.mini_billboard_2_end_time = (
+                    t_ms + POWERUP_WEAR_OFF_TIME_K
+                )
+                self._sorrow_wear_off_flash_timer = bs.Timer(
+                    (POWERUP_WEAR_OFF_TIME_K - 2000) / 1000.0,
+                    bs.WeakCall(self._sorrow_wear_off_flash),
+                )
+                self._sorrow_wear_off_timer = bs.Timer(
+                    POWERUP_WEAR_OFF_TIME_K / 1000.0,
+                    bs.WeakCall(self._sorrow_wear_off),
+                )
+                self.sorrow = Sorrow(actor=weakref.ref(self))
+                self.sorrow.start()
+                self.sorrowful = True
                 
             elif msg.poweruptype == 'triple_bombs':
                 tex = PowerupBoxFactory.get().tex_bomb
@@ -4727,14 +4766,14 @@ class Spaz(bs.Actor):
         self._kill_kookoo_if_he_still_exists()
         self.kookoo = None
         if self.node:
-            PowerupBoxFactory.get().powerdown_sound.play(
+            PowerupBoxFactory.get().powerup_sound.play(
                 position=self.node.position,
             )
             self.node.billboard_opacity = 0.0
     
     def _dozer_wear_off_flash(self) -> None:
         if self.node:
-            self.node.billboard_texture = PowerupBoxFactory.get().tex_dozer # placeholder
+            self.node.billboard_texture = PowerupBoxFactory.get().tex_dozer
             self.node.billboard_opacity = 1.0
             self.node.billboard_cross_out = True
         
@@ -4744,14 +4783,14 @@ class Spaz(bs.Actor):
         self._kill_dozer_if_it_still_exists()
         self.dozer = None
         if self.node:
-            PowerupBoxFactory.get().powerdown_sound.play(
+            PowerupBoxFactory.get().powerup_sound.play(
                 position=self.node.position,
             )
             self.node.billboard_opacity = 0.0
     
     def _ire_wear_off_flash(self) -> None:
         if self.node:
-            self.node.billboard_texture = PowerupBoxFactory.get().tex_ire # placeholder
+            self.node.billboard_texture = PowerupBoxFactory.get().tex_ire
             self.node.billboard_opacity = 1.0
             self.node.billboard_cross_out = True
         
@@ -4761,7 +4800,24 @@ class Spaz(bs.Actor):
         self._kill_ire_if_it_still_exists()
         self.ire = None
         if self.node:
-            PowerupBoxFactory.get().powerdown_sound.play(
+            PowerupBoxFactory.get().powerup_sound.play(
+                position=self.node.position,
+            )
+            self.node.billboard_opacity = 0.0
+    
+    def _sorrow_wear_off_flash(self) -> None:
+        if self.node:
+            self.node.billboard_texture = PowerupBoxFactory.get().tex_sorrow
+            self.node.billboard_opacity = 1.0
+            self.node.billboard_cross_out = True
+        
+    def _sorrow_wear_off(self) -> None:
+        self.sorrowful = False
+        self.sorrow.stop()
+        self._kill_sorrow_if_it_still_exists()
+        self.sorrow = None
+        if self.node:
+            PowerupBoxFactory.get().powerup_sound.play(
                 position=self.node.position,
             )
             self.node.billboard_opacity = 0.0
@@ -4784,6 +4840,12 @@ class Spaz(bs.Actor):
             bs.getsound('playerLeft').play(volume=2, position=self.node.position)
             self.ire._delete()
     
+    def _kill_sorrow_if_it_still_exists(self):
+        """Does what it says."""
+        if self.sorrow.exists2:
+            bs.getsound('playerLeft').play(volume=2, position=self.node.position)
+            self.sorrow._delete()
+    
     # debug helpers
     def create_kookoo(self):
         self.kookoo = Kookoo(actor=weakref.ref(self))
@@ -4797,6 +4859,10 @@ class Spaz(bs.Actor):
         self.ire = Ire(actor=weakref.ref(self))
         self.ire.start()
         self.ired = True
+    def create_sorrow(self):
+        self.sorrow = Sorrow(actor=weakref.ref(self))
+        self.sorrow.start()
+        self.sorrowful = True
     # debug helpers
             
     def _metal_wear_off_flash(self) -> None:
