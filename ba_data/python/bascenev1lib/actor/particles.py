@@ -147,8 +147,8 @@ class BloodParticle(ParticleActor):
             position=position,
             texture=bs.gettexture('blood'),
             mesh=bs.getmesh('bomb'),
-            body_scale=0.9,
-            mesh_scale=0.9
+            body_scale=0.4,
+            mesh_scale=0.4
         )
     def make_scorch(self):
         """Makes a scorch."""
@@ -195,7 +195,7 @@ class ConfettiParticle(ParticleActor):
             texture=chosentex,
             mesh=bs.getmesh('shrapnel1'),
             body_scale=0.7,
-            mesh_scale=0.2,
+            mesh_scale=0.1,
             body_type='box',
         )
         self.scheduling = False
@@ -229,7 +229,7 @@ class SparkParticle(ParticleActor):
             texture=bs.gettexture(tex),
             mesh=bs.getmesh('flash'),
             body_scale=0.2,
-            mesh_scale=0.1,
+            mesh_scale=0.05,
             reflection=1.4
         )
         self.scheduling = False

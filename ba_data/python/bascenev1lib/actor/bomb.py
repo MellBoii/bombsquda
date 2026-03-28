@@ -732,6 +732,12 @@ class Blast(bs.Actor):
         assert not self.expired
 
         if isinstance(msg, bs.DieMessage):
+            if self.curse_sfx:
+                self.curse_sfx.volume = 0
+                self.curse_sfx.delete()
+            if self.scream_sfx:
+                self.scream_sfx.volume = 0
+                self.scream_sfx.delete()
             if self.node:
                 self.node.delete()
 
@@ -829,6 +835,9 @@ class Bomb(bs.Actor):
         self.skin = skin
 
         self.texture_sequence: bs.Node | None = None
+        self.lunatic_mode = False
+        self.scream_sfx = None
+        self.curse_sfx = None
 
         if self.bomb_type == 'sticky':
             self._last_sticky_sound_time = 0.0
@@ -1104,6 +1113,42 @@ class Bomb(bs.Actor):
                 2.0,
                 position=self.node.position,
             )
+        if node is self.owner:
+            if (
+                not self.owner.hold_node 
+                and bs.time() - self._last_sticky_sound_time > 1.0
+            ):
+                BombFactory.get().sticky_impact_sound.play(
+                    2.0,
+                    position=self.node.position,
+                )
+            if not self.owner.hold_node and not self.lunatic_mode:
+                self.lunatic_mode = True
+                fuse_time = 4.8
+                bs.animate(self.node, 'fuse_length', {0.0: 1.0, fuse_time: 0.0})
+                self.fuse_timer = bs.Timer(
+                    fuse_time, bs.WeakCall(self.handlemessage, ExplodeMessage())
+                )
+                self.scream_sfx = bs.newnode(
+                    'sound',
+                    owner=self.node,
+                    attrs={
+                        'sound': bs.getsound('wario_scream'),
+                        'volume': 1.2,
+                        'position': self.node.position,
+                    }
+                )
+                self.curse_sfx = bs.newnode(
+                    'sound',
+                    owner=self.node,
+                    attrs={
+                        'sound': bs.getsound('tickingCrazy'),
+                        'volume': 1.5,
+                        'position': self.node.position,
+                    }
+                )
+                self.node.connectattr('position', self.scream_sfx, 'position')
+                self.node.connectattr('position', self.curse_sfx, 'position')
 
     def add_explode_callback(self, call: Callable[[Bomb, Blast], Any]) -> None:
         """Add a call to be run when the bomb has exploded.
@@ -1118,6 +1163,17 @@ class Bomb(bs.Actor):
             return
         self._exploded = True
         if self.node:
+            if self.lunatic_mode:
+                bs.getsound('crazyOver').play(1.5)
+                self.bomb_type = 'tnt'
+                self.blast_radius *= 8
+                if self.curse_sfx:
+                    self.curse_sfx.volume = 0
+                    self.curse_sfx.delete()
+                if self.scream_sfx:
+                    self.scream_sfx.volume = 0
+                    self.scream_sfx.delete()
+                    bs.getsound('wario_scream_die').play(volume=1.5, position=self.node.position)
             blast = Blast(
                 position=self.node.position,
                 velocity=self.node.velocity,

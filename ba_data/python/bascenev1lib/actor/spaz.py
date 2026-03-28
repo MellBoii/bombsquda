@@ -4422,37 +4422,29 @@ class Spaz(bs.Actor):
         bs.getsound(sound).play(volume=1.5, position=pos)
         self.impulse(y=150)
         self.die()
-        for _ in range(15):
-            offset_x = random.uniform(-0.5, 0.5)
-            offset_z = random.uniform(-0.5, 0.5)
+        for _ in range(65):
+            offset_x = random.uniform(-0.3, 0.3)
+            offset_z = random.uniform(-0.3, 0.3)
             offset_y = random.uniform(0, 0.5)
             particle_pos = (pos[0] + offset_x, pos[1] + offset_y, pos[2] + offset_z)
             particle = particle_type(position=particle_pos)
             particle.autoretain()
-            dir_x = offset_x * 2
-            dir_z = offset_z * 2
-            dir_y = offset_y * 2
-            length = (dir_x**2 + dir_y**2 + dir_z**2)**0.5
-            if length > 0:
-                dir_x /= length
-                dir_y /= length
-                dir_z /= length
-            force = 550
-            particle.node.handlemessage(
-                'impulse',
-                particle_pos[0],
-                particle_pos[1],
+            num = random.randint(3, 13)
+            y = num = random.randint(6, 9)
+            particle.node.handlemessage('impulse', 
+                particle_pos[0], 
+                particle_pos[1], 
                 particle_pos[2],
-                0,
-                0,
-                0,
-                force,
-                force,
-                0,
-                0,
-                dir_x,
-                dir_y,
-                dir_z,
+                0, 25, 0, num, 0.05, 0, 0,
+                offset_x*15*2, 0, offset_z*15*2
+            )
+            particle.node.handlemessage('impulse', 
+                particle_pos[0], 
+                particle_pos[1], 
+                particle_pos[2],
+                0, 25, 0,
+                y, 0.05, 0, 0,
+                0, 20*400, 0
             )
         self.hexploded = True
         
@@ -4531,37 +4523,20 @@ class Spaz(bs.Actor):
             pos = self.node.position    
             if not bloody:
                 bs.getsound('party_blower').play(position=pos)
-            for _ in range(15):
-                offset_x = random.uniform(-0.5, 0.5)
-                offset_z = random.uniform(-0.5, 0.5)
+            for _ in range(110):
+                offset_x = random.uniform(-0.3, 0.3)
+                offset_z = random.uniform(-0.3, 0.3)
                 offset_y = random.uniform(0, 0.5)
                 particle_pos = (pos[0] + offset_x, pos[1] + offset_y, pos[2] + offset_z)
                 particle = particle_type(position=particle_pos)
                 particle.autoretain()
-                dir_x = offset_x * 2
-                dir_z = offset_z * 2
-                dir_y = offset_y * 2
-                length = (dir_x**2 + dir_y**2 + dir_z**2)**0.5
-                if length > 0:
-                    dir_x /= length
-                    dir_y /= length
-                    dir_z /= length
-                force = 550
-                particle.node.handlemessage(
-                    'impulse',
-                    particle_pos[0],
-                    particle_pos[1],
+                num = random.randint(6, 17)
+                particle.node.handlemessage('impulse', 
+                    particle_pos[0], 
+                    particle_pos[1], 
                     particle_pos[2],
-                    0,
-                    0,
-                    0,
-                    force,
-                    force,
-                    0,
-                    0,
-                    dir_x,
-                    dir_y,
-                    dir_z,
+                    0, 25, 0, num, 0.05, 0, 0,
+                    offset_x*15*2, 0, offset_z*15*2
                 )
             mell.add_spaz(30, 'tix', self.node.position, 'popup')
         self.node.shattered = 2 if extreme else 1

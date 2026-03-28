@@ -696,6 +696,16 @@ class SpazBot(Spaz):
                 self._last_jump_time = bs.time()
                 self.node.jump_pressed = True
                 self.node.jump_pressed = False
+            
+            if dist < 3.6 and self.whiplashed:
+                if random.random() < 0.2:
+                    self.on_pickup_press()
+                    self.on_pickup_release()
+            
+            if dist < 3.9 and (self.shotgunned or self.fireballed):
+                if random.random() < 0.5:
+                    self.on_bomb_press()
+                    self.on_bomb_release()
 
             # start punching if close!!!
             if dist < (1.6 if self._running else 1.2) and can_attack:
