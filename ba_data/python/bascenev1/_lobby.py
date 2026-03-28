@@ -218,11 +218,13 @@ class Chooser:
         self._settings_index = 0  # which setting we're editing (future-proof)
         self._sound_index = 0  # which sound we're at (also pretty future-proof)
         self._submenu_mode: str | None = None  # None, 'character', 'settings'
-        self.settings = ['parry button', 'bomb skin', 'skin']
+        self.settings = ['parry button', 'bomb skin']
         self.settings_options = {
             'parry button': ['grab', 'jump', 'punch', 'bomb'],
             'bomb skin': [None, 'noise bomb', 'familiar', 'kookoo'],
-            'skin': [None],
+        }
+        self.skins = {
+            '': '',
         }
         self._ensure_player_settings()
         # Sound list is a list of strings. 

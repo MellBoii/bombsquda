@@ -6,6 +6,8 @@ from __future__ import annotations
 import bascenev1 as bs
 import babase as ba
 
+def clean_account_name(s: str) -> str:
+    return "".join(c for c in s if not (0xE000 <= ord(c) <= 0xF8FF))
 
 def get_appearances(include_locked: bool = False) -> list[str]:
     """Get the list of available spaz appearances."""
@@ -17,7 +19,13 @@ def get_appearances(include_locked: bool = False) -> list[str]:
     assert bs.app.classic is not None
     get_purchased = plus.get_v1_account_product_purchased
     disallowed = []
+    display = plus.get_v1_account_display_string()
+    name = clean_account_name(display)
     if not include_locked:
+        # only unlock ire for whoever has the ire account,
+        # and for mell (or whoever gets the ire2 tag)
+        if name.lower() not in ['ire', 'ire2']:
+            disallowed.append('Ire')
         if not ba.app.config.get("squda_unlockedmel", True):
             disallowed.append('Mel')
             
@@ -128,9 +136,72 @@ def register_appearances() -> None:
     t.pickup_sounds = ['voicelines/kris/pickup']
     t.fall_sounds = ['voicelines/kris/fall']
     t.victory_sounds = ['voicelines/kris/win']
-    t.style = 'female'
+    t.style = 'agent'
     t.default_color = (0.9215686274509803, 0.0, 0.5843137254901961)
     t.default_highlight = (0.4588235294117647, 0.984313725490196, 0.9294117647058824)
+
+    # Prince of the Dark ###################################
+    t = Appearance('Ralsei')
+    t.color_texture = 'ralseiColor'
+    t.color_mask_texture = 'ralseiColorMask'
+    t.icon_texture = 'ralsIcon'
+    t.earthportrait = 'earthbound/ralseibound'
+    t.EBlose = 'earthbound/ralseibound_lose'
+    t.EBwin = 'earthbound/ralseibound_win'
+    t.icon_mask_texture = 'ralsIconCM'
+    t.head_mesh = 'ralseiHead'
+    t.torso_mesh = 'ralseiTorso'
+    t.pelvis_mesh = 'ralseiPelvis'
+    t.upper_arm_mesh = 'ralseiUpperArm'
+    t.forearm_mesh = 'ralseiForeArm'
+    t.hand_mesh = 'ralseiHand'
+    t.upper_leg_mesh = 'ralseiUpperLeg'
+    t.lower_leg_mesh = 'ralseiLowerLeg'
+    t.toes_mesh = 'none'
+    ralsei_sounds = ['voicelines/ralsei/sound' + str(i + 1) + '' for i in range(4)]
+    ralsei_hit_sounds = ['voicelines/ralsei/hit']
+    t.jump_sounds = ralsei_sounds
+    t.attack_sounds = ralsei_sounds
+    t.impact_sounds = ralsei_hit_sounds
+    t.death_sounds = ['voicelines/ralsei/death']
+    t.pickup_sounds = ralsei_sounds
+    t.fall_sounds = ['voicelines/ralsei/fall']
+    t.victory_sounds = ['voicelines/ralsei/win']
+    t.gloat_sounds = ['voicelines/ralsei/gloat']
+    t.style = 'bones'
+    t.default_color = (0.0, 0.7699999999999998, 0.11999999999999998)
+    t.default_highlight = (1, 0.08, 0.5)
+    
+    # jump twinny ###################################
+    t = Appearance('Ire')
+    t.color_texture = 'ireColor'
+    t.color_mask_texture = 'ireColorMask'
+    t.icon_texture = 'ireIcon'
+    t.earthportrait = 'earthbound/ralseibound'
+    t.EBlose = 'earthbound/ralseibound_lose'
+    t.EBwin = 'earthbound/ralseibound_win'
+    t.icon_mask_texture = 'ireIconCM'
+    t.head_mesh = 'ireHead'
+    t.torso_mesh = 'ireTorso'
+    t.pelvis_mesh = 'irePelvis'
+    t.upper_arm_mesh = 'ireUpperArm'
+    t.forearm_mesh = 'ireForeArm'
+    t.hand_mesh = 'ireHand'
+    t.upper_leg_mesh = 'ireUpperLeg'
+    t.lower_leg_mesh = 'ireLowerLeg'
+    t.toes_mesh = 'none'
+    ire_sounds = ['voicelines/ralsei/sound' + str(i + 1) + '' for i in range(4)]
+    t.jump_sounds = ire_sounds
+    t.attack_sounds = ire_sounds
+    t.impact_sounds = ['voicelines/ralsei/hit']
+    t.death_sounds = ['voicelines/ralsei/death']
+    t.pickup_sounds = ire_sounds
+    t.fall_sounds = ['voicelines/ralsei/fall']
+    t.victory_sounds = ['voicelines/ralsei/win']
+    t.gloat_sounds = ['voicelines/ralsei/gloat']
+    t.style = 'bones'
+    t.default_color = (0.0, 0.7699999999999998, 0.11999999999999998)
+    t.default_highlight = (1, 0.08, 0.5)
 
     # that fucking ninja that i hate ##########################################
     t = Appearance('GummyBoiYT')
@@ -158,7 +229,7 @@ def register_appearances() -> None:
     t.fall_sounds = ['voicelines/snakey/fall' + str(i + 1) + '' for i in range(2)]
     t.gloat_sounds = ['voicelines/snakey/gloat']
     t.victory_sounds = ['voicelines/snakey/win']
-    t.style = 'ninja'
+    t.style = 'agent'
     t.default_color = (0.2, 1, 1)
     t.default_highlight = (1, 1, 1)
 
@@ -188,7 +259,7 @@ def register_appearances() -> None:
     t.death_sounds = ['voicelines/susie/death']
     t.pickup_sounds = ['voicelines/susie/attack' + str(i + 1) + '' for i in range(4)]
     t.fall_sounds = ['voicelines/susie/fall']
-    t.style = 'kronk'
+    t.style = 'agent'
     t.default_color = (0.9725490196078431, 0.5137254901960784, 0.8431372549019608)
     t.default_highlight = (0.5333333333333333, 0.09019607843137255, 0.41568627450980394)
 
@@ -220,7 +291,7 @@ def register_appearances() -> None:
     t.gloat_sounds = ['voicelines/mell/gloat']
     t.pickup_sounds = mell_sounds
     t.fall_sounds = ['voicelines/mell/fall' + str(i + 1) + '' for i in range(2)]
-    t.style = 'mel'
+    t.style = 'bones'
     t.default_color = (1, 1, 1)
     t.default_highlight = (0, 1, 0)
 
@@ -475,38 +546,6 @@ def register_appearances() -> None:
         0.5686274509803921, 
         0.22745098039215686
     )
-
-    # Prince of the Dark ###################################
-    t = Appearance('Ralsei')
-    t.color_texture = 'ralseiColor'
-    t.color_mask_texture = 'ralseiColorMask'
-    t.icon_texture = 'ralsIcon'
-    t.earthportrait = 'earthbound/ralseibound'
-    t.EBlose = 'earthbound/ralseibound_lose'
-    t.EBwin = 'earthbound/ralseibound_win'
-    t.icon_mask_texture = 'ralsIconCM'
-    t.head_mesh = 'ralseiHead'
-    t.torso_mesh = 'ralseiTorso'
-    t.pelvis_mesh = 'ralseiPelvis'
-    t.upper_arm_mesh = 'ralseiUpperArm'
-    t.forearm_mesh = 'ralseiForeArm'
-    t.hand_mesh = 'ralseiHand'
-    t.upper_leg_mesh = 'ralseiUpperLeg'
-    t.lower_leg_mesh = 'ralseiLowerLeg'
-    t.toes_mesh = 'ralseiToes'
-    ralsei_sounds = ['voicelines/ralsei/sound' + str(i + 1) + '' for i in range(4)]
-    ralsei_hit_sounds = ['voicelines/ralsei/hit' + str(i + 1) + '' for i in range(2)]
-    t.jump_sounds = ralsei_sounds
-    t.attack_sounds = ralsei_sounds
-    t.impact_sounds = ralsei_hit_sounds
-    t.death_sounds = ['voicelines/ralsei/death']
-    t.pickup_sounds = ralsei_sounds
-    t.fall_sounds = ['voicelines/ralsei/fall']
-    t.victory_sounds = ['voicelines/ralsei/win']
-    t.gloat_sounds = ['voicelines/ralsei/gloat']
-    t.style = 'agent'
-    t.default_color = (0.0, 0.7699999999999998, 0.11999999999999998)
-    t.default_highlight = (1, 0.08, 0.5)
 
     # Ali ###################################
     t = Appearance('Taobao Mascot')

@@ -335,7 +335,7 @@ class Spaz(bs.Actor):
         if self.source_player:
             self.parrybtn = self.source_player.settings['parry button']
             self.bombskin = self.source_player.settings['bomb skin']
-            self.skin = self.source_player.settings['skin']
+            self.skin = None
             if ba.app.config.get('squda_randomgrace'):
                 self.grace_check_timer = bs.Timer(1.0, self._randomly_attach_entity, repeat=True)
         else:
