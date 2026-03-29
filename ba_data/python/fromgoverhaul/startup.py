@@ -78,6 +78,7 @@ class Startup():
         "squda_ch3name": "SNAKESHADOW",
         "squda_ch4name": "NOOB",
         "squda_menumusic": 'None',
+        "squda_storeowned": {},
     }
     # "setdefault" to create config settings
     # won't affect already existing ones.
@@ -155,7 +156,15 @@ class Startup():
             f"An error occured:\n{error_text}", 
             color=(1, 0, 0)
         )
-        bui.getsound('error').play()
+        try:
+            activity = bs.get_foreground_host_activity()
+        except:
+            activity = None
+        if activity:
+            with activity.context:
+                bs.getsound('error').play()
+        else:
+            bui.getsound('error').play()
         
     # Install the hook
     sys.excepthook = my_global_exception_hook

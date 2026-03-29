@@ -7,6 +7,31 @@ server = "https://bombsquda.tailc76b25.ts.net"
 version = '2.1'
 update_date = '2/21/2026'
 
+store_prices = {
+    'characters.susie': 620,
+    'characters.ralsei': 550,
+    'characters.rayman': 450,
+    #'characters.kris': 600,
+    'characters.rk': 1450,
+    #'characters.noob': 1200,
+    'characters.mell': 4300,
+    #'characters.gummyboiyt': 750,
+    'characters.rayman': 670,
+    'characters.bowser': 1150,
+    'characters.orangecap': 850,
+    'characters.noise': 1200,
+    'characters.taobaomascot': 800,
+    'characters.mario': 800,
+    'characters.sonic': 950,
+    'characters.kirby': 860,
+    'characters.tails': 960,
+    'characters.buddie': 1100,
+    'characters.grace': 860,
+    'characters.baller': 350,
+    'characters.homer': 870,
+    'characters.ogspaz': 700,
+}
+
 def add_spaz(
     amount: int | float = 50,
     currency: str = 'tix',
@@ -85,6 +110,117 @@ def add_spaz(
         raise TypeError(
             f"{notif_type} invalid. Allowed: ['screen', 'popup']"
         )
+
+def show_unlockable(tex: str | dict):
+    """Show a popup that a unlockable has been acquired.
+    This does NOT change config, it only shows a popup. 
+    You do that manually."""
+    import bascenev1 as bs
+    scale = (210, 210)
+    scale2 = (130, 130)
+    if not isinstance(tex, dict):
+        texture = bs.gettexture(tex)
+        mask = None
+        tint1 = None
+        tint2 = None
+    else:
+        texture = bs.gettexture(tex['texture'])
+        mask = bs.gettexture(tex['mask'])
+        tint1 = tex['tint1']
+        tint2 = tex['tint2']
+    x = 490
+    front = True
+    initial_y = -scale[0]
+    end_y = scale[0] - 80
+    # create our node
+    node = bs.newnode('image', 
+        attrs={
+            'texture': bs.gettexture('tauntBorder'),
+            'position': (x, initial_y), 
+            'scale': scale,
+            'opacity': 1.0,
+            'absolute_scale': True,
+            'attach': 'bottomCenter',
+            'front': front,
+        }
+    )
+    node2 = bs.newnode('image', 
+        attrs={
+            'texture': texture,
+            'tint_texture': mask,
+            'position': (x, initial_y), 
+            'scale': scale2,
+            'opacity': 1.0,
+            'absolute_scale': True,
+            'attach': 'bottomCenter',
+            'front': front,
+        }
+    )
+    # we can assume it's a character icon
+    # if we have a mask...
+    node3 = None
+    if mask:
+        node3 = bs.newnode('image', 
+            attrs={
+                'texture': bs.gettexture('iconBorder'),
+                'tint_texture': bs.gettexture('characterIconMask'),
+                'position': (x, initial_y), 
+                'scale': (scale2[0] + 20, scale2[1] + 20),
+                'opacity': 1.0,
+                'absolute_scale': True,
+                'attach': 'bottomCenter',
+                'front': front,
+            }
+        )
+    if tint1:
+        node2.tint_color = tint1
+        node3.tint2_color = tint1
+    if tint2:
+        node2.tint2_color = tint2
+    # create text
+    textnode = bs.newnode("text", 
+        attrs={
+            "text": bs.Lstr(resource='gotUnlockable'),
+            "position": (x, initial_y),
+            "scale": 1.5,
+            "h_attach": "center",
+            "v_attach": "bottom",
+            "h_align": "center",
+            "color": (1, 1, 0),
+            'front': front,
+        }
+    )
+    
+    # create a math node
+    # (used to add a bit y offset)
+    mathnode = bs.newnode(
+        'math',
+        owner=node,
+        attrs={'input1': (0, 80), 'operation': 'add'},
+    )
+    node.connectattr('position', mathnode, 'input2')
+    node.connectattr('position', node2, 'position')
+    if node3:
+        node.connectattr('position', node3, 'position')
+    mathnode.connectattr('output', textnode, 'position')
+    # aaanimate!
+    def rotate():
+        if node:
+            node.rotate += 1
+    bs.animate_array(node, 'position', 2, {
+        0.0: (x, initial_y),
+        0.5: (x, end_y),
+        5.0: (x, end_y),
+        6.0: (x, initial_y),
+    })
+    bs.timer(0.01, rotate, repeat=True)
+    bs.timer(6.1, node.delete)
+    bs.timer(6.1, node2.delete)
+    if node3:
+        bs.timer(6.1, node3.delete)
+    bs.timer(6.1, textnode.delete)
+    bs.getsound('unlockable').play()
+    
 
 def get_texture_for_powerup(factory, ptype: str):
     """Get a texture from a powerup string from a factory.

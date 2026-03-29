@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING, override
 
 from efro.util import utc_now
 from efro.error import CommunicationError
+import fromgoverhaul.mell_resources as mell
 import bacommon.cloud
 import bauiv1 as bui
 
@@ -24,6 +25,7 @@ if TYPE_CHECKING:
     from typing import Any, Callable, Sequence
 
 MERCH_LINK_KEY = 'Merch Link'
+INVALID_PRICE = 1
 
 
 class StoreBrowserWindow(bui.MainWindow):
@@ -33,10 +35,7 @@ class StoreBrowserWindow(bui.MainWindow):
         """Our available tab types."""
 
         # EXTRAS = 'extras'
-        MAPS = 'maps'
-        MINIGAMES = 'minigames'
         CHARACTERS = 'characters'
-        ICONS = 'icons'
 
     def __init__(
         self,
@@ -177,17 +176,10 @@ class StoreBrowserWindow(bui.MainWindow):
         )
 
         tabs_def = [
-            # (self.TabID.EXTRAS, bui.Lstr(resource=f'{self._r}.extrasText')),
-            (self.TabID.MAPS, bui.Lstr(resource=f'{self._r}.mapsText')),
-            (
-                self.TabID.MINIGAMES,
-                bui.Lstr(resource=f'{self._r}.miniGamesText'),
-            ),
             (
                 self.TabID.CHARACTERS,
                 bui.Lstr(resource=f'{self._r}.charactersText'),
             ),
-            (self.TabID.ICONS, bui.Lstr(resource=f'{self._r}.iconsText')),
         ]
 
         tab_inset = 200 if uiscale is bui.UIScale.SMALL else 100
@@ -396,102 +388,52 @@ class StoreBrowserWindow(bui.MainWindow):
 
     # Actually start the purchase locally.
     def _purchase_check_result(
-        self, item: str, is_ticket_purchase: bool, result: dict[str, Any] | None
+        self, 
+        item: str, 
+        is_ticket_purchase: bool
     ) -> None:
+        
         plus = bui.app.plus
         assert plus is not None
-        if result is None:
-            bui.getsound('error').play()
+        store = bui.app.classic.store
+        price = mell.store_prices.get(item, None)
+        if price is None:
             bui.screenmessage(
-                bui.Lstr(resource='internal.unavailableNoConnectionText'),
+                bui.Lstr(resource='storeInvalidText'),
                 color=(1, 0, 0),
             )
+            bui.getsound('error').play()
         else:
-            if is_ticket_purchase:
-                if result['allow']:
-                    price = plus.get_v1_account_misc_read_val(
-                        'price.' + item, None
-                    )
-                    if (
-                        price is None
-                        or not isinstance(price, int)
-                        or price <= 0
-                    ):
-                        print(
-                            'Error; got invalid local price of',
-                            price,
-                            'for item',
-                            item,
-                        )
-                        bui.getsound('error').play()
-                    else:
-                        bui.getsound('click01').play()
-                        plus.in_game_purchase(item, price)
-                else:
-                    if result['reason'] == 'versionTooOld':
-                        bui.getsound('error').play()
-                        bui.screenmessage(
-                            bui.Lstr(
-                                resource='getTicketsWindow.versionTooOldText'
+            bui.screenmessage(
+                bui.Lstr(
+                    resource='storePurchased',
+                    subs=[
+                        (
+                            '${ITEM}',
+                            store.get_store_item_name_translated(
+                                item
                             ),
-                            color=(1, 0, 0),
                         )
-                    else:
-                        bui.getsound('error').play()
-                        bui.screenmessage(
-                            bui.Lstr(
-                                resource='getTicketsWindow.unavailableText'
-                            ),
-                            color=(1, 0, 0),
-                        )
-            # Real in-app purchase.
-            else:
-                if result['allow']:
-                    plus.purchase(item)
-                else:
-                    if result['reason'] == 'versionTooOld':
-                        bui.getsound('error').play()
-                        bui.screenmessage(
-                            bui.Lstr(
-                                resource='getTicketsWindow.versionTooOldText'
-                            ),
-                            color=(1, 0, 0),
-                        )
-                    else:
-                        bui.getsound('error').play()
-                        bui.screenmessage(
-                            bui.Lstr(
-                                resource='getTicketsWindow.unavailableText'
-                            ),
-                            color=(1, 0, 0),
-                        )
-
+                    ],
+                ),
+                color=(0, 1, 0),
+            )
+            bui.getsound('cashRegister').play()
+            dict = bui.app.config.get('squda_storeowned')
+            dict[item] = True
+            bui.app.config['squda_spaztix'] = bui.app.config.get('squda_spaztix') - price
+            
+            
     def _do_purchase_check(
         self, item: str, is_ticket_purchase: bool = False
     ) -> None:
         app = bui.app
+        if not is_ticket_purchase:
+            raise TypeError('shouldnt be doing a non-ticket purchase in squda...')
         if app.classic is None:
             logging.warning('_do_purchase_check() requires classic.')
             return
-
-        # Here we ping the server to ask if it's valid for us to
-        # purchase this. Better to fail now than after we've
-        # paid locally.
-
-        app.classic.master_server_v1_get(
-            'bsAccountPurchaseCheck',
-            {
-                'item': item,
-                'platform': app.classic.platform,
-                'subplatform': app.classic.subplatform,
-                'version': app.env.engine_version,
-                'buildNumber': app.env.engine_build_number,
-                'purchaseType': 'ticket' if is_ticket_purchase else 'real',
-            },
-            callback=bui.WeakCall(
-                self._purchase_check_result, item, is_ticket_purchase
-            ),
-        )
+        self._purchase_check_result(item, is_ticket_purchase)
 
     def buy(self, item: str) -> None:
         """Attempt to purchase the provided item."""
@@ -511,70 +453,52 @@ class StoreBrowserWindow(bui.MainWindow):
             self._last_buy_time is not None
             and (curtime - self._last_buy_time) < 2.0
         ):
+            bui.screenmessage(
+                bui.Lstr(resource='storeWaitText'),
+                color=(1, 0, 0),
+            )
             bui.getsound('error').play()
         else:
             if plus.get_v1_account_state() != 'signed_in':
                 show_sign_in_prompt()
             else:
                 self._last_buy_time = curtime
-
-                # Merch is a special case - just a link.
-                if item == 'merch':
-                    url = bui.app.config.get('Merch Link')
-                    if isinstance(url, str):
-                        bui.open_url(url)
-
-                # Pro is an actual IAP, and the rest are ticket purchases.
-                elif item == 'pro':
-                    bui.getsound('click01').play()
-
-                    # Purchase either pro or pro_sale depending on whether
-                    # there is a sale going on.
-                    self._do_purchase_check(
-                        'pro'
-                        if store.get_available_sale_time('extras') is None
-                        else 'pro_sale'
+                price = mell.store_prices.get(item, INVALID_PRICE)
+                our_tickets = bui.app.config.get('squda_spaztix')
+                if price is not None and our_tickets < price:
+                    bui.getsound('boo').play()
+                    bui.screenmessage(
+                        bui.Lstr(resource='notEnoughTicketsText'),
+                        color=(1, 0, 0),
                     )
+                    # gettickets.show_get_tickets_prompt()
                 else:
-                    price = plus.get_v1_account_misc_read_val(
-                        'price.' + item, None
+                    def do_it() -> None:
+                        self._do_purchase_check(
+                            item, is_ticket_purchase=True
+                        )
+
+                    bui.getsound('swish').play()
+                    ConfirmWindow(
+                        bui.Lstr(
+                            resource='store.purchaseConfirmText',
+                            subs=[
+                                (
+                                    '${ITEM}',
+                                    store.get_store_item_name_translated(
+                                        item
+                                    ),
+                                )
+                            ],
+                        ),
+                        width=400,
+                        height=120,
+                        action=do_it,
+                        ok_text=bui.Lstr(
+                            resource='store.purchaseText',
+                            fallback_resource='okText',
+                        ),
                     )
-                    our_tickets = plus.get_v1_account_ticket_count()
-                    if price is not None and our_tickets < price:
-                        bui.getsound('boo').play()
-                        bui.screenmessage(
-                            bui.Lstr(resource='notEnoughTicketsText'),
-                            color=(1, 1, 1),
-                        )
-                        # gettickets.show_get_tickets_prompt()
-                    else:
-
-                        def do_it() -> None:
-                            self._do_purchase_check(
-                                item, is_ticket_purchase=True
-                            )
-
-                        bui.getsound('swish').play()
-                        ConfirmWindow(
-                            bui.Lstr(
-                                resource='store.purchaseConfirmText',
-                                subs=[
-                                    (
-                                        '${ITEM}',
-                                        store.get_store_item_name_translated(
-                                            item
-                                        ),
-                                    )
-                                ],
-                            ),
-                            width=400,
-                            height=120,
-                            action=do_it,
-                            ok_text=bui.Lstr(
-                                resource='store.purchaseText',
-                                fallback_resource='okText',
-                            ),
-                        )
 
     def _print_already_own(self, charname: str) -> None:
         bui.screenmessage(
@@ -602,34 +526,10 @@ class StoreBrowserWindow(bui.MainWindow):
         if not self._root_widget:
             return
 
-        sales_raw = plus.get_v1_account_misc_read_val('sales', {})
-        sales = {}
-        try:
-            # Look at the current set of sales; filter any with time remaining.
-            for sale_item, sale_info in list(sales_raw.items()):
-                to_end = (
-                    datetime.datetime.fromtimestamp(
-                        sale_info['e'], datetime.UTC
-                    )
-                    - utc_now()
-                ).total_seconds()
-                if to_end > 0:
-                    sales[sale_item] = {
-                        'to_end': to_end,
-                        'original_price': sale_info['op'],
-                    }
-        except Exception:
-            logging.exception('Error parsing sales.')
-
         assert self.button_infos is not None
         for b_type, b_info in self.button_infos.items():
-            if b_type == 'merch':
-                purchased = False
-            elif b_type in ['upgrades.pro', 'pro']:
-                assert bui.app.classic is not None
-                purchased = bui.app.classic.accounts.have_pro()
-            else:
-                purchased = plus.get_v1_account_product_purchased(b_type)
+            dict = bui.app.config.get('squda_storeowned', {})
+            purchased = dict.get(b_type, False)
 
             sale_opacity = 0.0
             sale_title_text: str | bui.Lstr = ''
@@ -653,62 +553,15 @@ class StoreBrowserWindow(bui.MainWindow):
                 color = (0.4, 0.8, 0.1)
                 extra_image_opacity = 1.0
                 call = b_info['call'] if 'call' in b_info else None
-                if b_type == 'merch':
-                    price_text = ''
-                    price_text_left = ''
-                    price_text_right = ''
-                elif b_type in ['upgrades.pro', 'pro']:
-                    sale_time = store.get_available_sale_time('extras')
-                    if sale_time is not None:
-                        priceraw = plus.get_price('pro')
-                        price_text_left = (
-                            priceraw if priceraw is not None else '?'
-                        )
-                        priceraw = plus.get_price('pro_sale')
-                        price_text_right = (
-                            priceraw if priceraw is not None else '?'
-                        )
-                        sale_opacity = 1.0
-                        price_text = ''
-                        sale_title_text = bui.Lstr(resource='store.saleText')
-                        sale_time_text = bui.timestring(
-                            sale_time / 1000.0, centi=False
-                        )
-                    else:
-                        priceraw = plus.get_price('pro')
-                        price_text = priceraw if priceraw is not None else '?'
-                        price_text_left = ''
-                        price_text_right = ''
-                else:
-                    price = plus.get_v1_account_misc_read_val(
-                        'price.' + b_type, 0
-                    )
-
-                    # Color the button differently if we cant afford this.
-                    if plus.get_v1_account_state() == 'signed_in':
-                        if plus.get_v1_account_ticket_count() < price:
-                            color = (0.6, 0.61, 0.6)
-                    price_text = bui.charstr(bui.SpecialChar.TICKET) + str(
-                        plus.get_v1_account_misc_read_val(
-                            'price.' + b_type, '?'
-                        )
-                    )
-                    price_text_left = ''
-                    price_text_right = ''
-
-                    # TESTING:
-                    if b_type in sales:
-                        sale_opacity = 1.0
-                        price_text_left = bui.charstr(SpecialChar.TICKET) + str(
-                            sales[b_type]['original_price']
-                        )
-                        price_text_right = price_text
-                        price_text = ''
-                        sale_title_text = bui.Lstr(resource='store.saleText')
-                        sale_time_text = bui.timestring(
-                            sales[b_type]['to_end'], centi=False
-                        )
-
+                price = mell.store_prices.get(b_type, INVALID_PRICE)
+                if plus.get_v1_account_state() == 'signed_in':
+                    if bui.app.config.get('squda_spaztix') < price:
+                        color = (0.6, 0.61, 0.6)
+                price_text = bui.charstr(bui.SpecialChar.OUYA_BUTTON_Y) + str(
+                    mell.store_prices.get(b_type, INVALID_PRICE)
+                )
+                price_text_left = ''
+                price_text_right = ''
                 description_color = (0.5, 1.0, 0.5)
                 description_color2 = (0.3, 1.0, 1.0)
                 price_color = (0.2, 1, 0.2, 1.0)
@@ -797,11 +650,7 @@ class StoreBrowserWindow(bui.MainWindow):
         else:
 
             if self._current_tab in (
-                # self.TabID.EXTRAS,
-                self.TabID.MINIGAMES,
                 self.TabID.CHARACTERS,
-                self.TabID.MAPS,
-                self.TabID.ICONS,
             ):
                 store = _Store(self, data, self._scroll_width)
                 assert self._scrollwidget is not None

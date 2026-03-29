@@ -82,46 +82,14 @@ def handle_command(msg: str, roster_entry: dict, client_id: int) -> None:
         bs.broadcastmessage(f'{display} killed player {index}.')
         return None
     
-    elif cmd == '/super':
-        if not is_sp:
-            bs.chatmessage('Only available in Singleplayer!')
-            return
-        if len(parts) < 2:
-            bs.chatmessage(f'{display}: usage: /super <player_index>')
-            return None
-        try:
-            index = int(parts[1])
-        except ValueError:
-            bs.chatmessage(f'{display}: player number must be an integer.')
-            return None
-
-        players = activity.players
-
-        if index < 0 or index >= len(players):
-            bs.chatmessage(
-                f'{display}: player {index} does not exist '
-                f'(0–{len(players) - 1}).'
-            )
-            return None
-
-        player = players[index]
-        actor = getattr(player, 'actor', None)
-
-        if actor is None:
-            bs.chatmessage(f'{display}: player {index} has no actor.')
-            return None
-        with activity.context:
-            actor.gosuper()
-        bs.broadcastmessage(f'{display} made player {index} super.')
-        return None
-    
     elif cmd == '/end':
         # In singleplayer, end immediately
         if is_sp:
             bs.broadcastmessage('Ending activity (/end was sent)')
             if activity:
                 with activity.context:
-                    activity.end_game()
+                    if hasattr(activity, 'end_game', None):
+                        activity.end_game()
             return None
         players = activity.players
         try:
@@ -221,7 +189,10 @@ def filter_chat_message(msg: str, client_id: int) -> str | None:
 
     display = roster_entry.get('display_string', 'Unknown Player')
     client_id = roster_entry.get('client_id')
-    player_id = roster_entry.get('players')[0].get('id')
+    players = roster_entry.get('players')
+    player_id = None
+    if players:
+        player_id = players[0].get('id')
 
     if msg.startswith('/'):
         return handle_command(

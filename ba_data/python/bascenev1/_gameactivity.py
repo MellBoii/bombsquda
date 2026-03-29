@@ -699,6 +699,8 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
     def _emerald_drop(self):
         if not self.allow_emeralds:
             return
+        if ba.app.config.get('squda_noparticles'):
+            return
         if random.random() < self._emerald_chance:
             mp = self.map.defs.points
             spawn_names = [

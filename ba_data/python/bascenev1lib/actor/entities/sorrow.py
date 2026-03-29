@@ -29,6 +29,7 @@ class Sorrow(bs.Actor):
             or not self.actor()
             or not self.actor().node
             or not self.actor().is_alive()
+            or (self.actor().kookoo and self.actor().kookoo.exists2)
         ):
             if not self.actor() or not self.actor().is_alive() or not self.actor().node:
                 self.stop()
@@ -99,6 +100,15 @@ class Sorrow(bs.Actor):
             self.stop()
             return
         if random.random() < 0.3:
+            return
+        # AGGH I HATE YOU MATERIALS
+        if bs.app.config.get('squda_noparticles'):
+            node = self.actor().node.hold_node
+            if not node:
+                return
+            sactor = node.getdelegate(bs.Actor)
+            if sactor and node.getnodetype() == 'bomb':
+                sactor.defuse()
             return
         # we can assume where we wanna go is the actor's position
         ppos = self.actor().node.position

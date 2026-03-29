@@ -1,5 +1,6 @@
 """Script for Ire, the entity that forces a spaz to jump (at correct timing) or die."""
 from __future__ import annotations
+from typing import override
 import bascenev1 as bs
 import fromgoverhaul.mell_resources as mell
 import random
@@ -223,7 +224,8 @@ class Ire(bs.Actor):
         self.check_timer = None
         self._delete()
     
-    def handlemessage(self, msg: Any):
+    @override
+    def handlemessage(self, msg):
         if isinstance(msg, bs.DieMessage):
             # we'll check if the spaz still exists and has us, and if it doesn't we can stop
             if self.actor() and self.actor().node and not self.actor().ired:

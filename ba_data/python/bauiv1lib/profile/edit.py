@@ -400,12 +400,12 @@ class EditProfileWindow(
             )
             self._random_name_button = bui.buttonwidget(
                 parent=self._root_widget,
-                label=bui.Lstr(resource='randomText'),
-                size=(30, 20),
+                label=bui.charstr(bui.SpecialChar.BACK),
+                size=(30, 30),
                 position=(495 + x_inset, v - 20),
-                button_type='square',
                 color=(0.6, 0.5, 0.65),
                 autoselect=True,
+                text_scale=1.6,
                 on_activate_call=self.assign_random_name,
             )
 
@@ -539,10 +539,29 @@ class EditProfileWindow(
         """Assigning a random name to the player."""
         names = bs.get_random_names()
         name = names[random.randrange(len(names))]
+        self._icon_index = random.randrange(len(self._spazzes))
+        
+        clr = bui.app.classic.spaz_appearances[
+            self._spazzes[self._icon_index]
+        ].default_color
+        if clr is not None:
+            self._color = clr
+        highlight = bui.app.classic.spaz_appearances[
+            self._spazzes[self._icon_index]
+        ].default_highlight
+        if highlight is not None:
+            self._highlight = highlight
+    
+        if self._color_button:
+            bui.buttonwidget(edit=self._color_button, color=self._color)
+        if self._highlight_button:
+            bui.buttonwidget(edit=self._highlight_button, color=self._highlight)
         bui.textwidget(
             edit=self._text_field,
             text=name,
         )
+        self._update_character()
+        
 
     def upgrade_profile(self) -> None:
         """Attempt to upgrade the profile to global."""

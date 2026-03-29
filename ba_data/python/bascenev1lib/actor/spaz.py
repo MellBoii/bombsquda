@@ -287,6 +287,11 @@ class Spaz(bs.Actor):
         self.sorrowful = False
         self.last_x = 0
         self.last_y = 0
+        
+        self.ire = None
+        self.kookoo = None
+        self.sorrow = None
+        self.dozer = None
 
         self.source_player = source_player
         self._dead = False
@@ -550,6 +555,16 @@ class Spaz(bs.Actor):
         for node in nodes_to_delete:
             if node is not None and node.exists():
                 node.delete()
+        entities_tofuckingnuke = [
+            self.ire,
+            self.dozer,
+            self.kookoo,
+            self.sorrow
+        ]
+        for entity in entities_tofuckingnuke:
+            if entity is not None:
+                entity.stop()
+                entity = None
 
     def add_dropped_bomb_callback(
         self, call: Callable[[Spaz, bs.Actor], Any]
@@ -1884,6 +1899,8 @@ class Spaz(bs.Actor):
     
     def super_spark(self, chance = 0.6, amount1 = 2, amount2 = 5):
         if not self.node:
+            return
+        if ba.app.config.get('squda_noparticles'):
             return
         pos = self.node.position
         if random.random() < chance:
@@ -4422,30 +4439,32 @@ class Spaz(bs.Actor):
         bs.getsound(sound).play(volume=1.5, position=pos)
         self.impulse(y=150)
         self.die()
-        for _ in range(65):
-            offset_x = random.uniform(-0.3, 0.3)
-            offset_z = random.uniform(-0.3, 0.3)
-            offset_y = random.uniform(0, 0.5)
-            particle_pos = (pos[0] + offset_x, pos[1] + offset_y, pos[2] + offset_z)
-            particle = particle_type(position=particle_pos)
-            particle.autoretain()
-            num = random.randint(3, 13)
-            y = num = random.randint(6, 9)
-            particle.node.handlemessage('impulse', 
-                particle_pos[0], 
-                particle_pos[1], 
-                particle_pos[2],
-                0, 25, 0, num, 0.05, 0, 0,
-                offset_x*15*2, 0, offset_z*15*2
-            )
-            particle.node.handlemessage('impulse', 
-                particle_pos[0], 
-                particle_pos[1], 
-                particle_pos[2],
-                0, 25, 0,
-                y, 0.05, 0, 0,
-                0, 20*400, 0
-            )
+        # don't make particles if the player disabled them
+        if not ba.app.config.get('squda_noparticles'):
+            for _ in range(65):
+                offset_x = random.uniform(-0.3, 0.3)
+                offset_z = random.uniform(-0.3, 0.3)
+                offset_y = random.uniform(0, 0.5)
+                particle_pos = (pos[0] + offset_x, pos[1] + offset_y, pos[2] + offset_z)
+                particle = particle_type(position=particle_pos)
+                particle.autoretain()
+                num = random.randint(3, 13)
+                y = num = random.randint(6, 9)
+                particle.node.handlemessage('impulse', 
+                    particle_pos[0], 
+                    particle_pos[1], 
+                    particle_pos[2],
+                    0, 25, 0, num, 0.05, 0, 0,
+                    offset_x*15*2, 0, offset_z*15*2
+                )
+                particle.node.handlemessage('impulse', 
+                    particle_pos[0], 
+                    particle_pos[1], 
+                    particle_pos[2],
+                    0, 25, 0,
+                    y, 0.05, 0, 0,
+                    0, 20*400, 0
+                )
         self.hexploded = True
         
     def updatemeter(self):
@@ -4517,27 +4536,27 @@ class Spaz(bs.Actor):
                 random.choice(self.node.fall_sounds).play(position=self.node.position)
         self.die()
         if extreme:
-            from bascenev1lib.actor.particles import BloodParticle, ConfettiParticle
-            bloody = ba.app.config.get("squda_blood")
-            particle_type = BloodParticle if bloody else ConfettiParticle 
-            pos = self.node.position    
-            if not bloody:
-                bs.getsound('party_blower').play(position=pos)
-            for _ in range(110):
-                offset_x = random.uniform(-0.3, 0.3)
-                offset_z = random.uniform(-0.3, 0.3)
-                offset_y = random.uniform(0, 0.5)
-                particle_pos = (pos[0] + offset_x, pos[1] + offset_y, pos[2] + offset_z)
-                particle = particle_type(position=particle_pos)
-                particle.autoretain()
-                num = random.randint(6, 17)
-                particle.node.handlemessage('impulse', 
-                    particle_pos[0], 
-                    particle_pos[1], 
-                    particle_pos[2],
-                    0, 25, 0, num, 0.05, 0, 0,
-                    offset_x*15*2, 0, offset_z*15*2
-                )
+            if not ba.app.config.get('squda_noparticles'):
+                bloody = ba.app.config.get("squda_blood")
+                particle_type = BloodParticle if bloody else ConfettiParticle 
+                pos = self.node.position    
+                if not bloody:
+                    bs.getsound('party_blower').play(position=pos)
+                for _ in range(110):
+                    offset_x = random.uniform(-0.3, 0.3)
+                    offset_z = random.uniform(-0.3, 0.3)
+                    offset_y = random.uniform(0, 0.5)
+                    particle_pos = (pos[0] + offset_x, pos[1] + offset_y, pos[2] + offset_z)
+                    particle = particle_type(position=particle_pos)
+                    particle.autoretain()
+                    num = random.randint(6, 17)
+                    particle.node.handlemessage('impulse', 
+                        particle_pos[0], 
+                        particle_pos[1], 
+                        particle_pos[2],
+                        0, 25, 0, num, 0.05, 0, 0,
+                        offset_x*15*2, 0, offset_z*15*2
+                    )
             mell.add_spaz(30, 'tix', self.node.position, 'popup')
         self.node.shattered = 2 if extreme else 1
 

@@ -21,14 +21,40 @@ def get_appearances(include_locked: bool = False) -> list[str]:
     disallowed = []
     display = plus.get_v1_account_display_string()
     name = clean_account_name(display)
+    character_dict = {
+        'characters.susie': 'Susie',
+        'characters.rayman': 'Rayman',
+        #'characters.kris': 'Kris',
+        'characters.ralsei': 'Ralsei',
+        'characters.rk': 'Roaring Knight',
+        #'characters.noob': 'Noob',
+        'characters.mell': 'Mell',
+        #'characters.gummyboiyt': 'GummyBoiYT',
+        'characters.rayman': 'Rayman',
+        'characters.bowser': 'Bowser',
+        'characters.orangecap': 'Orangecap',
+        'characters.noise': 'The Noise',
+        'characters.taobaomascot': 'Taobao Mascot',
+        'characters.mario': 'SM64 Mario',
+        'characters.sonic': 'Sonic',
+        'characters.kirby': 'Kirby',
+        'characters.tails': 'Tails',
+        'characters.buddie': 'Buddie',
+        'characters.grace': 'John Grace',
+        'characters.baller': 'Baller',
+        'characters.homer': 'Homer',
+        'characters.ogspaz': 'OG Spaz',
+        # Shouldn't be on store or etc but still use same system
+        'characters.ire': 'Ire',
+    }
     if not include_locked:
-        # only unlock ire for whoever has the ire account,
-        # and for mell (or whoever gets the ire2 tag)
-        if name.lower() not in ['ire', 'ire2']:
-            disallowed.append('Ire')
-        if not ba.app.config.get("squda_unlockedmel", True):
-            disallowed.append('Mel')
-            
+        # get store purchases
+        # dicts always come to clutch!
+        owned = ba.app.config.get('squda_storeowned')
+        for item in character_dict.keys():
+            if item not in owned:
+                disallowed.append(character_dict[item])
+        
     return [
         s
         for s in list(bs.app.classic.spaz_appearances.keys())
@@ -137,8 +163,8 @@ def register_appearances() -> None:
     t.fall_sounds = ['voicelines/kris/fall']
     t.victory_sounds = ['voicelines/kris/win']
     t.style = 'agent'
-    t.default_color = (0.9215686274509803, 0.0, 0.5843137254901961)
-    t.default_highlight = (0.4588235294117647, 0.984313725490196, 0.9294117647058824)
+    t.default_color = (0.4588235294117647, 0.984313725490196, 0.9294117647058824)
+    t.default_highlight = (0.9215686274509803, 0.0, 0.5843137254901961)
 
     # Prince of the Dark ###################################
     t = Appearance('Ralsei')
@@ -200,8 +226,8 @@ def register_appearances() -> None:
     t.victory_sounds = ['voicelines/ralsei/win']
     t.gloat_sounds = ['voicelines/ralsei/gloat']
     t.style = 'bones'
-    t.default_color = (0.0, 0.7699999999999998, 0.11999999999999998)
-    t.default_highlight = (1, 0.08, 0.5)
+    t.default_color = (1, 1, 1)
+    t.default_highlight = (0, 0, 0)
 
     # that fucking ninja that i hate ##########################################
     t = Appearance('GummyBoiYT')
@@ -391,8 +417,8 @@ def register_appearances() -> None:
     t.victory_sounds = ['voicelines/kirby/win' + str(i + 1) + '' for i in range(4)]
     t.gloat_sounds = ['voicelines/kirby/gloat' + str(i + 1) + '' for i in range(6)]
     t.style = 'agent'
-    t.default_color = (1, 0, 0)
-    t.default_highlight = (0.1, 0.1, 1)
+    t.default_color = (0.9, 0.35, 0.9)
+    t.default_highlight = (1, 0.1, 0.1)
     
     # tubby plumber man ######################################
     t = Appearance('SM64 Mario')
@@ -447,7 +473,7 @@ def register_appearances() -> None:
     t.victory_sounds = ['voicelines/sonic/win']
     t.gloat_sounds = ['voicelines/sonic/gloat']
     t.style = 'agent'
-    t.default_color = (0.2, 0.2, 0.7)
+    t.default_color = (0.2, 0.2, 0.9)
     t.default_highlight = (1, 0.1, 0.1)
 
     # colas del fox ######################################
@@ -475,7 +501,7 @@ def register_appearances() -> None:
     t.victory_sounds = ['voicelines/sonic/win']
     t.gloat_sounds = ['voicelines/sonic/gloat']
     t.style = 'agent'
-    t.default_color = (0.9, 0.5, 0.01)
+    t.default_color = (1, 0.6, 0)
     t.default_highlight = (1, 0.1, 0.1)
 
     # Rayman! ################################

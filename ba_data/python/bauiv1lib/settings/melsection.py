@@ -84,6 +84,7 @@ class MelWindow(bui.MainWindow):
             ("squda_customfont", "customFontWarningText", None),
             ("squda_speedrunner", "speedrunTimerText", None),
             ("squda_blood", "enableBloodText", ['gibbed', 'party_blower']),
+            ("squda_noparticles", "noParticlesText", None),
             ("squda_coopnames", "coopNamesText", ['voicelines/spaz/jump02', 'spazJump02']),
             ("squda_pausemusic", "pauseMusicText", ['pause', 'unpause']),
             ("squda_showerrors", "showErrorsText", ['randomnoises/noisePolution8', 'default_win']),

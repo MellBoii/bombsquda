@@ -118,8 +118,10 @@ class StoreSubsystem:
                 'characters.kirby': {'character': 'Kirby'},
                 'characters.tails': {'character': 'Tails'},
                 'characters.buddie': {'character': 'Buddie'},
-                'merch': {},
-                'pro': {},
+                'characters.grace': {'character': 'John Grace'},
+                'characters.homer': {'character': 'Homer'},
+                'characters.ogspaz': {'character': 'OG Spaz'},
+                'characters.baller': {'character': 'Baller'},
                 'maps.lake_frigid': {'map_type': maps.LakeFrigid},
                 'games.race': {
                     'gametype': RaceGame,
@@ -367,12 +369,9 @@ class StoreSubsystem:
             {
                 'items': [
                     'characters.susie',
-                    'characters.kris',
                     'characters.ralsei',
                     'characters.rk',
-                    'characters.noob',
                     'characters.mell',
-                    'characters.gummyboiyt',
                     'characters.rayman',
                     'characters.bowser',
                     'characters.noise',
@@ -451,15 +450,8 @@ class StoreSubsystem:
         assert plus
         for section in tabval:
             for item in section['items']:
-                ticket_cost = plus.get_v1_account_misc_read_val(
-                    'price.' + item, None
-                )
-                if ticket_cost is not None:
-                    if (
-                        our_tickets >= ticket_cost
-                        and not plus.get_v1_account_product_purchased(item)
-                    ):
-                        count += 1
+                import fromgoverhaul.mell_resources as mell
+                mell.store_prices.get(item, 696969696969)
         return count
 
     def get_available_sale_time(self, tab: str) -> int | None:

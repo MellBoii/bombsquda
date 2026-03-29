@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, override
 
 import bauiv1 as bui
 import bascenev1 as bs
+import fromgoverhaul.mell_resources as mell
 
 if TYPE_CHECKING:
     from typing import Any
@@ -232,6 +233,30 @@ class SendInfoWindow(bui.MainWindow):
             player.actor.create_sorrow()
     def april(self):
         bs.screenmessage('Not functional. Sorry :^)')
+    def unlock_ire(self):
+        dict = bui.app.config.get('squda_storeowned', {})
+        item = 'characters.ire'
+        name = 'Ire'
+        owns = dict.get(item, False)
+        if owns:
+            bui.screenmessage(
+                bui.Lstr(
+                        resource='store.alreadyOwnText',
+                        subs=[('${NAME}', name)],
+                    ),
+                color=(1, 0, 0),
+            )
+            bui.getsound('error')
+            return
+        mell.show_unlockable(
+            {
+                'texture': 'ireIcon', 
+                'mask': 'ireIconCM', 
+                'tint1': (1, 1, 1), 
+                'tint2': (0, 0, 0)
+            }
+        )
+        dict[item] = True
     
     def code_entered(self, code: str):
         codes = {
@@ -244,6 +269,7 @@ class SendInfoWindow(bui.MainWindow):
             'DOZE': self.dozer,
             'WRATHFUL': self.ire,
             'BLOODY RAIN': self.sorrow,
+            'DEV INCLUSIVE': self.unlock_ire,
             'APRILFOOLS': self.april,
         }
 

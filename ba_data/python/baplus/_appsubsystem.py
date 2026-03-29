@@ -77,8 +77,8 @@ class PlusAppSubsystem(AppSubsystem):
 
     @staticmethod
     def get_price(item: str) -> str | None:
-        """:meta private:"""
-        return _baplus.get_price(item)
+        mell.character_prices.get(item, 0)
+        return mell.character_prices.get(item, 0)
 
     @staticmethod
     def get_v1_account_product_purchased(item: str) -> bool:

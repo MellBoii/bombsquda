@@ -136,7 +136,7 @@ class NameSurveyAllWindow(bui.MainWindow):
             return
             
         if not self.should_continue:
-            glyph = ba.charstr(ba.SpecialChar.OUYA_BUTTON_A)
+            glyph = ba.charstr(ba.SpecialChar.OUYA_BUTTON_Y)
             bui.screenmessage(f"WARNING: This will cost {glyph}800 to change.\nPress again to continue.", color=(1, 0.5, 0))
             bui.getsound('emerald_reject').play()
             self.should_continue = True
