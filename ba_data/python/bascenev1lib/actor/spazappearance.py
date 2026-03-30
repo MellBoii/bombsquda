@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import bascenev1 as bs
 import babase as ba
+import fromgoverhaul.mell_resources as mell
 
 def clean_account_name(s: str) -> str:
     return "".join(c for c in s if not (0xE000 <= ord(c) <= 0xF8FF))
@@ -21,33 +22,7 @@ def get_appearances(include_locked: bool = False) -> list[str]:
     disallowed = []
     display = plus.get_v1_account_display_string()
     name = clean_account_name(display)
-    character_dict = {
-        'characters.susie': 'Susie',
-        'characters.rayman': 'Rayman',
-        #'characters.kris': 'Kris',
-        'characters.ralsei': 'Ralsei',
-        'characters.rk': 'Roaring Knight',
-        #'characters.noob': 'Noob',
-        'characters.mell': 'Mell',
-        #'characters.gummyboiyt': 'GummyBoiYT',
-        'characters.rayman': 'Rayman',
-        'characters.bowser': 'Bowser',
-        'characters.orangecap': 'Orangecap',
-        'characters.noise': 'The Noise',
-        'characters.taobaomascot': 'Taobao Mascot',
-        'characters.mario': 'SM64 Mario',
-        'characters.sonic': 'Sonic',
-        'characters.kirby': 'Kirby',
-        'characters.tails': 'Tails',
-        'characters.buddie': 'Buddie',
-        'characters.grace': 'John Grace',
-        'characters.baller': 'Baller',
-        'characters.homer': 'Homer',
-        'characters.ogspaz': 'OG Spaz',
-        # Shouldn't be on store or etc but still use same system
-        'characters.ire': 'Ire',
-        'characters.dozer': 'Dozer',
-    }
+    character_dict = mell.appearance_dict
     if not include_locked:
         # get store purchases
         # dicts always come to clutch!

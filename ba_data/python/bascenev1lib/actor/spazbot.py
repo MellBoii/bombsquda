@@ -214,7 +214,13 @@ class SpazBot(Spaz):
                 repeat=True
             )
         if count is not None:
-            self.emeralds = [f'emerald{i}' for i in range(1, count + 1)]
+            list = ['emerald' + str(i + 1) + '' for i in range(7)]
+            for _ in range(count):
+                # get a random one from the list,
+                # so we aren't always the same
+                choice = random.choice(list)
+                self.emeralds.append(choice)
+                list.remove(choice)
             self.update_emerald_indicator()
 
     @property

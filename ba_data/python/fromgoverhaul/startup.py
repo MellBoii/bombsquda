@@ -171,29 +171,9 @@ class Startup():
     bs.debprint('global exception hook is ready!')
     
     def set_bs_id():
-        def get_unique_bs_id():
-            if ba.app.config.get('squda_accountid'):
-                return ba.app.config.get('squda_accountid')
-            def get_device_id():
-                if os.path.exists(ID_FILE):
-                    return json.load(open(ID_FILE))["id"]
-
-                new_id = str(uuid.uuid4())
-                json.dump({"id": new_id}, open(ID_FILE, "w"))
-                return new_id
-                
-            def clean_account_name(s: str) -> str:
-                return "".join(c for c in s if not (0xE000 <= ord(c) <= 0xF8FF))
-                
-            display = bui.app.plus.get_v1_account_display_string()
-            name = clean_account_name(display)
-            full_str = f"{name}:{get_device_id()}"
-            ba.app.config['squda_accountid'] = full_str
-            if os.path.exists(ID_FILE):
-                os.remove(ID_FILE)
-            return full_str
+        import fromgoverhaul.mell_resources as mell
         global BS_ID
-        BS_ID = get_unique_bs_id()
+        BS_ID = mell.get_unique_bs_id()
     ba.apptimer(1.5, set_bs_id)
 
     def loop():

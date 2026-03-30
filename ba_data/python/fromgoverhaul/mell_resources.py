@@ -31,6 +31,33 @@ store_prices = {
     'characters.homer': 870,
     'characters.ogspaz': 700,
 }
+appearance_dict = {
+    'characters.susie': 'Susie',
+    'characters.rayman': 'Rayman',
+    #'characters.kris': 'Kris',
+    'characters.ralsei': 'Ralsei',
+    'characters.rk': 'Roaring Knight',
+    #'characters.noob': 'Noob',
+    'characters.mell': 'Mell',
+    #'characters.gummyboiyt': 'GummyBoiYT',
+    'characters.rayman': 'Rayman',
+    'characters.bowser': 'Bowser',
+    'characters.orangecap': 'Orangecap',
+    'characters.noise': 'The Noise',
+    'characters.taobaomascot': 'Taobao Mascot',
+    'characters.mario': 'SM64 Mario',
+    'characters.sonic': 'Sonic',
+    'characters.kirby': 'Kirby',
+    'characters.tails': 'Tails',
+    'characters.buddie': 'Buddie',
+    'characters.grace': 'John Grace',
+    'characters.baller': 'Baller',
+    'characters.homer': 'Homer',
+    'characters.ogspaz': 'OG Spaz',
+    # Shouldn't be on store or etc but still use same system
+    'characters.ire': 'Ire',
+    'characters.dozer': 'Dozer',
+}
 
 def add_spaz(
     amount: int | float = 50,
@@ -110,6 +137,101 @@ def add_spaz(
         raise TypeError(
             f"{notif_type} invalid. Allowed: ['screen', 'popup']"
         )
+
+def get_unique_bs_id():
+    import babase as ba
+    if ba.app.config.get('squda_accountid'):
+        return ba.app.config.get('squda_accountid')
+    def get_device_id():
+        if os.path.exists(ID_FILE):
+            return json.load(open(ID_FILE))["id"]
+
+        new_id = str(uuid.uuid4())
+        json.dump({"id": new_id}, open(ID_FILE, "w"))
+        return new_id
+        
+    def clean_account_name(s: str) -> str:
+        return "".join(c for c in s if not (0xE000 <= ord(c) <= 0xF8FF))
+        
+    display = bui.app.plus.get_v1_account_display_string()
+    name = clean_account_name(display)
+    full_str = f"{name}:{get_device_id()}"
+    ba.app.config['squda_accountid'] = full_str
+    if os.path.exists(ID_FILE):
+        os.remove(ID_FILE)
+    return full_str
+    
+def withdraw_currency(amount: int, type: str):
+    import urllib
+    import json
+    id = get_unique_bs_id()
+    data = {
+        "bs_id": id,
+        "amount": amount,
+        "type": type,
+    }
+    request = urllib.request.Request(
+        f"{server}/withdrawcur",
+        data=json.dumps(data).encode('utf-8'),
+        headers={
+            "Content-Type": "application/json"
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=2) as response:
+            read = response.read()
+            thefuckingjson = json.loads(read.decode('utf-8'))
+            return thefuckingjson
+    except urllib.error.URLError as e:
+        return None
+
+def get_currency(type: str):
+    import urllib
+    import json
+    id = get_unique_bs_id()
+    data = {
+        "bs_id": id,
+        "type": type,
+    }
+    request = urllib.request.Request(
+        f"{server}/getcur",
+        data=json.dumps(data).encode('utf-8'),
+        headers={
+            "Content-Type": "application/json"
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=2) as response:
+            read = response.read()
+            thefuckingjson = json.loads(read.decode('utf-8'))
+            return thefuckingjson
+    except urllib.error.URLError as e:
+        return None
+
+def send_currency(amount: int, currency: str):
+    import urllib
+    import json
+    assert currency in ['tickets', 'tokens']
+    id = get_unique_bs_id()
+    data = {
+        "bs_id": id,
+        "amount": amount,
+        "type": currency,
+    }
+    request = urllib.request.Request(
+        f"{server}/sendcur",
+        data=json.dumps(data).encode('utf-8'),
+        headers={
+            "Content-Type": "application/json"
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=2) as response:
+            read = response.read()
+            thefuckingjson = json.loads(read.decode('utf-8'))
+            return thefuckingjson
+    except urllib.error.URLError as e:
+        return None
 
 def show_unlockable(tex: str | dict):
     """Show a popup that a unlockable has been acquired.

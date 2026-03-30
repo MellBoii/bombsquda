@@ -26,7 +26,7 @@ class InventoryWindow(bui.MainWindow):
         self._width = 1400 if uiscale is bui.UIScale.SMALL else 450
         self._height = (
             1200
-            if uiscale is bui.UIScale.SMALL else 320
+            if uiscale is bui.UIScale.SMALL else 350
         )
         # xoffs = 70 if uiscale is bui.UIScale.SMALL else 0
         # yoffs = -45 if uiscale is bui.UIScale.SMALL else 0
@@ -166,6 +166,22 @@ class InventoryWindow(bui.MainWindow):
             textcolor=(0.75, 0.7, 0.8),
             on_activate_call=self.show_what_dis,
         )
+        yoffs -= 40
+        xoffset = 0
+        if uiscale is bui.UIScale.SMALL:
+            xoffset = 150
+        bui.buttonwidget(
+            parent=self._root_widget,
+            position=(self._width * 0.7 - button_width * 0.5 - xoffset, yoffs - 270),
+            autoselect=False,
+            size=(button_width, 90),
+            scale=0.4,
+            text_scale=1.6,
+            label=bui.Lstr(resource='transferText'),
+            color=(0.55, 0.5, 0.6),
+            textcolor=(0.75, 0.7, 0.8),
+            on_activate_call=self._open_transfer,
+        )
 
     def _player_profiles_press(self) -> None:
         # pylint: disable=cyclic-import
@@ -189,10 +205,21 @@ class InventoryWindow(bui.MainWindow):
             bodytext=ba.Lstr(resource='aboutCustomCurrency'),
         )
         
-    def _open_store(self) -> None:
-        """Pushcall a new session (our Store activity)"""
-        from bascenev1lib.mell_store import MellStoreSession as sesh
-        bs.pushcall(lambda: bs.new_host_session(sesh))
+    def _open_transfer(self) -> None:
+        # pylint: disable=cyclic-import
+        from bauiv1lib.transfer import TransferWindow
+        import fromgoverhaul.mell_resources as mell
+        
+        # no-op if we're not currently in control.
+        if not self.main_window_has_control():
+            return
+        bui.getsound('quickcon').play()
+        if not mell.get_currency('tickets'):
+            bui.screenmessage(bui.Lstr(resource='transferError2'), color=(1, 0, 0))
+            bui.getsound('error').play()
+            return
+        self.main_window_replace(TransferWindow())
+
         
     @override
     def get_main_window_state(self) -> bui.MainWindowState:
