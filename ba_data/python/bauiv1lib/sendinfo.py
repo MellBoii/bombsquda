@@ -258,6 +258,31 @@ class SendInfoWindow(bui.MainWindow):
         )
         dict[item] = True
     
+    def unlock_dozer(self):
+        dict = bui.app.config.get('squda_storeowned', {})
+        item = 'characters.dozer'
+        name = 'Dozer'
+        owns = dict.get(item, False)
+        if owns:
+            bui.screenmessage(
+                bui.Lstr(
+                        resource='store.alreadyOwnText',
+                        subs=[('${NAME}', name)],
+                    ),
+                color=(1, 0, 0),
+            )
+            bui.getsound('error')
+            return
+        mell.show_unlockable(
+            {
+                'texture': 'dozerIcon', 
+                'mask': 'dozerIconCM', 
+                'tint1': (1, 1, 0), 
+                'tint2': (0, 0.1, 1)
+            }
+        )
+        dict[item] = True
+    
     def code_entered(self, code: str):
         codes = {
             'WITHERANDDIE': self.wither_and_die,
@@ -270,6 +295,7 @@ class SendInfoWindow(bui.MainWindow):
             'WRATHFUL': self.ire,
             'BLOODY RAIN': self.sorrow,
             'DEV INCLUSIVE': self.unlock_ire,
+            'YELLOW IRE': self.unlock_dozer,
             'APRILFOOLS': self.april,
         }
 

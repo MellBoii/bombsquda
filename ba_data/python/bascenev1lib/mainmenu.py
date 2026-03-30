@@ -393,7 +393,7 @@ class MainMenuActivity(bs.GameActivity[bs.Player, bs.Team]):
         assert self.splashtext.node
         bs.animate(self.splashtext.node, 'opacity', {0.0: 0, 0.6: 1.0})
         self.splashtext.node.text = bs.Lstr(
-            resource=f'splashText{random.randint(1, 141)}',
+            resource=f'splashText{random.randint(1, 149)}',
             subs=[
                 ('${SPAZ}', c1name),
                 ('${KRIS}', c2name),

@@ -46,6 +46,7 @@ def get_appearances(include_locked: bool = False) -> list[str]:
         'characters.ogspaz': 'OG Spaz',
         # Shouldn't be on store or etc but still use same system
         'characters.ire': 'Ire',
+        'characters.dozer': 'Dozer',
     }
     if not include_locked:
         # get store purchases
@@ -228,6 +229,36 @@ def register_appearances() -> None:
     t.style = 'bones'
     t.default_color = (1, 1, 1)
     t.default_highlight = (0, 0, 0)
+
+    # crouch twinny ###################################
+    t = Appearance('Dozer')
+    t.color_texture = 'dozerColor'
+    t.color_mask_texture = 'dozerColorMask'
+    t.icon_texture = 'dozerIcon'
+    t.icon_mask_texture = 'dozerIconCM'
+    t.earthportrait = 'earthbound/dozerbound'
+    t.EBlose = 'earthbound/dozerbound_lose'
+    t.EBwin = 'earthbound/dozerbound_win'
+    t.head_mesh = 'dozerHead'
+    t.torso_mesh = 'dozerTorso'
+    t.pelvis_mesh = 'dozerPelvis'
+    t.upper_arm_mesh = 'dozerUpperArm'
+    t.forearm_mesh = 'dozerForeArm'
+    t.hand_mesh = 'dozerHand'
+    t.upper_leg_mesh = 'dozerUpperLeg'
+    t.lower_leg_mesh = 'dozerLowerLeg'
+    t.toes_mesh = 'none'
+    t.jump_sounds = ['voicelines/snakey/attack' + str(i + 1) + '' for i in range(7)]
+    t.attack_sounds = ['voicelines/snakey/attack' + str(i + 1) + '' for i in range(7)]
+    t.impact_sounds = ['voicelines/snakey/hurt' + str(i + 1) + '' for i in range(8)]
+    t.death_sounds = ['voicelines/snakey/death']
+    t.pickup_sounds = ['voicelines/snakey/attack' + str(i + 1) + '' for i in range(7)]
+    t.fall_sounds = ['voicelines/snakey/fall' + str(i + 1) + '' for i in range(2)]
+    t.gloat_sounds = ['voicelines/snakey/gloat']
+    t.victory_sounds = ['voicelines/snakey/win']
+    t.style = 'bones'
+    t.default_color = (1, 1, 0)
+    t.default_highlight = (0, 0.1, 1)
 
     # that fucking ninja that i hate ##########################################
     t = Appearance('GummyBoiYT')
@@ -700,8 +731,8 @@ def register_appearances() -> None:
     t.gloat_sounds = ['voicelines/homer/fall']
     t.fall_sounds = ['voicelines/homer/fall']
     t.style = 'agent'
-    t.default_color = (0.3, 0.3, 0.33)
-    t.default_highlight = (1, 0.5, 0.3)
+    t.default_color = (1, 1, 1)
+    t.default_highlight = (0, 0.4, 1)
 
     # orange guy with the cap... like some kinda buddy... ###################################
     t = Appearance('Orangecap')

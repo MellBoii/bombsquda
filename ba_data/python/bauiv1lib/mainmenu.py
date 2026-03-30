@@ -374,12 +374,24 @@ class MainMenuWindow(bui.MainWindow):
             id='howtoplay',
             position=(h, v),
             autoselect=self._use_autoselect,
-            size=(side_button_2_width, side_button_2_height * 2.0),
-            button_type='square',
+            size=(side_button_2_width, side_button_2_height),
             scale=side_button_2_scale,
             label=bui.Lstr(resource=f'{self._r}.howToPlayText'),
             transition_delay=thistdelay,
             on_activate_call=self._howtoplay,
+        )
+        v += 1.1 * side_button_2_height * side_button_2_scale
+        self._discord_button = bui.buttonwidget(
+            parent=self._root_widget,
+            id='discordbtn',
+            position=(h + 4, v),
+            color=(0.4, 0.3, 0.7), 
+            autoselect=self._use_autoselect,
+            size=(side_button_2_width, side_button_2_height),
+            scale=side_button_2_scale,
+            label=bui.Lstr(resource=f'{self._r}.DiscordText'),
+            transition_delay=thistdelay,
+            on_activate_call=self._discord,
         )
         bxoffs = -20 if uiscale is bui.UIScale.LARGE else 140
         byoffs = -10 if uiscale is bui.UIScale.LARGE else 90
@@ -575,6 +587,12 @@ class MainMenuWindow(bui.MainWindow):
         self.main_window_replace(
             HelpWindow(origin_widget=self._how_to_play_button),
         )
+    
+    def _discord(self) -> None:
+        from bauiv1lib.discord import DiscordWindow
+
+        assert bui.app.classic is not None
+        DiscordWindow().get_root_widget()
 
     def _save_state(self) -> None:
         try:
@@ -591,6 +609,8 @@ class MainMenuWindow(bui.MainWindow):
                 sel_name = 'Watch'
             elif sel == self._how_to_play_button:
                 sel_name = 'HowToPlay'
+            elif sel == self._discord_button:
+                sel_name = 'Discord'
             elif sel == self._credits_button:
                 sel_name = 'Credits'
             elif sel == self._quit_button:
@@ -617,6 +637,8 @@ class MainMenuWindow(bui.MainWindow):
                 sel_name = 'Start'
             if sel_name == 'HowToPlay':
                 sel = self._how_to_play_button
+            if sel_name == 'Discord':
+                sel = self._discord_button
             elif sel_name == 'Boombox':
                 sel = self.boomboxbtn
             elif sel_name == 'Reroll':

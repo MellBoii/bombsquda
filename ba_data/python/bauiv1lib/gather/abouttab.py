@@ -51,8 +51,7 @@ class AboutGatherTab(GatherTab):
         message_extra_height = 60
         show_invite = try_tickets is not None
         invite_height = 80
-        show_discord = True
-        discord_height = 80
+        show_discord = False
 
         c_height = 0
         if show_message:
@@ -61,8 +60,6 @@ class AboutGatherTab(GatherTab):
             c_height += message_extra_height
         if show_invite:
             c_height += invite_height
-        if show_discord:
-            c_height += discord_height
 
         party_button_label = bui.charstr(bui.SpecialChar.TOP_BUTTON)
         message = bui.Lstr(
@@ -164,39 +161,6 @@ class AboutGatherTab(GatherTab):
         else:
             invite_button = None
 
-        if show_discord:
-            bui.textwidget(
-                parent=container,
-                position=(region_width * 0.57, y),
-                color=(0.6, 0.6, 1),
-                scale=0.6,
-                size=(0, 0),
-                maxwidth=region_width * 0.5,
-                h_align='right',
-                v_align='center',
-                flatness=1.0,
-                text=bui.Lstr(resource='discordFriendsText'),
-            )
-            discord_button = bui.buttonwidget(
-                parent=container,
-                position=(region_width * 0.59, y - 25),
-                size=(230, 50),
-                color=(0.54, 0.42, 0.56),
-                textcolor=(0.6, 0.6, 1),
-                label=bui.Lstr(resource='discordJoinText'),
-                autoselect=True,
-                on_activate_call=bui.WeakCall(self._join_the_discord_press),
-                up_widget=(
-                    invite_button if invite_button is not None else tab_button
-                ),
-            )
-            y -= discord_height
-        else:
-            discord_button = None
-
-        if discord_button is not None:
-            pass
-
         return scroll_widget
 
     def _invite_to_try_press(self) -> None:
@@ -210,10 +174,3 @@ class AboutGatherTab(GatherTab):
             show_sign_in_prompt()
             return
         handle_app_invites_press()
-
-    def _join_the_discord_press(self) -> None:
-        # pylint: disable=cyclic-import
-        from bauiv1lib.discord import DiscordWindow
-
-        assert bui.app.classic is not None
-        DiscordWindow().get_root_widget()

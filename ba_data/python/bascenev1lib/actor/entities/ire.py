@@ -108,6 +108,7 @@ class Ire(bs.Actor):
             or not self.actor()
             or not self.actor().node
             or not self.actor().is_alive()
+            or (self.actor().sorrow and self.actor().sorrow.exists2)
         ):
             if not self.actor() or not self.actor().is_alive() or not self.actor().node:
                 self.stop()

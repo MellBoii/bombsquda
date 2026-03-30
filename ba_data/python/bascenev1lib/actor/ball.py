@@ -281,6 +281,10 @@ class PlayerBall(bs.Actor):
         """Does nothing."""
         del shouldntsetmusic
         pass
+    def increase_chain(self, amount: int):
+        """Does nothing."""
+        del amount
+        pass
     
     def fast_fall(self):
         if not self.node:

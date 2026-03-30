@@ -381,6 +381,11 @@ class StoreSubsystem:
                     'characters.kirby',
                     'characters.tails',
                     'characters.buddie',
+                    'characters.grace',
+                    'characters.ogspaz',
+                    'characters.orangecap',
+                    'characters.baller',
+                    'characters.homer',
                 ]
             }
         ]

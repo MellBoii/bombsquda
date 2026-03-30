@@ -76,7 +76,7 @@ class DiscordWindow(bui.Window):
             parent=self._root_widget,
             position=(0, self._height - 52),
             size=(self._width, 25),
-            text='Discord',
+            text='Discord Server',
             color=app.ui_v1.title_color,
             h_align='center',
             v_align='top',
@@ -96,11 +96,7 @@ class DiscordWindow(bui.Window):
         bui.textwidget(
             parent=self._root_widget,
             position=(self._width / 2 - 60, self._height - 100),
-            text='We have our own Discord server where you can:\n- Find new'
-            ' friends and people to play with\n- Participate in Office'
-            ' Hours/Coffee with Eric\n- Share mods, plugins, art, and'
-            ' memes\n- Report bugs and make feature suggestions\n'
-            '- Troubleshoot issues',
+            text="Want to know more about how BombSquda's \ngoing along?\nWant to suggest something?\nJust wanna talk to someone,\nor play more BombSquad!??!?!\nJoin our Discord server, and come 'Squda with us!\nYou'll like it, I promise!",
             maxwidth=(self._width - 10) / 2,
             color=(1, 1, 1, 1),
             h_align='left',
@@ -115,7 +111,7 @@ class DiscordWindow(bui.Window):
             label=bui.Lstr(resource='discordJoinText'),
             text_scale=1.0,
             on_activate_call=bui.Call(
-                bui.open_url, 'https://discord.gg/D9KmmCMT' # oh wow, shameless plug to a server that doesnt even have anyone
+                bui.open_url, 'https://discord.gg/JvasmwRpCe'
             ),
         )
 
@@ -123,7 +119,7 @@ class DiscordWindow(bui.Window):
             bui.buttonwidget(
                 edit=self._back_button,
                 button_type='backSmall',
-                size=(60, 60),
+                size=(70, 70),
                 label=bui.charstr(bui.SpecialChar.BACK),
             )
 

@@ -26,7 +26,7 @@ class InventoryWindow(bui.MainWindow):
         self._width = 1400 if uiscale is bui.UIScale.SMALL else 450
         self._height = (
             1200
-            if uiscale is bui.UIScale.SMALL else 400
+            if uiscale is bui.UIScale.SMALL else 320
         )
         # xoffs = 70 if uiscale is bui.UIScale.SMALL else 0
         # yoffs = -45 if uiscale is bui.UIScale.SMALL else 0
@@ -102,6 +102,8 @@ class InventoryWindow(bui.MainWindow):
         xoffs = 20
         image_mult = 0.4
         text_mult = 0.55
+        if uiscale is bui.UIScale.SMALL:
+            yoffs -= 70
         yoffs += 20
         self._player_profiles_button = bui.buttonwidget(
             parent=self._root_widget,
@@ -149,9 +151,12 @@ class InventoryWindow(bui.MainWindow):
         )
         yoffs -= 30
         button_width = 300
+        xoffset = 0
+        if uiscale is bui.UIScale.SMALL:
+            xoffset = 150
         bui.buttonwidget(
             parent=self._root_widget,
-            position=(self._width * 0.7 - button_width * 0.5, yoffs - 270),
+            position=(self._width * 0.7 - button_width * 0.5 - xoffset, yoffs - 270),
             autoselect=False,
             size=(button_width, 80),
             scale=0.4,

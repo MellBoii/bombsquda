@@ -96,9 +96,14 @@ class ACIActivity(bs.GameActivity[bs.Player, bs.Team]):
         if self.spaz and self.spaz.node:
             self.spaz.node.rotate += 1
     
+    def _intro_done(self):
+        bs.screenmessage(bs.Lstr(resource='mellNotDone'))
+        bs.getsound('bellLeft').play(1.5)
+        bs.timer(1.0, self.session.end)
+    
     def animate_out(self):
         bs.animate(self.jointext, 'opacity', {0.0: 1, 0.3: 0})
-        bs.animate(self.music, 'volume', {0.0: 5, 6.0: 0})
+        bs.animate(self.music, 'volume', {0.0: 5, 4.0: 0})
         bs.animate_array(
             self.spaz.node,
             'position',
@@ -138,6 +143,7 @@ class ACIActivity(bs.GameActivity[bs.Player, bs.Team]):
                 3.0: darker,
             },
         )
+        bs.timer(4.8, self._intro_done)
     
     @override
     def on_player_join(self, player: bs.Player) -> None:
