@@ -1,6 +1,6 @@
 # Released under the MIT License. See LICENSE for details.
 #
-"""Provides help related ui."""
+"""UI related to transferring currencies like Spaz Tickets and Tokens."""
 
 from __future__ import annotations
 
@@ -100,6 +100,7 @@ class TransferWindow(bui.MainWindow):
 
         xoffs = 20
         yoffs -= 140
+        # move our buttons a bit down and nudge right if small scale
         if uiscale is bui.UIScale.SMALL:
             yoffs -= 70
             xoffs += 40
@@ -114,7 +115,9 @@ class TransferWindow(bui.MainWindow):
         self._update_current()
         xoffs = 0
         yoffs -= 130
+        # create a longer text field if on a small ui scale.
         textfieldxoffs = 0 if uiscale is not bui.UIScale.SMALL else 150
+        # text that says 'send...' to signalify what it does
         bui.textwidget(
             parent=self._root_widget,
             position=(self._width * 0.4 + xoffs, yoffs + 50),
@@ -123,6 +126,7 @@ class TransferWindow(bui.MainWindow):
             scale=0.8,
             h_align='center',
         )
+        # text field
         self._sendtext = bui.textwidget(
             parent=self._root_widget,
             position=(self._width * 0.2 + xoffs + textfieldxoffs, yoffs),
@@ -133,6 +137,7 @@ class TransferWindow(bui.MainWindow):
             v_align='center',
             maxwidth=200 + textfieldxoffs,
         )
+        # 2 buttons for sending tickets and tokens
         self._sendticketsbtn = bui.buttonwidget(
             parent=self._root_widget,
             position=(self._width * 0.58 + xoffs, yoffs + 2),
@@ -150,7 +155,7 @@ class TransferWindow(bui.MainWindow):
             on_activate_call=lambda: self._send_currency(type='tokens'),
         )
         yoffs -= 80
-        textfieldxoffs = 0 if uiscale is not bui.UIScale.SMALL else 150
+        # text that says 'withdraw...' to signalify what it does
         bui.textwidget(
             parent=self._root_widget,
             position=(self._width * 0.4 + xoffs, yoffs + 50),
@@ -159,6 +164,7 @@ class TransferWindow(bui.MainWindow):
             scale=0.8,
             h_align='center',
         )
+        # text field
         self._taketext = bui.textwidget(
             parent=self._root_widget,
             position=(self._width * 0.2 + xoffs + textfieldxoffs, yoffs),
@@ -169,6 +175,7 @@ class TransferWindow(bui.MainWindow):
             v_align='center',
             maxwidth=200 + textfieldxoffs,
         )
+        # 2 buttons for taking tickets and tokens
         self._taketicketsbtn = bui.buttonwidget(
             parent=self._root_widget,
             position=(self._width * 0.58 + xoffs, yoffs + 2),
@@ -187,6 +194,7 @@ class TransferWindow(bui.MainWindow):
         )
         
     def _send_currency(self, type: str):
+        # get some important values...
         val = cast(str, bui.textwidget(query=self._sendtext)).strip()
         key = 'squda_spaztix' if type == 'tickets' else 'squda_spaztokens'
         balance = bui.app.config.get(key)
@@ -194,6 +202,7 @@ class TransferWindow(bui.MainWindow):
             ba.charstr(ba.SpecialChar.OUYA_BUTTON_Y) if type == 'tickets'
             else ba.charstr(ba.SpecialChar.OUYA_BUTTON_A)
         )
+        # value is a string, so check if its a digit
         if not val.isdigit():
             bui.screenmessage(
                 bui.Lstr(resource='transferIncorrect'),
@@ -201,6 +210,7 @@ class TransferWindow(bui.MainWindow):
             )
             bui.getsound('error').play()
             return
+        # convert to a integer then check if over 0
         val = int(val)
         if val <= 0:
             bui.screenmessage(
@@ -209,6 +219,7 @@ class TransferWindow(bui.MainWindow):
             )
             bui.getsound('error').play()
             return
+        # check if the value is over the amount we have
         if val > balance:
             bui.screenmessage(
                 bui.Lstr(
@@ -222,11 +233,14 @@ class TransferWindow(bui.MainWindow):
             )
             bui.getsound('error').play()
             return
+        # send_currency returns a result (None if error)
         result = mell.send_currency(val, type)
+        # if no result, don't continue
         if not result:
             bui.screenmessage(bui.Lstr(resource='transferError'), color=(1, 0, 0))
             bui.getsound('error').play()
             return
+        # get new balance and amount from the server
         amount = result.get('amount')
         new = result.get('new_bal')
         bui.screenmessage(
@@ -239,13 +253,17 @@ class TransferWindow(bui.MainWindow):
             ),
             color=(0, 1, 0),
         )
+        # remove the same amount from us
         bui.app.config[key] = balance - amount
         bui.getsound('cashRegister').play()
+        # update current text
         self._update_current()
     
     def _take_currency(self, type: str):
+        # get some important values
         val = cast(str, bui.textwidget(query=self._taketext)).strip()
         key = 'squda_spaztix' if type == 'tickets' else 'squda_spaztokens'
+        # we can use the amount we already gathered from updating text
         sbalance = (
             self._server_tickets if type == 'tickets'
             else self._server_tokens
@@ -255,6 +273,7 @@ class TransferWindow(bui.MainWindow):
             ba.charstr(ba.SpecialChar.OUYA_BUTTON_Y) if type == 'tickets'
             else ba.charstr(ba.SpecialChar.OUYA_BUTTON_A)
         )
+        # check if value is digit
         if not val.isdigit():
             bui.screenmessage(
                 bui.Lstr(resource='transferIncorrect'),
@@ -262,6 +281,7 @@ class TransferWindow(bui.MainWindow):
             )
             bui.getsound('error').play()
             return
+        # convert to integer then check if below 0
         val = int(val)
         if val <= 0:
             bui.screenmessage(
@@ -270,6 +290,7 @@ class TransferWindow(bui.MainWindow):
             )
             bui.getsound('error').play()
             return
+        # check if value over how much server has
         if val > sbalance:
             bui.screenmessage(
                 bui.Lstr(
@@ -283,11 +304,13 @@ class TransferWindow(bui.MainWindow):
             )
             bui.getsound('error').play()
             return
+        # withdraw_currency returns a result (None if error)
         result = mell.withdraw_currency(val, type)
         if not result:
             bui.screenmessage(bui.Lstr(resource='transferError'), color=(1, 0, 0))
             bui.getsound('error').play()
             return
+        # get new balance and amount from server
         amount = result.get('amount')
         new = result.get('new_bal')
         bui.screenmessage(
@@ -300,19 +323,24 @@ class TransferWindow(bui.MainWindow):
             ),
             color=(0, 1, 0),
         )
+        # update text and our current count
         bui.app.config[key] = balance + amount
         bui.getsound('cashRegister').play()
         self._update_current()
     
     def _update_current(self):
+        # we get our balance with the config...
         key1 = 'squda_spaztix'
         key2 = 'squda_spaztokens'
         balance1 = bui.app.config.get(key1)
         balance2 = bui.app.config.get(key2)
+        # and get the server's through a helper in mell_resources
         self._server_tokens = toks = mell.get_currency('tokens').get('amount')
         self._server_tickets = tix = mell.get_currency('tickets').get('amount')
+        # format some nice looking text with those values
         server_amount_str = f'{ba.charstr(ba.SpecialChar.OUYA_BUTTON_Y)}{tix}, {ba.charstr(ba.SpecialChar.OUYA_BUTTON_A)}{toks}'
         user_amount_str = f'{ba.charstr(ba.SpecialChar.OUYA_BUTTON_Y)}{balance1}, {ba.charstr(ba.SpecialChar.OUYA_BUTTON_A)}{balance2}'
+        # edit the current text to use that
         bui.textwidget(edit=self._current_text, text=bui.Lstr(
                 resource='transferCurrent', 
                 subs=[

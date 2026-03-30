@@ -26,7 +26,7 @@ class InventoryWindow(bui.MainWindow):
         self._width = 1400 if uiscale is bui.UIScale.SMALL else 450
         self._height = (
             1200
-            if uiscale is bui.UIScale.SMALL else 350
+            if uiscale is bui.UIScale.SMALL else 400
         )
         # xoffs = 70 if uiscale is bui.UIScale.SMALL else 0
         # yoffs = -45 if uiscale is bui.UIScale.SMALL else 0
@@ -38,7 +38,7 @@ class InventoryWindow(bui.MainWindow):
         scale = (
             1.55
             if uiscale is bui.UIScale.SMALL
-            else 1.15 if uiscale is bui.UIScale.MEDIUM else 1.0
+            else 1.3 if uiscale is bui.UIScale.MEDIUM else 1.0
         )
 
         # Calc screen size in our local container space and clamp to a
@@ -68,7 +68,7 @@ class InventoryWindow(bui.MainWindow):
             parent=self._root_widget,
             position=(
                 self._width * 0.5,
-                yoffs - (50 if uiscale is bui.UIScale.SMALL else 80),
+                yoffs - (150 if uiscale is bui.UIScale.SMALL else 80),
             ),
             size=(0, 0),
             text=bui.Lstr(resource='inventoryText'),
@@ -102,8 +102,11 @@ class InventoryWindow(bui.MainWindow):
         xoffs = 20
         image_mult = 0.4
         text_mult = 0.55
+        otherxoffs = -10
         if uiscale is bui.UIScale.SMALL:
             yoffs -= 70
+            image_mult += 0.1
+            otherxoffs = -50
         yoffs += 20
         self._player_profiles_button = bui.buttonwidget(
             parent=self._root_widget,
@@ -118,13 +121,13 @@ class InventoryWindow(bui.MainWindow):
         )
         bui.imagewidget(
             parent=self._root_widget,
-            position=(self._width * image_mult - xoffs, yoffs - 265),
+            position=(self._width * image_mult - xoffs + otherxoffs, yoffs - 265),
             size=(imgsize, imgsize),
             texture=bui.gettexture('spaztickets'),
         )
         bui.textwidget(
             parent=self._root_widget,
-            position=(self._width * text_mult - xoffs, yoffs - 250),
+            position=(self._width * text_mult - xoffs + otherxoffs, yoffs - 250),
             size=(300, 30),
             text=str(ba.app.config.get("squda_spaztix")),
             scale=1.0,
@@ -135,13 +138,13 @@ class InventoryWindow(bui.MainWindow):
         yoffs -= 70
         bui.imagewidget(
             parent=self._root_widget,
-            position=(self._width * image_mult - xoffs, yoffs - 265),
+            position=(self._width * image_mult - xoffs + otherxoffs, yoffs - 265),
             size=(imgsize, imgsize),
             texture=bui.gettexture('spaztokens'),
         )
         bui.textwidget(
             parent=self._root_widget,
-            position=(self._width * text_mult - xoffs, yoffs - 250),
+            position=(self._width * text_mult - xoffs + otherxoffs, yoffs - 250),
             size=(300, 30),
             text=str(ba.app.config.get("squda_spaztokens")),
             scale=1.0,
@@ -152,7 +155,7 @@ class InventoryWindow(bui.MainWindow):
         yoffs -= 30
         xoffset = 0
         if uiscale is bui.UIScale.SMALL:
-            xoffset = 150
+            xoffset = 130
             button_width = 500
         bui.buttonwidget(
             parent=self._root_widget,
@@ -171,13 +174,26 @@ class InventoryWindow(bui.MainWindow):
             parent=self._root_widget,
             position=(self._width * 0.7 - button_width * 0.5 - xoffset, yoffs - 270),
             autoselect=False,
-            size=(button_width, 90),
+            size=(button_width, 80),
             scale=0.4,
             text_scale=1.6,
             label=bui.Lstr(resource='transferText'),
             color=(0.55, 0.5, 0.6),
             textcolor=(0.75, 0.7, 0.8),
             on_activate_call=self._open_transfer,
+        )
+        yoffs -= 40
+        bui.buttonwidget(
+            parent=self._root_widget,
+            position=(self._width * 0.7 - button_width * 0.5 - xoffset, yoffs - 270),
+            autoselect=False,
+            size=(button_width, 80),
+            scale=0.4,
+            text_scale=1.6,
+            label=bui.Lstr(resource='getTicketsText'),
+            color=(0.55, 0.5, 0.6),
+            textcolor=(0.75, 0.7, 0.8),
+            on_activate_call=self._open_get_tickets,
         )
 
     def _player_profiles_press(self) -> None:
@@ -216,6 +232,9 @@ class InventoryWindow(bui.MainWindow):
             bui.getsound('error').play()
             return
         self.main_window_replace(TransferWindow())
+    
+    def _open_get_tickets(self) -> None:
+        bui.screenmessage('later...')
 
         
     @override

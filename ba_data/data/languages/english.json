@@ -1413,6 +1413,7 @@
   "transferCurrent": "bank: ${AMOUNT}\nyours: ${USERAMOUNT}",
   "transferSuccess": "transfer done successfully!\namount of: ${AMOUNT}\nnew bank balance: ${NEW}",
   "transferText": "Transfer Currency",
+  "getTicketsText": "Get more tickets...",
   "transferSend": "send...",
   "transferWithdraw": "withdraw...",
   "transferError": "An error occured. You have not been debited or credited.",

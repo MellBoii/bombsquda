@@ -253,15 +253,20 @@ class MainMenuWindow(bui.MainWindow):
 
         # Version/copyright info.
         thistdelay = self._tdelay + td3 * self._t_delay_inc
+        yoffhere = (
+            -10 if uiscale is bui.UIScale.LARGE 
+            else 30 if uiscale is bui.UIScale.MEDIUM 
+            else 20
+        )
         bui.textwidget(
             parent=self._root_widget,
-            position=(self._width * 0.5, button_y_offs - 115),
+            position=(self._width * 0.5, button_y_offs - 115 + yoffhere),
             size=(0, 0),
             scale=0.6,
             flatness=1.0,
             color=(1, 1, 1, 0.7),
             text=(
-                f'BombSquda v{mell.version}\nBombSquad v{app.env.engine_version}\nBombSquad is copyright of Eric Froemling.'
+                f'BombSquda v{mell.version}\nBombSquad v{app.env.engine_version}'
             ),
             h_align='center',
             v_align='center',
@@ -368,6 +373,7 @@ class MainMenuWindow(bui.MainWindow):
             + side_button_2_width * side_button_2_scale
         )
         v = button_y_offs + side_button_2_y_offs
+        v -= 1
 
         self._how_to_play_button = bui.buttonwidget(
             parent=self._root_widget,
@@ -385,7 +391,8 @@ class MainMenuWindow(bui.MainWindow):
             parent=self._root_widget,
             id='discordbtn',
             position=(h + 4, v),
-            color=(0.4, 0.3, 0.7), 
+            color=(0.7, 0.7, 0.9),
+            textcolor=(0.9, 0.9, 1),
             autoselect=self._use_autoselect,
             size=(side_button_2_width, side_button_2_height),
             scale=side_button_2_scale,
