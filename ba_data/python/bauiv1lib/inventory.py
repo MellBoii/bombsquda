@@ -150,10 +150,10 @@ class InventoryWindow(bui.MainWindow):
             v_align='center',
         )
         yoffs -= 30
-        button_width = 300
         xoffset = 0
         if uiscale is bui.UIScale.SMALL:
             xoffset = 150
+            button_width = 500
         bui.buttonwidget(
             parent=self._root_widget,
             position=(self._width * 0.7 - button_width * 0.5 - xoffset, yoffs - 270),
@@ -167,9 +167,6 @@ class InventoryWindow(bui.MainWindow):
             on_activate_call=self.show_what_dis,
         )
         yoffs -= 40
-        xoffset = 0
-        if uiscale is bui.UIScale.SMALL:
-            xoffset = 150
         bui.buttonwidget(
             parent=self._root_widget,
             position=(self._width * 0.7 - button_width * 0.5 - xoffset, yoffs - 270),

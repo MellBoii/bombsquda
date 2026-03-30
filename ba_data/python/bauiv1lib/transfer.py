@@ -69,7 +69,7 @@ class TransferWindow(bui.MainWindow):
             parent=self._root_widget,
             position=(
                 self._width * 0.5,
-                yoffs - (50 if uiscale is bui.UIScale.SMALL else 80),
+                yoffs - (140 if uiscale is bui.UIScale.SMALL else 80),
             ),
             size=(0, 0),
             text=bui.Lstr(resource='transferText'),
@@ -98,15 +98,14 @@ class TransferWindow(bui.MainWindow):
             )
             bui.containerwidget(edit=self._root_widget, cancel_button=btn)
 
-        button_width = 300
-        imgsize = 60
         xoffs = 20
-        image_mult = 0.4
-        text_mult = 0.55
         yoffs -= 140
+        if uiscale is bui.UIScale.SMALL:
+            yoffs -= 70
+            xoffs += 40
         self._current_text = bui.textwidget(
             parent=self._root_widget,
-            position=(self._width * 0.45, yoffs),
+            position=(self._width * 0.45 + xoffs, yoffs),
             text='',
             h_align='center',
             scale=0.8,
