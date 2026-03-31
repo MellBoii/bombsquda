@@ -13,245 +13,20 @@ from typing import TYPE_CHECKING, override
 import random
 
 import bascenev1 as bs
+import fromgoverhaul.mell_resources as mell
 
 from bascenev1lib.actor.spazfactory import SpazFactory
 from bascenev1lib.actor.scoreboard import Scoreboard
+from bascenev1lib.actor.nodejumper import ImageJumper
 
 if TYPE_CHECKING:
     from typing import Any, Sequence
-
-
-class Icon(bs.Actor):
-    """Creates in in-game icon on screen."""
-
-    def __init__(
-        self,
-        player: Player,
-        position: tuple[float, float],
-        scale: float,
-        *,
-        show_lives: bool = True,
-        show_death: bool = True,
-        name_scale: float = 1.0,
-        name_maxwidth: float = 115.0,
-        flatness: float = 1.0,
-        shadow: float = 1.0,
-    ):
-        super().__init__()
-
-        self._player = weakref.ref(player)  # Avoid ref loops.
-        self._show_lives = show_lives
-        self._show_death = show_death
-        self._name_scale = name_scale
-        self._outline_tex = bs.gettexture('characterIconMask')
-
-        icon = player.get_icon()
-        self.node = bs.newnode(
-            'image',
-            delegate=self,
-            attrs={
-                'texture': icon['texture'],
-                'tint_texture': icon['tint_texture'],
-                'tint_color': icon['tint_color'],
-                'vr_depth': 400,
-                'tint2_color': icon['tint2_color'],
-                'mask_texture': self._outline_tex,
-                'opacity': 1.0,
-                'absolute_scale': True,
-                'attach': 'bottomCenter',
-            },
-        )
-        self._name_text = bs.newnode(
-            'text',
-            owner=self.node,
-            attrs={
-                'text': bs.Lstr(value=player.getname()),
-                'color': bs.safecolor(player.team.color),
-                'h_align': 'center',
-                'v_align': 'center',
-                'vr_depth': 410,
-                'maxwidth': name_maxwidth,
-                'shadow': shadow,
-                'flatness': flatness,
-                'h_attach': 'center',
-                'v_attach': 'bottom',
-            },
-        )
-        if self._show_lives:
-            self._lives_text = bs.newnode(
-                'text',
-                owner=self.node,
-                attrs={
-                    'text': 'x0',
-                    'color': (1, 1, 0.5),
-                    'h_align': 'left',
-                    'vr_depth': 430,
-                    'shadow': 1.0,
-                    'flatness': 1.0,
-                    'h_attach': 'center',
-                    'v_attach': 'bottom',
-                },
-            )
-        self.set_position_and_scale(position, scale)
-
-    def set_position_and_scale(
-        self, position: tuple[float, float], scale: float
-    ) -> None:
-        """(Re)position the icon."""
-        assert self.node
-        self.node.position = position
-        self.node.scale = [70.0 * scale]
-        self._name_text.position = (position[0], position[1] + scale * 52.0)
-        self._name_text.scale = 1.0 * scale * self._name_scale
-        if self._show_lives:
-            self._lives_text.position = (
-                position[0] + scale * 10.0,
-                position[1] - scale * 43.0,
-            )
-            self._lives_text.scale = 1.0 * scale
-
-    def update_for_lives(self) -> None:
-        """Update for the target player's current lives."""
-        player = self._player()
-        if player:
-            lives = player.lives
-        else:
-            lives = 0
-        if self._show_lives:
-            if lives > 0:
-                self._lives_text.text = 'x' + str(lives - 1)
-            else:
-                self._lives_text.text = ''
-        if lives == 0:
-            self._name_text.opacity = 0.2
-            assert self.node
-            self.node.color = (0.7, 0.3, 0.3)
-            self.node.opacity = 0.2
-        if lives == 1:
-            # cleanup any danger icon if it exists
-            if hasattr(self, "_danger_icon") and self._danger_icon:
-                self._danger_icon.delete()
-            if hasattr(self, "danger_flash_timer"):
-                self.danger_flash_timer = None
-
-            # play the sound
-            bs.getsound('peril').play()
-
-            # make the texture
-            self._warning_icon = bs.newnode(
-                'image',
-                attrs={
-                    'texture': bs.gettexture('peril'),
-                    'position': (self.node.position[0], self.node.position[1] + 60),
-                    'scale': (80, 80),
-                    'opacity': 1.0,
-                    'absolute_scale': True,
-                    'attach': 'bottomCenter',
-                },
-            )
-
-            # flash it
-            def _flash():
-                if self._warning_icon and self._warning_icon.exists():
-                    self._warning_icon.opacity = (
-                        0.0 if self._warning_icon.opacity > 0.0 else 1.0
-                    )
-
-            self._flash_timer = bs.Timer(0.2, _flash, repeat=True)
-
-        elif lives == 2:
-            # cleanup icon if it exists
-            if hasattr(self, "_warning_icon") and self._warning_icon:
-                self._warning_icon.delete()
-            if hasattr(self, "_flash_timer"):
-                self._flash_timer = None
-
-            # play the sound
-            bs.getsound('danger').play()
-
-            # make the texture
-            self._danger_icon = bs.newnode(
-                'image',
-                attrs={
-                    'texture': bs.gettexture('danger'),
-                    'position': (self.node.position[0], self.node.position[1] + 60),
-                    'scale': (80, 80),
-                    'opacity': 1.0,
-                    'absolute_scale': True,
-                    'attach': 'bottomCenter',
-                },
-            )
-
-            # flash it
-            def danger_flash():
-                if self._danger_icon and self._danger_icon.exists():
-                    self._danger_icon.opacity = (
-                        0.0 if self._danger_icon.opacity > 0.0 else 1.0
-                    )
-
-            self.danger_flash_timer = bs.Timer(0.4, danger_flash, repeat=True)
-
-        else:
-            # If not on 1 or 2 lives, clean up both
-            if hasattr(self, "_warning_icon") and self._warning_icon:
-                self._warning_icon.delete()
-            if hasattr(self, "_flash_timer"):
-                self._flash_timer = None
-
-            if hasattr(self, "_danger_icon") and self._danger_icon:
-                self._danger_icon.delete()
-            if hasattr(self, "danger_flash_timer"):
-                self.danger_flash_timer = None
-                
-    def handle_player_spawned(self) -> None:
-        """Our player spawned; hooray!"""
-        if not self.node:
-            return
-        self.node.opacity = 1.0
-        self.update_for_lives()
-
-    def handle_player_died(self) -> None:
-        """Well poo; our player died."""
-        if not self.node:
-            return
-        if self._show_death:
-            bs.animate(
-                self.node,
-                'opacity',
-                {
-                    0.00: 1.0,
-                    0.05: 0.0,
-                    0.10: 1.0,
-                    0.15: 0.0,
-                    0.20: 1.0,
-                    0.25: 0.0,
-                    0.30: 1.0,
-                    0.35: 0.0,
-                    0.40: 1.0,
-                    0.45: 0.0,
-                    0.50: 1.0,
-                    0.55: 0.2,
-                },
-            )
-            player = self._player()
-            lives = player.lives if player else 0
-            if lives == 0:
-                bs.timer(0.6, self.update_for_lives)
-
-    @override
-    def handlemessage(self, msg: Any) -> Any:
-        if isinstance(msg, bs.DieMessage):
-            self.node.delete()
-            return None
-        return super().handlemessage(msg)
-
 
 class Player(bs.Player['Team']):
     """Our player type for this game."""
 
     def __init__(self) -> None:
         self.lives = 0
-        self.icons: list[Icon] = []
 
 
 class Team(bs.Team[Player]):
@@ -341,6 +116,8 @@ class EliminationEX(bs.TeamGameActivity[Player, Team]):
         self._balance_total_lives = bool(
             settings.get('Balance Total Lives', False)
         )
+        self._allows_team0_updates = True
+        self._allows_team1_updates = True
         self._solo_mode = False
 
         # Base class overrides:
@@ -352,12 +129,12 @@ class EliminationEX(bs.TeamGameActivity[Player, Team]):
     @override
     def get_instance_description(self) -> str | Sequence:
         # (Pylint Bug?) pylint: disable=missing-function-docstring
-        return 'Last team standing wins.'
+        return 'Last team with everyone alive wins.'
 
     @override
     def get_instance_description_short(self) -> str | Sequence:
         # (Pylint Bug?) pylint: disable=missing-function-docstring
-        return 'last team standing wins'
+        return 'last team with everyone alive wins'
 
     @override
     def on_player_join(self, player: Player) -> None:
@@ -370,13 +147,8 @@ class EliminationEX(bs.TeamGameActivity[Player, Team]):
             self._update_solo_mode()
         else:
             # Create our icon and spawn.
-            player.icons = [Icon(player, position=(0, 50), scale=0.8)]
             if player.lives > 0:
                 self.spawn_player(player)
-
-        # Don't waste time doing this until begin.
-        if self.has_begun():
-            self._update_icons()
 
     @override
     def on_begin(self) -> None:
@@ -408,7 +180,7 @@ class EliminationEX(bs.TeamGameActivity[Player, Team]):
                 lesser_team.players[add_index].lives += 1
                 add_index = (add_index + 1) % len(lesser_team.players)
 
-        self._update_icons()
+        self._create_icons()
 
         # We could check game-over conditions at explicit trigger points,
         # but lets just do the simple thing and poll it.
@@ -426,81 +198,77 @@ class EliminationEX(bs.TeamGameActivity[Player, Team]):
                     if not player.is_alive():
                         self.spawn_player(player)
                     break
+                    
+    def _create_team_ui(self, team, x_pos: float, align: str):
+        scale = (80, 80)
+        text_scale = 1.0
 
-    def _update_icons(self) -> None:
-        # pylint: disable=too-many-branches
+        tex = bs.gettexture(team.earthboundling)
 
-        # In free-for-all mode, everyone is just lined up along the bottom.
-        if isinstance(self.session, bs.FreeForAllSession):
-            count = len(self.teams)
-            x_offs = 85
-            xval = x_offs * (count - 1) * -0.5
-            for team in self.teams:
-                if len(team.players) == 1:
-                    player = team.players[0]
-                    for icon in player.icons:
-                        icon.set_position_and_scale((xval, 30), 0.7)
-                        icon.update_for_lives()
-                    xval += x_offs
+        # Direction: left side (-1) or right side (+1)
+        dir_mult = -1 if x_pos < 0 else 1
 
-        # In teams mode we split up teams.
-        else:
-            if self._solo_mode:
-                # First off, clear out all icons.
-                for player in self.players:
-                    player.icons = []
+        # Base positions
+        icon_y = scale[1]
+        name_offset_y = 30
+        lives_offset_y = -30
 
-                # Now for each team, cycle through our available players
-                # adding icons.
-                for team in self.teams:
-                    if team.id == 0:
-                        xval = -60
-                        x_offs = -78
-                    else:
-                        xval = 60
-                        x_offs = 78
-                    is_first = True
-                    test_lives = 1
-                    while True:
-                        players_with_lives = [
-                            p
-                            for p in team.spawn_order
-                            if p and p.lives >= test_lives
-                        ]
-                        if not players_with_lives:
-                            break
-                        for player in players_with_lives:
-                            player.icons.append(
-                                Icon(
-                                    player,
-                                    position=(xval, (40 if is_first else 25)),
-                                    scale=1.0 if is_first else 0.5,
-                                    name_maxwidth=130 if is_first else 75,
-                                    name_scale=0.8 if is_first else 1.0,
-                                    flatness=0.0 if is_first else 1.0,
-                                    shadow=0.5 if is_first else 1.0,
-                                    show_death=is_first,
-                                    show_lives=False,
-                                )
-                            )
-                            xval += x_offs * (0.8 if is_first else 0.56)
-                            is_first = False
-                        test_lives += 1
-            # Non-solo mode.
-            else:
-                for team in self.teams:
-                    if team.id == 0:
-                        xval = -50
-                        x_offs = -85
-                    else:
-                        xval = 50
-                        x_offs = 85
-                    for player in team.players:
-                        for icon in player.icons:
-                            icon.set_position_and_scale((xval, 30), 0.7)
-                            icon.update_for_lives()
-                        xval += x_offs
+        name_offset_x = 50 * dir_mult
+        lives_offset_x = 80 * -dir_mult
 
+        # Icon
+        icon = bs.newnode('image', attrs={
+            'texture': tex,
+            'position': (x_pos, icon_y),
+            'scale': scale,
+            'opacity': 0.5,
+            'absolute_scale': True,
+            'attach': 'bottomCenter',
+        })
+
+        # Name (above, slightly outward)
+        name = bs.newnode("text", attrs={
+            "text": team.name,
+            "position": (x_pos + name_offset_x, icon_y + name_offset_y),
+            "scale": text_scale,
+            "h_attach": "center",
+            "v_attach": "bottom",
+            "h_align": align,
+            "color": team.color,
+            "maxwidth": 250,
+        })
+
+        # Lives (next to name)
+        lives = bs.newnode("text", attrs={
+            "text": f'x{team.players[0].lives}',
+            "position": (x_pos + lives_offset_x, icon_y + lives_offset_y),
+            "scale": 1.5,
+            "h_attach": "center",
+            "v_attach": "bottom",
+            "h_align": align,
+            "color": team.color,
+        })
+
+        return icon, name, lives
+
+
+    def _create_icons(self) -> None:
+        # Left team
+        if self.teams[0] and self.teams[0].players:
+            self.team1eb, self.team1name, self.team1lives = self._create_team_ui(
+                self.teams[0],
+                x_pos=-250,
+                align="left"
+            )
+        if self.teams[1] and self.teams[1].players:
+            # Right team
+            self.team2eb, self.team2name, self.team2lives = self._create_team_ui(
+                self.teams[1],
+                x_pos=250,
+                align="right"
+            )
+        
+        
     def _get_spawn_point(self, player: Player) -> bs.Vec3 | None:
         del player  # Unused.
 
@@ -537,10 +305,6 @@ class EliminationEX(bs.TeamGameActivity[Player, Team]):
         actor = self.spawn_player_spaz(player, self._get_spawn_point(player))
         if not self._solo_mode:
             bs.timer(0.3, bs.Call(self._print_lives, player))
-
-        # If we have any icons, update their state.
-        for icon in player.icons:
-            icon.handle_player_spawned()
         return actor
 
     def _print_lives(self, player: Player) -> None:
@@ -549,15 +313,6 @@ class EliminationEX(bs.TeamGameActivity[Player, Team]):
         # We get called in a timer so it's possible our player has left/etc.
         if not player or not player.is_alive() or not player.node:
             return
-
-        popuptext.PopupText(
-            'x' + str(player.lives - 1),
-            color=(1, 1, 0, 1),
-            offset=(0, -0.8, 0),
-            random_offset=0.0,
-            scale=1.8,
-            position=player.node.position,
-        ).autoretain()
 
     @override
     def on_player_leave(self, player: Player) -> None:
@@ -570,10 +325,6 @@ class EliminationEX(bs.TeamGameActivity[Player, Team]):
             if player in player.team.spawn_order:
                 player.team.spawn_order.remove(player)
 
-        # Update icons in a moment since our team will be gone from the
-        # list then.
-        bs.timer(0, self._update_icons)
-
         # If the player to leave was the last in spawn order and had
         # their final turn currently in-progress, mark the survival time
         # for their team.
@@ -583,6 +334,58 @@ class EliminationEX(bs.TeamGameActivity[Player, Team]):
 
     def _get_total_team_lives(self, team: Team) -> int:
         return sum(player.lives for player in team.players)
+    
+    def _update_icons(self, player: Player):
+        if player.team == self.teams[0]:
+            # We allow for updating the text, since it's crucial.
+            self.team1lives.text = f'x{self.teams[0].players[0].lives}'
+            if not self._allows_team0_updates:
+                return
+            # Anything around here could be recalled, which is why we prevent that.
+            self._allows_team0_updates = False
+            duration = 1
+            intensity = 8
+            if player.lives == 0:
+                duration += 1
+                intensity += 4
+                list = mell.screams
+                bs.getsound(random.choice(list)).play()
+                self.team1eb.texture = bs.gettexture(f'{player.team.earthboundling}_lose')
+                ImageJumper.jump_image(self.team1eb)
+            mell.shake_node(
+                self.team1lives,
+                duration=duration,
+                interval=0.01,
+                intensity=8,
+                array_num=2,
+            )
+            def reallow():
+                self._allows_team0_updates = True
+            bs.timer(duration, reallow)
+        else:
+            self.team2lives.text = f'x{self.teams[1].players[0].lives}'
+            if not self._allows_team1_updates:
+                return
+            duration = 1
+            intensity = 8
+            if player.lives == 0:
+                duration += 1
+                intensity += 4
+                list = mell.screams
+                bs.getsound(random.choice(list)).play()
+                self.team2eb.texture = bs.gettexture(f'{player.team.earthboundling}_lose')
+                ImageJumper.jump_image(self.team2eb)
+            mell.shake_node(
+                self.team2lives,
+                duration=duration,
+                interval=0.01,
+                intensity=intensity,
+                array_num=2,
+            )
+            def reallow():
+                self._allows_team1_updates = True
+            bs.timer(duration, reallow)
+
 
     @override
     def handlemessage(self, msg: Any) -> Any:
@@ -599,10 +402,6 @@ class EliminationEX(bs.TeamGameActivity[Player, Team]):
                 )
                 player.lives = 0
 
-            # If we have any icons, update their state.
-            for icon in player.icons:
-                icon.handle_player_died()
-
             # Play big death sound on our last death
             # or for every one in solo mode.
             if self._solo_mode or player.lives == 0:
@@ -612,11 +411,16 @@ class EliminationEX(bs.TeamGameActivity[Player, Team]):
                 else:
                     death_sound.play()
 
-            for teammate in player.team.players:
-                if teammate is not player and teammate.is_alive():
-                    if teammate.actor:
-                        teammate.actor.handlemessage(bs.DieMessage())
-
+            def _kill_teammates():
+                for teammate in player.team.players:
+                    if teammate is not player and teammate.is_alive():
+                        if teammate.actor:
+                            teammate.actor.handlemessage(bs.DieMessage())
+            # add delay to attempt to stop infinite recursion...
+            bs.timer(0.01, _kill_teammates)
+            
+            self._update_icons(player)
+            
             if player.lives == 0:
                 if not player.team._has_been_eliminated:
                     player.team._has_been_eliminated = True
@@ -645,7 +449,6 @@ class EliminationEX(bs.TeamGameActivity[Player, Team]):
                     if player.lives > 0:
                         if not player.is_alive():
                             self.spawn_player(player)
-                            self._update_icons()
                         break
 
         # If we're down to 1 or fewer living teams, start a timer to end

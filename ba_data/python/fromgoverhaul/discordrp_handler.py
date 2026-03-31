@@ -141,60 +141,75 @@ class RichPresence:
                         map_image = maps[self.map]
                     except:
                         map_image = 'unkmap'
-
-                    self.presence.set(
-                    {  
-                        "details": 
-                        'playin ' + bs.get_foreground_host_activity().name
-                        if not isinstance(bs.get_foreground_host_session(), bs.CoopSession)
-                        else(
-                            f"SCORE: {bs.get_foreground_host_activity()._score} RANK: {bs.get_foreground_host_activity().ultrameter._rank}"
-                        ),
-                        "state": 'Party',
-                        "assets": {
-                            "large_image": map_image,
-                            "large_text": self.map,
-                            "small_image": sesssion_image,
-                            "small_text": sesssion + (
-                                (f' ({bs.get_foreground_host_activity().name})')
-                                if isinstance(bs.get_foreground_host_session(), bs.CoopSession) else ""
-                            ),
-                        },
-                        "timestamps": {"start":  self.starting_time},
-                        "party": {
-                            "id": "00",
-                            "size": (
-                                    max(1, len(bs.get_foreground_host_activity().players)),
-                                    bs.get_public_party_max_size()
-                                ) if self.mode != 'online' else
-                                max(1, len([p for p in bs.get_game_roster()])),
-                        },
+                    players = bs.get_foreground_host_activity().players
+                    count = len(players)
+                    session = bs.get_foreground_host_session()
+                    activity = bs.get_foreground_host_activity()
+                    if count > 1:
+                        party = None
+                        playerformatted = []
+                        for player in players:
+                            playerformatted.append(f'{player.getname()} ({player.character})')
+                        if not playerformatted:
+                            playerformatted = ['no one']
+                        state = f'with {", ".join(playerformatted)}'
+                    else:
+                        party = None
+                        try:
+                            name = players[0].getname()
+                        except IndexError:
+                            name = 'No one'
+                        try:
+                            character = players[0].character
+                        except IndexError:
+                            character = 'no players?'
+                        state = f'playing as {name} ({character})'
                         
-                    }
-                )
+                    small_text2 = f'({session.campaign_level_name})' if isinstance(session, bs.CoopSession) else ''
+                    if not sesssion:
+                        sesssion = ''
+                    self.presence.set(
+                        {  
+                            "details": 
+                            'playin ' + activity.name
+                            if not isinstance(session, bs.CoopSession)
+                            else(
+                                f"SCORE: {activity._score} RANK: {bs.get_foreground_host_activity().ultrameter._rank}"
+                            ),
+                            "state": state,
+                            "assets": {
+                                "large_image": map_image,
+                                "large_text": self.map,
+                                "small_image": sesssion_image,
+                                "small_text": sesssion + small_text2,
+                            },
+                            "timestamps": {"start":  self.starting_time},
+                            "party": party
+                        }
+                    )
 
                 elif self.mode == 'lobby':
                     self.presence.set(
-                    {  
-                        "details": 'selecting characters',
-                        "state": 'Party',
-                        "assets": {
-                            "large_text": 'The Lobby',
-                            "small_image": sesssion_image,
-                            "small_text": sesssion,
-                        },
-                        "timestamps": {"start": self.starting_time},
-                        "party": {
-                            "id": "00",
-                            "size": (
+                        {  
+                            "details": 'selecting characters',
+                            "state": 'Party',
+                            "assets": {
+                                "large_text": 'The Lobby',
+                                "small_image": sesssion_image,
+                                "small_text": sesssion,
+                            },
+                            "timestamps": {"start": self.starting_time},
+                            "party": {
+                                "id": "00",
+                                "size": (
+                                        max(1, len([p for p in bs.get_game_roster()])),
+                                        bs.get_public_party_max_size()
+                                    ) if self.mode != 'online' else
                                     max(1, len([p for p in bs.get_game_roster()])),
-                                    bs.get_public_party_max_size()
-                                ) if self.mode != 'online' else
-                                max(1, len([p for p in bs.get_game_roster()])),
-                        },
-                        
-                    }
-                )
+                            },
+                            
+                        }
+                    )
             
                 elif self.mode == 'online':
                     try:
@@ -207,18 +222,17 @@ class RichPresence:
 
                     self.presence.set(
                         {  
-                        "details": f'playin online in {name}',
-                        "state": 'Party',
-                        "assets": {
-                            "large_image": 'online',
-                            "large_text": 'Playing Online',
-                        },
-                        "timestamps": {"start": self.starting_time},
-                        "party": {
-                            "id": "00",
-                            "size": (max(1, len([p for p in bs.get_game_roster()])), 8),                    
-                        },
-                        
+                            "details": f'playin online in {name}',
+                            "state": 'Party',
+                            "assets": {
+                                "large_image": 'online',
+                                "large_text": 'Playing Online',
+                            },
+                            "timestamps": {"start": self.starting_time},
+                            "party": {
+                                "id": "00",
+                                "size": (max(1, len([p for p in bs.get_game_roster()])), 8),                    
+                            },
                         }
                     )
                 elif self.mode == 'replay':
@@ -271,6 +285,10 @@ class RichPresence:
                 self.mode = 'lobby'
                 self.last_mode = 'lobby'
                 self.starting_time = int(time.time())  
+            elif isinstance(bs.get_foreground_host_activity(), MainMenuActivity):
+                self.mode = 'menu'
+                self.last_mode = 'menu'
+                self.starting_time = int(time.time())        
             elif isinstance(bs.get_foreground_host_activity(), GameActivity):
                 self.mode = 'gameplay'
                 self.last_mode = 'gameplay'
@@ -293,11 +311,7 @@ class RichPresence:
             ):
                 self.mode = 'replay'
                 self.last_mode = 'replay'
-                self.starting_time = int(time.time())  
-            elif isinstance(bs.get_foreground_host_activity(), MainMenuActivity):
-                self.mode = 'menu'
-                self.last_mode = 'menu'
-                self.starting_time = int(time.time())               
+                self.starting_time = int(time.time())         
             elif isinstance(bs.get_foreground_host_activity(), CreditsActivity):
                 self.mode = 'credits'
                 self.last_mode = 'credits'

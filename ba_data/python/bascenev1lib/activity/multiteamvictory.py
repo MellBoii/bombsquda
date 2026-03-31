@@ -469,15 +469,18 @@ class TeamSeriesVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
                 transition_delay=tdelay,
             ).autoretain()
         self.entries = player_entries
-        # Ew
-        places = []
-        for i in range(3):  # change 3 to however many places you want
-            try:
-                places.append(player_entries[i][2])
-            except IndexError:
-                places.append(None)
-        self.p1, self.p2, self.p3 = places
-        self._show_places()
+        if self._is_ffa:
+            places = []
+            for i in range(3):  # change 3 to however many places you want
+                try:
+                    places.append(player_entries[i][2])
+                except IndexError:
+                    places.append(None)
+            self.p1, self.p2, self.p3 = places
+            self._show_places()
+        else:
+            # we do a specific cutscene later for teams...
+            pass
         bs.timer(15.0, bs.WeakCall(self._show_tips))
 
     def _show_tips(self) -> None:
@@ -572,65 +575,27 @@ class TeamSeriesVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
         from bascenev1lib.actor.zoomtext import ZoomText
         from bascenev1lib.actor.spazfactory import SpazFactory
         fac = SpazFactory.get()
-
-        if not self._is_ffa:
-            offs_v = 0.0
-            ZoomText(
-                team.name,
-                position=(0, 97),
-                color=team.color,
-                scale=1.15,
-                jitter=1.0,
-                maxwidth=250,
-            ).autoretain()
-            s_extra = 1.0 if self._is_ffa else 1.0
-
-            # Some languages say "FOO WINS" differently for teams vs players.
-            if isinstance(self.session, bs.FreeForAllSession):
-                wins_resource = 'seriesWinLine1PlayerText'
-            else:
-                wins_resource = 'seriesWinLine1TeamText'
-            wins_text = bs.Lstr(resource=wins_resource)
-
-            # Temp - if these come up as the english default, fall-back to the
-            # unified old form which is more likely to be translated.
-            ZoomText(
-                wins_text,
-                position=(0, -10 + offs_v),
-                color=team.color,
-                scale=0.70 * s_extra,
-                jitter=1.0,
-                maxwidth=300,
-            ).autoretain()
-            ZoomText(
-                bs.Lstr(resource='seriesWinLine2Text'),
-                position=(0, -110 + offs_v),
-                scale=1.0 * s_extra,
-                color=team.color,
-                jitter=1.0,
-                maxwidth=250,
-            ).autoretain()
-        else:
-            ZoomText(
-                bs.Lstr(resource='winsSeriesPlayerText', subs=[('${NAME}', team.name)]),
-                position=(0, 220),
-                color=team.color,
-                scale=1.15,
-                jitter=1.2,
-                maxwidth=800,
-            ).autoretain()
-            if self.p1:
-                self.p1node.texture = fac.get_media(self.p1.player.character)['EBwin']
-                random.choice(fac.get_media(self.p1.player.character)['victory_sounds']).play()
-            if self.p2 and not self.p3:
-                self.p2node.texture = fac.get_media(self.p2.player.character)['EBlose']
-                if self.p2.player.character == 'John Grace':
-                    bs.getsound('gibbed').play()
-                    ImageJumper.jump_image(self.p2node, 620, 230, -1100)
-                bs.timer(0.8, random.choice(fac.get_media(self.p2.player.character)['death_sounds']).play)
-            if self.p3:
-                self.p3node.texture = fac.get_media(self.p3.player.character)['EBlose']
-                if self.p3.player.character == 'John Grace':
-                    bs.getsound('gibbed').play()
-                    ImageJumper.jump_image(self.p3node, 620, 230, -1100)
-                bs.timer(0.8, random.choice(fac.get_media(self.p3.player.character)['death_sounds']).play)
+        
+        ZoomText(
+            bs.Lstr(resource='winsSeriesPlayerText', subs=[('${NAME}', team.name)]),
+            position=(0, 220),
+            color=team.color,
+            scale=1.15,
+            jitter=1.2,
+            maxwidth=800,
+        ).autoretain()
+        if self.p1:
+            self.p1node.texture = fac.get_media(self.p1.player.character)['EBwin']
+            random.choice(fac.get_media(self.p1.player.character)['victory_sounds']).play()
+        if self.p2 and not self.p3:
+            self.p2node.texture = fac.get_media(self.p2.player.character)['EBlose']
+            if self.p2.player.character == 'John Grace':
+                bs.getsound('gibbed').play()
+                ImageJumper.jump_image(self.p2node, 620, 230, -1100)
+            bs.timer(0.8, random.choice(fac.get_media(self.p2.player.character)['death_sounds']).play)
+        if self.p3:
+            self.p3node.texture = fac.get_media(self.p3.player.character)['EBlose']
+            if self.p3.player.character == 'John Grace':
+                bs.getsound('gibbed').play()
+                ImageJumper.jump_image(self.p3node, 620, 230, -1100)
+            bs.timer(0.8, random.choice(fac.get_media(self.p3.player.character)['death_sounds']).play)

@@ -27,6 +27,7 @@ class PlaylistBrowserWindow(bui.MainWindow):
         playlist_select_context: PlaylistSelectContext | None = None,
     ):
         # pylint: disable=cyclic-import
+        self._r = 'playlistBrowser'
         from bauiv1lib.playlist import PlaylistTypeVars
 
         # Store state for when we exit the next game.

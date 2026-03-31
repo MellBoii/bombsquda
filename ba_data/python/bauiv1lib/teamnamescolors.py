@@ -8,17 +8,37 @@ from typing import TYPE_CHECKING, cast, override
 
 from bauiv1lib.popup import PopupWindow
 from bauiv1lib.colorpicker import ColorPicker
+from bauiv1lib.texturepicker import TexturePicker
 import bauiv1 as bui
 
 if TYPE_CHECKING:
     from typing import Sequence
 
+EBTEXTURES = [
+    'earthbound/spazbound',
+    'earthbound/snakebound',
+    'earthbound/mellbound',
+    'earthbound/susiebound',
+    'earthbound/sonicbound',
+    'earthbound/noobbound',
+    'earthbound/ralseibound',
+    'earthbound/noisebound',
+    'earthbound/raybound',
+    'earthbound/knightbound',
+    'earthbound/budbound',
+    'earthbound/dozerbound',
+    'earthbound/gracebound',
+    'earthbound/irebound',
+    'earthbound/kirbybound',
+    'earthbound/homerbound',
+    'earthbound/capbound',
+]
 
 class TeamNamesColorsWindow(PopupWindow):
     """A popup window for customizing team names and colors."""
 
     def __init__(self, scale_origin: tuple[float, float]):
-        from bascenev1 import DEFAULT_TEAM_COLORS, DEFAULT_TEAM_NAMES
+        from bascenev1 import DEFAULT_TEAM_COLORS, DEFAULT_TEAM_NAMES, DEFAULT_TEAM_EBL
 
         self._width = 500
         self._height = 330
@@ -50,8 +70,12 @@ class TeamNamesColorsWindow(PopupWindow):
         self._colors = list(
             appconfig.get('Custom Team Colors', DEFAULT_TEAM_COLORS)
         )
+        self._textures = list(
+            appconfig.get('Custom Team Earthboundlings', DEFAULT_TEAM_EBL)
+        )
 
         self._color_buttons: list[bui.Widget] = []
+        self._color_tex_buttons: list[bui.Widget] = []
         self._color_text_fields: list[bui.Widget] = []
 
         resetbtn = bui.buttonwidget(
@@ -69,18 +93,31 @@ class TeamNamesColorsWindow(PopupWindow):
                 bui.buttonwidget(
                     parent=self.root_widget,
                     autoselect=True,
-                    position=(50, 0 + 195 - 90 * i),
+                    position=(20, 0 + 195 - 90 * i),
                     on_activate_call=bui.Call(self._color_click, i),
-                    size=(70, 70),
+                    size=(60, 70),
                     color=self._colors[i],
                     label='',
                     button_type='square',
                 )
             )
+            self._color_tex_buttons.append(
+                bui.buttonwidget(
+                    parent=self.root_widget,
+                    autoselect=True,
+                    position=(100, 0 + 195 - 90 * i),
+                    on_activate_call=bui.Call(self._texture_click, i),
+                    size=(70, 70),
+                    label='',
+                    texture=bui.gettexture(self._textures[i]),
+                    button_type='square',
+                    color=(1, 1, 1),
+                )
+            )
             self._color_text_fields.append(
                 bui.textwidget(
                     parent=self.root_widget,
-                    position=(135, 0 + 201 - 90 * i),
+                    position=(180, 0 + 201 - 90 * i),
                     size=(280, 46),
                     text=self._names[i],
                     h_align='left',
@@ -133,6 +170,16 @@ class TeamNamesColorsWindow(PopupWindow):
             delegate=self,
             tag=i,
         )
+    def _texture_click(self, i: int) -> None:
+        textures = EBTEXTURES
+        TexturePicker(
+            parent=self.root_widget,
+            position=self._color_buttons[i].get_screen_space_center(),
+            offset=(270.0, 0),
+            delegate=self,
+            textures=textures,
+            tag=i,
+        )
 
     def color_picker_closing(self, picker: ColorPicker) -> None:
         """Called when the color picker is closing."""
@@ -143,6 +190,16 @@ class TeamNamesColorsWindow(PopupWindow):
         """Called when a color is selected in the color picker."""
         self._colors[picker.get_tag()] = color
         self._update()
+    
+    def texture_picker_selected(
+        self, picker: TexturePicker, color: Sequence[float]
+    ) -> None:
+        """Called when a color is selected in the color picker."""
+        self._textures[picker.get_tag()] = color
+        self._update()
+    
+    def texture_picker_closing(self, pickker: TexturePicker) -> None:
+        """Called when the tex picker is closing."""
 
     def _reset(self) -> None:
         from bascenev1 import DEFAULT_TEAM_NAMES, DEFAULT_TEAM_COLORS
@@ -160,6 +217,7 @@ class TeamNamesColorsWindow(PopupWindow):
     def _update(self) -> None:
         for i in range(2):
             bui.buttonwidget(edit=self._color_buttons[i], color=self._colors[i])
+            bui.buttonwidget(edit=self._color_tex_buttons[i], texture=bui.gettexture(self._textures[i]))
             bui.textwidget(
                 edit=self._color_text_fields[i], color=self._colors[i]
             )
@@ -206,6 +264,7 @@ class TeamNamesColorsWindow(PopupWindow):
         else:
             cfg['Custom Team Names'] = list(new_names)
             cfg['Custom Team Colors'] = list(self._colors)
+            cfg['Custom Team Earthboundlings'] = list(self._textures)
 
         cfg.commit()
         self._transition_out()

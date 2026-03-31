@@ -139,6 +139,12 @@ class SpongetatoGame(bs.TeamGameActivity[Player, Team]):
         actor.impact_scale = 0.01
         actor.play_big_death_sound = True
         return actor
+    
+    @override
+    def on_player_leave(self, player: Player) -> None:
+        # (Pylint Bug?) pylint: disable=missing-function-docstring
+        super().on_player_leave(player)
+        bs.timer(0.1, self._update)
         
     @override
     def handlemessage(self, msg: Any) -> Any:
@@ -154,7 +160,7 @@ class SpongetatoGame(bs.TeamGameActivity[Player, Team]):
             if player.actor._has_hot_potato != True:
                 self.respawn_player(player)
             # Otherwise, hand out another potato
-            # to others.
+            # to others. (or end if everyone dead)
             else:
                 # Update.
                 bs.timer(0.1, self._update)

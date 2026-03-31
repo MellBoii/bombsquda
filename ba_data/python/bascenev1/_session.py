@@ -100,6 +100,7 @@ class Session:
         *,
         team_names: Sequence[str] | None = None,
         team_colors: Sequence[Sequence[float]] | None = None,
+        team_earthboundlings: Sequence[str] | None = None,
         min_players: int = 1,
         max_players: int = 8,
         submit_score: bool = True,
@@ -213,10 +214,15 @@ class Session:
                     f' these numbers must match.'
                 )
             for i, color in enumerate(team_colors):
+                if team_earthboundlings:
+                    it = team_earthboundlings[i]
+                else:
+                    it = None
                 team = SessionTeam(
                     team_id=self._next_team_id,
                     name=GameActivity.get_team_display_string(team_names[i]),
                     color=color,
+                    earthboundling=it,
                 )
                 self.sessionteams.append(team)
                 self._next_team_id += 1

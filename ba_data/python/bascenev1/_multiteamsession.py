@@ -24,6 +24,7 @@ import bascenev1
 
 DEFAULT_TEAM_COLORS = ((0.1, 0.25, 1.0), (1.0, 0.25, 0.2))
 DEFAULT_TEAM_NAMES = ('Blue', 'Red')
+DEFAULT_TEAM_EBL = ['earthbound/sonicbound', 'earthbound/susiebound']
 
 
 class MultiTeamSession(Session):
@@ -53,9 +54,11 @@ class MultiTeamSession(Session):
         if self.use_teams:
             team_names = cfg.get('Custom Team Names', DEFAULT_TEAM_NAMES)
             team_colors = cfg.get('Custom Team Colors', DEFAULT_TEAM_COLORS)
+            team_earthboundlings = cfg.get('Custom Team Earthboundlings', DEFAULT_TEAM_EBL)
         else:
             team_names = None
             team_colors = None
+            team_earthboundlings = None
 
         # print('FIXME: TEAM BASE SESSION WOULD CALC DEPS.')
         depsets: Sequence[bascenev1.DependencySet] = []
@@ -64,6 +67,7 @@ class MultiTeamSession(Session):
             depsets,
             team_names=team_names,
             team_colors=team_colors,
+            team_earthboundlings=team_earthboundlings,
             min_players=1,
             max_players=self.get_max_players(),
         )

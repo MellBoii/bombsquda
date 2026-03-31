@@ -1344,6 +1344,9 @@
 	"rpcText": "at the Main Menu screen",
 	"DiscordText": "Discord Server"
   },
+  "playlistBrowser": {
+	"rpcText": "browsing playlists"
+  },
   "makeItSoText": "Make it So",
   "mapSelectGetMoreMapsText": "Get More Maps...",
   "mapSelectText": "Select...",
@@ -1707,7 +1710,7 @@
     "moddingToolsText": "Modding Tools",
     "mustRestartText": "You must restart the game for this to take effect.",
     "netTestingText": "Network Testing",
-    "resetText": "Reset",
+    "resetText": "try again!",
     "sendInfoText": "Enter Code",
     "showBombTrajectoriesText": "Show Bomb Trajectories",
     "showDemosWhenIdleText": "Show demos when idle",
@@ -1814,7 +1817,7 @@
   "submittingPromoCodeText": "Submitting Code...",
   "successText": "Success!",
   "supportEmailText": "If you are experiencing any problems with the\napp, please email ${EMAIL}.",
-  "teamNamesColorText": "Team Names/Colors...",
+  "teamNamesColorText": "Customize Teams...",
   "telnetAccessGrantedText": "Telnet access enabled.",
   "telnetAccessText": "Telnet access detected; allow?",
   "testBuildErrorText": "This test build is no longer active; please check for a new version.",
@@ -2088,6 +2091,7 @@
       "Last one standing wins.": "last one alive winner",
       "Last remaining alive wins.": "last alive win",
       "Last team standing wins.": "last team alive winner",
+	  "Last team with everyone alive wins.": "last team with everyone winner",
       "Prevent enemies from reaching the exit.": "kill mafak going to th exit",
       "Reach the enemy flag to score.": "touch flags.",
       "Return the enemy flag to score.": "trade flags xd.",
@@ -2114,6 +2118,7 @@
       "kill ${ARG1} enemies": "kill ${ARG1} idiots",
       "last one standing wins": "last one alive wiener",
       "last team standing wins": "last team alive winne rlol",
+      "last team with everyone alive wins": "last team with everyone winner",
       "return ${ARG1} flags": "get ${ARG1} flags",
       "return 1 flag": "get one flag",
       "run ${ARG1} laps": "run ${ARG1} laps",

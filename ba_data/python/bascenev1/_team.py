@@ -49,6 +49,7 @@ class SessionTeam:
         team_id: int = 0,
         name: babase.Lstr | str = '',
         color: Sequence[float] = (1.0, 1.0, 1.0),
+        earthboundling: str = 'blank',
     ):
         self.id = team_id
         self.name = name
@@ -56,6 +57,7 @@ class SessionTeam:
         self.players = []
         self.customdata = {}
         self.activityteam: Team | None = None
+        self.earthboundling = earthboundling
 
     def leave(self) -> None:
         """(internal)
@@ -110,6 +112,7 @@ class Team[PlayerT: bascenev1.Player]:
         self.id = sessionteam.id
         self.name = sessionteam.name
         self.color = sessionteam.color
+        self.earthboundling = sessionteam.earthboundling
         self._customdata = {}
         self._expired = False
         self._postinited = True

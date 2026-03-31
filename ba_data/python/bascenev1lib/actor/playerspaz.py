@@ -271,7 +271,7 @@ class PlayerSpaz(Spaz):
                 'scale': scale,
                 'color': (1, 1, 1),
             })
-        self.earthchar = make_image(self.media['earthportrait'], (80, 80))
+        self.earthchar = make_image(self.media['earthportrait'], (100, 100))
         self.earthmeter = make_image(bs.gettexture('earthmeter'), (150, 150))
 
         self.earthmetertext = bs.newnode('text', attrs={
