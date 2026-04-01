@@ -895,5 +895,12 @@ class CoopSubMenu(bui.MainWindow):
         )
 
     def _custom_campaign(self) -> None:
-        bui.screenmessage('Nothing here.')
-        bui.getsound('error').play()
+    # no-op if we're not currently in control.
+        if not self.main_window_has_control():
+            return
+        from bauiv1lib.custom_coop import CustomCoopWindow
+        self.main_window_replace(
+            CustomCoopWindow(
+                origin_widget=self._root_widget,
+            )
+        )

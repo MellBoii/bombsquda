@@ -520,6 +520,7 @@
   "playerSwoon": "SWOON",
   "mellNotDone": "this isn't done yet, come back later",
   "mellTransfer": "transfer tickets",
+  "customCampaignSubtitle": "The Custom Campaign",
   "kookooAppears": "You feel your attention\nsharpening too much... Kookoo haunts you.\nLet go of any items when it shows up.",
   "dozerAppears": "Your pride felt way stronger\nthan it even was... Dozer haunts you.\nStand still, don't move when it shows up.",
   "ireAppears": "Your massive amounts of violence\nin the past now worry you... Ire haunts you.\nWhen it attacks, don't stay on ground.",
@@ -553,8 +554,8 @@
   "speedrunPB": "Personal \nbest is: ${TIME}",
   "newRecord": "NEW RECORD!!!",
   "noShield": "No shield, hardmode is on!",
-  "autoText": "Auto",
-  "backText": "Back",
+  "autoText": "automatically",
+  "backText": "return..",
   "aboutBombSqudaIDSTitle": "About BombSquda IDs",
   "aboutBombSqudaIDS": "BombSquda IDs are special codes that you can link to \nyour Discord and use for various things like running \ncommands, and some other upcoming features. \nDo not share these IDs (unless you acknowledge \nwhatever could happen) because they will later on be \nused to store account-based data. If you delete and \nre-install the modpack, this ID will change. If you wish \nto assign a ID back to your device/build, DM @mellboii \non Discord (and i'll attempt to do it!)",
   "aboutCustomCurrencyTitle": "About Spaz Tickets and Tokens",
@@ -1484,7 +1485,8 @@
     "editButtonText": "edit",
     "explanationText": "(custom player names and appearances for this account)",
     "newButtonText": "new",
-    "titleText": "profiles"
+    "titleText": "profiles",
+	"rpcText": "editing profiles"
   },
   "playerText": "Player",
   "playlistNoValidGamesErrorText": "This playlist contains no valid unlocked games.",

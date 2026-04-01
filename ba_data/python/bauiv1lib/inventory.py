@@ -8,7 +8,6 @@ from typing import override
 
 import bauiv1 as bui
 import babase as ba
-import bascenev1 as bs
 
 class InventoryWindow(bui.MainWindow):
     """Shows what you got."""
@@ -18,8 +17,6 @@ class InventoryWindow(bui.MainWindow):
         transition: str | None = 'in_right',
         origin_widget: bui.Widget | None = None,
     ):
-
-        bui.set_analytics_screen('Help Window')
 
         assert bui.app.classic is not None
         uiscale = bui.app.ui_v1.uiscale
@@ -54,7 +51,7 @@ class InventoryWindow(bui.MainWindow):
             root_widget=bui.containerwidget(
                 size=(self._width, self._height),
                 toolbar_visibility=(
-                    'menu_full' if uiscale is bui.UIScale.SMALL else 'menu_full'
+                    'menu_minimal' if uiscale is bui.UIScale.SMALL else 'menu_full'
                 ),
                 scale=scale,
             ),

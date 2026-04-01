@@ -877,6 +877,14 @@ class BomberBotStatic(BomberBot):
     """
 
     static = True
+    namelist = [
+        'Dozer', 
+        'dozinga', 
+        'sleepyhead', 
+        'fuckingyellowballheadbitchthatwontstopkillingmeingrace',
+        'BOT_PRIDE',
+    ]
+    character = 'Dozer'
     throw_dist_min = 0.0
 
 
@@ -887,6 +895,7 @@ class BomberBotPro(BomberBot):
     """
 
     points_mult = 2
+    character = 'OG Spaz'
     color = PRO_BOT_COLOR
     highlight = PRO_BOT_HIGHLIGHT
     default_bomb_count = 3
@@ -978,6 +987,7 @@ class BrawlerBotLite(BrawlerBot):
 
     color = LITE_BOT_COLOR
     highlight = LITE_BOT_HIGHLIGHT
+    character = 'Taobao Mascot'
     punchiness = 0.3
     charge_speed_min = 0.6
     charge_speed_max = 0.6
@@ -1089,7 +1099,7 @@ class BouncyBot(SpazBot):
 
     color = (1, 1, 1)
     highlight = (1.0, 0.5, 0.5)
-    character = 'Sonic'
+    character = 'Tails'
     punchiness = 1.0
     run = True
     bouncy = True
@@ -1112,7 +1122,8 @@ class ChargerBotPro(ChargerBot):
     color = PRO_BOT_COLOR
     highlight = PRO_BOT_HIGHLIGHT
     default_boxing_gloves = True
-    character = 'SM64 Mario'
+    character = 'Bowser'
+    namelist = ['King Koopa', 'Bowser', 'Browser', 'Koopa']
     points_mult = 3
 
 
@@ -1157,6 +1168,8 @@ class TriggerBotStatic(TriggerBot):
     """
 
     static = True
+    namelist = ['Ire', 'BOT_WRATH', ba.charstr(ba.SpecialChar.BOTTOM_BUTTON)]
+    character = 'Ire'
     throw_dist_min = 0.0
 
 
@@ -1166,9 +1179,11 @@ class TriggerBotPro(TriggerBot):
     category: Bot Classes
     """
 
+    namelist = ['Noisey', 'Noisester', 'The Noise', 'xXNoiseGamingXx']
     color = PRO_BOT_COLOR
     highlight = PRO_BOT_HIGHLIGHT
     default_bomb_count = 3
+    character = 'The Noise'
     default_boxing_gloves = True
     charge_speed_min = 1.0
     charge_speed_max = 1.0
@@ -1256,7 +1271,7 @@ class MelisoBot(StickyBot):
     # 1 emerald, cuz fuck you
     force_emeralds = 1
 
-class BuddieBot(StickyBot):
+class BuddieBot(SpazBot):
     """Triple impact bomb bot with
     a HUGE throw rate.
     category: Bot Classes

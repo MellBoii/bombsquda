@@ -125,20 +125,30 @@ class MainMenuActivity(bs.GameActivity[bs.Player, bs.Team]):
                 otherplayer.actor.refresh_earth_meter()
         if self.globalsnode.camera_mode == 'rotate':
             self.globalsnode.camera_mode = 'follow'
-            for nodeactor in self._word_actors:
-                bs.animate(nodeactor.node, 'opacity', {0: 1, 0.7: 0})
-            bs.animate(self.modpack_name.node, 'opacity', {0: 1, 0.7: 0})
-            bs.animate(self.splashtext.node, 'opacity', {0: 1, 0.7: 0})
+            self.hide_menu_text()
         return self.spawn_player_spaz(player, position = (0, 5, 0))
+    
+    def hide_menu_text(self):
+        for nodeactor in self._word_actors:
+            if getattr(nodeactor.node, 'shadow', None):
+                bs.animate(nodeactor.node, 'shadow', {0: 0.2, 0.7: 0})
+            bs.animate(nodeactor.node, 'opacity', {0: 1, 0.7: 0})
+        bs.animate(self.modpack_name.node, 'opacity', {0: 1, 0.7: 0})
+        bs.animate(self.splashtext.node, 'opacity', {0: 1, 0.7: 0})
+    
+    def show_menu_text(self):
+        for nodeactor in self._word_actors:
+            if getattr(nodeactor.node, 'shadow', None):
+                bs.animate(nodeactor.node, 'shadow', {0: 0, 0.7: 0.2})
+            bs.animate(nodeactor.node, 'opacity', {0: 0, 0.7: 1})
+        bs.animate(self.modpack_name.node, 'opacity', {0: 0, 0.7: 1})
+        bs.animate(self.splashtext.node, 'opacity', {0: 0, 0.7: 1})
     
     @override
     def on_player_leave(self, player: bs.Player):
         if len(self.players) <= 0:
             self.globalsnode.camera_mode = 'rotate'
-            for nodeactor in self._word_actors:
-                bs.animate(nodeactor.node, 'opacity', {0: 0, 0.7: 1})
-            bs.animate(self.modpack_name.node, 'opacity', {0: 0, 0.7: 1})
-            bs.animate(self.splashtext.node, 'opacity', {0: 0, 0.7: 1})
+            self.show_menu_text()
             self._bots.clearslowly()
         super().on_player_leave(player)
     
@@ -718,13 +728,13 @@ class MainMenuActivity(bs.GameActivity[bs.Player, bs.Team]):
     def _get_custom_logo_tex_name(self) -> str | None:
         plus = bui.app.plus
         assert plus is not None
-
-        if plus.get_v1_account_misc_read_val('easter', False):
-            return 'logoEaster'
+        
         if self.christmas:
             return 'logoChristmas'
         if self.aprilfools:
             return 'logoAF'
+        if plus.get_v1_account_misc_read_val('easter', False):
+            return 'logoEaster'
         return None
 
     # Pop the logo and menu in.

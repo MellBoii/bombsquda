@@ -19,6 +19,7 @@ import os
 import weakref
 from bascenev1lib.actor.popuptext import PopupText, PopupWriterText
 from bascenev1lib.actor import spazappearance
+from datetime import date
 import bascenev1lib.actor.spazappearance as spazappearance
 from bascenev1._gameactivity import GameActivity
 
@@ -350,6 +351,14 @@ class Spaz(bs.Actor):
         # we can override if a skin setting exists
         if self.skin:
             character = self.skin
+        # get today's date
+        today = date.today()
+        day = today.day
+        month = today.month
+        aprilfools = month == 4 and day == 1
+        # we replace the character if today is april fools...
+        if aprilfools:
+            character = 'Spaz'
         media = factory.get_media(character)
         self.media = media
         punchmats = (factory.punch_material, shared.attack_material)

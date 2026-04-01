@@ -16,7 +16,7 @@ class TransferWindow(bui.MainWindow):
 
     def __init__(
         self,
-        transition: str | None = 'in_right',
+        transition: str | None = 'in_scale',
         origin_widget: bui.Widget | None = None,
     ):
 
