@@ -8,6 +8,7 @@ import random
 import weakref
 import logging
 from typing import TYPE_CHECKING, override
+from datetime import date
 
 import bascenev1 as bs
 
@@ -33,8 +34,15 @@ class Background(bs.Actor):
         # This way we can overlap multiple activities for fades
         # and whatnot.
         session = bs.getsession()
+        self.today2 = date.today()
+        self.day = self.today2.day
+        self.month = self.today2.month
+        self.christmas = self.month == 12 and self.day == 25
+        self.aprilfools = self.month == 4 and self.day == 1
+        
         self._session = weakref.ref(session)
         with session.context:
+            c = self.get_color()
             self.node = bs.newnode(
                 'image',
                 delegate=self,
@@ -43,12 +51,14 @@ class Background(bs.Actor):
                     'texture': bs.gettexture('bg'),
                     'tilt_translate': -0.3,
                     'has_alpha_channel': False,
-                    'color': (1, 1, 1),
+                    'color': c,
                 },
             )
             if flash:
-                bright = (1.8, 1.8, 1.8)
-                dark = (0.5, 0.5, 0.5)
+                brightness = 0.6
+                bright = (c[0] + brightness, c[1] + brightness, c[2] + brightness)
+                darkness = 0.3
+                dark = (c[0] - darkness, c[1] - darkness, c[2] - darkness)
                 bs.animate_array(
                     self.node, 
                     'color',
@@ -70,7 +80,7 @@ class Background(bs.Actor):
                     loop=False,
                 )
             if show_logo:
-                logo_texture = bs.gettexture('logo')
+                logo_texture = self.get_logo()
                 logo_mesh = None
                 logo_mesh_transparent = None
                 self.logo = bs.newnode(
@@ -78,8 +88,6 @@ class Background(bs.Actor):
                     owner=self.node,
                     attrs={
                         'texture': logo_texture,
-                        'mesh_opaque': logo_mesh,
-                        'mesh_transparent': logo_mesh_transparent,
                         'scale': (0.7, 0.7),
                         'vr_depth': -250,
                         'color': (0.35, 0.35, 0.35),
@@ -136,6 +144,26 @@ class Background(bs.Actor):
                         keys[timeval] = (random.random() - 0.5) * 0.0015 + 0.05
                         timeval += random.random() * 0.1
                     bs.animate(cmb, 'input1', keys, loop=True)
+    
+    def get_logo(self):
+        plus = bs.app.plus
+        if self.christmas:
+            return bs.gettexture('logoChristmas')
+        if self.aprilfools:
+            return bs.gettexture('logoAF')
+        if plus.get_v1_account_misc_read_val('easter', False):
+            return bs.gettexture('logoEaster')
+        return bs.gettexture('logo')
+    
+    def get_color(self):
+        plus = bs.app.plus
+        if self.christmas:
+            return (0.5, 0.1, 0.1)
+        if self.aprilfools:
+            return (1.5, 0, 1.5)
+        if plus.get_v1_account_misc_read_val('easter', False):
+            return (0, 0.8, 0.3)
+        return (0, 0.6, 0)
 
     @override
     def __del__(self) -> None:

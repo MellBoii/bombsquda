@@ -14,6 +14,7 @@ import babase as ba
 import random
 from bascenev1._dependency import DependencyComponent
 from bascenev1._messages import UNHANDLED
+from datetime import date
 
 
 if TYPE_CHECKING:
@@ -372,13 +373,41 @@ class Activity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         teams, however. They remain owned by the previous activity up
         until :meth:`~bascenev1.Activity.on_begin()` is called.
         """
+        today = date.today()
+        day = today.day
+        month = today.month
+        aprilfools = month == 4 and day == 1
+        noisetime = 0.4
+        foxytime = 0.1
+        if aprilfools:
+            noisetime = 0.1
+            foxytime = 0.001
         def checkdosound():
-            if ba.app.config.get("squda_noisepolution", False):
+            if ba.app.config.get("squda_noisepolution", False) or aprilfools:
                 if random.random() < 0.2:
                     # no more big ass list :)
                     n = random.randint(1, 32)
                     sound_name = f"randomnoises/noisePolution{n}"
                     bs.getsound(sound_name).play()
+            if aprilfools:
+                lists = [
+                    'Fuck you',
+                    'mell was here',
+                    'STOP PLAYING THIS FUJCKEGJQRNGHEEGTAMEMTQE',
+                    'Bugs have been found in the bugs.',
+                    'You is not defined',
+                    'Something evil will happen!',
+                    'Sorry i dont know how to Python',
+                    'im cracking your mo,m',
+                    'goony stop messing with my code',
+                    'claude please fix this code for me :3',
+                ]
+                if random.random() < 0.2:
+                    bs.broadcastmessage(
+                        f'An error occured:\n{random.choice(lists)}', 
+                        color=(1, 0, 0),
+                    )
+                    bs.getsound('error').play(1.5)
         def roll():
             if ba.app.config.get("squda_foxyjumpscare", False):
                 self.randNumber = random.randint(1,1000)
@@ -393,8 +422,8 @@ class Activity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
                         }
                     )
                     bs.basetimer(1.6, self.nodename.delete)
-        self.noisePolTimer = bs.BaseTimer(0.4, checkdosound, repeat=True)
-        self.foxyTimer = bs.BaseTimer(0.1, roll, repeat=True)
+        self.noisePolTimer = bs.BaseTimer(noisetime, checkdosound, repeat=True)
+        self.foxyTimer = bs.BaseTimer(foxytime, roll, repeat=True)
 
     def on_transition_out(self) -> None:
         """Called when your activity begins transitioning out.
