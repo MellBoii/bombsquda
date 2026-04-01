@@ -345,9 +345,11 @@ class MainMenuActivity(bs.GameActivity[bs.Player, bs.Team]):
             'explosion04',
             'explosion05',
         ]
-        bs.timer(0.2, bs.getsound(random.choice(rsfx)).play, repeat=True)
-        bs.timer(0.1, bs.getsound(random.choice(rsfx)).play, repeat=True)
-        bs.timer(0.4, bs.getsound(random.choice(rsfx)).play, repeat=True)
+        def randomsound():
+            bs.getsound(random.choice(rsfx)).play()
+        bs.timer(0.2, randomsound, repeat=True)
+        bs.timer(0.1, randomsound, repeat=True)
+        bs.timer(0.4, randomsound, repeat=True)
         self._logo_node.texture = bs.gettexture('logoDies')
     
     def overheadtxt(self, chance: int = 0.09):
