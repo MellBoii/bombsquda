@@ -461,15 +461,15 @@ class SpazClickerWindow(bui.MainWindow):
             )
             bui.containerwidget(edit=self._root_widget, cancel_button=btn)
 
-        xoffs = 20
+        xoffs = 0
         scale = 1.0
         if uiscale is bui.UIScale.SMALL:
-            yoffs -= 70
-            otherxoffs = -50
+            yoffs -= 90
             scale = 1.5
+            xoffs = 50
         bui.textwidget(
             parent=self._root_widget,
-            position=(self._width * 0.5, yoffs - 130),
+            position=(self._width * 0.5, yoffs - (100 if uiscale is bui.UIScale.SMALL else 130)),
             size=(0, 0),
             text=bui.Lstr(resource=f'{self._r}.explainText'),
             color=bui.app.ui_v1.title_color,
@@ -478,7 +478,7 @@ class SpazClickerWindow(bui.MainWindow):
             v_align='top',
         )
         yoffs -= 150
-        pos = (self._width * 0.48 * (scale * 0.8), yoffs - 200)
+        pos = (self._width * 0.38 + xoffs, yoffs - 200)
         btn = bui.buttonwidget(
             parent=self._root_widget,
             position=pos,

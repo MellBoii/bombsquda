@@ -275,11 +275,16 @@ class MainMenuActivity(bs.GameActivity[bs.Player, bs.Team]):
         tex = bs.gettexture('snesCourseColor')
         bgtex = bs.gettexture('DSspace')
         bgmesh = bs.getmesh('DSspace')
+        if self.aprilfools:
+            tex = bs.gettexture('spazlingIcon')
+            bgtex = bs.gettexture('spazlingIcon')
 
         gnode = self.globalsnode
         gnode.camera_mode = 'rotate'
 
         tint = (1, 1, 1)
+        if self.aprilfools:
+            tint = (0.5, 1, 0.5)
         gnode.tint = tint
         gnode.ambient_color = (1.06, 1.04, 1.03)
         gnode.vignette_outer = (0.68, 0.67, 0.87)
@@ -329,8 +334,11 @@ class MainMenuActivity(bs.GameActivity[bs.Player, bs.Team]):
         self._attract_mode_timer = bs.Timer(
             3.12, self._update_attract_mode, repeat=True
         )
+        time = 2.3
+        if self.aprilfools:
+            time = 0.8
         self._bot_update_timer = bs.Timer(
-            2.3, self._update_bots, repeat=True
+            time, self._update_bots, repeat=True
         )
 
         app.classic.invoke_main_menu_ui()

@@ -30,7 +30,7 @@ class MellInfoWindow(bui.Window):
 
         pad = self._width * 0.05
         center_x = self._width * 0.5
-
+        
         # Clamp text scale so resizing never breaks it
         title_scale = min(1.25, max(0.9, self._width / 700)) * (1.6 if uiscale is bui.UIScale.SMALL else 1.15)
         body_scale = min(0.9, max(0.6, self._width / 900)) * (1.6 if uiscale is bui.UIScale.SMALL else 1.15)
@@ -64,16 +64,16 @@ class MellInfoWindow(bui.Window):
 
         button_width = min(300, self._width * 0.45)
         button_height = 80
+        bx = center_x - button_width * 0.4
+        if uiscale is bui.UIScale.SMALL:
+            bx -= 60
 
         self._back_button = btn = bui.buttonwidget(
             parent=self._root_widget,
             autoselect=False,
-            position=(
-                center_x - button_width * 0.4,
-                pad * 0.6,
-            ),
+            position=(bx, pad * 0.6),
             size=(button_width, button_height),
-            scale=0.8,
+            scale=(0.8 if uiscale is not bui.UIScale.SMALL else 1.2),
             text_scale=1.2,
             label=ba.Lstr(resource='backText'),
             color=(0.75, 0.4, 0.4),

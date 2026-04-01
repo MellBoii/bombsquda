@@ -303,6 +303,25 @@ class Spaz(bs.Actor):
         self.boxingcwd = 700
         self.punchscale = 1.1
         self.punchcwd = 450
+        self.weakscale = 0.6
+        self.weakcwd = 90
+        # get today's date
+        today = date.today()
+        day = today.day
+        month = today.month
+        aprilfools = month == 4 and day == 1
+        # we replace various things if it's AF
+        if aprilfools:
+            character = 'Spaz'
+            self.boxingscale = 0.8
+            self.boxingcwd = 200
+            self.default_bomb_count = 9999
+            self.punchscale = 0.5
+            self.punchcwd = 1
+            self.weakcwd = 0.0001
+            self.weakscale = 6
+            self.knightscale = 0
+            self.knightcwd = 9999
         # stats for punch
         if self._demo_mode:  # Preserve old behavior.
             self._punch_power_scale = 1.2
@@ -351,14 +370,6 @@ class Spaz(bs.Actor):
         # we can override if a skin setting exists
         if self.skin:
             character = self.skin
-        # get today's date
-        today = date.today()
-        day = today.day
-        month = today.month
-        aprilfools = month == 4 and day == 1
-        # we replace the character if today is april fools...
-        if aprilfools:
-            character = 'Spaz'
         media = factory.get_media(character)
         self.media = media
         punchmats = (factory.punch_material, shared.attack_material)
