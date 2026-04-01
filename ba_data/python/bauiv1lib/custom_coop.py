@@ -31,7 +31,7 @@ class CustomCoopWindow(bui.MainWindow):
         scale = (
             1.55
             if uiscale is bui.UIScale.SMALL
-            else 1.3 if uiscale is bui.UIScale.MEDIUM else 1.0
+            else 1.35 if uiscale is bui.UIScale.MEDIUM else 1.1
         )
 
         # Calc screen size in our local container space and clamp to a

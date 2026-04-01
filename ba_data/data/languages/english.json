@@ -850,7 +850,8 @@
     "titleNewText": "making a profile",
     "unavailableText": "\"${NAME}\" is unavailable; try another name.",
     "upgradeProfileInfoText": "This will reserve your player name worldwide\nand allow you to assign a custom icon to it.",
-    "upgradeToGlobalProfileText": "Upgrade to Global Profile"
+    "upgradeToGlobalProfileText": "Upgrade to Global Profile",
+	"rpcText": "editing a profile"
   },
   "editSoundtrackWindow": {
     "cantDeleteDefaultText": "You can't delete the default soundtrack.",
@@ -1065,7 +1066,15 @@
     "unavailableText": "Sorry, this is not available.",
     "versionTooOldText": "Sorry, this version of the game is too old; please update to a newer one.",
     "youHaveShortText": "you have ${COUNT}",
-    "youHaveText": "you have ${COUNT} tickets"
+    "youHaveText": "you have ${COUNT} tickets",
+	"explainText": "These are simple activities you can do to get Spaz Tickets.\nThese won't gain you a LOT of tickets, but are way easier.\nFor now, only consists of one game.",
+	"spazClicker": "Spaz Clicker",
+	"rpcText": "getting tickets"
+  },
+  "clickerWindow": {
+	"titleText": "Spaz Clicker",
+	"explainText": "Click the button 7 times to gain a single ticket.",
+	"rpcText": "playing spaz clicker"
   },
   "goldPass": {
     "desc1InfTokensText": "Infinite tokens.",
@@ -1412,16 +1421,16 @@
   "notEnoughPlayersRemainingText": "not enough players are left, restart",
   "notEnoughPlayersText": "hey, you need atleast ${COUNT} to start this!",
   "notEnoughTicketsText": "broke ass mf :sob:",
-  "transferInsufficient": "you need more ${CURRENCY} ${AMOUNT}!",
-  "transferIncorrect": "input a correct amount!",
-  "transferCurrent": "bank: ${AMOUNT}\nyours: ${USERAMOUNT}",
-  "transferSuccess": "transfer done successfully!\namount of: ${AMOUNT}\nnew bank balance: ${NEW}",
   "transferText": "Transfer Currency",
   "getTicketsText": "Get more tickets...",
   "transferSend": "send...",
   "transferWithdraw": "withdraw...",
-  "transferError": "An error occured. You have not been debited or credited.",
+  "transferError": "An error occured. You have not been debited nor credited.",
   "transferError2": "Connection failed. The server is either down,\nor your internet is not working.",
+  "transferInsufficient": "you need more ${CURRENCY} ${AMOUNT}!",
+  "transferIncorrect": "input a correct amount!",
+  "transferCurrent": "bank: ${AMOUNT}\nyours: ${USERAMOUNT}",
+  "transferSuccess": "transfer done successfully!\namount of: ${AMOUNT}\nnew bank balance: ${NEW}",
   "storeWaitText": "stop spamming the button dumbass.",
   "storeInvalidText": "Whoops, either this item wasn't added to the\nstore or it has an missing price count. Sorry!",
   "storePurchased": "You got ${ITEM}!",
@@ -1483,7 +1492,7 @@
     "deleteButtonText": "delete",
     "deleteConfirmText": "you really wanna delete ${PROFILE}?",
     "editButtonText": "edit",
-    "explanationText": "(custom player names and appearances for this account)",
+    "explanationText": "(different names, colors, and characters each)",
     "newButtonText": "new",
     "titleText": "profiles",
 	"rpcText": "editing profiles"
@@ -1539,7 +1548,7 @@
   "purchasingText": "Purchasing...",
   "quitGameText": "Quit ${APP_NAME}?",
   "quittingIn5SecondsText": "Quitting in 5 seconds...",
-  "randomPlayerNamesText": "DEFAULT_NAMES",
+  "randomPlayerNamesText": "DEFAULT_NAMES, Ness, Paula, Boseph, Aaaaa, Buddy, Mellow, John, Joey, fatass, Spazzy, Newbie, Lemming, ultra caballero, Boykisser, NoName, little white chinese boy, bascenev1lib, Kris, SonKy, Delta, Sunny, Trailing Comma, SyntaxError",
   "randomText": "randomize",
   "rankText": "Rank",
   "ratingText": "Rating",
