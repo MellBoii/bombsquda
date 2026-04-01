@@ -895,10 +895,5 @@ class CoopSubMenu(bui.MainWindow):
         )
 
     def _custom_campaign(self) -> None:
-        # no-op if we're not currently in control.
-        if not self.main_window_has_control():
-            return
-        gfha = bs.get_foreground_host_activity
-        with gfha().context:
-            gfha()._trigger_custom_cutscene()
-        bui.containerwidget(edit=self._root_widget, transition='out_scale')
+        bui.screenmessage('Nothing here.')
+        bui.getsound('error').play()

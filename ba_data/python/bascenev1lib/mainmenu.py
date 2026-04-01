@@ -350,20 +350,6 @@ class MainMenuActivity(bs.GameActivity[bs.Player, bs.Team]):
         bs.timer(0.4, bs.getsound(random.choice(rsfx)).play, repeat=True)
         self._logo_node.texture = bs.gettexture('logoDies')
     
-    def _trigger_custom_cutscene(self):
-        bs.setmusic(None)
-        def shake():
-            bs.getsound('swoon1').play()
-            bs.camerashake(6)
-        def start_activity():
-            from bascenev1lib.activity.altcoopintro import ACISession
-            bs.pushcall(lambda: bs.new_host_session(ACISession))
-        bs.timer(0.8, shake)
-        bs.timer(2.8, shake)
-        bs.timer(3.8, shake)
-        bs.timer(4.8, self.do_quit)
-        bs.timer(7.8, start_activity)
-    
     def overheadtxt(self, chance: int = 0.09):
         text = ba.Lstr(
             resource=f'menuOverhead{random.randint(1, 14)}', 
