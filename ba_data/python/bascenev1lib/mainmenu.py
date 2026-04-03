@@ -88,6 +88,12 @@ class MainMenuActivity(bs.GameActivity[bs.Player, bs.Team]):
         self.canstartdemo = True
         self.christmas = mell.get_festivity() == 'christmas'
         self.aprilfools = mell.get_festivity() == 'april_fools'
+        self.today2 = date.today()
+        self.day = self.today2.day
+        self.month = self.today2.month
+        self.christmas = self.month == 12 and self.day == 25
+        self.aprilfools = self.month == 4 and self.day == 1
+        self.redditor = random.random() < 0.18
         self.allow_emeralds = False
         self._bot_spawn_types = {
             BomberBot: SpawnInfo(1.00, 0.00, 0.000),
@@ -733,7 +739,8 @@ class MainMenuActivity(bs.GameActivity[bs.Player, bs.Team]):
     def _get_custom_logo_tex_name(self) -> str | None:
         plus = bui.app.plus
         assert plus is not None
-        
+        if self.redditor:
+            return 'redditorlogo'
         if self.christmas:
             return 'logoChristmas'
         if self.aprilfools:
@@ -866,6 +873,8 @@ class MainMenuActivity(bs.GameActivity[bs.Player, bs.Team]):
         custom = bui.app.config.get('squda_menumusic')
         if custom and custom != 'None':
             chosen = custom
+        if self.redditor:
+            chosen = "MENU18"
         if self.aprilfools:
             chosen = 'MENU67'
         self.chosen_music = getattr(bs.MusicType, chosen)
