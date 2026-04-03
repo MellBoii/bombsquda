@@ -7,6 +7,8 @@
 
 from __future__ import annotations
 
+from bascenev1lib.actor.popuptext import PopupText, PopupWriterText
+import babase as ba
 import weakref
 import logging
 from typing import TYPE_CHECKING, override
@@ -17,57 +19,10 @@ import fromgoverhaul.mell_resources as mell
 
 from bascenev1lib.actor.spazfactory import SpazFactory
 from bascenev1lib.actor.scoreboard import Scoreboard
-from bascenev1lib.actor.nodejumper import ImageJumper
-from bascenev1lib.actor.image_looped import LoopingImageAnimation
-from bascenev1lib.actor.playerspaz import PlayerSpaz
+from bascenev1lib.actor.smashspaz import SmashSpaz
 
 if TYPE_CHECKING:
     from typing import Any, Sequence
-
-class SmashSpaz(PlayerSpaz):
-    """A separate PlayerSpaz type made 
-    to act differently on smash bros."""
-    def __init__(
-        self,
-        player: bs.Player,
-        *,
-        color: Sequence[float] = (1.0, 1.0, 1.0),
-        highlight: Sequence[float] = (0.5, 0.5, 0.5),
-        character: str = 'Spaz',
-        powerups_expire: bool = True,
-    ):
-        super().__init__(
-            color=color,
-            highlight=highlight,
-            character=character,
-            powerups_expire=powerups_expire,
-            player=player,
-        )
-        self.impact_scale = 0
-        self.percentage = 0
-        
-    @override
-    def handlemessage(self, msg):
-        if isinstance(msg, bs.HitMessage):
-            super().handlemessage(msg)
-            # get some "clamped" values
-            self.percentage += msg.magnitude / 5
-            self.impulse_scale = int(self.percentage / 6)
-            if not self.source_player:
-                return
-            if self.source_player.icons:
-                for icon in self.source_player.icons:
-                    icon.update_for_percentage()
-        elif isinstance(msg, bs.DieMessage):
-            # reset the percentage...
-            self.percentage = 0
-            self.smashkill(sound='smashDied')
-            # ...TWICE
-            self.percentage = 0
-            super().handlemessage(msg)
-        else:
-            return super().handlemessage(msg)
-        return None
 
 
 class Icon(bs.Actor):
@@ -92,8 +47,10 @@ class Icon(bs.Actor):
         self._show_lives = show_lives
         self._show_death = show_death
         self._name_scale = name_scale
+        self._scale = 0
         self._percent_scale = name_scale + 0.1
         self._outline_tex = bs.gettexture('characterIconMask')
+        self._allow_shakes = True
 
         icon = player.get_icon()
         self.node = bs.newnode(
@@ -165,6 +122,7 @@ class Icon(bs.Actor):
         assert self.node
         self.node.position = position
         self.node.scale = [70.0 * scale]
+        self._scale = scale
         self._name_text.position = (position[0], position[1] + scale * 52.0)
         self._percent_text.position = (position[0], position[1] + scale * 73.0)
         self._name_text.scale = 1.0 * scale * self._name_scale
@@ -180,6 +138,9 @@ class Icon(bs.Actor):
         """Update for the target player's current lives."""
         player = self._player()
         lives = player.lives if player else 0
+        scale = self._scale
+        position = self.node.position
+        self._percent_text.position = (position[0], position[1] + scale * 73.0)
 
         if self._show_lives:
             if lives > 0:
@@ -201,6 +162,30 @@ class Icon(bs.Actor):
             self._percent_text.text = str(percent) + '%'
         else:
             self._percent_text.text = ''
+    
+    def shake_for_damage(self, amount: int = 50):
+        if not self._allow_shakes:
+            return
+        self._allow_shakes = False
+        player = self._player()
+        percent = player.actor.percentage if player and player.actor else 0
+        duration = 0.8
+        intensity = amount / 10
+        mell.shake_node(
+            self._percent_text,
+            duration=duration,
+            interval=0.01,
+            intensity=intensity,
+            array_num=2,
+        )
+        def reallow():
+            scale = self._scale
+            position = self.node.position
+            self._percent_text.position = (position[0], position[1] + scale * 73.0)
+            self._allow_shakes = True
+        bs.timer(duration, reallow)
+        
+        
         
     
     def handle_player_spawned(self) -> None:
@@ -275,8 +260,7 @@ class Team(bs.Team[Player]):
         self.survival_seconds: int | None = None
         self.spawn_order: list[Player] = []
 
-# don't export for now
-# a_meta export bascenev1.GameActivity
+# ba_meta export bascenev1.GameActivity
 class SmashBrosGame(bs.TeamGameActivity[Player, Team]):
     """Game type where the last one alive wins. Spazzes gain percentage 
     instead of damage, and increase impulse scale. Based on Super Smash Bros.."""
