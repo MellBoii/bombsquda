@@ -19,9 +19,55 @@ from bascenev1lib.actor.spazfactory import SpazFactory
 from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.actor.nodejumper import ImageJumper
 from bascenev1lib.actor.image_looped import LoopingImageAnimation
+from bascenev1lib.actor.playerspaz import PlayerSpaz
 
 if TYPE_CHECKING:
     from typing import Any, Sequence
+
+class SmashSpaz(PlayerSpaz):
+    """A separate PlayerSpaz type made 
+    to act differently on smash bros."""
+    def __init__(
+        self,
+        player: bs.Player,
+        *,
+        color: Sequence[float] = (1.0, 1.0, 1.0),
+        highlight: Sequence[float] = (0.5, 0.5, 0.5),
+        character: str = 'Spaz',
+        powerups_expire: bool = True,
+    ):
+        super().__init__(
+            color=color,
+            highlight=highlight,
+            character=character,
+            powerups_expire=powerups_expire,
+            player=player,
+        )
+        self.impact_scale = 0
+        self.percentage = 0
+        
+    @override
+    def handlemessage(self, msg):
+        if isinstance(msg, bs.HitMessage):
+            super().handlemessage(msg)
+            # get some "clamped" values
+            self.percentage += msg.magnitude / 5
+            self.impulse_scale = int(self.percentage / 6)
+            if not self.source_player:
+                return
+            if self.source_player.icons:
+                for icon in self.source_player.icons:
+                    icon.update_for_percentage()
+        elif isinstance(msg, bs.DieMessage):
+            # reset the percentage...
+            self.percentage = 0
+            self.smashkill(sound='smashDied')
+            # ...TWICE
+            self.percentage = 0
+            super().handlemessage(msg)
+        else:
+            return super().handlemessage(msg)
+        return None
 
 
 class Icon(bs.Actor):
@@ -46,6 +92,7 @@ class Icon(bs.Actor):
         self._show_lives = show_lives
         self._show_death = show_death
         self._name_scale = name_scale
+        self._percent_scale = name_scale + 0.1
         self._outline_tex = bs.gettexture('characterIconMask')
 
         icon = player.get_icon()
@@ -80,6 +127,20 @@ class Icon(bs.Actor):
                 'v_attach': 'bottom',
             },
         )
+        self._percent_text = bs.newnode(
+            'text',
+            owner=self.node,
+            attrs={
+                'text': '0%',
+                'h_align': 'center',
+                'v_align': 'center',
+                'vr_depth': 390,
+                'shadow': shadow,
+                'flatness': flatness,
+                'h_attach': 'center',
+                'v_attach': 'bottom',
+            },
+        )
         if self._show_lives:
             self._lives_text = bs.newnode(
                 'text',
@@ -105,7 +166,9 @@ class Icon(bs.Actor):
         self.node.position = position
         self.node.scale = [70.0 * scale]
         self._name_text.position = (position[0], position[1] + scale * 52.0)
+        self._percent_text.position = (position[0], position[1] + scale * 73.0)
         self._name_text.scale = 1.0 * scale * self._name_scale
+        self._percent_text.scale = 1.0 * scale * self._percent_scale
         if self._show_lives:
             self._lives_text.position = (
                 position[0] + scale * 10.0,
@@ -129,6 +192,16 @@ class Icon(bs.Actor):
             assert self.node
             self.node.color = (0.7, 0.3, 0.3)
             self.node.opacity = 0.2
+    
+    def update_for_percentage(self):
+        player = self._player()
+        lives = player.lives if player else 0
+        percent = player.actor.percentage if player and player.actor else 0
+        if lives > 0:
+            self._percent_text.text = str(percent) + '%'
+        else:
+            self._percent_text.text = ''
+        
     
     def handle_player_spawned(self) -> None:
         """Our player spawned; hooray!"""
@@ -160,12 +233,23 @@ class Icon(bs.Actor):
                     0.55: 0.2,
                 },
             )
+            duration = 1
+            intensity = 8
             player = self._player()
             lives = player.lives if player else 0
             if lives == 0:
+                duration += 1
+                intensity += 4
+            mell.shake_node(
+                self.node,
+                duration=duration,
+                interval=0.01,
+                intensity=intensity,
+                array_num=2,
+            )
+            if lives == 0:
                 list = mell.screams
                 bs.getsound(random.choice(list)).play()
-                ImageJumper.jump_image(self.node)
                 bs.timer(0.6, self.update_for_lives)
 
     @override
@@ -191,13 +275,14 @@ class Team(bs.Team[Player]):
         self.survival_seconds: int | None = None
         self.spawn_order: list[Player] = []
 
+# don't export for now
+# a_meta export bascenev1.GameActivity
+class SmashBrosGame(bs.TeamGameActivity[Player, Team]):
+    """Game type where the last one alive wins. Spazzes gain percentage 
+    instead of damage, and increase impulse scale. Based on Super Smash Bros.."""
 
-# ba_meta export bascenev1.GameActivity
-class EliminationGame(bs.TeamGameActivity[Player, Team]):
-    """Game type where last player(s) left alive win."""
-
-    name = 'Elimination'
-    description = 'Last remaining alive wins.'
+    name = 'Super Smash Bros.'
+    description = 'Knock your enemies offscreen.'
     scoreconfig = bs.ScoreConfig(
         label='Survived', scoretype=bs.ScoreType.SECONDS, none_is_winner=True
     )
@@ -245,7 +330,6 @@ class EliminationGame(bs.TeamGameActivity[Player, Team]):
             bs.BoolSetting('Epic Mode', default=False),
         ]
         if issubclass(sessiontype, bs.DualTeamSession):
-            settings.append(bs.BoolSetting('Solo Mode', default=False))
             settings.append(
                 bs.BoolSetting('Balance Total Lives', default=False)
             )
@@ -277,7 +361,6 @@ class EliminationGame(bs.TeamGameActivity[Player, Team]):
         self._balance_total_lives = bool(
             settings.get('Balance Total Lives', False)
         )
-        self._solo_mode = bool(settings.get('Solo Mode', False))
 
         # Base class overrides:
         self.slow_motion = self._epic_mode
@@ -286,23 +369,25 @@ class EliminationGame(bs.TeamGameActivity[Player, Team]):
         self.default_music = (
             bs.MusicType.EPIC if self._epic_mode else bs.MusicType.SURVIVAL
         )
+        self._ffa_icon_scale = 0.8
+        self._teams_icon_scale = 0.7
 
     @override
     def get_instance_description(self) -> str | Sequence:
         # (Pylint Bug?) pylint: disable=missing-function-docstring
         return (
-            'Last team standing wins.'
+            'Knock your enemies offscreen. Last team alive wins.'
             if isinstance(self.session, bs.DualTeamSession)
-            else 'Last one standing wins.'
+            else 'Knock your enemies offscreen. Last one alive wins.'
         )
 
     @override
     def get_instance_description_short(self) -> str | Sequence:
         # (Pylint Bug?) pylint: disable=missing-function-docstring
         return (
-            'last team standing wins'
+            'last team alive wins'
             if isinstance(self.session, bs.DualTeamSession)
-            else 'last one standing wins'
+            else 'last one alive wins'
         )
 
     @override
@@ -310,15 +395,11 @@ class EliminationGame(bs.TeamGameActivity[Player, Team]):
         # (Pylint Bug?) pylint: disable=missing-function-docstring
         player.lives = self._lives_per_player
         self.set_player_config(player)
-
-        if self._solo_mode:
-            player.team.spawn_order.append(player)
-            self._update_solo_mode()
-        else:
-            # Create our icon and spawn.
-            player.icons = [Icon(player, position=(0, 50), scale=0.8)]
-            if player.lives > 0:
-                self.spawn_player(player)
+        
+        # Create our icon and spawn.
+        player.icons = [Icon(player, position=(0, 50), scale=self._ffa_icon_scale)]
+        if player.lives > 0:
+            self.spawn_player(player)
 
         # Don't waste time doing this until begin.
         if self.has_begun():
@@ -330,33 +411,6 @@ class EliminationGame(bs.TeamGameActivity[Player, Team]):
         self._start_time = bs.time()
         self.setup_standard_time_limit(self._time_limit)
         self.setup_standard_powerup_drops()
-        if self._solo_mode and len(self.players) != 2:
-            self._vs_text = bs.NodeActor(
-                bs.newnode(
-                    'text',
-                    attrs={
-                        'position': (0, 105),
-                        'h_attach': 'center',
-                        'h_align': 'center',
-                        'maxwidth': 200,
-                        'shadow': 0.5,
-                        'vr_depth': 390,
-                        'scale': 0.6,
-                        'v_attach': 'bottom',
-                        'color': (0.8, 0.8, 0.3, 1.0),
-                        'text': bs.Lstr(resource='vsText'),
-                    },
-                )
-            )
-        if len(self.players) == 2:
-            bs.setmusic(bs.MusicType.ELIM_VERSUS)
-            self._vs_text = LoopingImageAnimation(
-                prefix='versus_fire', 
-                frame_count=4, 
-                frame_delay=0.05, 
-                scale=(70, 70),
-                position=(0, -230)
-            )
         # If balance-team-lives is on, add lives to the smaller team until
         # total lives match.
         if (
@@ -386,19 +440,6 @@ class EliminationGame(bs.TeamGameActivity[Player, Team]):
         # but lets just do the simple thing and poll it.
         bs.timer(1.0, self._update, repeat=True)
 
-    def _update_solo_mode(self) -> None:
-        # For both teams, find the first player on the spawn order list with
-        # lives remaining and spawn them if they're not alive.
-        for team in self.teams:
-            # Prune dead players from the spawn order.
-            team.spawn_order = [p for p in team.spawn_order if p]
-            for player in team.spawn_order:
-                assert isinstance(player, Player)
-                if player.lives > 0:
-                    if not player.is_alive():
-                        self.spawn_player(player)
-                    break
-
     def _update_icons(self) -> None:
         # pylint: disable=too-many-branches
 
@@ -411,104 +452,31 @@ class EliminationGame(bs.TeamGameActivity[Player, Team]):
                 if len(team.players) == 1:
                     player = team.players[0]
                     for icon in player.icons:
-                        icon.set_position_and_scale((xval, 30), 0.7)
+                        icon.set_position_and_scale((xval, 30), self._ffa_icon_scale)
                         icon.update_for_lives()
                     xval += x_offs
 
         # In teams mode we split up teams.
         else:
-            if self._solo_mode:
-                # First off, clear out all icons.
-                for player in self.players:
-                    player.icons = []
-
-                # Now for each team, cycle through our available players
-                # adding icons.
-                for team in self.teams:
-                    if team.id == 0:
-                        xval = -60
-                        x_offs = -78
-                    else:
-                        xval = 60
-                        x_offs = 78
-                    is_first = True
-                    test_lives = 1
-                    while True:
-                        players_with_lives = [
-                            p
-                            for p in team.spawn_order
-                            if p and p.lives >= test_lives
-                        ]
-                        if not players_with_lives:
-                            break
-                        for player in players_with_lives:
-                            player.icons.append(
-                                Icon(
-                                    player,
-                                    position=(xval, (40 if is_first else 25)),
-                                    scale=1.0 if is_first else 0.5,
-                                    name_maxwidth=130 if is_first else 75,
-                                    name_scale=0.8 if is_first else 1.0,
-                                    flatness=0.0 if is_first else 1.0,
-                                    shadow=0.5 if is_first else 1.0,
-                                    show_death=is_first,
-                                    show_lives=False,
-                                )
-                            )
-                            xval += x_offs * (0.8 if is_first else 0.56)
-                            is_first = False
-                        test_lives += 1
-            # Non-solo mode.
-            else:
-                for team in self.teams:
-                    if team.id == 0:
-                        xval = -50
-                        x_offs = -85
-                    else:
-                        xval = 50
-                        x_offs = 85
-                    for player in team.players:
-                        for icon in player.icons:
-                            icon.set_position_and_scale((xval, 30), 0.7)
-                            icon.update_for_lives()
-                        xval += x_offs
-
-    def _get_spawn_point(self, player: Player) -> bs.Vec3 | None:
-        del player  # Unused.
-
-        # In solo-mode, if there's an existing live player on the map, spawn at
-        # whichever spot is farthest from them (keeps the action spread out).
-        if self._solo_mode:
-            living_player = None
-            living_player_pos = None
             for team in self.teams:
-                for tplayer in team.players:
-                    if tplayer.is_alive():
-                        assert tplayer.node
-                        ppos = tplayer.node.position
-                        living_player = tplayer
-                        living_player_pos = ppos
-                        break
-            if living_player:
-                assert living_player_pos is not None
-                player_pos = bs.Vec3(living_player_pos)
-                points: list[tuple[float, bs.Vec3]] = []
-                for team in self.teams:
-                    start_pos = bs.Vec3(self.map.get_start_position(team.id))
-                    points.append(
-                        ((start_pos - player_pos).length(), start_pos)
-                    )
-                # Hmm.. we need to sort vectors too?
-                points.sort(key=lambda x: x[0])
-                return points[-1][1]
-        return None
-
+                if team.id == 0:
+                    xval = -50
+                    x_offs = -85
+                else:
+                    xval = 50
+                    x_offs = 85
+                for player in team.players:
+                    for icon in player.icons:
+                        icon.set_position_and_scale((xval, 30), self._teams_icon_scale)
+                        icon.update_for_lives()
+                    xval += x_offs
+                        
     @override
     def spawn_player(self, player: Player) -> bs.Actor:
         """Spawn a player (override)."""
-        actor = self.spawn_player_spaz(player, self._get_spawn_point(player))
-        if not self._solo_mode:
-            bs.timer(0.3, bs.Call(self._print_lives, player))
+        player.playerspaztype = SmashSpaz
+        actor = self.spawn_player_spaz(player)
+        bs.timer(0.3, bs.Call(self._print_lives, player))
 
         # If we have any icons, update their state.
         for icon in player.icons:
@@ -537,11 +505,6 @@ class EliminationGame(bs.TeamGameActivity[Player, Team]):
         super().on_player_leave(player)
         player.icons = []
 
-        # Remove us from spawn-order.
-        if self._solo_mode:
-            if player in player.team.spawn_order:
-                player.team.spawn_order.remove(player)
-
         # Update icons in a moment since our team will be gone from the
         # list then.
         bs.timer(0, self._update_icons)
@@ -566,8 +529,7 @@ class EliminationGame(bs.TeamGameActivity[Player, Team]):
             player.lives -= 1
             if player.lives < 0:
                 logging.exception(
-                    "Got lives < 0 in Elim; this shouldn't happen. solo: %s",
-                    self._solo_mode,
+                    "Got lives < 0 in Elim; this shouldn't happen.",
                 )
                 player.lives = 0
 
@@ -575,76 +537,27 @@ class EliminationGame(bs.TeamGameActivity[Player, Team]):
             for icon in player.icons:
                 icon.handle_player_died()
 
-            # Play big death sound on our last death
-            # or for every one in solo mode.
-            if self._solo_mode or player.lives == 0:
-                death_sound = SpazFactory.get().single_player_death_sound
-                if isinstance(death_sound, tuple):
-                    random.choice(death_sound).play()  # pick a random one
-                else:
-                    death_sound.play()
-            if self._solo_mode and player.lives == 1:
-                remaining = [p for p in player.team.players if p.lives > 0]
-                if len(remaining) == 1:
-                    iposition = player.icons[0].node.position
-                    y = 310
-                    x = 80
-                    theposition = (
-                        (iposition[0] + x, iposition[1] - y)
-                        if iposition[0] == 60.0 else 
-                        (iposition[0] - x, iposition[1] - y)
-                    )
-                    if iposition[0] == 60.0:
-                        self.danger_icon_right = LoopingImageAnimation(
-                            prefix='elim_danger', 
-                            frame_count=3, 
-                            frame_delay=0.03, 
-                            scale=(100, 100),
-                            position=theposition,
-                        )
-                    else:
-                        self.danger_icon_left = LoopingImageAnimation(
-                            prefix='elim_danger_flipped', 
-                            frame_count=3, 
-                            frame_delay=0.03, 
-                            scale=(100, 100),
-                            position=theposition,
-                        )
-                    bs.setmusic(bs.MusicType.ELIM_DANGER, continuous=True)
 
             # If we hit zero lives, we're dead (and our team might be too).
             if player.lives == 0:
+                
                 # If the whole team is now dead, mark their survival time.
                 if self._get_total_team_lives(player.team) == 0:
                     assert self._start_time is not None
                     player.team.survival_seconds = int(
                         bs.time() - self._start_time
                     )
+                death_sound = SpazFactory.get().single_player_death_sound
+                if isinstance(death_sound, tuple):
+                    random.choice(death_sound).play()  # pick a random one
+                else:
+                    death_sound.play()
+                    
             else:
                 # Otherwise, in regular mode, respawn.
-                if not self._solo_mode:
-                    self.respawn_player(player)
-
-            # In solo, put ourself at the back of the spawn order.
-            if self._solo_mode:
-                player.team.spawn_order.remove(player)
-                player.team.spawn_order.append(player)
+                self.respawn_player(player)
 
     def _update(self) -> None:
-        if self._solo_mode:
-            # For both teams, find the first player on the spawn order
-            # list with lives remaining and spawn them if they're not alive.
-            for team in self.teams:
-                # Prune dead players from the spawn order.
-                team.spawn_order = [p for p in team.spawn_order if p]
-                for player in team.spawn_order:
-                    assert isinstance(player, Player)
-                    if player.lives > 0:
-                        if not player.is_alive():
-                            self.spawn_player(player)
-                            self._update_icons()
-                        break
-
         # If we're down to 1 or fewer living teams, start a timer to end
         # the game (allows the dust to settle and draws to occur if deaths
         # are close enough).
@@ -665,21 +578,7 @@ class EliminationGame(bs.TeamGameActivity[Player, Team]):
         if self.has_ended():
             return
         results = bs.GameResults()
-        if len(self.players) == 2:
-            # do some cleaning up
-            if self._vs_text:
-                self._vs_text.die()
-                self._vs_text = None
-                
-            if self.danger_icon_left:
-                self.danger_icon_left.die()
-                self.danger_icon_left = None
-                
-            if self.danger_icon_right:
-                self.danger_icon_right.die()
-                self.danger_icon_right = None
-        else:
-            self._vs_text = None  # Kill our 'vs' if its there.
+        self._vs_text = None  # Kill our 'vs' if its there.
         for team in self.teams:
             results.set_team_score(team, team.survival_seconds)
         self.end(results=results)

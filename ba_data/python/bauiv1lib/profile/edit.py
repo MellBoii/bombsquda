@@ -151,7 +151,7 @@ class EditProfileWindow(
             icon_index = self._spazzes.index(profile['character'])
         except Exception:
             random.seed()
-            char = profile['character']
+            char = profile.get('character', None)
             # We can do some swapouts if the character has those.
             if char in mell.swapout_dict:
                 lookalike = mell.swapout_dict[char]
