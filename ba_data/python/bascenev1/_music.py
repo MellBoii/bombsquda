@@ -45,6 +45,7 @@ class MusicType(Enum):
     MENU15 = 'MENU15'
     MENU16 = 'MENU16'
     MENU17 = 'MENU17'
+    MENU18 = 'MENU18'
     MENU67 = 'MENU67'
     VICTORY = 'Victory'
     VICTORYFINAL = 'VictoryFinal'
@@ -200,6 +201,7 @@ def show_music_now_playing(music_type: bs.MusicType | str) -> None:
         bs.MusicType.MENU15: "Pollyanna Rock My World - Furries in a blender",
         bs.MusicType.MENU16: "Wii Theme but it's September - Mr Rock",
         bs.MusicType.MENU17: "The Final Fight - Sonic 3D Blast",
+        bs.MusicType.MENU18: "Clock Strikes 12 - Reddit Bullshit",
         bs.MusicType.MENU67: "Super Compressed Version of the JRMP Menu Music That Isn't Really From JRMP But I Also Sing It With Myself Whilst Screaming - Mell",
         bs.MusicType.CREDITS: "Sonic Mania Unused Credits - Tee Lopes",
         bs.MusicType.SNESCOURSE: "SNES Battle Course - Mario Kart World",
