@@ -100,7 +100,7 @@ def get_festivity():
     if christmas:
         return "christmas"
     if easter:
-        return easter
+        return "easter"
 
 def add_spaz(
     amount: int | float = 50,

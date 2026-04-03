@@ -8,7 +8,6 @@ import time
 import random
 import weakref
 import datetime
-from datetime import date
 from typing import TYPE_CHECKING, override
 
 from bacommon.locale import LocaleResolved
@@ -88,11 +87,7 @@ class MainMenuActivity(bs.GameActivity[bs.Player, bs.Team]):
         self.canstartdemo = True
         self.christmas = mell.get_festivity() == 'christmas'
         self.aprilfools = mell.get_festivity() == 'april_fools'
-        self.today2 = date.today()
-        self.day = self.today2.day
-        self.month = self.today2.month
-        self.christmas = self.month == 12 and self.day == 25
-        self.aprilfools = self.month == 4 and self.day == 1
+        self.easter = mell.get_festivity() == 'easter'
         self.redditor = random.random() < 0.18
         self.allow_emeralds = False
         self._bot_spawn_types = {
@@ -745,7 +740,7 @@ class MainMenuActivity(bs.GameActivity[bs.Player, bs.Team]):
             return 'logoChristmas'
         if self.aprilfools:
             return 'logoAF'
-        if plus.get_v1_account_misc_read_val('easter', False):
+        if self.easter:
             return 'logoEaster'
         return None
 
