@@ -9,6 +9,7 @@ import weakref
 import logging
 from typing import TYPE_CHECKING, override
 from datetime import date
+import fromgoverhaul.mell_resources as mell
 
 import bascenev1 as bs
 
@@ -34,12 +35,9 @@ class Background(bs.Actor):
         # This way we can overlap multiple activities for fades
         # and whatnot.
         session = bs.getsession()
-        self.today2 = date.today()
-        self.day = self.today2.day
-        self.month = self.today2.month
-        self.christmas = self.month == 12 and self.day == 25
-        self.aprilfools = self.month == 4 and self.day == 1
-        
+        self.christmas = mell.get_festivity() == 'christmas'
+        self.aprilfools = mell.get_festivity() == 'april_fools'
+        self.easter = mell.get_festivity() == 'easter'
         self._session = weakref.ref(session)
         with session.context:
             c = self.get_color()
@@ -151,7 +149,7 @@ class Background(bs.Actor):
             return bs.gettexture('logoChristmas')
         if self.aprilfools:
             return bs.gettexture('logoAF')
-        if plus.get_v1_account_misc_read_val('easter', False):
+        if self.easter:
             return bs.gettexture('logoEaster')
         return bs.gettexture('logo')
     
@@ -161,7 +159,7 @@ class Background(bs.Actor):
             return (0.5, 0.1, 0.1)
         if self.aprilfools:
             return (1.5, 0, 1.5)
-        if plus.get_v1_account_misc_read_val('easter', False):
+        if self.easter:
             return (0, 0.8, 0.3)
         return (0, 0.6, 0)
 

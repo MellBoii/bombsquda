@@ -12,6 +12,7 @@ from bauiv1lib.characterpicker import CharacterPickerDelegate
 from bauiv1lib.iconpicker import IconPickerDelegate
 import bauiv1 as bui
 import bascenev1 as bs
+import fromgoverhaul.mell_resources as mell
 
 
 class EditProfileWindow(
@@ -149,17 +150,30 @@ class EditProfileWindow(
         try:
             icon_index = self._spazzes.index(profile['character'])
         except Exception:
-            # Let's set the default icon to spaz for our first profile; after
-            # that we go random.
-            # (SCRATCH THAT.. we now hard-code account-profiles to start with
-            # spaz which has a similar effect)
-            # try: p_len = len(bui.app.config['Player Profiles'])
-            # except Exception: p_len = 0
-            # if p_len == 0: icon_index = self._spazzes.index('Spaz')
-            # else:
             random.seed()
-            icon_index = random.randrange(len(self._spazzes))
-            assigned_random_char = True
+            char = profile['character']
+            # We can do some swapouts if the character has those.
+            if char in mell.swapout_dict:
+                lookalike = mell.swapout_dict[char]
+                icon_index = self._spazzes.index(lookalike)
+                # Warn about the occasion.
+                bui.screenmessage(
+                    bui.Lstr(
+                        resource=f'{self._r}.swapoutWarning', 
+                        subs=[
+                            ('${CHAR}', char),
+                            ('${CHAR2}', lookalike),
+                        ]
+                    ),
+                    color=(1.0, 0.5, 0),
+                )
+                bui.getsound('player_unready').play()
+                # We assume it's not random, so don't.
+                assigned_random_char = False
+            # If not, just assign a random one.
+            else:
+                icon_index = random.randrange(len(self._spazzes))
+                assigned_random_char = True
         self._icon_index = icon_index
         bui.buttonwidget(edit=save_button, on_activate_call=self.save)
 
@@ -167,6 +181,7 @@ class EditProfileWindow(
         self._name = (
             '' if self._existing_profile is None else self._existing_profile
         )
+        # Wow, eric. Why are you checking like this. Dingus.
         self._is_account_profile = self._name == '__account__'
 
         # If we just picked a random character, see if it has specific

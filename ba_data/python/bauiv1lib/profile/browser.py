@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, override
 
 import bauiv1 as bui
 import bascenev1 as bs
+import fromgoverhaul.mell_resources as mell
 
 if TYPE_CHECKING:
     from typing import Any
@@ -385,7 +386,11 @@ class ProfileBrowserWindow(bui.MainWindow):
             try:
                 char_index = spazzes.index(p_info['character'])
             except Exception:
-                char_index = spazzes.index('Spaz')
+                char = p_info['character']
+                if char in mell.swapout_dict:
+                    char_index = spazzes.index(mell.swapout_dict[char])
+                else:
+                    char_index = spazzes.index('Spaz')
 
             assert isinstance(tval, str)
             txtw = bui.textwidget(

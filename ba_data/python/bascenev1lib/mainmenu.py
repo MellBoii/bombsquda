@@ -86,11 +86,8 @@ class MainMenuActivity(bs.GameActivity[bs.Player, bs.Team]):
         self.today = datetime.datetime.now()
         self.cutscene_player = None
         self.canstartdemo = True
-        self.today2 = date.today()
-        self.day = self.today2.day
-        self.month = self.today2.month
-        self.christmas = self.month == 12 and self.day == 25
-        self.aprilfools = self.month == 4 and self.day == 1
+        self.christmas = mell.get_festivity() == 'christmas'
+        self.aprilfools = mell.get_festivity() == 'april_fools'
         self.allow_emeralds = False
         self._bot_spawn_types = {
             BomberBot: SpawnInfo(1.00, 0.00, 0.000),

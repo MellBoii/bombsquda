@@ -2,7 +2,6 @@
 #
 """Implements lobby system for gathering before games, char select, etc."""
 # pylint: disable=too-many-lines
-
 from __future__ import annotations
 
 import logging
@@ -13,6 +12,7 @@ from typing import TYPE_CHECKING
 import babase
 import _bascenev1
 import bascenev1 as bs
+import fromgoverhaul.mell_resources as mell
 from bascenev1._profile import get_player_profile_colors
 from bascenev1._gameutils import animate, animate_array
 
@@ -541,13 +541,21 @@ class Chooser:
         # (unicode strings, no tuples, etc)
         self._profiles = app.classic.json_prep(self._profiles)
 
-        # Filter out any characters we're unaware of.
+        # Let's do some swapouts here (for goverhaul, vanilla, etc)
+        # so we get a somewhat matching character...
+        swapout_dict = mell.swapout_dict
+        # Filter out the characters we don't know.
         for profile in list(self._profiles.items()):
+            player_char = profile[1].get('character', '')
             if (
-                profile[1].get('character', '')
+                player_char
                 not in app.classic.spaz_appearances
             ):
-                profile[1]['character'] = 'Spaz'
+                # If the character is in our swapout list, change it to that.
+                if player_char in swapout_dict.keys():
+                    profile[1]['character'] = swapout_dict[player_char]
+                else:
+                    profile[1]['character'] = 'Spaz'
 
         # Add in a random one so we're ok even if there's no user profiles.
         self._profiles['_random'] = {}

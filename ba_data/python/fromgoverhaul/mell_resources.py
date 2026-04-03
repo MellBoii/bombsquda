@@ -1,12 +1,15 @@
 """ 
 Resources that should be easier to edit in a shared code,
-like lists, server address, game version, and some useful functions.
+like lists, dicts, server address, game version, and some useful functions.
 """
+
 screams = ['screams/scream' + str(i + 1) + '' for i in range(15)]
 server = "https://bombsquda.tailc76b25.ts.net"
 version = '2.1'
 update_date = '2/21/2026'
 
+# A dict for each store character that stores their price.
+# They are hardcoded to be spaz tickets only, for now.
 store_prices = {
     'characters.susie': 620,
     'characters.ralsei': 550,
@@ -31,6 +34,9 @@ store_prices = {
     'characters.homer': 870,
     'characters.ogspaz': 700,
 }
+# A dict for store character names (basically coded 
+# names like characters.charname) that correspond to a spazappearance name.
+# This is used to simplify the system for getting whether we own a character.
 appearance_dict = {
     'characters.susie': 'Susie',
     'characters.rayman': 'Rayman',
@@ -58,6 +64,43 @@ appearance_dict = {
     'characters.ire': 'Ire',
     'characters.dozer': 'Dozer',
 }
+# A dict we use in character select, profile edit, 
+# etc... to swapout vanilla or Gummy's Overhaul characters for ours.
+# (this is so we don't always get spaz, just to have a little 
+# variety even if we keep changing characters and modpacks)
+swapout_dict = {
+    'Zoe': 'Kris',
+    'Kronk': 'Susie',
+    'Orange Cap': 'Orangecap',
+    'Jack Morgan': 'John Grace',
+    'Snake Shadow': 'GummyBoiYT',
+    'Agent Johnson': 'Homer',
+    'Agent Johnson': 'Homer',
+    'mell': 'Mell',
+    'Mel': 'Mell',
+    'B-9000': 'Roaring Knight',
+    'Penny': 'Ire',
+    'Space Guy': 'SM64 Mario',
+}
+
+def get_festivity():
+    """Gets the current festivity 
+    (april fools, christmas, etc)"""
+    from datetime import date
+    import bauiv1 as bui
+    plus = bui.app.plus
+    today = date.today()
+    day = today.day
+    month = today.month
+    christmas = month == 12 and day == 25
+    aprilfools = month == 4 and day == 1
+    easter = plus.get_v1_account_misc_read_val('easter', False)
+    if aprilfools:
+        return "april_fools"
+    if christmas:
+        return "christmas"
+    if easter:
+        return easter
 
 def add_spaz(
     amount: int | float = 50,
@@ -65,6 +108,8 @@ def add_spaz(
     text_pos=None,
     notif_type: str = 'screen',
 ):
+    """Adds a specific amount of tickets or tokens
+    to our count and also shows it onscreen/ingame."""
     import bascenev1 as bs
     import babase as ba
     # gotta leave here otherwise doesn't work
@@ -139,6 +184,9 @@ def add_spaz(
         )
 
 def get_unique_bs_id():
+    """Gets the player's unique BombSquda ID.
+    If it exists in the config, just returns that.
+    Otherwise, it generates one, saves it, then deletes it."""
     import babase as ba
     if ba.app.config.get('squda_accountid'):
         return ba.app.config.get('squda_accountid')
@@ -162,6 +210,8 @@ def get_unique_bs_id():
     return full_str
     
 def withdraw_currency(amount: int, type: str):
+    """Withdraw a specific amount with our ID from the server.
+    WARNING: You must do checks yourself, otherwise amount can go negative."""
     import urllib
     import json
     id = get_unique_bs_id()
@@ -186,6 +236,8 @@ def withdraw_currency(amount: int, type: str):
         return None
 
 def get_currency(type: str):
+    """Get our balance from a currency 
+    with our ID from the server."""
     import urllib
     import json
     id = get_unique_bs_id()
@@ -209,6 +261,8 @@ def get_currency(type: str):
         return None
 
 def send_currency(amount: int, currency: str):
+    """Deposit a specific amount with our ID from the server.
+    WARNING: You must do checks yourself, otherwise amount can go negative."""
     import urllib
     import json
     assert currency in ['tickets', 'tokens']

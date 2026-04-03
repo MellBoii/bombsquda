@@ -261,6 +261,7 @@ class FootballTeamGame2(bs.TeamGameActivity[Player, Team]):
             if team.id == i:
                 team.score += 7
                 self._flag.scored = True
+                # if we have a flag, EXPLODE IT!!!!
                 if self._flag and self._flag.node:
                     Bomb(position=self._flag.node.position, bomb_type='normal').explode()
                 for player in team.players:
@@ -271,7 +272,7 @@ class FootballTeamGame2(bs.TeamGameActivity[Player, Team]):
                         self._flag.last_holding_player, 50, big_message=True
                     )
                 if team.score >= self._score_to_win:
-                    # Explode the losing team's players
+                    # if theres players on the other team, EXPLODE THEM TOOOO!!!!!
                     for other_team in self.teams:
                         if other_team is not team:
                             for other_player in other_team.players:

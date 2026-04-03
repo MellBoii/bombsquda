@@ -19,7 +19,6 @@ import os
 import weakref
 from bascenev1lib.actor.popuptext import PopupText, PopupWriterText
 from bascenev1lib.actor import spazappearance
-from datetime import date
 import bascenev1lib.actor.spazappearance as spazappearance
 from bascenev1._gameactivity import GameActivity
 
@@ -305,11 +304,7 @@ class Spaz(bs.Actor):
         self.punchcwd = 450
         self.weakscale = 0.6
         self.weakcwd = 90
-        # get today's date
-        today = date.today()
-        day = today.day
-        month = today.month
-        aprilfools = month == 4 and day == 1
+        aprilfools = mell.get_festivity() == 'april_fools'
         # we replace various things if it's AF
         if aprilfools:
             character = 'Spaz'

@@ -14,7 +14,7 @@ import babase as ba
 import random
 from bascenev1._dependency import DependencyComponent
 from bascenev1._messages import UNHANDLED
-from datetime import date
+import fromgoverhaul.mell_resources as mell
 
 
 if TYPE_CHECKING:
@@ -373,10 +373,7 @@ class Activity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         teams, however. They remain owned by the previous activity up
         until :meth:`~bascenev1.Activity.on_begin()` is called.
         """
-        today = date.today()
-        day = today.day
-        month = today.month
-        aprilfools = month == 4 and day == 1
+        aprilfools = mell.get_festivity() == 'april_fools'
         noisetime = 0.4
         foxytime = 0.1
         if aprilfools:

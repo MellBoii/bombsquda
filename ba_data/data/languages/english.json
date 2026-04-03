@@ -851,6 +851,7 @@
     "unavailableText": "\"${NAME}\" is unavailable; try another name.",
     "upgradeProfileInfoText": "This will reserve your player name worldwide\nand allow you to assign a custom icon to it.",
     "upgradeToGlobalProfileText": "Upgrade to Global Profile",
+	"swapoutWarning": "WARNING: Originally, your character was ${CHAR}. It is not in the character list,\nso it was swapped for ${CHAR2}. Saving now might overwrite yours.",
 	"rpcText": "editing a profile"
   },
   "editSoundtrackWindow": {
@@ -1094,7 +1095,7 @@
     "highText": "big",
     "higherText": "[[BIG SHOT!]]",
     "lowText": "small",
-    "maxFPSText": "Max FPS",
+    "maxFPSText": "FPS ALL THE WAYYYY",
     "mediumText": "meh",
     "neverText": "fucking NEVER",
     "resolutionText": "bits",
@@ -1297,7 +1298,7 @@
     "singlePlayerExamplesText": "Single Player / Co-op Examples",
     "versusExamplesText": "Versus Examples"
   },
-  "languageSetText": "I now speak English. cool.",
+  "languageSetText": "Alright, I love english!",
   "lapNumberText": "Lap ${CURRENT}/${TOTAL}",
   "lastGamesText": "(last ${COUNT} games)",
   "leaderboardsText": "Leaderboards",
