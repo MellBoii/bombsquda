@@ -11,6 +11,14 @@ import random
 
 if TYPE_CHECKING:
     pass
+
+class FootingMessage:
+    def __init__(self, footing):
+        self.footing = footing
+
+class TouchedMessage:
+    def __init__(self, state):
+        self.state = state
     
 class SharedObjects:
     """Various common components for use in games.
@@ -37,6 +45,8 @@ class SharedObjects:
         self._death_material: bs.Material | None = None
         self._region_material: bs.Material | None = None
         self._railing_material: bs.Material | None = None
+        self._particle_material: bs.Material | None = None
+        self._sorrowful_material: bs.Material | None = None
 
     @classmethod
     def get(cls) -> SharedObjects:
@@ -114,6 +124,83 @@ class SharedObjects:
                 ('message', 'their_node', 'at_connect', bs.OutOfBoundsMessage())
             )
         return self._death_material
+        
+    # Kay so rule of thumb is; Don't make a
+    # thousand materials. Just make one shared instance. Learned that the hard way.
+    @property
+    def particle_material(self) -> bs.Material:
+        if self._particle_material is None:
+            mat = self._particle_material = bs.Material()
+            mat.add_actions(
+                conditions=('they_have_material', self._footing_material),
+                actions=(
+                    ('message', 'our_node', 'at_connect', FootingMessage(1)),
+                    ('message', 'our_node', 'at_disconnect', FootingMessage(-1)),
+                ),
+            )
+            mat.add_actions(
+                conditions=( 
+                    ('they_are_different_node_than_us',),
+                    'and',
+                    ('they_dont_have_material', self._region_material),
+                    'or',
+                    ('they_dont_have_material', self._footing_material),
+                ),
+                actions=('modify_node_collision', 'collide', False),
+            )
+            mat.add_actions(
+                conditions=( 
+                    ('they_are_different_node_than_us',),
+                    'and',
+                    ('they_have_material', self._region_material),
+                    'or',
+                    ('they_have_material', self._footing_material),
+                ),
+                actions=('modify_node_collision', 'collide', True),
+            )
+        return self._particle_material
+    
+    @property
+    def sorrowful_material(self) -> bs.Material:
+        """A material that's like... really sad? I dunno."""
+        if self._sorrowful_material is None:
+            mat = self._sorrowful_material = bs.Material()
+            mat.add_actions(
+                conditions=('they_have_material', footing_material),
+                actions=(
+                    ('message', 'our_node', 'at_connect', FootingMessage(1)),
+                    ('message', 'our_node', 'at_disconnect', FootingMessage(-1)),
+                ),
+            )
+            mat.add_actions(
+                conditions=('they_have_material', object_material),
+                actions=(
+                    ('message', 'our_node', 'at_connect', TouchedMessage(1)),
+                ),
+            )
+            mat.add_actions(
+                conditions=( 
+                    ('they_are_different_node_than_us',),
+                    'and',
+                    ('they_dont_have_material', region_material),
+                    'or',
+                    ('they_dont_have_material', footing_material),
+                ),
+                actions=('modify_node_collision', 'collide', False),
+            )
+            mat.add_actions(
+                conditions=( 
+                    ('they_are_different_node_than_us',),
+                    'and',
+                    ('they_have_material', region_material),
+                    'or',
+                    ('they_have_material', footing_material),
+                    'or',
+                    ('they_have_material', object_material),
+                ),
+                actions=('modify_node_collision', 'collide', True),
+            )
+        return self._sorrowful_material
 
     @property
     def region_material(self) -> bs.Material:

@@ -1,15 +1,8 @@
 """A multitude of hand-made particles, including a template for one."""
 import bascenev1 as bs
 import random
-from bascenev1lib.gameutils import SharedObjects
+from bascenev1lib.gameutils import SharedObjects, FootingMessage, TouchedMessage
 from typing import Any, Sequence, override
-class FootingMessage:
-    def __init__(self, footing):
-        self.footing = footing
-
-class TouchedMessage:
-    def __init__(self, state):
-        self.state = state
 
 class ParticleActor(bs.Actor):
     """Base class for a particle."""
@@ -51,33 +44,6 @@ class ParticleActor(bs.Actor):
         footing_material = shared.footing_material
         region_material = shared.region_material
         self.material = bs.Material()
-        self.material.add_actions(
-            conditions=('they_have_material', footing_material),
-            actions=(
-                ('message', 'our_node', 'at_connect', FootingMessage(1)),
-                ('message', 'our_node', 'at_disconnect', FootingMessage(-1)),
-            ),
-        )
-        self.material.add_actions(
-            conditions=( 
-                ('they_are_different_node_than_us',),
-                'and',
-                ('they_dont_have_material', region_material),
-                'or',
-                ('they_dont_have_material', footing_material),
-            ),
-            actions=('modify_node_collision', 'collide', False),
-        )
-        self.material.add_actions(
-            conditions=( 
-                ('they_are_different_node_than_us',),
-                'and',
-                ('they_have_material', region_material),
-                'or',
-                ('they_have_material', footing_material),
-            ),
-            actions=('modify_node_collision', 'collide', True),
-        )
         # node
         self.mesh = mesh
         self.tex = texture
@@ -99,7 +65,7 @@ class ParticleActor(bs.Actor):
                 'color_texture': self.tex,
                 'reflection': 'powerup',
                 'reflection_scale': [reflection],
-                'materials': (self.material, obj_mat),
+                'materials': (shared.particle_material, obj_mat),
             },
         )
         bs.animate(
@@ -268,42 +234,7 @@ class BloodRaindrop(bs.Actor):
         footing_material = shared.footing_material
         object_material = shared.object_material
         region_material = shared.region_material
-        self.material = bs.Material()
-        self.material.add_actions(
-            conditions=('they_have_material', footing_material),
-            actions=(
-                ('message', 'our_node', 'at_connect', FootingMessage(1)),
-                ('message', 'our_node', 'at_disconnect', FootingMessage(-1)),
-            ),
-        )
-        self.material.add_actions(
-            conditions=('they_have_material', object_material),
-            actions=(
-                ('message', 'our_node', 'at_connect', TouchedMessage(1)),
-            ),
-        )
-        self.material.add_actions(
-            conditions=( 
-                ('they_are_different_node_than_us',),
-                'and',
-                ('they_dont_have_material', region_material),
-                'or',
-                ('they_dont_have_material', footing_material),
-            ),
-            actions=('modify_node_collision', 'collide', False),
-        )
-        self.material.add_actions(
-            conditions=( 
-                ('they_are_different_node_than_us',),
-                'and',
-                ('they_have_material', region_material),
-                'or',
-                ('they_have_material', footing_material),
-                'or',
-                ('they_have_material', object_material),
-            ),
-            actions=('modify_node_collision', 'collide', True),
-        )
+        self.material = shared.sorrowful_material
         # node
         self.mesh = bs.getmesh('bomb')
         self.tex = bs.gettexture('blood')

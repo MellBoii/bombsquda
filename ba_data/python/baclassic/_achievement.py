@@ -31,45 +31,9 @@ if TYPE_CHECKING:
 #  at coop levels instead of hard-coding names.
 #  (so level name substitution works right and whatnot).
 ACH_LEVEL_NAMES = {
-    'Boom Goes the Dynamite': 'Pro Onslaught',
-    'Boxer': 'Onslaught Training',
-    'Flawless Victory': 'Rookie Onslaught',
-    'Gold Miner': 'Uber Onslaught',
-    'Got the Moves': 'Uber Football',
-    'Last Stand God': 'The Last Stand',
-    'Last Stand Master': 'The Last Stand',
-    'Last Stand Wizard': 'The Last Stand',
     'A Long Way': 'The Finale',
     'The Halfway Mark': 'The Finale',
     'I am the BombSquad:tm:': 'The Finale',
-    'Mine Games': 'Rookie Onslaught',
-    'Off You Go Then': 'Onslaught Training',
-    'Onslaught God': 'Infinite Onslaught',
-    'Onslaught Master': 'Infinite Onslaught',
-    'Onslaught Training Victory': 'Onslaught Training',
-    'Onslaught Wizard': 'Infinite Onslaught',
-    'Precision Bombing': 'Pro Runaround',
-    'Pro Boxer': 'Pro Onslaught',
-    'Pro Football Shutout': 'Pro Football',
-    'Pro Football Victory': 'Pro Football',
-    'Pro Onslaught Victory': 'Pro Onslaught',
-    'Pro Runaround Victory': 'Pro Runaround',
-    'Rookie Football Shutout': 'Rookie Football',
-    'Rookie Football Victory': 'Rookie Football',
-    'Rookie Onslaught Victory': 'Rookie Onslaught',
-    'Runaround God': 'Infinite Runaround',
-    'Runaround Master': 'Infinite Runaround',
-    'Runaround Wizard': 'Infinite Runaround',
-    'Stayin\' Alive': 'Uber Runaround',
-    'Super Mega Punch': 'Pro Football',
-    'Super Punch': 'Rookie Football',
-    'TNT Terror': 'Uber Onslaught',
-    'The Great Wall': 'Uber Runaround',
-    'The Wall': 'Pro Runaround',
-    'Uber Football Shutout': 'Uber Football',
-    'Uber Football Victory': 'Uber Football',
-    'Uber Onslaught Victory': 'Uber Onslaught',
-    'Uber Runaround Victory': 'Uber Runaround',
 }
 
 
@@ -93,13 +57,6 @@ class AchievementSubsystem:
         """Fill in available achievements."""
 
         self.achievements += [
-            Achievement(
-                'In Control',
-                'achievementInControl',
-                (1, 1, 1),
-                '',
-                award=5,
-            ),
             Achievement(
                 'Big Fall',
                 'achievementOw',
@@ -144,6 +101,13 @@ class AchievementSubsystem:
                 award=15,
             ),
             Achievement(
+                'MimePunch',
+                'achievementMimePunch',
+                (1, 1, 1),
+                '',
+                award=15,
+            ),
+            Achievement(
                 'When TNT Flies3',
                 'achievementFly',
                 (1, 1, 1),
@@ -163,260 +127,6 @@ class AchievementSubsystem:
                 (1, 1, 1),
                 '',
                 award=5,
-            ),
-            Achievement(
-                'Sharing is Caring',
-                'achievementSharingIsCaring',
-                (1, 1, 1),
-                '',
-                award=15,
-            ),
-            Achievement(
-                'Dual Wielding',
-                'achievementDualWielding',
-                (1, 1, 1),
-                '',
-                award=10,
-            ),
-            Achievement(
-                'Free Loader',
-                'achievementFreeLoader',
-                (1, 1, 1),
-                '',
-                award=10,
-            ),
-            Achievement(
-                'Team Player',
-                'achievementTeamPlayer',
-                (1, 1, 1),
-                '',
-                award=20,
-            ),
-            Achievement(
-                'Onslaught Training Victory',
-                'achievementOnslaught',
-                (1, 1, 1),
-                'Default:Onslaught Training',
-                award=5,
-            ),
-            Achievement(
-                'Off You Go Then',
-                'achievementOffYouGo',
-                (1, 1.1, 1.3),
-                'Default:Onslaught Training',
-                award=5,
-            ),
-            Achievement(
-                'Boxer',
-                'achievementBoxer',
-                (1, 0.6, 0.6),
-                'Default:Onslaught Training',
-                award=10,
-                hard_mode_only=True,
-            ),
-            Achievement(
-                'Rookie Onslaught Victory',
-                'achievementOnslaught',
-                (0.5, 1.4, 0.6),
-                'Default:Rookie Onslaught',
-                award=10,
-            ),
-            Achievement(
-                'Mine Games',
-                'achievementMine',
-                (1, 1, 1.4),
-                'Default:Rookie Onslaught',
-                award=10,
-            ),
-            Achievement(
-                'Flawless Victory',
-                'achievementFlawlessVictory',
-                (1, 1, 1),
-                'Default:Rookie Onslaught',
-                award=15,
-                hard_mode_only=True,
-            ),
-            Achievement(
-                'Rookie Football Victory',
-                'achievementFootballVictory',
-                (1.0, 1, 0.6),
-                'Default:Rookie Football',
-                award=10,
-            ),
-            Achievement(
-                'Super Punch',
-                'achievementSuperPunch',
-                (1, 1, 1.8),
-                'Default:Rookie Football',
-                award=10,
-            ),
-            Achievement(
-                'Rookie Football Shutout',
-                'achievementFootballShutout',
-                (1, 1, 1),
-                'Default:Rookie Football',
-                award=15,
-                hard_mode_only=True,
-            ),
-            Achievement(
-                'Pro Onslaught Victory',
-                'achievementOnslaught',
-                (0.3, 1, 2.0),
-                'Default:Pro Onslaught',
-                award=15,
-            ),
-            Achievement(
-                'Boom Goes the Dynamite',
-                'achievementTNT',
-                (1.4, 1.2, 0.8),
-                'Default:Pro Onslaught',
-                award=15,
-            ),
-            Achievement(
-                'Pro Boxer',
-                'achievementBoxer',
-                (2, 2, 0),
-                'Default:Pro Onslaught',
-                award=20,
-                hard_mode_only=True,
-            ),
-            Achievement(
-                'Pro Football Victory',
-                'achievementFootballVictory',
-                (1.3, 1.3, 2.0),
-                'Default:Pro Football',
-                award=15,
-            ),
-            Achievement(
-                'Super Mega Punch',
-                'achievementSuperPunch',
-                (2, 1, 0.6),
-                'Default:Pro Football',
-                award=15,
-            ),
-            Achievement(
-                'Pro Football Shutout',
-                'achievementFootballShutout',
-                (0.7, 0.7, 2.0),
-                'Default:Pro Football',
-                award=20,
-                hard_mode_only=True,
-            ),
-            Achievement(
-                'Pro Runaround Victory',
-                'achievementRunaround',
-                (1, 1, 1),
-                'Default:Pro Runaround',
-                award=15,
-            ),
-            Achievement(
-                'Precision Bombing',
-                'achievementCrossHair',
-                (1, 1, 1.3),
-                'Default:Pro Runaround',
-                award=20,
-                hard_mode_only=True,
-            ),
-            Achievement(
-                'The Wall',
-                'achievementWall',
-                (1, 0.7, 0.7),
-                'Default:Pro Runaround',
-                award=25,
-                hard_mode_only=True,
-            ),
-            Achievement(
-                'Uber Onslaught Victory',
-                'achievementOnslaught',
-                (2, 2, 1),
-                'Default:Uber Onslaught',
-                award=30,
-            ),
-            Achievement(
-                'Gold Miner',
-                'achievementMine',
-                (2, 1.6, 0.2),
-                'Default:Uber Onslaught',
-                award=30,
-                hard_mode_only=True,
-            ),
-            Achievement(
-                'TNT Terror',
-                'achievementTNT',
-                (2, 1.8, 0.3),
-                'Default:Uber Onslaught',
-                award=30,
-                hard_mode_only=True,
-            ),
-            Achievement(
-                'Uber Football Victory',
-                'achievementFootballVictory',
-                (1.8, 1.4, 0.3),
-                'Default:Uber Football',
-                award=30,
-            ),
-            Achievement(
-                'Got the Moves',
-                'achievementGotTheMoves',
-                (2, 1, 0),
-                'Default:Uber Football',
-                award=30,
-                hard_mode_only=True,
-            ),
-            Achievement(
-                'Uber Football Shutout',
-                'achievementFootballShutout',
-                (2, 2, 0),
-                'Default:Uber Football',
-                award=40,
-                hard_mode_only=True,
-            ),
-            Achievement(
-                'Uber Runaround Victory',
-                'achievementRunaround',
-                (1.5, 1.2, 0.2),
-                'Default:Uber Runaround',
-                award=30,
-            ),
-            Achievement(
-                'The Great Wall',
-                'achievementWall',
-                (2, 1.7, 0.4),
-                'Default:Uber Runaround',
-                award=40,
-                hard_mode_only=True,
-            ),
-            Achievement(
-                'Stayin\' Alive',
-                'achievementStayinAlive',
-                (2, 2, 1),
-                'Default:Uber Runaround',
-                award=40,
-                hard_mode_only=True,
-            ),
-            Achievement(
-                'Last Stand Master',
-                'achievementMedalSmall',
-                (2, 1.5, 0.3),
-                'Default:The Last Stand',
-                award=20,
-                hard_mode_only=True,
-            ),
-            Achievement(
-                'Last Stand Wizard',
-                'achievementMedalMedium',
-                (2, 1.5, 0.3),
-                'Default:The Last Stand',
-                award=40,
-                hard_mode_only=True,
-            ),
-            Achievement(
-                'Last Stand God',
-                'achievementMedalLarge',
-                (2, 1.5, 0.3),
-                'Default:The Last Stand',
-                award=60,
-                hard_mode_only=True,
             ),
             Achievement(
                 'A Long Way',
@@ -439,48 +149,6 @@ class AchievementSubsystem:
                 'Default:The Finale',
                 award=60,
             ),
-            Achievement(
-                'Onslaught Master',
-                'achievementMedalSmall',
-                (0.7, 1, 0.7),
-                'Challenges:Infinite Onslaught',
-                award=5,
-            ),
-            Achievement(
-                'Onslaught Wizard',
-                'achievementMedalMedium',
-                (0.7, 1.0, 0.7),
-                'Challenges:Infinite Onslaught',
-                award=15,
-            ),
-            Achievement(
-                'Onslaught God',
-                'achievementMedalLarge',
-                (0.7, 1.0, 0.7),
-                'Challenges:Infinite Onslaught',
-                award=30,
-            ),
-            Achievement(
-                'Runaround Master',
-                'achievementMedalSmall',
-                (1.0, 1.0, 1.2),
-                'Challenges:Infinite Runaround',
-                award=5,
-            ),
-            Achievement(
-                'Runaround Wizard',
-                'achievementMedalMedium',
-                (1.0, 1.0, 1.2),
-                'Challenges:Infinite Runaround',
-                award=15,
-            ),
-            Achievement(
-                'Runaround God',
-                'achievementMedalLarge',
-                (1.0, 1.0, 1.2),
-                'Challenges:Infinite Runaround',
-                award=30,
-            ),
         ]
 
     def award_local_achievement(self, achname: str) -> None:
@@ -490,11 +158,12 @@ class AchievementSubsystem:
             logging.warning('achievements require plus feature-set')
             return
         try:
-            ach = self.get_achievement(achname)
-            if not ach.complete:
-                # Just show a banner i guess
+            dict = babase.app.config.get("squda_achievements", {})
+            complete = dict.get(achname, False)
+            if not complete:
+                dict[achname] = True
+                babase.app.config.commit()
                 self.display_achievement_banner(achname)
-
         except Exception:
             logging.exception('Error in award_local_achievement.')
 
@@ -516,24 +185,6 @@ class AchievementSubsystem:
                     self.get_achievement(achname).announce_completion()
         except Exception:
             logging.exception('Error in display_achievement_banner.')
-
-    def set_completed_achievements(self, achs: Sequence[str]) -> None:
-        """Set the current state of completed achievements.
-
-        (internal)
-
-        All achievements not included here will be set incomplete.
-        """
-
-        # Note: This gets called whenever game-center/game-circle/etc tells
-        # us which achievements we currently have.  We always defer to them,
-        # even if that means we have to un-set an achievement we think we have.
-
-        cfg = babase.app.config
-        cfg['Achievements'] = {}
-        for a_name in achs:
-            self.get_achievement(a_name).set_complete(True)
-        cfg.commit()
 
     def get_achievement(self, name: str) -> Achievement:
         """Return an Achievement by name."""
@@ -630,6 +281,7 @@ class Achievement:
         self._completion_banner_slot: int | None = None
         self._award = award
         self._hard_mode_only = hard_mode_only
+        self.complete = False
 
     @property
     def name(self) -> str:
@@ -663,13 +315,6 @@ class Achievement:
     def hard_mode_only(self) -> bool:
         """Whether this Achievement is only unlockable in hard-mode."""
         return self._hard_mode_only
-
-    @property
-    def complete(self) -> bool:
-        """Whether this Achievement is currently complete."""
-        val: bool = self._getconfig()['Complete']
-        assert isinstance(val, bool)
-        return val
 
     def announce_completion(self, sound: bool = True) -> None:
         """Kick off an announcement for this achievement's completion."""
@@ -709,16 +354,6 @@ class Achievement:
 
             # Show the first immediately.
             _display_next_achievement()
-
-    def set_complete(self, complete: bool = True) -> None:
-        """Set an achievement's completed state.
-
-        note this only sets local state; use a transaction to
-        actually award achievements.
-        """
-        config = self._getconfig()
-        if complete != config['Complete']:
-            config['Complete'] = complete
 
     @property
     def display_name(self) -> babase.Lstr:
@@ -1253,17 +888,6 @@ class Achievement:
                 ).autoretain()
             )
         return objs
-
-    def _getconfig(self) -> dict[str, Any]:
-        """
-        Return the sub-dict in settings where this achievement's
-        state is stored, creating it if need be.
-        """
-        val: dict[str, Any] = babase.app.config.setdefault(
-            'Achievements', {}
-        ).setdefault(self._name, {'Complete': False})
-        assert isinstance(val, dict)
-        return val
 
     def _remove_banner_slot(self) -> None:
         classic = babase.app.classic

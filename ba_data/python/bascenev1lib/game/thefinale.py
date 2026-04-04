@@ -410,7 +410,7 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
                 for player in self.players:
                     player.actor.say()
                 bs.getsound('srank').play()
-                ba.app.classic.ach.award_local_achievement('I am the BombSquad:tm:')
+                self._award_achievement('I am the BombSquad:tm:')
                 self._bot_update_timer = None
                 self.points_text.text = 'yuo\'re winner :)'
                 return

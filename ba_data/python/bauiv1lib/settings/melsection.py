@@ -97,6 +97,7 @@ class MelWindow(bui.MainWindow):
             for i, (key, text, sound) in enumerate(raw_settings)
         ]
         self.is_small = bui.app.ui_v1.uiscale is bui.UIScale.SMALL
+        self.reset_clicks = 0
         self._first_time = first_time
         
         super().__init__(
@@ -279,6 +280,16 @@ class MelWindow(bui.MainWindow):
                 label=bui.Lstr(resource=f'{self._r}.nameSetup'),
                 on_activate_call=self._open_name_setup,
             )
+        row += 1
+        y = start_y - row * row_height
+        self.reset_ach_btn = bui.buttonwidget(
+            parent=self._subcontainer,
+            position=(col_x, y),
+            size=size,
+            text_scale=1.0,
+            label=bui.Lstr(resource=f'{self._r}.resetAchievements'),
+            on_activate_call=self._reset_achievements,
+        )
 
     
     def changefont(self) -> None:
@@ -372,7 +383,24 @@ class MelWindow(bui.MainWindow):
                 origin_widget=self._root_widget
             )
         )
-        
+    
+    def _reset_achievements(self):
+        if self.reset_clicks < 2:
+            bui.getsound('error').play()
+            bui.screenmessage(
+                bs.Lstr(resource=f'{self._r}.confirmReset'),
+                color=(1, 0.5, 0)
+            )
+            self.reset_clicks += 1
+        else:
+            bui.getsound('baditem').play()
+            bui.app.config['squda_achievements'] = {}
+            bui.screenmessage(
+                bs.Lstr(resource=f'{self._r}.achResetDone'),
+                color=(1, 0.1, 0.1)
+            )
+            self.reset_clicks = 0
+            
     @override
     def get_main_window_state(self):
         return bui.BasicMainWindowState(

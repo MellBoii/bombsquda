@@ -860,39 +860,6 @@ class FootballCoopGame(bs.CoopGameActivity[Player, Team]):
                         bs.setmusic(None)
                         bs.getsound('music/coop_victory').play()
 
-                        # Completion achievements.
-                        assert self._bot_team is not None
-                        if self._preset in ['rookie', 'rookie_easy']:
-                            self._award_achievement(
-                                'Rookie Football Victory', sound=False
-                            )
-                            if self._bot_team.score == 0:
-                                self._award_achievement(
-                                    'Rookie Football Shutout', sound=False
-                                )
-                        elif self._preset in ['pro', 'pro_easy']:
-                            self._award_achievement(
-                                'Pro Football Victory', sound=False
-                            )
-                            if self._bot_team.score == 0:
-                                self._award_achievement(
-                                    'Pro Football Shutout', sound=False
-                                )
-                        elif self._preset in ['uber', 'uber_easy']:
-                            self._award_achievement(
-                                'Uber Football Victory', sound=False
-                            )
-                            if self._bot_team.score == 0:
-                                self._award_achievement(
-                                    'Uber Football Shutout', sound=False
-                                )
-                            if (
-                                not self._player_has_dropped_bomb
-                                and not self._player_has_punched
-                            ):
-                                self._award_achievement(
-                                    'Got the Moves', sound=False
-                                )
                         self._bots.stop_moving()
                         self.show_zoom_message(
                             bs.Lstr(resource='victoryText'),
@@ -950,15 +917,6 @@ class FootballCoopGame(bs.CoopGameActivity[Player, Team]):
         elif isinstance(msg, SpazBotDiedMessage):
             # Every time a bad guy dies, spawn a new one.
             bs.timer(3.0, bs.Call(self._spawn_bot, (type(msg.spazbot))))
-            super().handlemessage(msg)
-
-        elif isinstance(msg, SpazBotPunchedMessage):
-            if self._preset in ['rookie', 'rookie_easy']:
-                if msg.damage >= 500:
-                    self._award_achievement('Super Punch')
-            elif self._preset in ['pro', 'pro_easy']:
-                if msg.damage >= 1000:
-                    self._award_achievement('Super Mega Punch')
             super().handlemessage(msg)
 
         # Respawn dead flags.

@@ -1269,20 +1269,7 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
         )
 
     def _award_completion_achievements(self) -> None:
-        if self._preset in {Preset.TRAINING, Preset.TRAINING_EASY}:
-            self._award_achievement('Onslaught Training Victory', sound=False)
-            if not self._player_has_dropped_bomb:
-                self._award_achievement('Boxer', sound=False)
-        elif self._preset in {Preset.ROOKIE, Preset.ROOKIE_EASY}:
-            self._award_achievement('Rookie Onslaught Victory', sound=False)
-            if not self._a_player_has_been_hurt:
-                self._award_achievement('Flawless Victory', sound=False)
-        elif self._preset in {Preset.PRO, Preset.PRO_EASY}:
-            self._award_achievement('Pro Onslaught Victory', sound=False)
-            if not self._player_has_dropped_bomb:
-                self._award_achievement('Pro Boxer', sound=False)
-        elif self._preset in {Preset.UBER, Preset.UBER_EASY}:
-            self._award_achievement('Uber Onslaught Victory', sound=False)
+        pass
 
     def _update_waves(self) -> None:
         # If we have no living bots, go to the next wave.
@@ -1797,13 +1784,6 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
 
     def _update_scores(self) -> None:
         score = self._score
-        if self._preset is Preset.ENDLESS:
-            if score >= 500:
-                self._award_achievement('Onslaught Master')
-            if score >= 1000:
-                self._award_achievement('Onslaught Wizard')
-            if score >= 5000:
-                self._award_achievement('Onslaught God')
         assert self._scoreboard is not None
         self._scoreboard.set_team_value(self.teams[0], score, max_score=None)
 
@@ -1882,35 +1862,20 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
         # Uber mine achievement:
         if msg.spazbot.last_attacked_type == ('explosion', 'land_mine'):
             self._land_mine_kills += 1
-            if self._land_mine_kills >= 6:
-                self._award_achievement('Gold Miner')
 
         # Uber tnt achievement:
         if msg.spazbot.last_attacked_type == ('explosion', 'tnt'):
             self._tnt_kills += 1
-            if self._tnt_kills >= 6:
-                bs.timer(
-                    0.5, bs.WeakCall(self._award_achievement, 'TNT Terror')
-                )
 
     def _handle_pro_kill_achievements(self, msg: SpazBotDiedMessage) -> None:
         # TNT achievement:
         if msg.spazbot.last_attacked_type == ('explosion', 'tnt'):
             self._tnt_kills += 1
-            if self._tnt_kills >= 3:
-                bs.timer(
-                    0.5,
-                    bs.WeakCall(
-                        self._award_achievement, 'Boom Goes the Dynamite'
-                    ),
-                )
 
     def _handle_rookie_kill_achievements(self, msg: SpazBotDiedMessage) -> None:
         # Land-mine achievement:
         if msg.spazbot.last_attacked_type == ('explosion', 'land_mine'):
             self._land_mine_kills += 1
-            if self._land_mine_kills >= 3:
-                self._award_achievement('Mine Games')
 
     def _handle_training_kill_achievements(
         self, msg: SpazBotDiedMessage
@@ -1918,8 +1883,6 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
         # Toss-off-map achievement:
         if msg.spazbot.last_attacked_type == ('picked_up', 'default'):
             self._throw_off_kills += 1
-            if self._throw_off_kills >= 3:
-                self._award_achievement('Off You Go Then')
 
     def _set_can_end_wave(self) -> None:
         self._can_end_wave = True

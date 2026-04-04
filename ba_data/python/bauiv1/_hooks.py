@@ -52,9 +52,18 @@ def root_ui_settings_button_press() -> None:
 
 
 def root_ui_achievements_button_press() -> None:
-    from bauiv1._appsubsystem import UIV1AppSubsystem
+    from bauiv1lib.achievements import AchievementsWindow
+    import babase as ba
+    ui = ba.app.ui_v1
+    wind = ui.get_main_window()
+    if not wind.main_window_has_control():
+        return
+    wind.main_window_replace(
+        AchievementsWindow(
+            origin_widget=wind._root_widget,
+        )
+    )
 
-    _root_ui_button_press(UIV1AppSubsystem.RootUIElement.ACHIEVEMENTS_BUTTON)
 
 
 def root_ui_store_button_press() -> None:
@@ -67,6 +76,7 @@ def root_ui_store_button_press() -> None:
     wind.main_window_replace(
         StoreBrowserWindow(
             show_tab=StoreBrowserWindow.TabID.CHARACTERS,
+            origin_widget=wind._root_widget,
         )
     )
 

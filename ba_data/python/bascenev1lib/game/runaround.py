@@ -906,26 +906,6 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
             self._flawless = True  # reset
 
             if won:
-                # Completion achievements:
-                if self._preset in {Preset.PRO, Preset.PRO_EASY}:
-                    self._award_achievement(
-                        'Pro Runaround Victory', sound=False
-                    )
-                    if self._lives == self._start_lives:
-                        self._award_achievement('The Wall', sound=False)
-                    if not self._player_has_picked_up_powerup:
-                        self._award_achievement(
-                            'Precision Bombing', sound=False
-                        )
-                elif self._preset in {Preset.UBER, Preset.UBER_EASY}:
-                    self._award_achievement(
-                        'Uber Runaround Victory', sound=False
-                    )
-                    if self._lives == self._start_lives:
-                        self._award_achievement('The Great Wall', sound=False)
-                    if not self._a_player_has_been_killed:
-                        self._award_achievement('Stayin\' Alive', sound=False)
-
                 # Give remaining players some points and have them celebrate.
                 self.show_zoom_message(
                     bs.Lstr(resource='victoryText'), scale=1.0, duration=4.0
@@ -1385,13 +1365,6 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
 
     def _update_scores(self) -> None:
         score = self._score
-        if self._preset is Preset.ENDLESS:
-            if score >= 500:
-                self._award_achievement('Runaround Master')
-            if score >= 1000:
-                self._award_achievement('Runaround Wizard')
-            if score >= 2000:
-                self._award_achievement('Runaround God')
 
         assert self._scoreboard is not None
         self._scoreboard.set_team_value(self.teams[0], score, max_score=None)

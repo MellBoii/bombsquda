@@ -94,7 +94,11 @@ class AchievementsWindow(bui.MainWindow):
             )
 
         achievements = bui.app.classic.ach.achievements
-        num_complete = len([a for a in achievements if a.complete])
+        self.achdict = bui.app.config.get('squda_achievements', {})
+        num_complete = 0
+        for a in achievements:
+            if self.achdict.get(a.name, False):
+                num_complete += 1
 
         txt_final = bui.Lstr(
             resource='accountSettingsWindow.achievementProgressText',
@@ -152,7 +156,7 @@ class AchievementsWindow(bui.MainWindow):
 
         total_pts = 0
         for i, ach in enumerate(achievements):
-            complete = ach.complete
+            complete = self.achdict.get(ach.name, False)
             bui.textwidget(
                 parent=self._subcontainer,
                 position=(sub_width * 0.08 - 5, sub_height - 20 - incr * i),

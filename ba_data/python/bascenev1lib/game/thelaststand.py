@@ -288,15 +288,6 @@ class TheLastStandGame(bs.CoopGameActivity[Player, Team]):
 
     def _update_scores(self) -> None:
         score = self._score
-
-        # Achievements apply to the default preset only.
-        if self._preset == 'default':
-            if score >= 250:
-                self._award_achievement('Last Stand Master')
-            if score >= 500:
-                self._award_achievement('Last Stand Wizard')
-            if score >= 1000:
-                self._award_achievement('Last Stand God')
         assert self._scoreboard is not None
         self._scoreboard.set_team_value(self.teams[0], score, max_score=None)
 

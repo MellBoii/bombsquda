@@ -79,6 +79,7 @@ class Startup():
         "squda_ch4name": "NOOB",
         "squda_menumusic": 'None',
         "squda_storeowned": {},
+        "squda_achievements": {},
     }
     # "setdefault" to create config settings
     # won't affect already existing ones.
