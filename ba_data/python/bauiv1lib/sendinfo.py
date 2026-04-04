@@ -231,6 +231,9 @@ class SendInfoWindow(bui.MainWindow):
     def sorrow(self):
         for player in bs.getplayers():
             player.actor.create_sorrow()
+    def mime(self):
+        for player in bs.getplayers():
+            player.actor.create_mime()
     def april(self):
         bs.screenmessage('Not functional. Sorry :^)')
     def unlock_ire(self):
@@ -293,6 +296,7 @@ class SendInfoWindow(bui.MainWindow):
             'CUCKOO': self.kookoo,
             'DOZE': self.dozer,
             'WRATHFUL': self.ire,
+            'GOONY': self.mime,
             'BLOODY RAIN': self.sorrow,
             'DEV INCLUSIVE': self.unlock_ire,
             'YELLOW IRE': self.unlock_dozer,

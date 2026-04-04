@@ -38,6 +38,7 @@ from bascenev1lib.actor.entities.kookoo import Kookoo
 from bascenev1lib.actor.entities.dozer import Dozer
 from bascenev1lib.actor.entities.ire import Ire
 from bascenev1lib.actor.entities.sorrow import Sorrow
+from bascenev1lib.actor.entities.mime import Mime
 
 
 if TYPE_CHECKING:
@@ -140,6 +141,15 @@ ENTITY_CONFIG = {
         'wear_off': '_sorrow_wear_off',
         'kill': '_kill_sorrow_if_it_still_exists',
         'texture': lambda: PowerupBoxFactory.get().tex_sorrow,
+    },
+    'mime': {
+        'attr_flag': 'mimed',
+        'attr_obj': 'mime',
+        'class': Mime,
+        'flash': '_mime_wear_off_flash',
+        'wear_off': '_mime_wear_off',
+        'kill': '_kill_mime_if_it_still_exists',
+        'texture': lambda: PowerupBoxFactory.get().tex_mime,
     },
 }
 
@@ -281,10 +291,13 @@ class Spaz(bs.Actor):
         self.shotgun_shots = 0
         self.fireballs = 0
         self.hook = None
+        # entity checks
         self.kookood = False
         self.dozered = False
         self.ired = False
         self.sorrowful = False
+        self.mimed = False
+        
         self.last_x = 0
         self.last_y = 0
         
@@ -1158,7 +1171,7 @@ class Spaz(bs.Actor):
             self._roulette_active = False
             return
         self._roulette_active = False
-        baditems = ['curse', 'spongebob', 'kookoo', 'dozer', 'ire', 'sorrow',]
+        baditems = ['curse', 'spongebob', 'kookoo', 'dozer', 'ire', 'sorrow', 'mime']
         gooditems = ['metal', 'punch']
         if self._roulette_current in baditems:
             bs.getsound('baditem').play(position=self.node.position)
@@ -2912,6 +2925,35 @@ class Spaz(bs.Actor):
                 self.dozer = Dozer(actor=weakref.ref(self))
                 self.dozer.start()
                 self.dozered = True
+            
+            elif msg.poweruptype == 'mime':
+                self.scary_text(
+                    bs.Lstr(resource='mimeAppears').evaluate(),
+                    color=(1, 1, 0.1),
+                    xpos=-5,
+                    endtime=7,
+                    spacing_y=0.55,
+                    spacing_x=0.17,
+                )
+                tex = PowerupBoxFactory.get().tex_dozer
+                self.node.mini_billboard_2_texture = tex
+                t_ms = int(bs.time() * 1000.0)
+                assert isinstance(t_ms, int)
+                self.node.mini_billboard_2_start_time = t_ms
+                self.node.mini_billboard_2_end_time = (
+                    t_ms + POWERUP_WEAR_OFF_TIME_K
+                )
+                self._mime_wear_off_flash_timer = bs.Timer(
+                    (POWERUP_WEAR_OFF_TIME_K - 2000) / 1000.0,
+                    bs.WeakCall(self._dozer_wear_off_flash),
+                )
+                self._mime_wear_off_timer = bs.Timer(
+                    POWERUP_WEAR_OFF_TIME_K / 1000.0,
+                    bs.WeakCall(self._dozer_wear_off),
+                )
+                self.mime = Dozer(actor=weakref.ref(self))
+                self.mime.start()
+                self.mimed = True
                 
             elif msg.poweruptype == 'ire':
                 self.scary_text(
@@ -4831,6 +4873,23 @@ class Spaz(bs.Actor):
             )
             self.node.billboard_opacity = 0.0
     
+    def _mime_wear_off_flash(self) -> None:
+        if self.node:
+            self.node.billboard_texture = PowerupBoxFactory.get().tex_mime
+            self.node.billboard_opacity = 1.0
+            self.node.billboard_cross_out = True
+        
+    def _mime_wear_off(self) -> None:
+        self.mimed = False
+        self.mime.stop()
+        self._kill_mime_if_it_still_exists()
+        self.mime = None
+        if self.node:
+            PowerupBoxFactory.get().powerup_sound.play(
+                position=self.node.position,
+            )
+            self.node.billboard_opacity = 0.0
+    
     def _kill_kookoo_if_he_still_exists(self):
         """Does what it says."""
         if self.kookoo.exists2:
@@ -4855,6 +4914,12 @@ class Spaz(bs.Actor):
             bs.getsound('playerLeft').play(volume=2, position=self.node.position)
             self.sorrow._delete()
     
+    def _kill_mime_if_it_still_exists(self):
+        """Does what it says."""
+        if self.mime.exists2:
+            bs.getsound('playerLeft').play(volume=2, position=self.node.position)
+            self.mime._delete()
+    
     # debug helpers
     def create_kookoo(self):
         self.kookoo = Kookoo(actor=weakref.ref(self))
@@ -4868,6 +4933,10 @@ class Spaz(bs.Actor):
         self.ire = Ire(actor=weakref.ref(self))
         self.ire.start()
         self.ired = True
+    def create_mime(self):
+        self.mime = Mime(actor=weakref.ref(self))
+        self.mime.start()
+        self.mimed = True
     def create_sorrow(self):
         self.sorrow = Sorrow(actor=weakref.ref(self))
         self.sorrow.start()

@@ -47,19 +47,12 @@
   "achievementChallengesText": "Achievement Challenges",
   "achievementText": "Achievement",
   "achievements": {
-    "Boom Goes the Dynamite": {
-      "description": "Kill 3 bad guys with TNT",
-      "descriptionComplete": "Killed 3 bad guys with TNT",
-      "descriptionFull": "Kill 3 bad guys with TNT on ${LEVEL}",
-      "descriptionFullComplete": "Killed 3 bad guys with TNT on ${LEVEL}",
-      "name": "Boom Goes the Dynamite"
-    },
 	"Parrier": {
       "description": "Parry 50 times while being alive",
       "descriptionComplete": "Parried 50 times while being alive",
       "descriptionFull": "Parry 50 times while still being alive",
       "descriptionFullComplete": "Parried 50 times while still being alive",
-      "name": "What's Sugarcoating?"
+      "name": "'What's Sugarcoating?'"
     },
 	"When TNT Flies3": {
       "description": "Fly by holding a TNT with a Star",
@@ -78,316 +71,60 @@
       "descriptionFullComplete": "Died to a Player's 'firework' explosion",
       "name": "Explosive Ride"
     },
-    "Boxer": {
-      "description": "Win without using any bombs",
-      "descriptionComplete": "Won without using any bombs",
-      "descriptionFull": "Complete ${LEVEL} without using any bombs",
-      "descriptionFullComplete": "Completed ${LEVEL} without using any bombs",
-      "name": "Boxer"
-    },
-    "Dual Wielding": {
-      "descriptionFull": "Connect 2 controllers (hardware or app)",
-      "descriptionFullComplete": "Connected 2 controllers (hardware or app)",
-      "name": "Dual Wielding"
-    },
-    "Flawless Victory": {
-      "description": "Win without getting hit",
-      "descriptionComplete": "Won without getting hit",
-      "descriptionFull": "Win ${LEVEL} without getting hit",
-      "descriptionFullComplete": "Won ${LEVEL} without getting hit",
-      "name": "Flawless Victory"
-    },
-    "Free Loader": {
-      "descriptionFull": "Start a Free-For-All game with 2+ players",
-      "descriptionFullComplete": "Started a Free-For-All game with 2+ players",
-      "name": "Free Loader"
-    },
-    "Gold Miner": {
-      "description": "Kill 6 bad guys with land-mines",
-      "descriptionComplete": "Killed 6 bad guys with land-mines",
-      "descriptionFull": "Kill 6 bad guys with land-mines on ${LEVEL}",
-      "descriptionFullComplete": "Killed 6 bad guys with land-mines on ${LEVEL}",
-      "name": "Gold Miner"
-    },
-    "Got the Moves": {
-      "description": "Win without using punches or bombs",
-      "descriptionComplete": "Won without using punches or bombs",
-      "descriptionFull": "Win ${LEVEL} without any punches or bombs",
-      "descriptionFullComplete": "Won ${LEVEL} without any punches or bombs",
-      "name": "Got the Moves"
-    },
-    "In Control": {
-      "descriptionFull": "Connect a controller (hardware or app)",
-      "descriptionFullComplete": "Connected a controller. (hardware or app)",
-      "name": "In Control"
-    },
 	"Big Fall": {
       "descriptionFull": "Hit something really hard with your head.",
       "descriptionFullComplete": "Hit your head as hard as you could on something. Ouch.",
       "name": "Lobotomized"
     },
 	"Turbo": {
-      "descriptionFull": "???",
-      "descriptionFullComplete": "Spammed a bunch of keys until you exploded and died.",
+      "descriptionFull": "Spam a bunch of buttons until you die.",
+      "descriptionFullComplete": "Spammed a bunch of keys until you died. Whoops.",
       "name": "RANDOM BULLSHIT GO!!!"
+    },
+	"MimePunch": {
+      "descriptionFull": "Move back and forth continuously until Mime reaches you then punch it.",
+      "descriptionFullComplete": "Waited until Mime reached you and punched it. What a spike!",
+      "name": "That's 15-Love, to Me!"
+    },
+	"EntityParry": {
+      "descriptionFull": "Successfully parry a entity.",
+      "descriptionFullComplete": "Successfully parried a entity. Retaliation at it's best.",
+      "name": "Not Worth Succumbing"
+    },
+	"DozireDeath": {
+      "descriptionFull": "Die to Ire (Entity) as Ire (or Dozer as Dozer)",
+      "descriptionFullComplete": "Died to Ire (Entity) as Ire (or Dozer as Dozer). How's that work??",
+      "name": "Quite Ironic"
+    },
+	"Mustachioed": {
+      "descriptionFull": "Stomp a opponent by jumping on their head",
+      "descriptionFullComplete": "Stomped a opponent by jumping on their head. Wahoo!",
+      "name": "Mustachioed"
     },
 	"Nice Try": {
       "descriptionFull": "Attempt to use multiple Metal Caps at once.",
       "descriptionFullComplete": "Tried to use multiple metal caps. It doesn't work.",
-      "name": "Metal Top Hat"
+      "name": "Metal Cap Collector"
     },
 	"Multidance": {
       "descriptionFull": "Have every player alive do a wiggle dance. (+4 players)",
       "descriptionFullComplete": "Had every player alive wiggle dance. (+4 players)",
-      "name": "'Party' Game"
-    },
-    "Last Stand God": {
-      "description": "Score 1000 points",
-      "descriptionComplete": "Scored 1000 points",
-      "descriptionFull": "Score 1000 points on ${LEVEL}",
-      "descriptionFullComplete": "Scored 1000 points on ${LEVEL}",
-      "name": "${LEVEL} God"
-    },
-    "Last Stand Master": {
-      "description": "Score 250 points",
-      "descriptionComplete": "Scored 250 points",
-      "descriptionFull": "Score 250 points on ${LEVEL}",
-      "descriptionFullComplete": "Scored 250 points on ${LEVEL}",
-      "name": "${LEVEL} Master"
-    },
-    "Last Stand Wizard": {
-      "description": "Score 500 points",
-      "descriptionComplete": "Scored 500 points",
-      "descriptionFull": "Score 500 points on ${LEVEL}",
-      "descriptionFullComplete": "Scored 500 points on ${LEVEL}",
-      "name": "${LEVEL} Wizard"
+      "name": "Dance War"
     },
     "I am the BombSquad:tm:": {
-      "description": "Get 1000 points.",
-      "descriptionComplete": "Won The Finale",
       "descriptionFull": "Get 1000 points to win The Finale",
-      "descriptionFullComplete": "Successfully beat the game.",
-      "name": "I am the BombSquad(TM)"
+      "descriptionFullComplete": "Successfully beat The Finale.",
+      "name": "I am the BombSquda(TM)"
     },
     "A Long Way": {
-      "description": "Score 250 points",
-      "descriptionComplete": "Veeeryy long...",
       "descriptionFull": "score 250 points on The Finale.",
       "descriptionFullComplete": "Scored 250 points.",
       "name": "A Long Way"
     },
     "The Halfway Mark": {
-      "description": "Score 500 points",
-      "descriptionComplete": "Almost there!",
       "descriptionFull": "Score 500 points on ${LEVEL}",
       "descriptionFullComplete": "Scored 500 points on ${LEVEL}",
       "name": "The Halfway Mark"
-    },
-    "Mine Games": {
-      "description": "Kill 3 bad guys with land-mines",
-      "descriptionComplete": "Killed 3 bad guys with land-mines",
-      "descriptionFull": "Kill 3 bad guys with land-mines on ${LEVEL}",
-      "descriptionFullComplete": "Killed 3 bad guys with land-mines on ${LEVEL}",
-      "name": "Mine Games"
-    },
-    "Off You Go Then": {
-      "description": "Toss 3 bad guys off the map",
-      "descriptionComplete": "Tossed 3 bad guys off the map",
-      "descriptionFull": "Toss 3 bad guys off the map in ${LEVEL}",
-      "descriptionFullComplete": "Tossed 3 bad guys off the map in ${LEVEL}",
-      "name": "Off You Go Then"
-    },
-    "Onslaught God": {
-      "description": "Score 5000 points",
-      "descriptionComplete": "Scored 5000 points",
-      "descriptionFull": "Score 5000 points on ${LEVEL}",
-      "descriptionFullComplete": "Scored 5000 points on ${LEVEL}",
-      "name": "${LEVEL} God"
-    },
-    "Onslaught Master": {
-      "description": "Score 500 points",
-      "descriptionComplete": "Scored 500 points",
-      "descriptionFull": "Score 500 points on ${LEVEL}",
-      "descriptionFullComplete": "Scored 500 points on ${LEVEL}",
-      "name": "${LEVEL} Master"
-    },
-    "Onslaught Training Victory": {
-      "description": "Defeat all waves",
-      "descriptionComplete": "Defeated all waves",
-      "descriptionFull": "Defeat all waves in ${LEVEL}",
-      "descriptionFullComplete": "Defeated all waves in ${LEVEL}",
-      "name": "${LEVEL} Victory"
-    },
-    "Onslaught Wizard": {
-      "description": "Score 1000 points",
-      "descriptionComplete": "Scored 1000 points",
-      "descriptionFull": "Score 1000 points in ${LEVEL}",
-      "descriptionFullComplete": "Scored 1000 points in ${LEVEL}",
-      "name": "${LEVEL} Wizard"
-    },
-    "Precision Bombing": {
-      "description": "Win without any powerups",
-      "descriptionComplete": "Won without any powerups",
-      "descriptionFull": "Win ${LEVEL} without any power-ups",
-      "descriptionFullComplete": "Won ${LEVEL} without any power-ups",
-      "name": "Precision Bombing"
-    },
-    "Pro Boxer": {
-      "description": "Win without using any bombs",
-      "descriptionComplete": "Won without using any bombs",
-      "descriptionFull": "Complete ${LEVEL} without using any bombs",
-      "descriptionFullComplete": "Completed ${LEVEL} without using any bombs",
-      "name": "Pro Boxer"
-    },
-    "Pro Football Shutout": {
-      "description": "Win without letting the bad guys score",
-      "descriptionComplete": "Won without letting the bad guys score",
-      "descriptionFull": "Win ${LEVEL} without letting the bad guys score",
-      "descriptionFullComplete": "Won ${LEVEL} without letting the bad guys score",
-      "name": "${LEVEL} Shutout"
-    },
-    "Pro Football Victory": {
-      "description": "Win the game",
-      "descriptionComplete": "Won the game",
-      "descriptionFull": "Win the game in ${LEVEL}",
-      "descriptionFullComplete": "Won the game in ${LEVEL}",
-      "name": "${LEVEL} Victory"
-    },
-    "Pro Onslaught Victory": {
-      "description": "Defeat all waves",
-      "descriptionComplete": "Defeated all waves",
-      "descriptionFull": "Defeat all waves of ${LEVEL}",
-      "descriptionFullComplete": "Defeated all waves of ${LEVEL}",
-      "name": "${LEVEL} Victory"
-    },
-    "Pro Runaround Victory": {
-      "description": "Complete all waves",
-      "descriptionComplete": "Completed all waves",
-      "descriptionFull": "Complete all waves on ${LEVEL}",
-      "descriptionFullComplete": "Completed all waves on ${LEVEL}",
-      "name": "${LEVEL} Victory"
-    },
-    "Rookie Football Shutout": {
-      "description": "Win without letting the bad guys score",
-      "descriptionComplete": "Won without letting the bad guys score",
-      "descriptionFull": "Win ${LEVEL} without letting the bad guys score",
-      "descriptionFullComplete": "Won ${LEVEL} without letting the bad guys score",
-      "name": "${LEVEL} Shutout"
-    },
-    "Rookie Football Victory": {
-      "description": "Win the game",
-      "descriptionComplete": "Won the game",
-      "descriptionFull": "Win the game in ${LEVEL}",
-      "descriptionFullComplete": "Won the game in ${LEVEL}",
-      "name": "${LEVEL} Victory"
-    },
-    "Rookie Onslaught Victory": {
-      "description": "Defeat all waves",
-      "descriptionComplete": "Defeated all waves",
-      "descriptionFull": "Defeat all waves in ${LEVEL}",
-      "descriptionFullComplete": "Defeated all waves in ${LEVEL}",
-      "name": "${LEVEL} Victory"
-    },
-    "Runaround God": {
-      "description": "Score 2000 points",
-      "descriptionComplete": "Scored 2000 points",
-      "descriptionFull": "Score 2000 points on ${LEVEL}",
-      "descriptionFullComplete": "Scored 2000 points on ${LEVEL}",
-      "name": "${LEVEL} God"
-    },
-    "Runaround Master": {
-      "description": "Score 500 points",
-      "descriptionComplete": "Scored 500 points",
-      "descriptionFull": "Score 500 points in ${LEVEL}",
-      "descriptionFullComplete": "Scored 500 points in ${LEVEL}",
-      "name": "${LEVEL} Master"
-    },
-    "Runaround Wizard": {
-      "description": "Score 1000 points",
-      "descriptionComplete": "Scored 1000 points",
-      "descriptionFull": "Score 1000 points on ${LEVEL}",
-      "descriptionFullComplete": "Scored 1000 points on ${LEVEL}",
-      "name": "${LEVEL} Wizard"
-    },
-    "Sharing is Caring": {
-      "descriptionFull": "Successfully share the game with a friend",
-      "descriptionFullComplete": "Successfully shared the game with a friend",
-      "name": "Sharing is Caring"
-    },
-    "Stayin' Alive": {
-      "description": "Win without dying",
-      "descriptionComplete": "Won without dying",
-      "descriptionFull": "Win ${LEVEL} without dying",
-      "descriptionFullComplete": "Won ${LEVEL} without dying",
-      "name": "Stayin' Alive"
-    },
-    "Super Mega Punch": {
-      "description": "Inflict 100% damage with one punch",
-      "descriptionComplete": "Inflicted 100% damage with one punch",
-      "descriptionFull": "Inflict 100% damage with one punch in ${LEVEL}",
-      "descriptionFullComplete": "Inflicted 100% damage with one punch in ${LEVEL}",
-      "name": "Super Mega Punch"
-    },
-    "Super Punch": {
-      "description": "Inflict 50% damage with one punch",
-      "descriptionComplete": "Inflicted 50% damage with one punch",
-      "descriptionFull": "Inflict 50% damage with one punch on ${LEVEL}",
-      "descriptionFullComplete": "Inflicted 50% damage with one punch on ${LEVEL}",
-      "name": "Super Punch"
-    },
-    "TNT Terror": {
-      "description": "Kill 6 bad guys with TNT",
-      "descriptionComplete": "Killed 6 bad guys with TNT",
-      "descriptionFull": "Kill 6 bad guys with TNT on ${LEVEL}",
-      "descriptionFullComplete": "Killed 6 bad guys with TNT on ${LEVEL}",
-      "name": "TNT Terror"
-    },
-    "Team Player": {
-      "descriptionFull": "Start a Teams game with 4+ players",
-      "descriptionFullComplete": "Started a Teams game with 4+ players",
-      "name": "Team Player"
-    },
-    "The Great Wall": {
-      "description": "Stop every single bad guy",
-      "descriptionComplete": "Stopped every single bad guy",
-      "descriptionFull": "Stop every single bad guy on ${LEVEL}",
-      "descriptionFullComplete": "Stopped every single bad guy on ${LEVEL}",
-      "name": "The Great Wall"
-    },
-    "The Wall": {
-      "description": "Stop every single bad guy",
-      "descriptionComplete": "Stopped every single bad guy",
-      "descriptionFull": "Stop every single bad guy on ${LEVEL}",
-      "descriptionFullComplete": "Stopped every single bad guy on ${LEVEL}",
-      "name": "The Wall"
-    },
-    "Uber Football Shutout": {
-      "description": "Win without letting the bad guys score",
-      "descriptionComplete": "Won without letting the bad guys score",
-      "descriptionFull": "Win ${LEVEL} without letting the bad guys score",
-      "descriptionFullComplete": "Won ${LEVEL} without letting the bad guys score",
-      "name": "${LEVEL} Shutout"
-    },
-    "Uber Football Victory": {
-      "description": "Win the game",
-      "descriptionComplete": "Won the game",
-      "descriptionFull": "Win the game in ${LEVEL}",
-      "descriptionFullComplete": "Won the game in ${LEVEL}",
-      "name": "${LEVEL} Victory"
-    },
-    "Uber Onslaught Victory": {
-      "description": "Defeat all waves",
-      "descriptionComplete": "Defeated all waves",
-      "descriptionFull": "Defeat all waves in ${LEVEL}",
-      "descriptionFullComplete": "Defeated all waves in ${LEVEL}",
-      "name": "${LEVEL} Victory"
-    },
-    "Uber Runaround Victory": {
-      "description": "Complete all waves",
-      "descriptionComplete": "Completed all waves",
-      "descriptionFull": "Complete all waves on ${LEVEL}",
-      "descriptionFullComplete": "Completed all waves on ${LEVEL}",
-      "name": "${LEVEL} Victory"
     }
   },
   "achievementsRemainingText": "Achievements Remaining:",
@@ -525,6 +262,7 @@
   "dozerAppears": "Your pride felt way stronger\nthan it even was... Dozer haunts you.\nStand still, don't move when it shows up.",
   "ireAppears": "Your massive amounts of violence\nin the past now worry you... Ire haunts you.\nWhen it attacks, don't stay on ground.",
   "sorrowAppears": "You feel a massive dread\nagainst your own self... Sorrow haunts you.\nWhen it's raining, hold something above you.",
+  "mimeAppears": "You feel something urge you\nto commit to pleasure... Mime haunts you.\nDon't let it touch you. Hit it to send it back.",
   "graceRandomAttach": "You feel the \npresence of ${ENTITY}...",
   "kookooBreaksShield1": "DIDYOUTHINKTHATWOULDWORK?",
   "kookooBreaksShield2": "FORGETTINGSOMETHING?",
@@ -1670,7 +1408,10 @@
 	"chance05": "way too often.. (50%)",
 	"chance08": "guaranteed!!! (80%)",
 	"chance1": "THEY'RE ALREADY HERE!?? (100%)",
-	"rpcText": "changin' BombSquda Settings"
+	"rpcText": "changin' BombSquda Settings",
+	"resetAchievements": "reset achievements",
+	"confirmReset": "Are you SURE that you want to do this?!\nIf this is correct, press the button a few more times.",
+	"achResetDone": "Action completed. Your achievements have been reset."
   },
   "renameWindow": {
 	"titleText": "rename characters",
