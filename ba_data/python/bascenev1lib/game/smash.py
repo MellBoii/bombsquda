@@ -19,7 +19,7 @@ import fromgoverhaul.mell_resources as mell
 
 from bascenev1lib.actor.spazfactory import SpazFactory
 from bascenev1lib.actor.scoreboard import Scoreboard
-from bascenev1lib.actor.smashspaz import SmashSpaz
+from bascenev1lib.actor.smashspaz import SmashSpaz, _get_percent_color
 
 if TYPE_CHECKING:
     from typing import Any, Sequence
@@ -158,10 +158,13 @@ class Icon(bs.Actor):
         player = self._player()
         lives = player.lives if player else 0
         percent = player.actor.percentage if player and player.actor else 0
+        color = _get_percent_color(percent)
         if lives > 0:
             self._percent_text.text = str(percent) + '%'
+            self._percent_text.color = color
         else:
             self._percent_text.text = ''
+            self._percent_text.color = color
     
     def shake_for_damage(self, amount: int = 50):
         if not self._allow_shakes:
@@ -460,6 +463,8 @@ class SmashBrosGame(bs.TeamGameActivity[Player, Team]):
         """Spawn a player (override)."""
         player.playerspaztype = SmashSpaz
         actor = self.spawn_player_spaz(player)
+        # We make grab a bit longer to kinda prevent GPS
+        actor._pickup_cooldown = 2500
         bs.timer(0.3, bs.Call(self._print_lives, player))
 
         # If we have any icons, update their state.

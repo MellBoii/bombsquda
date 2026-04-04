@@ -7,6 +7,39 @@ import babase as ba
 import random
 from bascenev1lib.actor.playerspaz import PlayerSpaz
 from bascenev1lib.actor.spazfactory import SpazFactory
+PERCENT_COLORS = [
+    (0,   (1, 1, 1)),      # white
+    (50,  (1, 1, 0)),      # yellow
+    (100, (1, 0, 0)),      # red
+    (200, (1, 0, 1)),      # magenta
+    (300, (0.5, 0, 1)),    # purple
+]
+
+def _lerp_color(c1, c2, t: float):
+    return (
+        c1[0] + (c2[0] - c1[0]) * t,
+        c1[1] + (c2[1] - c1[1]) * t,
+        c1[2] + (c2[2] - c1[2]) * t,
+    )
+    
+def _get_percent_color(percent: float):
+    points = PERCENT_COLORS
+
+    # Below first threshold
+    if percent <= points[0][0]:
+        return points[0][1]
+
+    # Between thresholds
+    for i in range(len(points) - 1):
+        p1, c1 = points[i]
+        p2, c2 = points[i + 1]
+
+        if p1 <= percent <= p2:
+            t = (percent - p1) / (p2 - p1)  # 0 → 1
+            return _lerp_color(c1, c2, t)
+
+    # Above last threshold
+    return points[-1][1]
 
 class SmashSpaz(PlayerSpaz):
     """A separate PlayerSpaz type made 
@@ -34,8 +67,12 @@ class SmashSpaz(PlayerSpaz):
         bs.timer(0.3, self.update_percent_text)
     
     def update_percent_text(self):
-        if not self.node:
+        if not self.node or not self.is_alive():
+            if self.percent_text:
+                self.percent_text.delete()
+                self.percent_text = None
             return
+        color = _get_percent_color(self.percentage)
         if not self.percent_text:
             mathnode = bs.newnode(
                 'math',
@@ -52,13 +89,22 @@ class SmashSpaz(PlayerSpaz):
                     'shadow': 1.0,
                     'flatness': 1.0,
                     'scale': 0.015,
-                    'color': (1, 1, 1),
+                    'color': color,
                     'h_align': 'center',
                 },
             )
             mathnode.connectattr('output', self.percent_text, 'position')
         else:
             self.percent_text.text = f'{str(self.percentage)}%'
+            self.percent_text.color = color
+    
+    def on_jump_press(self):
+        super().on_jump_press()
+        # Apply a bit more impulse so we can jump high.
+        # This is to encourage more jumping than BOMB 
+        # jumping, since we can't grab.
+        if self.standing:
+            self.impulse(y=160)
 
     @override
     def handlemessage(self, msg):
@@ -561,10 +607,8 @@ class SmashSpaz(PlayerSpaz):
                     if self.source_player.icons:
                         for icon in self.source_player.icons:
                             icon.update_for_percentage()
-                bs.timer(0.1, update)
-                if self.percent_text:
-                    self.percent_text.delete()
-                    self.percent_text = None
+                bs.timer(0, update)
+                self.update_percent_text()
             super().handlemessage(msg)
         elif isinstance(msg, bs.PowerupMessage):
             if msg.poweruptype == 'health':
