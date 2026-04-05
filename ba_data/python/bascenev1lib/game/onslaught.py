@@ -22,12 +22,13 @@ import bascenev1 as bs
 from bascenev1lib.actor.popuptext import PopupText
 from babase._mgen.enums import InputType
 from bascenev1lib.actor.playerspaz import PlayerSpaz
-from bascenev1lib.actor.bomb import TNTSpawner
+from bascenev1lib.actor.bomb import TNTSpawner, Bomb
 from bascenev1lib.actor.playerspaz import PlayerSpazHurtMessage
 from bascenev1lib.actor.respawnicon import RespawnIcon
 from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.actor.controlsguide import ControlsGuide
 from bascenev1lib.actor.powerupbox import PowerupBox, PowerupBoxFactory
+from bascenev1lib.actor.image_looped import LoopingImageAnimation
 from bascenev1lib.actor.spazbot import (
     SpazBotDiedMessage,
     SpazBotSet,
@@ -257,8 +258,8 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
         self._throw_off_kills = 0
         self._land_mine_kills = 0
         self._tnt_kills = 0
-        self.timebeforedeath = 80
-        self.time_increase = 20
+        self.timebeforedeath = 60
+        self.time_increase = 15
     
     @override
     def on_transition_in(self) -> None:
@@ -343,92 +344,174 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
     def pizza_tick(self):
         self.timebeforedeath -= 1
         self.pizzatimertext.text = self._format_time(self.timebeforedeath)
-        if self.timebeforedeath <= 20:
+        if self.timebeforedeath <= 10:
             self.pizzatimertext.color = (1, 0.1, 0.1)
+            if self.timer_background:
+                self.timer_background.frame_delay = 0.01
             bs.getsound('tick').play()
         else:
             self.pizzatimertext.color = (1, 1, 1)
         if self.timebeforedeath <= 0:
-            for player in self.players:
-                player.actor.firework_explode()
+            self._start_bomb_shower()
+            if self.timer_background:
+                self.timer_background.frame_delay = 6
+            def end():
+                self.end_game()
+                for player in self.players:
+                    player.respawn_timer = None
+                    player.respawn_icon = None
+            bs.timer(0.5, end)
+            bs.getsound('crazyOver').play()
             self.tickintimer = None
-            self.thugshaketimer = None
+
+    def _drop_bomb(
+        self, position: Sequence[float], velocity: Sequence[float]
+    ) -> None:
+        Bomb(position=position, velocity=velocity).autoretain()
+
+    def _drop_bomb_cluster(self) -> None:
+        # Drop several bombs in series.
+        delay = 0.0
+        for _i in range(random.randrange(1, 3)):
+            # Drop them somewhere within our bounds with velocity pointing
+            # toward the opposite side.
+            pos = (
+                -7.3 + 15.3 * random.random(),
+                5,
+                random.randint(-9, 6),
+            )
+            dropdir = -1.0 if pos[0] > 0 else 1.0
+            vel = (
+                (-5.0 + random.random() * 30.0) * dropdir,
+                random.uniform(-3.066, -4.12),
+                random.randint(-4, 3),
+            )
+            self._drop_bomb(pos, vel)
+    
+    def _start_bomb_shower(self):
+        bs.timer(0.01, self._drop_bomb_cluster, repeat=True)
                 
     def _show_pizzatime_sequence(self):
-        """ It's Pizza Time! """
-        # Create image node
+        # let's keep some easy to edit variables here
+        size = 0.7
+        POS_CENTER = (0, -700)
+        POS_TEXT = (-10, -60)
+        POS_IMAGE = (0, -650)
+        FLOAT_DISTANCE = 2000
+        ANIM_TIME = 3.0
+
+        # spawn timer and spaz view offscreen
+        self.timer_background = LoopingImageAnimation(
+            prefix='evil_timer',
+            frame_count=3,
+            frame_delay=0.1,
+            scale=(512 * size, 256 * size),
+            position=POS_CENTER,
+            attach='bottomCenter',
+        )
+
+        spaz = LoopingImageAnimation(
+            prefix='timer_spazstare',
+            frame_count=3,
+            frame_delay=0.1,
+            scale=(512 * size, 256 * size),
+            position=POS_CENTER,
+            attach='bottomCenter',
+        )
+        spaz.node.opacity = 0
+
+        # keep them synced
+        self.timer_background.node.connectattr('position', spaz.node, 'position')
+
+
+        # show text
+        self.pizzatimertext = bs.newnode('text', attrs={
+            'text': self._format_time(self.timebeforedeath),
+            'h_align': 'center',
+            'v_attach': 'bottom',
+            'position': POS_TEXT,
+            'scale': size + 1.5,
+            'color': (1, 1, 1),
+            'shadow': 0.7,
+            'flatness': 0.6,
+            'opacity': 0,
+        })
+
+
+        # pizza time image!
         self._pizzatime_node = bs.newnode('image', attrs={
             'texture': bs.gettexture('pizzatime1'),
-            'position': (0, -650),
-            'scale': (410, 410),
+            'position': POS_IMAGE,
+            'scale': (410 * size, 410 * size),
             'opacity': 1.0,
             'attach': 'center'
         })
 
-        # Do the texture animation...
+
+        # texture swapper
         def swap_texture():
             if not self._pizzatime_node.exists():
                 return
-            current_tex = self._pizzatime_node.texture
-            new_tex = bs.gettexture('pizzatime2') if current_tex == bs.gettexture('pizzatime1') else bs.gettexture('pizzatime1')
-            self._pizzatime_node.texture = new_tex
+            tex1 = bs.gettexture('pizzatime1')
+            tex2 = bs.gettexture('pizzatime2')
+            self._pizzatime_node.texture = tex2 if self._pizzatime_node.texture == tex1 else tex1
 
-        # Here we can change how fast it'll loop.
         bs.timer(0.05, swap_texture, repeat=True)
 
-        # wwowww animation cool
-        def moveitboy():
-            if not self._pizzatime_node.exists():
-                return
-            x, y = self._pizzatime_node.position
-            bs.animate_array(self._pizzatime_node, 'position', 2, 
-                {
-                    0.0: (x, y), 
-                    4.0: (x, y + 2000) # flooaaat upwards
-                }
-            )
-            # Delete after animation
-            bs.timer(4.0, self._pizzatime_node.delete)
-        moveitboy()
-  
+
+        # float animation
+        def float_up(node, start_pos):
+            x, y = start_pos
+            bs.animate_array(node, 'position', 2, {
+                0.0: (x, y),
+                ANIM_TIME: (x, y + FLOAT_DISTANCE),
+            })
+            bs.timer(ANIM_TIME, node.delete)
+
+        float_up(self._pizzatime_node, POS_IMAGE)
+
+
+        # main timer animation
         def pizzatimer():
-            self.thugshaketimer = bs.Timer(0.040, lambda: bs.camerashake(intensity=0.1), repeat=True)
-            self.timer_background = bs.newnode('image', attrs={
-                    'texture': bs.gettexture('windowHSmallVSmall'),
-                    'position': (30, -600),
-                    'scale': (300, 200),
-                    'color': (0.5, 0.2, 1.0),
-                    'opacity': 1.0,
-                    'attach': 'bottomCenter'
-                }
-            )
-            self.pizzatimertext = bs.newnode(
-                'text',
-                attrs={
-                    'text': self._format_time(self.timebeforedeath),
-                    'h_align': 'center',
-                    'v_attach': 'bottom',
-                    'position': (0, -60),
-                    'scale': 1.5,
-                    'color': (1, 1, 1),
-                    'shadow': 0.7,
-                    'flatness': 0.6,
-                },
-            )
-            bs.animate_array(self.pizzatimertext, 'position', 2, 
-                {
-                    0.0: (0, -60), 
-                    1.0: (0, 0), # move upwards
-                }
-            )
-            bs.animate_array(self.timer_background, 'position', 2, 
-                {
-                    0.0: (20, -130), 
-                    1.0: (20, 0), # move upwards
-                }
-            )
+            # move everything up
+            bs.animate_array(self.pizzatimertext, 'position', 2, {
+                0.0: POS_TEXT,
+                0.5: (POS_TEXT[0], 10 * size),
+            })
+
+            bs.animate_array(self.timer_background.node, 'position', 2, {
+                0.0: (0, -130 * size),
+                0.5: (0, 30 * size),
+            })
+
+            # spaz fade
+            def animate_spaz():
+                bs.animate(spaz.node, 'opacity', {
+                    0.0: 0,
+                    0.5: 0.7,
+                    1.4: 0.7,
+                    1.8: 0,
+                })
+
+            # text blink + sound
+            def animate_text():
+                bs.getsound('kwarnin').play()
+                bs.animate(self.pizzatimertext, 'opacity', {
+                    0.0: 0,
+                    0.2: 1,
+                    0.4: 0,
+                    0.6: 1,
+                    0.8: 0,
+                    1.0: 1,
+                    1.2: 0,
+                    1.4: 1,
+                })
+            bs.timer(0.7, animate_spaz)
+            bs.timer(0.5, animate_text)
             self.tickintimer = bs.Timer(1.0, self.pizza_tick, repeat=True)
-        bs.timer(3.0, pizzatimer)
+
+
+        bs.timer(ANIM_TIME, pizzatimer)
 
     
     @override
@@ -1338,10 +1421,12 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
             if self._preset in {Preset.ENDLESS, Preset.ENDLESS_TOURNAMENT}:
                 self.tickintimer = None
                 self.timebeforedeath += self.time_increase
+                self.timer_background.frame_delay = 0.05
                 bs.getsound('warTimerUp').play()
                 self.pizzatimertext.color = (0.1, 0.9, 0.1)
                 self.pizzatimertext.text = self._format_time(self.timebeforedeath)
                 def reset():
+                    self.timer_background.frame_delay = 0.1
                     self.tickintimer = bs.Timer(1.0, self.pizza_tick, repeat=True)
                 bs.timer(0.7, reset)
             self._wavenum += 1
@@ -1352,7 +1437,7 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
         
             # Only trigger if we haven't already done this lap
             if lap_num != self._last_lap_triggered and lap_num <= 10:
-                self._last_lap_triggered = lap_num  # Mark it as triggered
+                self._last_lap_triggered = lap_num
                 
                 bs.getsound("newlapsound").play()
                 
@@ -1378,14 +1463,9 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
                     4.5: end_pos        # and then we slide back to the start position
                 })
                 # Delete after animation finishes
-                bs.timer(10.1, self._lap_tex.delete) # originally it was a bit short... 
-#                                                       i made it longer because it won't affect much except 
-#                                                        performance if you're on a potato
-                try:
-                    music_type = getattr(bs.MusicType, f"LAP{lap_num}")  # e.g. LAP2, LAP3
-                    bs.setmusic(music_type)
-                except AttributeError:
-                    print(f"DEBUG: No music type found for LAP{lap_num}")
+                bs.timer(5.1, self._lap_tex.delete)
+                music_type = getattr(bs.MusicType, f"LAP{lap_num}") 
+                bs.setmusic(music_type)
 
     def _award_completion_bonus(self) -> None:
         self._cashregistersound.play()
@@ -1813,6 +1893,19 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
                 player.respawn_wave = max(2, self._wavenum + 2)
             else:
                 player.respawn_wave = max(2, self._wavenum + 3)
+            # Penalty of a few secs if in infinite onslaught
+            if self._preset in {Preset.ENDLESS, Preset.ENDLESS_TOURNAMENT}:
+                self.tickintimer = None
+                self.timebeforedeath -= 15
+                self.timer_background.frame_delay = 0.03
+                bs.getsound('s3kb2').play()
+                self.pizzatimertext.color = (0.9, 0.1, 0.1)
+                self.pizzatimertext.text = self._format_time(self.timebeforedeath)
+                def reset():
+                    self.timer_background.frame_delay = 0.1
+                    self.tickintimer = bs.Timer(1.0, self.pizza_tick, repeat=True)
+                bs.timer(0.8, reset)
+                return
             bs.timer(0.1, self._checkroundover)
 
         elif isinstance(msg, SpazBotDiedMessage):

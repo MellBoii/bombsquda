@@ -190,6 +190,7 @@ class Ire(bs.Actor):
             self.actor().hardmode_death()
             self.actor().die()
             self.actor().impulse(y=500)
+            self.actor().killed_by_entity('ire')
             self._delete()
             bs.getsound('shatter_worse').play(1.2)
         bs.timer(1.2, die)

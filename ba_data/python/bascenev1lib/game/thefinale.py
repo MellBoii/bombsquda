@@ -410,7 +410,7 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
                 for player in self.players:
                     player.actor.say()
                 bs.getsound('srank').play()
-                self._award_achievement('I am the BombSquad:tm:')
+                bs.app.classic.ach.award_local_achievement('I am the BombSquad:tm:')
                 self._bot_update_timer = None
                 self.points_text.text = 'yuo\'re winner :)'
                 return
@@ -427,13 +427,13 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
             if self._alrdidach2 == True:
                 return
             self._alrdidach2 = True
-            self._award_achievement('The Halfway Mark')
+            bs.app.classic.ach.award_local_achievement('The Halfway Mark')
             OverheadText(bs.Lstr(resource='finaleOverhead3'))
         if score >= 350:
             if self._alrdidach1 == True:
                 return
             self._alrdidach1 = True
-            self._award_achievement('A Long Way')
+            bs.app.classic.ach.award_local_achievement('A Long Way')
             OverheadText(bs.Lstr(resource='finaleOverhead2'))
 
     @override

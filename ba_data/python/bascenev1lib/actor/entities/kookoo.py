@@ -244,6 +244,7 @@ class Kookoo(bs.Actor):
                 return
             self.actor().kookood = False
             self.actor().kookoo_death()
+            self.actor().killed_by_entity('kookoo')
         # reset ticking and check num
         self.tick_number = 0
         self.tick_timer = None

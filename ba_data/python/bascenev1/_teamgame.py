@@ -91,22 +91,6 @@ class TeamGameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
     @override
     def on_begin(self) -> None:
         super().on_begin()
-        try:
-            # Award a few (classic) achievements.
-            if isinstance(self.session, FreeForAllSession):
-                if len(self.players) >= 2:
-                    if babase.app.classic is not None:
-                        babase.app.classic.ach.award_local_achievement(
-                            'Free Loader'
-                        )
-            elif isinstance(self.session, DualTeamSession):
-                if len(self.players) >= 4:
-                    if babase.app.classic is not None:
-                        babase.app.classic.ach.award_local_achievement(
-                            'Team Player'
-                        )
-        except Exception:
-            logging.exception('Error in on_begin.')
 
     @override
     def spawn_player_spaz(

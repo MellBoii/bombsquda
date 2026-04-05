@@ -41,7 +41,7 @@ class LoopingImageAnimation:
         )
 
         # Start the animation timer.
-        self._timer = bs.Timer(frame_delay, self._next_frame, repeat=True)
+        self._timer = bs.Timer(self.frame_delay, self._next_frame, repeat=True)
 
     def _next_frame(self):
         """Advance to the next frame."""
@@ -66,9 +66,11 @@ class LoopingImageAnimation:
             self.node.texture = bs.gettexture(tex_name)
             if self.cmprefix:
                 self.node.tint_texture = bs.gettexture(ttex_name)
+            self._timer = bs.Timer(self.frame_delay, self._next_frame, repeat=True)
         except Exception as e:
             print(f"[LoopingImageAnimation] Got error {e} while changing texture to {tex_name}")
             self._timer = None
+            
     def die(self):
         if not self.node:
             print('[LoopingImageAnimation] Got non existant node while trying to kill animation')

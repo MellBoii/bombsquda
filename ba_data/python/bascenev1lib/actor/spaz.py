@@ -2676,6 +2676,10 @@ class Spaz(bs.Actor):
             self.lasthittype = 'swoon'
             self.shatter(True)
             self.lasthittype = 'swoon'
+            if self.character == 'Roaring Knight':
+                ba.app.classic.ach.award_local_achievement(
+                    'RorySwooned'
+                )
         bs.basetimer(2.1, swoon2)
         swoon1()
     
@@ -4942,6 +4946,18 @@ class Spaz(bs.Actor):
         self.sorrow.start()
         self.sorrowful = True
     # debug helpers
+    
+    def killed_by_entity(self, name: str):
+        """Just a helper for achievements."""
+        if name == 'dozer' and self.character == 'Dozer':
+            ba.app.classic.ach.award_local_achievement(
+                'DozireDeath'
+            )
+        if name == 'ire' and self.character == 'Ire':
+            ba.app.classic.ach.award_local_achievement(
+                'DozireDeath'
+            )
+        pass
             
     def _metal_wear_off_flash(self) -> None:
         if self.node:

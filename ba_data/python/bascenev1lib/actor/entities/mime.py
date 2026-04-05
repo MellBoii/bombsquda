@@ -221,6 +221,7 @@ class Mime(bs.Actor):
             if actor:
                 actor.impulse(x=-50, y=190)
                 actor.shatter()
+                actor.killed_by_entity('mime')
         # ow. we fell out of bounds
         elif isinstance(msg, bs.OutOfBoundsMessage):
             bs.getsound('mhurt').play(

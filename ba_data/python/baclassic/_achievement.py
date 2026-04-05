@@ -69,7 +69,7 @@ class AchievementSubsystem:
                 'achievementParry',
                 (1, 1, 1),
                 '',
-                award=15,
+                award=20,
             ),
             Achievement(
                 'Fireworked',
@@ -90,7 +90,7 @@ class AchievementSubsystem:
                 'achievementStomped',
                 (1, 1, 1),
                 '',
-                award=15,
+                award=25,
                 retro=True,
             ),
             Achievement(
@@ -98,7 +98,7 @@ class AchievementSubsystem:
                 'achievementWiggler',
                 (1, 1, 1),
                 '',
-                award=15,
+                award=35,
             ),
             Achievement(
                 'MimePunch',
@@ -119,33 +119,47 @@ class AchievementSubsystem:
                 'achievementMultiCap',
                 (1, 1, 1),
                 '',
-                award=5,
+                award=10,
             ),
             Achievement(
                 'Hard Head',
                 'achievementHardHead',
                 (1, 1, 1),
                 '',
+                award=15,
+            ),
+            Achievement(
+                'DozireDeath',
+                'achievementDozire',
+                (1, 1, 1),
+                '',
                 award=5,
             ),
             Achievement(
+                'RorySwooned',
+                'jacking',
+                (1, 1, 1),
+                '',
+                award=25,
+            ),
+            Achievement(
                 'A Long Way',
-                'achievementMedalSmall',
-                (2, 1.5, 0.3),
+                'achievementFin1',
+                (1, 1, 1),
                 'Default:The Finale',
                 award=20,
             ),
             Achievement(
                 'The Halfway Mark',
                 'achievementMedalMedium',
-                (2, 1.5, 0.3),
+                (1, 1, 1),
                 'Default:The Finale',
                 award=40,
             ),
             Achievement(
                 'I am the BombSquad:tm:',
                 'achievementMedalLarge',
-                (2, 1.5, 0.3),
+                (1, 1, 1),
                 'Default:The Finale',
                 award=60,
             ),
@@ -281,7 +295,9 @@ class Achievement:
         self._completion_banner_slot: int | None = None
         self._award = award
         self._hard_mode_only = hard_mode_only
-        self.complete = False
+        # We set complete here anyways because BombSquad is stupid.
+        dict = babase.app.config.get('squda_achievements', {})
+        self.complete = dict.get(name, False)
 
     @property
     def name(self) -> str:

@@ -97,9 +97,14 @@
       "name": "Quite Ironic"
     },
 	"Mustachioed": {
-      "descriptionFull": "Stomp a opponent by jumping on their head",
+      "descriptionFull": "Stomp a opponent by jumping on their head (UNOBTAINABLE FOR NOW)",
       "descriptionFullComplete": "Stomped a opponent by jumping on their head. Wahoo!",
       "name": "Mustachioed"
+    },
+	"RorySwooned": {
+      "descriptionFull": "Get SWOON (more than -170% punch) as the Roaring Knight",
+      "descriptionFullComplete": "Got SWOON (more than -170% punch) as the Roaring Knight.",
+      "name": "SWOONer who's SWOON"
     },
 	"Nice Try": {
       "descriptionFull": "Attempt to use multiple Metal Caps at once.",
@@ -112,18 +117,18 @@
       "name": "Dance War"
     },
     "I am the BombSquad:tm:": {
-      "descriptionFull": "Get 1000 points to win The Finale",
-      "descriptionFullComplete": "Successfully beat The Finale.",
+      "descriptionFull": "Score 2000 points and win The Finale",
+      "descriptionFullComplete": "Scored 2000 points and won The Finale",
       "name": "I am the BombSquda(TM)"
     },
     "A Long Way": {
-      "descriptionFull": "score 250 points on The Finale.",
-      "descriptionFullComplete": "Scored 250 points.",
+      "descriptionFull": "Score 350 points on The Finale",
+      "descriptionFullComplete": "Scored 350 points on The Finale",
       "name": "A Long Way"
     },
     "The Halfway Mark": {
-      "descriptionFull": "Score 500 points on ${LEVEL}",
-      "descriptionFullComplete": "Scored 500 points on ${LEVEL}",
+      "descriptionFull": "Score 650 points on The Finale",
+      "descriptionFullComplete": "Scored 650 points on The Finale",
       "name": "The Halfway Mark"
     }
   },
@@ -132,8 +137,8 @@
   "achievementsUnavailableForOldSeasonsText": "Sorry, achievement specifics are not available for old seasons.",
   "activatedText": "${THING} activated.",
   "addGameWindow": {
-    "getMoreGamesText": "Get More Games...",
-    "titleText": "Add Game",
+    "getMoreGamesText": "get some more games...",
+    "titleText": "adding a game",
 	"rpcText": "adding a game to a playlist"
   },
   "addToFavoritesText": "Add to Favorites",
@@ -147,8 +152,8 @@
   "audioSettingsWindow": {
     "headRelativeVRAudioInfoText": "(\"Auto\" enables this only when headphones are plugged in)",
     "headRelativeVRAudioText": "Head-Relative VR Audio",
-    "musicVolumeText": "Music Volume",
-    "soundVolumeText": "Sound Volume",
+    "musicVolumeText": "music...",
+    "soundVolumeText": "sound...",
     "soundtrackButtonText": "Soundtracks",
     "soundtrackDescriptionText": "(assign your own music to play during games)",
     "titleText": "Audio",

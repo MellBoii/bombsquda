@@ -165,6 +165,7 @@ class Dozer(bs.Actor):
                 return
             self.actor().dozered = False
             self.actor().explode_head()
+            self.actor().killed_by_entity('dozer')
         # schedules... yummy...
         bs.timer(0.2, self._delete)
         bs.timer(0.18, die)

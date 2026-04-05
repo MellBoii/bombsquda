@@ -75,6 +75,7 @@ class Sorrow(bs.Actor):
                 self.actor().sugarcoat_overlay(sound='bellMed', image='sugarcoatparry')
                 return
             self.actor().shatter(True)
+            self.actor().killed_by_entity('sorrow')
         elif self.actor().node.hold_node:
             hnode = self.actor().node.hold_node
             sactor = hnode.getdelegate(bs.Actor)
