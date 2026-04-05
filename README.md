@@ -47,7 +47,7 @@ All kinds of additions are accepted! As long as it isn't something that could po
 </p>
 <p>Yes, actually!<br>
 GummyBoiYT - Former collaborator, created Snake Shadow's character, Ninjageon and Metal Music's code, and Orangecap's old model..<br>
-Buddie - Suggested the idea for the Hot Spongetato Gamemode, and made Orangecap (the character) and also voiced him<br>
+Buddie - Suggested the idea for the Hot Spongetato Gamemode, made and voiced Orangecap's (The OC), and... wait, why is he IN THE GAME?? Holy self inserttttt <br>
 Lemon - Voice-acted Mell and also gave some great ideas like the spongebob powerup<br>
 Various sources - Sounds, music, and everything. There's WAY too many sources to list, so you're better off just searching for em.<br>
 
