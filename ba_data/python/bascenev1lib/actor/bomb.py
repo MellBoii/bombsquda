@@ -523,43 +523,6 @@ class Blast(bs.Actor):
             # It looks better if we delay a bit.
             bs.timer(0.05, emit)
 
-        elif self.blast_type == 'running_bomb':
-
-            def emit() -> None:
-                bs.emitfx(
-                    position=position,
-                    velocity=velocity,
-                    count=int(4.0 + random.random() * 8),
-                    scale=0.8,
-                    chunk_type='metal',
-                )
-                bs.emitfx(
-                    position=position,
-                    velocity=velocity,
-                    count=int(4.0 + random.random() * 8),
-                    scale=0.4,
-                    chunk_type='metal',
-                )
-                bs.emitfx(
-                    position=position,
-                    velocity=velocity,
-                    count=20,
-                    scale=0.7,
-                    chunk_type='spark',
-                    emit_type='stickers',
-                )
-                bs.emitfx(
-                    position=position,
-                    velocity=velocity,
-                    count=int(8.0 + random.random() * 15),
-                    scale=0.8,
-                    spread=1.5,
-                    chunk_type='spark',
-                )
-
-            # It looks better if we delay a bit.
-            bs.timer(0.05, emit)
-
         else:  # Regular or land mine bomb shrapnel.
 
             def emit() -> None:
@@ -723,9 +686,9 @@ class Blast(bs.Actor):
 
             def _extra_debris_sound() -> None:
                 factory.debris_fall_sound.play(position=lpos)
-                factory.wood_debris_fall_sound.play(position=lpos)
+                factory.wood_debris_fall_sound.play(position=lpos, volume=1.6)
 
-            bs.timer(0.4, _extra_debris_sound)
+            bs.timer(0.1, _extra_debris_sound)
 
     @override
     def handlemessage(self, msg: Any) -> Any:

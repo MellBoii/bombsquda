@@ -129,6 +129,9 @@ class UKHook(bs.Actor):
             if not self.node:
                 return
             if msg.immediate:
+                if self.soundloop:
+                    self.soundloop.volume = 0
+                    self.soundloop.delete()
                 self.node.delete()
             else:
                 if self.soundloop:

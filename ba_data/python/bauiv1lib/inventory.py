@@ -224,6 +224,9 @@ class InventoryWindow(bui.MainWindow):
         # no-op if we're not currently in control.
         if not self.main_window_has_control():
             return
+        if ba.app.config.get('squda_noonline'):
+            bui.screenmessage(bui.Lstr(resource='noOnlineError'), color=(1, 0, 0))
+            bui.getsound('error').play()
         bui.getsound('quickcon').play()
         if not mell.get_currency('tickets'):
             bui.screenmessage(bui.Lstr(resource='transferError2'), color=(1, 0, 0))

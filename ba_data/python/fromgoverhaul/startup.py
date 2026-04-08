@@ -135,9 +135,9 @@ class Startup():
         custom ass exception hook
         """
         global _last_error_time, _recent_error
-
-        # Don't shadow SystemExit, KeyboardInterrupt
-        # i EXCEPTIONALLY do not know what these mean
+        
+        # don't "hide" systemexit and keyboardinterrupt
+        # keyword "hide" because i doubt this does anything
         if issubclass(exc_type, KeyboardInterrupt):
             sys.__excepthook__(exc_type, exc_value, exc_traceback)
             return

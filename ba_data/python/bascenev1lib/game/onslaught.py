@@ -423,7 +423,6 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
         # keep them synced
         self.timer_background.node.connectattr('position', spaz.node, 'position')
 
-
         # show text
         self.pizzatimertext = bs.newnode('text', attrs={
             'text': self._format_time(self.timebeforedeath),

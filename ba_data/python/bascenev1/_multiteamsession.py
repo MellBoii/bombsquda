@@ -345,24 +345,8 @@ class MultiTeamSession(Session):
                 bs.getsound('bellDraw').play()
                 bs.broadcastmessage('It\'s a draw...')
             def do_bg():
-                self.background = bs.newnode(
-                    'image',
-                    attrs={
-                        'texture': bs.gettexture('bg'),  # lol
-                        'fill_screen': True,
-                        'opacity': 0.0,
-                        'absolute_scale': True,
-                        'attach': 'center'
-                    },
-                )
-                bs.animate(
-                    self.background, 
-                    'opacity',
-                    {
-                        0.0: 0.0, 
-                        1.0: 1.0,
-                    }
-                )
+                from bascenev1lib.actor.background import Background
+                Background(fade_time=1.0).autoretain()
             ba.apptimer(2.5, do_bg)
 
 

@@ -731,6 +731,7 @@ class SpazBot(Spaz):
         Method override; sends bs.SpazBotPunchedMessage
         to the current activity.
         """
+        super().on_punched(damage)
         bs.getactivity().handlemessage(SpazBotPunchedMessage(self, damage))
 
     @override

@@ -214,17 +214,20 @@ class Chooser:
         self._front: bool = True
         # --- Custom menu attrs ---
         self._menu_active = False
-        self._menu_index = 0  # which menu option we're at
-        self._settings_index = 0  # which setting we're editing (future-proof)
-        self._sound_index = 0  # which sound we're at (also pretty future-proof)
+        self._menu_index = 0
+        self._settings_index = 0
+        self._sound_index = 0
+        self._skin_index = 0
         self._submenu_mode: str | None = None  # None, 'character', 'settings'
-        self.settings = ['parry button', 'bomb skin']
+        self.settings = ['parry button', 'bomb skin', 'scream sound']
         self.settings_options = {
             'parry button': ['grab', 'jump', 'punch', 'bomb'],
             'bomb skin': [None, 'noise bomb', 'familiar', 'kookoo'],
+            'scream sound': ['wario', 'anton', 'annie'],
         }
+        self.menu_options = ['ready', 'settings', 'character', 'sound', 'skin']
         self.skins = {
-            '': '',
+            'THERE': ['IS', 'NO', 'SKINS']
         }
         self._ensure_player_settings()
         # Sound list is a list of strings. 
@@ -836,6 +839,8 @@ class Chooser:
         # Ensure every setting exists
         for setting in self.settings:
             settings.setdefault(setting, self.settings_options[setting][0])
+        # Hacky but it works
+        settings.setdefault('skin', None)
         return settings
         
     # TODO: should handle this at the engine layer so this is unnecessary.
@@ -857,7 +862,7 @@ class Chooser:
             self._menu_active = True
             self._menu_index = 0
         else:
-            self._menu_index = (self._menu_index + direction) % 4
+            self._menu_index = (self._menu_index + direction) % len(self.menu_options)
 
         self.movesound.play()
         self._update_text()
@@ -886,8 +891,27 @@ class Chooser:
             self.switchsound.play()
         
         elif self._menu_index == 3:
-            # Character slider
+            # Sound slider
             self._submenu_mode = 'sound'
+            self.switchsound.play()
+        
+        elif self._menu_index == 4:
+            # First we check if character has a skin tho.
+            name = self._character_names[self._character_index]
+            if name not in self.skins.keys():
+                self.errorsound.play()
+                bs.broadcastmessage(
+                    bs.Lstr(
+                        resource='noCharacterSkin',
+                        subs=[
+                            ( '${NAME}', self._getname() ),
+                        ],
+                    ),
+                    color=(1, 0, 0),
+                )
+                return
+            # Skin slider
+            self._submenu_mode = 'skin'
             self.switchsound.play()
 
         self._update_text()
@@ -922,10 +946,23 @@ class Chooser:
         self.movesound.play()
         self._update_text()
     
+    def _handle_skin_slider(self, direction: int) -> None:
+        name = self._character_names[self._character_index]
+        settings = self._ensure_player_settings()
+        self._skin_index = (
+            self._skin_index + direction
+        ) % len(self.skins[name])
+        settings['skin'] = self.skins[name][self._skin_index]
+        self.movesound.play()
+        self._update_text()
+    
     def _handle_sound_play(self) -> None:
-        current = self._sound_list[self._sound_index]
-        sound = self._sound_dict[current]
-        sound.play()
+        try:
+            current = self._sound_list[self._sound_index]
+            sound = self._sound_dict[current]
+            sound.play()
+        except:
+            self.errorsound.play()
         
     def handlemessage(self, msg: Any) -> Any:
         """Standard generic message handler."""
@@ -997,6 +1034,8 @@ class Chooser:
                         )
                     elif self._submenu_mode == 'sound':
                         self._handle_sound_slider(msg.value)
+                    elif self._submenu_mode == 'skin':
+                        self._handle_skin_slider(msg.value)
                     return
                     
                 # Switching teams doesn't work while in a menu
@@ -1064,7 +1103,7 @@ class Chooser:
             righta = babase.charstr(babase.SpecialChar.RIGHT_ARROW)
             upa = babase.charstr(babase.SpecialChar.UP_ARROW)
             downa = babase.charstr(babase.SpecialChar.DOWN_ARROW)
-
+            # most hardcoded bullshit i've made
             if self._menu_active:
                 if self._submenu_mode == 'character':
                     sub = f'{lefta} {self._character_names[self._character_index]} {righta}'
@@ -1073,11 +1112,14 @@ class Chooser:
                     option = self.settings[self._settings_index]
                     current = settings.get(option, self.settings_options[option][0])
 
-                    sub = f'{downa} {self.settings[self._settings_index]} {upa}: {lefta} {str(current).upper()} {righta}'
+                    sub = f'{downa} {option} {upa}: {lefta} {str(current).upper()} {righta}'
                 elif self._submenu_mode == 'sound':
                     sub = f'{lefta} {self._sound_list[self._sound_index]} {righta}'
+                elif self._submenu_mode == 'skin':
+                    name = self._character_names[self._character_index]
+                    sub = f'{lefta} {self.skins[name][self._skin_index]} {righta}'
                 else:
-                    options = ['ready', 'settings', 'character', 'sound']
+                    options = self.menu_options
                     sub = f'{upa}{options[self._menu_index]}{downa}'
             else:
                 sub = f'{downa}choose profile{upa}'
