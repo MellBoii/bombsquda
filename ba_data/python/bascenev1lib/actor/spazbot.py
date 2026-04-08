@@ -356,7 +356,7 @@ class SpazBot(Spaz):
 
         target_pt_raw: bs.Vec3 | None
         target_vel: bs.Vec3 | None
-        # don't gaf if we're super already. >B)
+        # don't gaf if we're super already.
         if self.issuper:
             we_chase_emeralds = False
         # handle if we've taken too much to
@@ -372,6 +372,8 @@ class SpazBot(Spaz):
             threat, tdist = self._get_nearest_player_spaz()
             bomb, bdist = self._get_nearest_live_bomb()
             if emerald != None:
+                # get emerald type by... texture name. Yup.
+                # Don't chase if emerald is already in our list.
                 if emerald.texname in self.emeralds:
                     emerald = None
 
@@ -414,7 +416,9 @@ class SpazBot(Spaz):
                 target_is_emerald = True
                 self.node.run = 1.0
                 self.emerald_chase_time += 0.1
-                if self.node.hold_node:
+                # ONLY let go of held things if they're not flags
+                holding_flag = self.node.hold_node.getnodetype() == 'flag'
+                if self.node.hold_node and not holding_flag:
                     self.node.pickup_pressed = True
                     self.node.pickup_pressed = False
 
@@ -515,7 +519,7 @@ class SpazBot(Spaz):
         dist = diff.length()
         to_target = diff.normalized()
         # oh, we have all the emeralds.
-        # even tho its rare to achieve them, we will go super >:3
+        # even tho its rare to achieve them, we will try to go super
         if len(self.emeralds) >= 7:
             self.on_jump_press()
             bs.timer(0.1, self.on_jump_release)
@@ -650,7 +654,7 @@ class SpazBot(Spaz):
             elif self.static:
                 self._mode = 'wait'
 
-            # too close and not charging? run away :(
+            # too close and not charging? run away 
             elif (
                 dist < self.charge_dist_min
                 and not self._charge_closing_in
@@ -668,7 +672,7 @@ class SpazBot(Spaz):
 
             # we're close enough to charge and
             # backed up against a cliff or too far to
-            # throw... charge!!!! >:o
+            # throw... charge!!!! 
             elif (
                 dist < self.charge_dist_max
                 or dist > self.throw_dist_max
@@ -687,9 +691,8 @@ class SpazBot(Spaz):
                 # cant retreat to throw.
                 self._mode = 'flee'
 
-            # do some real cool jumps if we runnin :D
+            # do some real cool jumps if we runnin 
             # FIXME: pylint: disable=too-many-boolean-expressions
-            # love some fixmes hahahaha
             if (
                 self._running
                 and 1.2 < dist < 2.2
@@ -882,7 +885,7 @@ class BomberBotStatic(BomberBot):
         'Dozer', 
         'dozinga', 
         'sleepyhead', 
-        'fuckingyellowballheadbitchthatwontstopkillingmeingrace',
+        'fuckingyellowballheadbitchthatwontstopkillingmeinthatonegamethatgotULTRAFUCKED',
         'BOT_PRIDE',
     ]
     character = 'Dozer'

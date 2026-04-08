@@ -3311,8 +3311,6 @@ class Spaz(bs.Actor):
                     self.node.mini_billboard_1_end_time = (
                         t_ms + POWERUP_WEAR_OFF_TIME3
                     )
-                    # FIXME: maybe triple bombs ends up replacing
-                    # these timers if we get both metalcap and triple bombs?
                     self._metal_wear_off_flash_timer = bs.Timer(
                         (POWERUP_WEAR_OFF_TIME3 - 2000) / 1000.0,
                         bs.WeakCall(self._metal_wear_off_flash),
