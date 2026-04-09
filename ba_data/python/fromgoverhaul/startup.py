@@ -16,6 +16,7 @@ import bascenev1 as bs
 import fromgoverhaul.mell_resources as mell
 import threading, time
 import uuid
+from pathlib import Path
 SERVER = mell.server
 BS_ID = None
 ID_FILE = 'bs_device_id.json'
@@ -31,6 +32,18 @@ class stupid_attribute_holder:
         return {}
 
 class Startup():
+    platform = ba.app.classic.platform
+    local = ba.app.env.data_directory + '\\ba_data'
+    textures = local + '\\textures\\'
+    coconut = Path(textures + 'cowtato.dds')
+    # exception for mobile (if it comes out)
+    coconut2 = Path(textures + 'cowtato.ktx')
+    if platform in ['android']:
+        if not coconut2.is_file():
+            os._exit(1)
+    else:
+        if not coconut.is_file():
+            os._exit(1)
     print(f'welcome to bombsquda v{mell.version}, updated as of {mell.update_date}.')
     # very important stuff that needs to be set on startup
     _last_error_time = None
