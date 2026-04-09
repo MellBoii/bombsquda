@@ -773,20 +773,22 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
                     ('${A}', babase.charstr(babase.SpecialChar.OUYA_BUTTON_O)),
                 ],
             )
-            base_position = (75, 50)
+            stringed = tip_lstr.evaluate()
+            lines = stringed.splitlines()
+            length = len(lines)
+            base_position = (0, 50)
             tip_scale = 0.8
             tip_title_scale = 1.2
             vrmode = babase.app.env.vr
-
-            t_offs = -350.0
+            
             tnode = _bascenev1.newnode(
                 'text',
                 attrs={
                     'text': tip_lstr,
                     'scale': tip_scale,
                     'maxwidth': 900,
-                    'position': (base_position[0] + t_offs, base_position[1]),
-                    'h_align': 'left',
+                    'position': (base_position[0], base_position[1]),
+                    'h_align': 'center',
                     'vr_depth': 300,
                     'shadow': 1.0 if vrmode else 0.5,
                     'flatness': 1.0 if vrmode else 0.5,
@@ -794,9 +796,10 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
                     'v_attach': 'bottom',
                 },
             )
+            yoffs = 30
             t2pos = (
-                base_position[0] + t_offs - (20 if icon is None else 82),
-                base_position[1] + 2,
+                base_position[0],
+                base_position[1] + yoffs + (20 * length),
             )
             t2node = _bascenev1.newnode(
                 'text',
@@ -815,12 +818,11 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
                 },
             )
             if icon is not None:
-                ipos = (base_position[0] + t_offs - 40, base_position[1] + 1)
                 img = _bascenev1.newnode(
                     'image',
                     attrs={
                         'texture': icon,
-                        'position': ipos,
+                        'position': t2pos,
                         'scale': (50, 50),
                         'opacity': 1.0,
                         'vr_depth': 315,

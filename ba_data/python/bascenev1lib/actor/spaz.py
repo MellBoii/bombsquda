@@ -587,6 +587,7 @@ class Spaz(bs.Actor):
             self._flash_timer,
             self.spongebob_timer,
             self.hook,
+            self.scream_sfx,
         ]
         for timer in timers_to_clear:
             if timer is not None:

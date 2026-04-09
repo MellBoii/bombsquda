@@ -2171,7 +2171,10 @@
 		"tipGarbage15": "i dont have anything to say.\nsorry. come back next tip.",
 		"lastStandTip": "its so fucking slow oh my god",
 		"onslaughtCurseTip": "hey, that skull box looks pretty cool. you should grab it :3",
-		"onslaughtTNTTip": "this is the big box that goes KABOOOOMMMM!!!\nyou can blow it up for that to happen if you want"
+		"onslaughtTNTTip": "this is the big box that goes KABOOOOMMMM!!!\nyou can blow it up for that to happen if you want",
+		"runaroundTip1": "you cant jump onto the ledges,\nyou HAVE TO THROW BOMBS!!!!!!!!!!!!",
+		"runaroundTip2": "try spinning and jumping before\nthrowing your bomb for more strength!",
+		"runaroundTip3": "set up mines around points bots\nwill walk in so they get taken care of..."
     }
   },
   "trophiesRequiredText": "This requires at least ${NUMBER} trophies.",
