@@ -753,11 +753,10 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         from bascenev1._gameutils import animate, GameTip
 
         # If there's any tips left on the list, display one.
+        # NOTETOSELF; TIP SYSTEM FOR COOP LEVELS AND SUCH
         if self.tips:
             tip = self.tips.pop(random.randrange(len(self.tips)))
-            tip_title = babase.Lstr(
-                value='${A}:', subs=[('${A}', babase.Lstr(resource='tipText'))]
-            )
+            tip_title = babase.Lstr(resource='tipText')
             icon: bascenev1.Texture | None = None
             sound: bascenev1.Sound | None = None
             if isinstance(tip, GameTip):

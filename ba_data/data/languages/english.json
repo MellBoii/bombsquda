@@ -2169,7 +2169,9 @@
 		"tipGarbage13": "splashText68",
 		"tipGarbage14": "You don't have enough memory in the memory card!\nIs your memory card set correctly?",
 		"tipGarbage15": "i dont have anything to say.\nsorry. come back next tip.",
-		"lastStandTip": "its so fucking slow oh my god"
+		"lastStandTip": "its so fucking slow oh my god",
+		"onslaughtCurseTip": "hey, that skull box looks pretty cool. you should grab it :3",
+		"onslaughtTNTTip": "this is the big box that goes KABOOOOMMMM!!!\nyou can blow it up for that to happen if you want"
     }
   },
   "trophiesRequiredText": "This requires at least ${NUMBER} trophies.",

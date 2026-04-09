@@ -417,7 +417,9 @@ class SpazBot(Spaz):
                 self.node.run = 1.0
                 self.emerald_chase_time += 0.1
                 # ONLY let go of held things if they're not flags
-                holding_flag = self.node.hold_node.getnodetype() == 'flag'
+                holding_flag = False
+                if self.node.hold_node:
+                    holding_flag = self.node.hold_node.getnodetype() == 'flag'
                 if self.node.hold_node and not holding_flag:
                     self.node.pickup_pressed = True
                     self.node.pickup_pressed = False
