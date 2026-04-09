@@ -16,7 +16,6 @@ import bascenev1 as bs
 import fromgoverhaul.mell_resources as mell
 import threading, time
 import uuid
-from efro.util import strip_exception_tracebacks
 SERVER = mell.server
 BS_ID = None
 ID_FILE = 'bs_device_id.json'

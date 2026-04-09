@@ -4196,7 +4196,8 @@ class Spaz(bs.Actor):
                     'big': False,
                 },
             )
-            bs.timer(1.0, explosion.delete)
+            # weak call because THIS GAME CAN GO FUCKOFFAHHHHH
+            bs.timer(1.0, bs.WeakCall(explosion.delete))
             bs.emitfx(
                 position=pos,
                 velocity=vel,
