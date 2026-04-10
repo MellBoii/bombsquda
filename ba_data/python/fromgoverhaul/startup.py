@@ -38,17 +38,18 @@ class Startup():
     coconut = Path(textures + 'cowtato.dds')
     # exception for mobile (if it comes out)
     coconut2 = Path(textures + 'cowtato.ktx')
+    # "crash" game if texture doesn't exist
     if platform in ['android']:
         if not coconut2.is_file():
             os._exit(1)
     else:
         if not coconut.is_file():
             os._exit(1)
+    # alright we're ready to do startup stuff
     print(f'welcome to bombsquda v{mell.version}, updated as of {mell.update_date}.')
     # very important stuff that needs to be set on startup
     _last_error_time = None
     _recent_error = False
-    ba.app.config['timeserrored'] = 0
     # check if values exist
     global cfg
     cfg = bui.app.config
@@ -97,16 +98,18 @@ class Startup():
     # won't affect already existing ones.
     for k,v in conflist.items():
         config.setdefault(k, v)
-    # save changes
-    cfg['isbombsqudaorsomething'] = None
     config.apply_and_commit()
     bs.debprint('set default config stuff applied!')
     try:
+        bs.debprint('attempting to check config')
         cfg['squda_playersfirsttime']
-        bs.debprint('attempting to check squda_playersfirsttime')
     except:
-        print('incredibly bad fuckin error.')
-        print('something went bad in fromgoverhaul\'s startup, and we couldn\t add config stuff')
+        print(
+            (
+                'An error occured; default config values couldn\'t'
+                'be set. Please contact @mellboii on Discord...'
+            )
+        )
 
     if babase.app.config.get("squda_richpresence", True):
         try:
@@ -188,14 +191,16 @@ class Startup():
         global BS_ID
         BS_ID = mell.get_unique_bs_id()
     ba.apptimer(1.5, set_bs_id)
-
+    # define our thread loop
     def loop():
         loopt = stupid_attribute_holder()
 
         while BS_ID is None:
             time.sleep(0.2)  # wait until ID is ready
-
+        
+        # while we exist, keep pinging the server
         while True:
+            # get our data like squda id n shi
             data = {
                 "bs_id": BS_ID,
                 "account": bui.app.plus.get_v1_account_display_string(),
@@ -204,6 +209,7 @@ class Startup():
                 "squda_version": mell.version,
                 "squda_updatedate": mell.update_date,
             }
+            # make a request to the server with the data (as dumped json)
             request = urllib.request.Request(
                 f"{SERVER}/ping",
                 data=json.dumps(data).encode('utf-8'),
@@ -211,6 +217,7 @@ class Startup():
                     "Content-Type": "application/json"
                 },
             )
+            # now try opening the response
             try:
                 urllib.request.urlopen(request, timeout=2)
                 if not loopt._connection_success_logged:
@@ -218,12 +225,15 @@ class Startup():
                     loopt._connection_success_logged = True
                     loopt._connection_failed_logged = False
                 time.sleep(2)
+            # exception likely means no connection could be made
             except Exception as e:
                 bs.debprint(f"Server connection failed: {e}")
                 if not loopt._connection_failed_logged:
                     print('Connecting to the BombSquda server failed.')
                     loopt._connection_success_logged = False
                     loopt._connection_failed_logged = True
+                    
+    # ONLY run the thread if online is enabled
     if not ba.app.config.get('squda_noonline'):
         threading.Thread(target=loop, daemon=True).start()
     bs.debprint('everything should be good to go :3')

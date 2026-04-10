@@ -106,6 +106,7 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
                 ]
                 bs.setmusic(random.choice(musics))
                 break
+                
     # better not to mess around here...
     def http_post(self, path: str, payload: dict):
         data = json.dumps(payload).encode()
@@ -133,10 +134,12 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
             self.http_post("/submit", payload)
             bs.debprint('personal best uploaded successfully')
             bs.getsound('dingSmall').play()
+            return True
         except Exception as e:
             bs.screenmessage("Failed to upload PB.", color=(1, 0, 0))
             bs.getsound('error').play()
             print(f'exception occured while uploading PB: {e}')
+            return False
     
     def fetch_leaderboard(self):
         try:

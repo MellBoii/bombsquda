@@ -93,7 +93,8 @@ class AboutGatherTab(GatherTab):
         bui.widget(edit=container, up_widget=tab_button)
 
         y = c_height * 0.1
-        msc_scale = 1.7
+        getres = bui.app.lang.get_resource
+        msc_scale = getres('gatherWindow.aboutDescriptionScale')
         if show_message:
             scaling = 700
             bui.textwidget(

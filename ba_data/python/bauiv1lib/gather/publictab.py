@@ -26,6 +26,8 @@ if TYPE_CHECKING:
 DEBUG_SERVER_COMMUNICATION = False
 DEBUG_PROCESSING = False
 
+TAG = "[SQ]"
+
 
 class SubTabType(Enum):
     """Available sub-tabs."""
@@ -113,7 +115,7 @@ class UIRow:
         hpos = 20
         vpos = sub_scroll_height - lineheight * index - 50
         self._name_widget = bui.textwidget(
-            text=bui.Lstr(value=party.name),
+            text=bui.Lstr(value=party.name.replace('[SQ]', '').strip()),
             parent=columnwidget,
             size=(sub_scroll_width * 0.46, 20),
             position=(0 + hpos, 4 + vpos),
@@ -748,16 +750,19 @@ class PublicGatherTab(GatherTab):
             position=(210 + xoffs, v - 9),
             text=party_name_text,
         )
+        # get party name (usually [SQ] Party Name)
+        party_name = bui.app.config.get('Public Party Name', '')
+        # replace the squda tag with nothing visually
+        text = party_name.replace(TAG, '')
         self._host_name_text = bui.textwidget(
             parent=self._container,
             editable=True,
             size=(535, 40),
             position=(230 + xoffs, v - 30),
-            text=bui.app.config.get('Public Party Name', ''),
+            text=text,
             maxwidth=494,
             shadow=0.3,
             flatness=1.0,
-            description=party_name_text,
             autoselect=True,
             v_align='center',
             corner_scale=1.0,
@@ -1176,16 +1181,26 @@ class PublicGatherTab(GatherTab):
         ):
             self._parties_displayed = {}
         else:
-            if self._filter_value:
-                filterval = self._filter_value.lower()
-                self._parties_displayed = {
-                    k: v
-                    for k, v in self._parties_sorted
-                    if filterval in v.name.lower()
-                }
-            else:
-                self._parties_displayed = dict(self._parties_sorted)
+            filterval = self._filter_value.lower().strip()
 
+            def matches(party_name: str) -> bool:
+                name = party_name.lower()
+
+                # Always require tag
+                if TAG.lower() not in name:
+                    return False
+
+                # If user typed something, apply it too
+                if filterval:
+                    return filterval in name
+
+                return True
+
+            self._parties_displayed = {
+                k: v
+                for k, v in self._parties_sorted
+                if matches(v.name)
+            }
         # Any time our selection disappears from the displayed list, go
         # back to auto-selecting the top entry.
         if (
@@ -1409,10 +1424,15 @@ class PublicGatherTab(GatherTab):
             )
             bui.getsound('error').play()
             return
+        # replace the start of the name with [SQ] so we can 
+        # filter out squda lobbies from the usual vanilla ones
+        name = TAG + name
         bs.set_public_party_name(name)
+        # save to config
         cfg = bui.app.config
         cfg['Public Party Name'] = name
         cfg.commit()
+        # set it up
         bui.getsound('shieldUp').play()
         bs.set_public_party_enabled(True)
 
