@@ -227,6 +227,7 @@ class InventoryWindow(bui.MainWindow):
         if ba.app.config.get('squda_noonline'):
             bui.screenmessage(bui.Lstr(resource='noOnlineError'), color=(1, 0, 0))
             bui.getsound('error').play()
+            return
         bui.getsound('quickcon').play()
         if not mell.get_currency('tickets'):
             bui.screenmessage(bui.Lstr(resource='transferError2'), color=(1, 0, 0))
@@ -429,7 +430,7 @@ class SpazClickerWindow(bui.MainWindow):
         )
         self._texture = 'earthbound/spazbound'
         self._clicks = 0
-        self.sounds = ['voicelines/spaz/jump0' + str(i + 1) + '' for i in range(4)]
+        self.sounds = ['diagvoice/spaz']
 
         bui.textwidget(
             parent=self._root_widget,

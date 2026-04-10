@@ -67,7 +67,6 @@ class GatherWindow(bui.MainWindow):
 
         ABOUT = 'about'
         INTERNET = 'internet'
-        PRIVATE = 'private'
         NEARBY = 'nearby'
         MANUAL = 'manual'
 
@@ -80,7 +79,6 @@ class GatherWindow(bui.MainWindow):
         # pylint: disable=cyclic-import
         from bauiv1lib.gather.abouttab import AboutGatherTab
         from bauiv1lib.gather.manualtab import ManualGatherTab
-        from bauiv1lib.gather.privatetab import PrivateGatherTab
         from bauiv1lib.gather.publictab import PublicGatherTab
         from bauiv1lib.gather.nearbytab import NearbyGatherTab
 
@@ -193,9 +191,6 @@ class GatherWindow(bui.MainWindow):
                 )
             )
         tabdefs.append(
-            (self.TabID.PRIVATE, bui.Lstr(resource=f'{self._r}.privateText'))
-        )
-        tabdefs.append(
             (self.TabID.NEARBY, bui.Lstr(resource=f'{self._r}.nearbyText'))
         )
         tabdefs.append(
@@ -219,7 +214,6 @@ class GatherWindow(bui.MainWindow):
         tabtypes: dict[GatherWindow.TabID, type[GatherTab]] = {
             self.TabID.ABOUT: AboutGatherTab,
             self.TabID.MANUAL: ManualGatherTab,
-            self.TabID.PRIVATE: PrivateGatherTab,
             self.TabID.INTERNET: PublicGatherTab,
             self.TabID.NEARBY: NearbyGatherTab,
         }

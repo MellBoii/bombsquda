@@ -47,9 +47,9 @@ class AboutGatherTab(GatherTab):
         )
         # Let's not talk about sharing in vr-mode; its tricky to fit more
         # than one head in a VR-headset.
-        show_message_extra = not bui.app.env.vr
+        show_message_extra = False
         message_extra_height = 60
-        show_invite = try_tickets is not None
+        show_invite = False
         invite_height = 80
         show_discord = False
 
@@ -70,21 +70,6 @@ class AboutGatherTab(GatherTab):
             ],
         )
 
-        if show_message_extra:
-            message = bui.Lstr(
-                value='${A}\n\n${B}',
-                subs=[
-                    ('${A}', message),
-                    (
-                        '${B}',
-                        bui.Lstr(
-                            resource='gatherWindow.'
-                            'aboutDescriptionLocalMultiplayerExtraText'
-                        ),
-                    ),
-                ],
-            )
-
         scroll_widget = bui.scrollwidget(
             parent=parent_widget,
             position=(region_left, region_bottom),
@@ -92,7 +77,6 @@ class AboutGatherTab(GatherTab):
             highlight=False,
             border_opacity=0,
         )
-        msc_scale = 1.1
 
         container = bui.containerwidget(
             parent=scroll_widget,
@@ -108,23 +92,22 @@ class AboutGatherTab(GatherTab):
         # shouldn't be possible when buttons are present).
         bui.widget(edit=container, up_widget=tab_button)
 
-        y = c_height - 30
+        y = c_height * 0.1
+        msc_scale = 1.7
         if show_message:
+            scaling = 700
             bui.textwidget(
                 parent=container,
                 position=(region_width * 0.5, y),
                 color=(0.6, 1.0, 0.6),
                 scale=msc_scale,
                 size=(0, 0),
-                maxwidth=region_width * 0.9,
-                max_height=message_height,
+                maxwidth=scaling,
+                max_height=scaling,
                 h_align='center',
-                v_align='top',
+                v_align='center',
                 text=message,
             )
-            y -= message_height
-            if show_message_extra:
-                y -= message_extra_height
 
         if show_invite:
             bui.textwidget(

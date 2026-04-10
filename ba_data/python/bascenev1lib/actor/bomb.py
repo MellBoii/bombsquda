@@ -695,12 +695,6 @@ class Blast(bs.Actor):
         assert not self.expired
 
         if isinstance(msg, bs.DieMessage):
-            if self.curse_sfx:
-                self.curse_sfx.volume = 0
-                self.curse_sfx.delete()
-            if self.scream_sfx:
-                self.scream_sfx.volume = 0
-                self.scream_sfx.delete()
             if self.node:
                 self.node.delete()
 
@@ -1022,6 +1016,12 @@ class Bomb(bs.Actor):
         self._explode_callbacks = []
 
     def _handle_die(self) -> None:
+        if self.curse_sfx:
+            self.curse_sfx.volume = 0
+            self.curse_sfx.delete()
+        if self.scream_sfx:
+            self.scream_sfx.volume = 0
+            self.scream_sfx.delete()
         if self.node:
             self.node.delete()
 
