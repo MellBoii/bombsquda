@@ -25,10 +25,24 @@ class RadioWindow(bui.Window):
         uiscale = bui.app.ui_v1.uiscale
         self._width = 700
         self._height = 350
+        scale = (
+            1.55
+            if uiscale is bui.UIScale.SMALL
+            else 1.3 if uiscale is bui.UIScale.MEDIUM else 1.0
+        )
+        stack_offset = (
+            (15, -40) 
+            if uiscale is bui.UIScale.SMALL else 
+            (0, -30) 
+            if uiscale is bui.UIScale.MEDIUM else 
+            (0, -5)
+        )
         super().__init__(
             root_widget=bui.containerwidget(
                 size=(self._width, self._height),
                 transition='in_scale',
+                scale=scale,
+                stack_offset=stack_offset,
             ),
             # We exist in the overlay stack so main-windows being
             # recreated doesn't affect us.

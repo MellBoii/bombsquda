@@ -49,11 +49,18 @@ class WaitForConnectivityWindow(bui.Window):
         self._on_cancel = on_cancel
         self._width = 500
         self._height = 300
+        uiscale = bui.app.ui_v1.uiscale
+        scale = (
+            1.8
+            if uiscale is bui.UIScale.SMALL
+            else 1.5 if uiscale is bui.UIScale.MEDIUM else 1.0
+        )
         super().__init__(
             root_widget=bui.containerwidget(
                 size=(self._width, self._height),
                 transition='in_scale',
                 parent=bui.get_special_widget('overlay_stack'),
+                scale=scale,
             )
         )
         self._sound_playing = True
