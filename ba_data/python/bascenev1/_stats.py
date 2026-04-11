@@ -377,7 +377,6 @@ class Stats:
 
         from bascenev1._gameactivity import GameActivity
 
-        del victim_player  # Currently unused.
         name = player.getname()
         s_player = self._player_records[name]
 
@@ -449,6 +448,18 @@ class Stats:
                 bs.timer(0.7, lambda: player.actor.say(wave=True))
             else:
                 player.actor.set_cansay()
+            # Give info about the victim to the Spaz 
+            # so we can use that info.
+            if victim_player:
+                char = victim_player.character
+                name = victim_player.getname()
+            else:
+                name = ''
+                char = ''
+            player.actor.set_last_victim(
+                name=name,
+                character=char
+            )
             s_player.accum_kill_count += 1
             s_player.kill_count += 1
 

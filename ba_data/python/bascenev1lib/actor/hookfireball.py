@@ -144,7 +144,7 @@ class UKHook(bs.Actor):
             if not self.node:
                 return
             toucher = bs.getcollision().opposingnode
-            ishookable = toucher.getnodetype() in ['spaz', 'prop'] 
+            ishookable = toucher.getnodetype() in ['spaz', 'prop', 'bomb'] 
             actor = toucher.getdelegate(bs.Actor)
             # very long list of conditions
             if (
@@ -300,7 +300,7 @@ class Fireball(bs.Actor):
             toucher = collision.opposingnode
             if not toucher:
                 return None
-            ishittable = toucher.getnodetype() in ['spaz', 'prop']
+            ishittable = toucher.getnodetype() in ['spaz', 'prop', 'bomb']
             if not ishittable:
                 return None
             actor = toucher.getdelegate(bs.Actor)

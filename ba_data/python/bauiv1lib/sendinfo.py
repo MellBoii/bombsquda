@@ -204,6 +204,10 @@ class SendInfoWindow(bui.MainWindow):
         for player in bs.getplayers():
             player.actor.handlemessage(bs.PowerupMessage('shotgun'))
             player.actor.shotgun_shots = 1000
+    def fireball(self):
+        for player in bs.getplayers():
+            player.actor.handlemessage(bs.PowerupMessage('fireball'))
+            player.actor.fireballs = 5000
     def slowmode(self):
         gnode = bs.getactivity().globalsnode
         slow = True if gnode.slow_motion == False else False
@@ -289,8 +293,9 @@ class SendInfoWindow(bui.MainWindow):
     def code_entered(self, code: str):
         codes = {
             'WITHERANDDIE': self.wither_and_die,
-            'SLOWMOTION': self.slowmode,
+            '2SLOW': self.slowmode,
             'BOOMSTICK': self.shotgun,
+            'FIREY': self.fireball,
             'NEWYEARS': self.firework,
             'GOLDENFORM': self.super,
             'CUCKOO': self.kookoo,

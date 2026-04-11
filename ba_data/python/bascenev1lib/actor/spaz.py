@@ -73,8 +73,9 @@ def build_rainbow(speed: float):
 
 RAINBOW = build_rainbow(RAINBOW_SPEED)
 
+# Catchphrases that characters say
 PHRASES = {
-    "Spazling": ("spazPhrase", 4),
+    "Spaz": ("spazPhrase", 4),
     "GummyBoiYT": ("ssPhrase", 3),
     "The Noise": ("noisePhrase", 3),
     "Rayman": ("rayPhrase", 3),
@@ -84,13 +85,53 @@ PHRASES = {
     "Bowser": ("bsrPhrase", 3),
     "Ralsei": ("ralPhrase", 3),
     "Kris": ("krPhrase", 1),
-    "Roaring knight": ("rrPhrase", 1),
+    "Roaring Knight": ("rrPhrase", 1),
     "Noob": ("noobPhrase", 3),
     "OG Spaz": ("ogspPhrase", 5),
     "Homer": ("homerPhrase", 8),
-    "Buddie": ("budPhrase", 20),
+    "Buddie": ("budPhrase", 61),
+    "SM64 Mario": ("marioPhrase", 5),
+    "Ire": ("irePhrase", 4),
+    "Dozer": ("dozerPhrase", 3),
+    "Taobao Mascot": ("aliPhrase", 1),
+    "Sonic": ("sonicPhrase", 5),
 }
-DEFAULT_PHRASES = ("defaultPhrase", 11)
+# A default fallback for characters that don't have it
+DEFAULT_PHRASES = ("defaultPhrase", 16)
+# Phrases for remarks/rivalries (like Spaz against Mell, or Sonic and Tails)
+# Format: [KILLERCHAR, VICTIMCHAR]: (phraseLstrResource, amount)
+REMARK_PHRASES = {
+    ("Buddie", "Orangecap"): ("budKillsOrangecap", 1),
+    ("Buddie", "Sonic"): ("budKillsOrangecap", 1),
+    ("Buddie", "Tails"): ("budKillsOrangecap", 1),
+    ("Buddie", "John Grace"): ("budKillsJohnGrace", 1),
+    ("Buddie", "Mell"): ("budKillsMell", 1),
+    ("Buddie", "Buddie"): ("budKillsBuddie", 1),
+    ("Buddie", "Roaring Knight"): ("budKillsRory", 1),
+    ("Buddie", "Jonathan"): ("budKillsJonathan", 1),
+    ("Buddie", "SM64 Mario"): ("budKillsMario", 1),
+    ("Buddie", "Kirby"): ("budKillsKirby", 1),
+    ("Buddie", "Baller"): ("budKillsBaller", 1),
+    ("Spaz", "Spaz"): ("spazKillsSpaz", 1),
+    ("Mell", "Ire"): ("mellKillsIre", 1),
+    ("Mell", "Dozer"): ("mellKillsDozer", 1),
+    ("Mell", "Mell"): ("mellKillsMell", 1),
+    ("Mell", "Buddie"): ("mellKillsBuddie", 1),
+    ("Ralsei", "Kris"): ("ralseiKillsKris", 1),
+    ("Kris", "Susie"): ("krisKillsSusie", 1),
+    ("Roaring Knight", "Susie"): ("roryKillsSusie", 1),
+    ("John Grace", "Kirby"): ("johnKillsKirby", 1),
+    ("GummyBoiYT", "Taobao Mascot"): ("gummyKillsAli", 1),
+    ("Ire", "Dozer"): ("ireKillsDozer", 3),
+    ("Dozer", "Ire"): ("dozerKillsIre", 3),
+    ("Sonic", "Tails"): ("sonicKillsTails", 3),
+    ("Spaz", "Mell"): ("spazKillsMell", 3),
+    ("Spaz", "GummyBoiYT"): ("spazKillsGummy", 3),
+    ("Spaz", "OG Spaz"): ("spazKillsOG", 3),
+    ("OG Spaz", "Spaz"): ("ogKillsSpaz", 3),
+    ("Bowser", "SM64 Mario"): ("bowserKillsMario", 3),
+    ("SM64 Mario", "Bowser"): ("marioKillsBowser", 3),
+}
 
 CHAIN_SOUNDS = [
     (6, 'mbm/Chain5'),
@@ -331,6 +372,8 @@ class Spaz(bs.Actor):
         self.punchcwd = 450
         self.weakscale = 0.6
         self.weakcwd = 90
+        self.last_victim_character = ''
+        self.last_victim_name = ''
         aprilfools = mell.get_festivity() == 'april_fools'
         # we replace various things if it's AF
         if aprilfools:
@@ -1570,6 +1613,9 @@ class Spaz(bs.Actor):
         if abs(value) > 0.9:
             self._wiggle_count += 1
             self.wiggle_reset_timer = bs.Timer(0.3, resetwiggle)
+        else:
+            if self._wiggle_count > 0:
+                self._wiggle_count -= 1
         # start doin it if we wiggled around so much
         if self._wiggle_count > 14:
             self._start_wiggle_sequence()
@@ -1604,6 +1650,8 @@ class Spaz(bs.Actor):
         self.on_move(y=value, x=self.last_x)
         
     def _start_wiggle_sequence(self):
+        if bs.app.config.get('squda_nowiggledance', False):
+            return
         if self.wiggling == True:
             self.resettimer = bs.Timer(0.5, self._stop_wiggle_sequence)
             return
@@ -1617,7 +1665,6 @@ class Spaz(bs.Actor):
         plrs = self._activity().players
         for player in self._activity().players:
             if player.actor.node and player.actor.is_alive():
-                # Exception for Baller
                 if getattr(player.actor, 'wiggling', True):
                     pnum += 1
         if pnum >= len(plrs) and len(plrs) >= 4:
@@ -2813,7 +2860,7 @@ class Spaz(bs.Actor):
             collision = bs.getcollision()
             toucher = collision.opposingnode
             actor = toucher.getdelegate(bs.Actor)
-            ishittable = toucher.getnodetype() in ['spaz', 'prop']
+            ishittable = toucher.getnodetype() in ['spaz', 'prop', 'bomb']
             if (
                 not actor
                 or not actor.is_alive()
@@ -4196,8 +4243,7 @@ class Spaz(bs.Actor):
                     'big': False,
                 },
             )
-            # weak call because THIS GAME CAN GO FUCKOFFAHHHHH
-            bs.timer(1.0, bs.WeakCall(lambda: explosion.delete))
+            bs.timer(1.0, explosion.delete)
             bs.emitfx(
                 position=pos,
                 velocity=vel,
@@ -4296,7 +4342,53 @@ class Spaz(bs.Actor):
         bs.timer(1.7, check)
 
     def _make_phrases(self, prefix: str, count: int) -> list[bs.Lstr]:
-        return [bs.Lstr(resource=f"{prefix}{i}") for i in range(1, count + 1)]
+        if not self.node:
+            return None
+        return [
+            bs.Lstr(
+                resource=f"{prefix}{i}",
+                subs=[
+                    # Include some useful subs for phrases
+                    ('${PLAYERNAME}', self.node.name),
+                    ('${PLAYERCHAR}', self.character),
+                    ('${VICTIMNAME}', self.last_victim_name),
+                    ('${VICTIMCHAR}', self.last_victim_character),
+                ]
+            ) 
+            for i in range(1, count + 1)
+        ]
+    
+    def set_last_victim(self, name: str = '', character: str = ''):
+        self.last_victim_character = character
+        self.last_victim_name = name
+        # reset so we don't keep it if 
+        # we kill without triggering this somehow
+        def reset():
+            if self.last_victim_name == name:
+                self.last_victim_name = ''
+            if self.last_victim_character == character:
+                self.last_victim_character = ''
+        bs.timer(2, reset)
+    
+    def _get_remark(self):
+        key = (self.character, self.last_victim_character)
+        data = REMARK_PHRASES.get(key)
+        
+        # If nothing exists, just don't do anything
+        if not data:
+            return None
+        # get prefix and amount
+        prefix, amount = data
+
+        # scale chance based on amount
+        chance = min(0.2 + (amount - 1) * 0.15, 0.5)
+
+        # return if chance above ours
+        if random.random() > chance:
+            return None
+        
+        # return a selected phrase
+        return random.choice(self._make_phrases(prefix, amount))
     
     def _hp_boost(self):
         if not self.node:
@@ -4327,8 +4419,13 @@ class Spaz(bs.Actor):
 
         # Pick text if not provided
         if txt is None:
-            prefix, count = PHRASES.get(self.character, DEFAULT_PHRASES)
-            txt = random.choice(self._make_phrases(prefix, count))
+            remark = self._get_remark()
+
+            if remark:
+                txt = remark
+            else:
+                prefix, count = PHRASES.get(self.character, DEFAULT_PHRASES)
+                txt = random.choice(self._make_phrases(prefix, count))
 
         PopupText(
             txt,
