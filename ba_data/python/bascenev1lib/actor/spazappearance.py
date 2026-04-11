@@ -327,15 +327,6 @@ def register_appearances() -> None:
     t.default_color = (1, 1, 1)
     t.default_highlight = (0, 1, 0)
 
-    # BALL! ###########################################
-    # not many assets; it's for a different actor
-    # (just here so it appears in appearances)
-    t = Appearance('Baller')
-    t.icon_mask_texture = 'ballerIconCM'
-    t.icon_texture = 'ballerIcon'
-    t.default_color = (1, 0.1, 0.1)
-    t.default_highlight = (0, 0.1, 0.7)
-
     # Noob #######################################
     t = Appearance('Noob')
     t.color_texture = 'noobColor'

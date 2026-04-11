@@ -36,15 +36,19 @@ class Startup():
     local = ba.app.env.data_directory + '\\ba_data'
     textures = local + '\\textures\\'
     coconut = Path(textures + 'cowtato.dds')
-    # exception for mobile (if it comes out)
-    coconut2 = Path(textures + 'cowtato.ktx')
     # "crash" game if texture doesn't exist
-    if platform in ['android']:
-        if not coconut2.is_file():
-            os._exit(1)
-    else:
+    if platform not in ['android']:
         if not coconut.is_file():
             os._exit(1)
+    dict = ba.app.config.get('squda_storeowned', {})
+    if dict.get('characters.baller', False):
+        def do_it():
+            name = 'Baller'
+            price = 350
+            bs.screenmessage(f'{name} has been removed from the store.\nYou have been refunded {price}.')
+            with bs.get_foreground_host_activity().context:
+                mell.add_spaz(amount=price)
+        ba.apptimer(4, do_it)
     # alright we're ready to do startup stuff
     print(f'welcome to bombsquda v{mell.version}, updated as of {mell.update_date}.')
     # very important stuff that needs to be set on startup
@@ -219,7 +223,7 @@ class Startup():
             )
             # now try opening the response
             try:
-                urllib.request.urlopen(request, timeout=2)
+                response = urllib.request.urlopen(request, timeout=2)
                 if not loopt._connection_success_logged:
                     print('Connection to the BombSquda server established successfully.')
                     loopt._connection_success_logged = True

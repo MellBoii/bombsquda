@@ -1011,9 +1011,6 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         name = nameoverride if nameoverride else player.getname()
         color = player.color
         highlight = player.highlight
-        # Spawn a different actor if Baller
-        if player.character == 'Baller':
-            return self.spawn_player_ball(player=player)
         playerspaztype = getattr(player, 'playerspaztype', PlayerSpaz)
         if not issubclass(playerspaztype, PlayerSpaz):
             playerspaztype = PlayerSpaz
@@ -1059,52 +1056,6 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         animate(light, 'intensity', {0: 0, 0.25: 1, 0.5: 0})
         _bascenev1.timer(0.5, light.delete)
         return spaz   
-
-    def spawn_player_ball(
-        self,
-        player: PlayerT,
-        position: Sequence[float] = (0, 0, 0),
-        angle: float | None = None,
-    ) -> PlayerBall:
-        # pylint: disable=too-many-locals
-        # pylint: disable=cyclic-import
-        from bascenev1._gameutils import animate
-        from bascenev1._coopsession import CoopSession
-        from bascenev1lib.actor.ball import PlayerBall
-        name = player.getname()
-        color = player.color
-        light_color = babase.normalized_color(color)
-        display_color = babase.safecolor(color, target_intensity=0.75)
-        if position == (0, 0, 0):
-            mp = self.map.defs.points
-            spawn_names = [
-                'ffa_spawn1',
-                'ffa_spawn2',
-                'ffa_spawn3',
-                'ffa_spawn4',
-            ]
-            points = [mp[name] for name in spawn_names if name in mp]
-            spawn = random.choice(points)
-            position = spawn[:3]
-            position = (position[0], position[1] + 1.5, position[2])
-        spaz = PlayerBall(
-            player=player,
-            color=color,
-            position=position,
-        )
-
-        player.actor = spaz
-        assert spaz.node
-
-        spaz.connect_controls_to_player()
-        spaz.set_name(name=name, color=color)
-        
-        self._spawn_sound.play(position=spaz.node.position)
-        light = _bascenev1.newnode('light', attrs={'color': light_color})
-        spaz.node.connectattr('position', light, 'position')
-        animate(light, 'intensity', {0: 0, 0.25: 1, 0.5: 0})
-        _bascenev1.timer(0.5, light.delete)
-        return spaz
 
     def setup_standard_powerup_drops(self, enable_tnt: bool = True) -> None:
         """Create standard powerup drops for the current map."""

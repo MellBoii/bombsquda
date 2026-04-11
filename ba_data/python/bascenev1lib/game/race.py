@@ -18,7 +18,6 @@ from bascenev1lib.actor.bomb import Bomb
 from bascenev1lib.actor.playerspaz import PlayerSpaz
 from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.gameutils import SharedObjects
-from bascenev1lib.actor.ball import PlayerBall
 if TYPE_CHECKING:
     from typing import Any, Sequence
 
@@ -297,7 +296,7 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
         collision = bs.getcollision()
         try:
             region = collision.sourcenode.getdelegate(RaceRegion, True)
-            spaz = collision.opposingnode.getdelegate(PlayerSpaz, True) or collision.opposingnode.getdelegate(PlayerBall, True)
+            spaz = collision.opposingnode.getdelegate(PlayerSpaz, True)
 
         except bs.NotFoundError:
             return
@@ -421,8 +420,6 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
                             )
                             torso = (
                                 'torso_position' 
-                                if player.actor.actor_type == 'spaz'
-                                else 'position'
                             )
                             player.actor.node.connectattr(
                                 torso, mathnode, 'input2'
@@ -805,8 +802,6 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
         )
         torso = (
             'torso_position' 
-            if player.actor.actor_type == 'spaz'
-            else 'position'
         )
         spaz.node.connectattr(torso, mathnode, 'input2')
 

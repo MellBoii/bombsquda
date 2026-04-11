@@ -57,7 +57,6 @@ appearance_dict = {
     'characters.tails': 'Tails',
     'characters.buddie': 'Buddie',
     'characters.grace': 'John Grace',
-    'characters.baller': 'Baller',
     'characters.homer': 'Homer',
     'characters.ogspaz': 'OG Spaz',
     # Shouldn't be on store or etc but still use same system
@@ -143,6 +142,7 @@ def add_spaz(
     glyph = ba.charstr(data['glyph'])
     activity = bs.get_foreground_host_activity()
     prefix = '+' if amount > 0 else '-'
+    sound = 'gainCur'
 
     # popup messages
     if notif_type == 'popup':
@@ -161,7 +161,7 @@ def add_spaz(
                 lifespan=3.5,
             ).autoretain()
 
-            bs.getsound('gainCur').play(volume=1.7, position=text_pos)
+            bs.getsound(sound).play(volume=1.7, position=text_pos)
 
     # screen messages
     elif notif_type == 'screen':
@@ -176,7 +176,10 @@ def add_spaz(
                 ],
             )
         )
-        bs.getsound('cashRegister2').play(volume=2.0)
+        try:
+            bs.getsound(sound).play(volume=2.0)
+        except ba._error.ContextError:
+            bui.getsound(sound).play(volume=2.0)
     # not in valid types
     else:
         raise TypeError(
