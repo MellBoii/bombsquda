@@ -108,8 +108,8 @@ class UIRow:
         if party.clean_display_index == index:
             return
 
-        ping_good = plus.get_v1_account_misc_read_val('pingGood', 100)
-        ping_med = plus.get_v1_account_misc_read_val('pingMed', 500)
+        ping_good = 100
+        ping_med = 500
 
         self._clear()
         hpos = 20

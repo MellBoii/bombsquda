@@ -15,22 +15,22 @@ if TYPE_CHECKING:
     
 SURVEY_STEPS = [
     dict(
-        prompt="It's your first time here, so let's start.\nChoose your space marine's name.",
+        prompt=ba.Lstr(resource='surveyPrompt1'),
         texture="earthbound/spazbound",
         cfg="squda_ch1name",
     ),
     dict(
-        prompt="Now, name this knight.",
+        prompt=ba.Lstr(resource='surveyPrompt2'),
         texture="earthbound/krisbound",
         cfg="squda_ch2name",
     ),
     dict(
-        prompt="Name the ninja.",
+        prompt=ba.Lstr(resource='surveyPrompt3'),
         texture="earthbound/snakebound",
         cfg="squda_ch3name",
     ),
     dict(
-        prompt="And finally, choose the last one's name.",
+        prompt=ba.Lstr(resource='surveyPrompt4'),
         texture="earthbound/noobbound",
         cfg="squda_ch4name",
     ),
@@ -56,6 +56,7 @@ class BaseSurveyWindow(bui.MainWindow):
             root_widget=bui.containerwidget(
                 size=(width, height),
                 scale=scale,
+                toolbar_visibility='menu_minimal',
             ),
             transition=transition,
             origin_widget=origin_widget,
@@ -94,60 +95,100 @@ class NameSurveyWindow(BaseSurveyWindow):
         self.key = self.step["cfg"]
         uiscale = bui.app.ui_v1.uiscale
         xoffs = 15
+        yoffs = 0
+        if uiscale is bui.UIScale.SMALL:
+            xoffs = 30
+            yoffs = -60
         self.prompt = bui.textwidget(
             parent=self._root_widget,
             text=self.step["prompt"],
-            position=(self._width * 0.32 + xoffs, self._height - 220),
+            position=(self._width * 0.32 + xoffs, self._height - 220 + yoffs),
             size=(300, 200),
             h_align='center',
             v_align='center',
             color=(0.7, 0.9, 0.7, 1.0),
         )
-
+        xoffs = 0
+        yoffs = 0
+        
+        imgsize = (
+            (220, 220) 
+            if uiscale is 
+            not bui.UIScale.SMALL 
+            else (160, 160)
+        )
+        xoffs = 20
+        if uiscale is bui.UIScale.SMALL:
+            xoffs = 80
+            yoffs = 0
         self.image = bui.imagewidget(
             parent=self._root_widget,
-            position=(self._width * 0.35 + xoffs, self._height - 380),
-            size=(220, 220),
+            position=(self._width * 0.35 + xoffs, self._height - 380 + yoffs),
+            size=imgsize,
             texture=bui.gettexture(self.step["texture"]),
         )
+        xoffs = 0
 
+        if uiscale is bui.UIScale.SMALL:
+            xoffs = -60
+            yoffs = 30
         self._text_field = txt =  bui.textwidget(
             parent=self._root_widget,
-            position=(self._width / 5.0, self._height - 470),
+            position=(self._width / 5.0 + xoffs, self._height - 470 + yoffs),
             size=(self._width - 270, 45),
             editable=True,
             autoselect=True,
         )
+        
+        # "confirm changes by pressing enter or ok"
+        if uiscale is bui.UIScale.SMALL:
+            xoffs = 0
         bui.textwidget(
             parent=self._root_widget,
-            position=(self._width / 5.5, self._height - 510),
+            position=(self._width / 5.5 + xoffs, self._height - 510 + yoffs),
             size=(self._width - 400, 45),
-            text="Confirm changes by pressing RETURN or the OK button.",
+            text=bui.Lstr(
+                resource='surveyHelpText', 
+                subs=[
+                    ('${OK}', bui.Lstr(resource='okText'))
+                ],
+            ),
             scale=0.7,
             color=bui.app.ui_v1.title_color
         )
+        
+        ok_scale = (80, 70)
+        xoffs = 15
+        if uiscale is bui.UIScale.SMALL:
+            xoffs = -115
+            yoffs += 20
+            ok_scale = (500, 70)
         self.ok_btn = bui.buttonwidget(
             parent=self._root_widget,
-            position=(370, self._height - 600),
-            size=(80, 70),
-            label='OK',
+            position=(370 + xoffs, self._height - 600 + yoffs),
+            size=ok_scale,
+            label=bui.Lstr(resource='okText'),
             on_activate_call=self._on_ok,
             enable_sound=False,
         )
         if self._step_index > 0:
-            self._back_button = btn = bui.buttonwidget(
-                parent=self._root_widget,
-                autoselect=True,
-                position=(self._width / 15.0, self._height - 50),
-                size=(80, 80),
-                scale=1.0,
-                text_scale=1.2,
-                enable_sound=False,
-                label=bui.charstr(bui.SpecialChar.BACK),
-                button_type='backSmall',
-                on_activate_call=self.on_back,
-            )
-            bui.containerwidget(edit=self._root_widget, cancel_button=btn)
+            if uiscale is bui.UIScale.SMALL:
+                bui.containerwidget(
+                    edit=self._root_widget, on_cancel_call=self.on_back
+                )
+            else:
+                btn = bui.buttonwidget(
+                    parent=self._root_widget,
+                    position=(self._width / 15.0, self._height - 50),
+                    size=(60, 55),
+                    scale=0.9,
+                    label=bui.charstr(bui.SpecialChar.BACK),
+                    button_type='backSmall',
+                    extra_touch_border_scale=2.0,
+                    autoselect=True,
+                    on_activate_call=self.on_back,
+                )
+                bui.containerwidget(edit=self._root_widget, cancel_button=btn)
         bui.textwidget(edit=txt, on_return_press_call=lambda: self._on_ok('survey_ok2'))
 
     def _on_ok(self, sound: str = 'survey_ok'):
@@ -184,6 +225,9 @@ class NameSurveyWindow(BaseSurveyWindow):
                 )
             )
     def on_back(self):
+        if self._step_index < 0:
+            bui.getsound('error').play()
+            return
         bui.getsound('survey_back').play()
         self.main_window_back()
     
@@ -215,6 +259,7 @@ class SurveyIntroWindow(bui.MainWindow):
         assert bui.app.classic is not None
 
         uiscale = bui.app.ui_v1.uiscale
+        self.uiscale = uiscale
         width = 1000 if uiscale is bui.UIScale.SMALL else 800
         height = 450
 
@@ -240,17 +285,22 @@ class SurveyIntroWindow(bui.MainWindow):
             origin_widget=origin_widget,
             refresh_on_screen_size_changes=uiscale is bui.UIScale.SMALL,
         )
-        self._back_button = btn = bui.buttonwidget(
-            parent=self._root_widget,
-            position=(width / 10.0, yoffs - 80.0),
-            size=(70, 70),
-            scale=0.8,
-            text_scale=1.2,
-            label=bui.charstr(bui.SpecialChar.BACK),
-            button_type='backSmall',
-            on_activate_call=self.main_window_back,
-        )
-        bui.containerwidget(edit=self._root_widget, cancel_button=btn)
+        if uiscale is bui.UIScale.SMALL:
+            bui.containerwidget(
+                edit=self._root_widget, on_cancel_call=self.main_window_back
+            )
+        else:
+            self._back_button = btn = bui.buttonwidget(
+                parent=self._root_widget,
+                position=(width / 10.0, yoffs - 80.0),
+                size=(70, 70),
+                scale=0.8,
+                text_scale=1.2,
+                label=bui.charstr(bui.SpecialChar.BACK),
+                button_type='backSmall',
+                on_activate_call=self.main_window_back,
+            )
+            bui.containerwidget(edit=self._root_widget, cancel_button=btn)
         self._build_step(height)
 
     # --------------------------------------------------
@@ -277,11 +327,13 @@ class SurveyIntroWindow(bui.MainWindow):
                 ('NO', self._fucking_die),
                 ('YES', self._finish),
             ]
-
+        xoffs = 0
+        if self.uiscale is bui.UIScale.SMALL:
+            xoffs = 100
         bui.textwidget(
             parent=self._root_widget,
             text=text,
-            position=(250, height - 280),
+            position=(250 + xoffs, height - 280),
             maxwidth=400,
             size=(300, 300),
             scale=1.5,
@@ -291,16 +343,27 @@ class SurveyIntroWindow(bui.MainWindow):
         )
 
         x = 300 if len(buttons) > 1 else 360
+        if self.uiscale is bui.UIScale.SMALL:
+            size = (350, 80)
+            xoffs = -30
+            height_offs = 320
+        else:
+            size = (80, 70)
+            height_offs = 400
+        y = height - height_offs
         for label, call in buttons:
             bui.buttonwidget(
                 parent=self._root_widget,
-                position=(x, height - 400),
-                size=(80, 70),
+                position=(x + xoffs, y),
+                size=size,
                 autoselect=(label == 'YES' or label == 'OK'),
                 label=label,
                 on_activate_call=call,
             )
-            x += 100
+            if self.uiscale is bui.UIScale.SMALL:
+                y -= 100
+            else:
+                x += 100
 
     # --------------------------------------------------
 

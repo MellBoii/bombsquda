@@ -155,12 +155,17 @@ class MelWindow(bui.MainWindow):
             
             bui.containerwidget(edit=self._root_widget, cancel_button=btn)
         if first_time:
+            position = (width - 30, yoffs - 80.0)
+            scale = 0.8
+            if uiscale is bui.UIScale.SMALL:
+                position = (width - 140, yoffs - 130.0)
+                scale = 1.0
             contbtn = bui.buttonwidget(
                 parent=self._root_widget,
-                position=(width - 30, yoffs - 80.0),
+                position=position,
                 size=(70, 70),
                 label='->',
-                scale=0.8,
+                scale=scale,
                 autoselect=True,
                 on_activate_call=self._continue,
             )
