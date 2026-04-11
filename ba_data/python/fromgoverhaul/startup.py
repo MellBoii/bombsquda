@@ -40,15 +40,6 @@ class Startup():
     if platform not in ['android']:
         if not coconut.is_file():
             os._exit(1)
-    dict = ba.app.config.get('squda_storeowned', {})
-    if dict.get('characters.baller', False):
-        def do_it():
-            name = 'Baller'
-            price = 350
-            bs.screenmessage(f'{name} has been removed from the store.\nYou have been refunded {price}.')
-            with bs.get_foreground_host_activity().context:
-                mell.add_spaz(amount=price)
-        ba.apptimer(4, do_it)
     # alright we're ready to do startup stuff
     print(f'welcome to bombsquda v{mell.version}, updated as of {mell.update_date}.')
     # very important stuff that needs to be set on startup
@@ -123,6 +114,19 @@ class Startup():
     bui.app.config['squda_isplayingmusic'] = False
     bui.app.config['squda_timesattracted'] = 0
     bs.debprint('config stuff is done')
+    
+    owned = ba.app.config.get('squda_storeowned')
+    if owned.get('characters.baller', False):
+        def do_it():
+            name = 'Baller'
+            price = 350
+            owned = ba.app.config.get('squda_storeowned')
+            owned['characters.baller'] = False
+            ba.app.config.commit()
+            bs.screenmessage(f'{name} has been removed from the store.\nYou have been refunded {price}.')
+            with bs.get_foreground_host_activity().context:
+                mell.add_spaz(amount=price)
+        ba.apptimer(4, do_it)
         
     def auto_module_import():
         """

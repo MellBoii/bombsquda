@@ -214,7 +214,6 @@ class StoreSubsystem:
                     'characters.grace',
                     'characters.ogspaz',
                     'characters.orangecap',
-                    'characters.baller',
                     'characters.homer',
                 ]
             }
