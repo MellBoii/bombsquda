@@ -1129,7 +1129,7 @@ class Bomb(bs.Actor):
             if self.lunatic_mode:
                 bs.getsound('crazyOver').play(1.5)
                 self.bomb_type = 'tnt'
-                self.blast_radius *= 8
+                self.blast_radius *= 6.5
                 if self.curse_sfx:
                     self.curse_sfx.volume = 0
                     self.curse_sfx.delete()
