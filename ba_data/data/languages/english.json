@@ -741,7 +741,8 @@
     "useDefaultGameMusicText": "Default Game Music",
     "useITunesPlaylistText": "Music App Playlist",
     "useMusicFileText": "Music File (mp3, etc)",
-    "useMusicFolderText": "Folder of Music Files"
+    "useMusicFolderText": "Folder of Music Files",
+	"rpcText": "editing the soundtrack"
   },
   "editText": "Edit",
   "enabledText": "Enabled",

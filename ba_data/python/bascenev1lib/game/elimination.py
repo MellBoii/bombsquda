@@ -597,7 +597,7 @@ class EliminationGame(bs.TeamGameActivity[Player, Team]):
                     if iposition[0] == 60.0:
                         self.danger_icon_right = LoopingImageAnimation(
                             prefix='elim_danger', 
-                            frame_count=3, 
+                            frame_count=4, 
                             frame_delay=0.03, 
                             scale=(100, 100),
                             position=theposition,
@@ -605,7 +605,7 @@ class EliminationGame(bs.TeamGameActivity[Player, Team]):
                     else:
                         self.danger_icon_left = LoopingImageAnimation(
                             prefix='elim_danger_flipped', 
-                            frame_count=3, 
+                            frame_count=4, 
                             frame_delay=0.03, 
                             scale=(100, 100),
                             position=theposition,

@@ -246,28 +246,7 @@ class SoundtrackEditWindow(bui.MainWindow):
         for widget in self._col.get_children():
             widget.delete()
 
-        types = [
-            'Menu',
-            'CharSelect',
-            'ToTheDeath',
-            'Onslaught',
-            'Keep Away',
-            'Race',
-            'Epic Race',
-            'ForwardMarch',
-            'FlagCatcher',
-            'Survival',
-            'Epic',
-            'Hockey',
-            'Football',
-            'Flying',
-            'Scary',
-            'Marching',
-            'GrandRomp',
-            'Chosen One',
-            'Scores',
-            'Victory',
-        ]
+        types = [music_type for music_type in dir(bs.MusicType) if not music_type.startswith('__')]
 
         # FIXME: We should probably convert this to use translations.
         type_names_translated = bui.app.lang.get_resource('soundtrackTypeNames')
@@ -359,7 +338,7 @@ class SoundtrackEditWindow(bui.MainWindow):
                 size=(50, 32),
                 label=bui.Lstr(resource=f'{self._r}.testText'),
                 text_scale=0.6,
-                on_activate_call=bui.Call(self._test, bs.MusicType(song_type)),
+                on_activate_call=bui.Call(self._test, getattr(bs.MusicType, song_type)),
                 up_widget=(
                     prev_test_button
                     if prev_test_button is not None
