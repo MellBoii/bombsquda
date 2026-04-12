@@ -132,7 +132,7 @@ class SharedObjects:
         if self._particle_material is None:
             mat = self._particle_material = bs.Material()
             mat.add_actions(
-                conditions=('they_have_material', self._footing_material),
+                conditions=('they_have_material', self.footing_material),
                 actions=(
                     ('message', 'our_node', 'at_connect', FootingMessage(1)),
                     ('message', 'our_node', 'at_disconnect', FootingMessage(-1)),
@@ -142,9 +142,9 @@ class SharedObjects:
                 conditions=( 
                     ('they_are_different_node_than_us',),
                     'and',
-                    ('they_dont_have_material', self._region_material),
+                    ('they_dont_have_material', self.region_material),
                     'or',
-                    ('they_dont_have_material', self._footing_material),
+                    ('they_dont_have_material', self.footing_material),
                 ),
                 actions=('modify_node_collision', 'collide', False),
             )
@@ -152,9 +152,9 @@ class SharedObjects:
                 conditions=( 
                     ('they_are_different_node_than_us',),
                     'and',
-                    ('they_have_material', self._region_material),
+                    ('they_have_material', self.region_material),
                     'or',
-                    ('they_have_material', self._footing_material),
+                    ('they_have_material', self.footing_material),
                 ),
                 actions=('modify_node_collision', 'collide', True),
             )
@@ -166,14 +166,14 @@ class SharedObjects:
         if self._sorrowful_material is None:
             mat = self._sorrowful_material = bs.Material()
             mat.add_actions(
-                conditions=('they_have_material', footing_material),
+                conditions=('they_have_material', self.footing_material),
                 actions=(
                     ('message', 'our_node', 'at_connect', FootingMessage(1)),
                     ('message', 'our_node', 'at_disconnect', FootingMessage(-1)),
                 ),
             )
             mat.add_actions(
-                conditions=('they_have_material', object_material),
+                conditions=('they_have_material', self.object_material),
                 actions=(
                     ('message', 'our_node', 'at_connect', TouchedMessage(1)),
                 ),
@@ -182,9 +182,9 @@ class SharedObjects:
                 conditions=( 
                     ('they_are_different_node_than_us',),
                     'and',
-                    ('they_dont_have_material', region_material),
+                    ('they_dont_have_material', self.region_material),
                     'or',
-                    ('they_dont_have_material', footing_material),
+                    ('they_dont_have_material', self.footing_material),
                 ),
                 actions=('modify_node_collision', 'collide', False),
             )
@@ -192,11 +192,11 @@ class SharedObjects:
                 conditions=( 
                     ('they_are_different_node_than_us',),
                     'and',
-                    ('they_have_material', region_material),
+                    ('they_have_material', self.region_material),
                     'or',
-                    ('they_have_material', footing_material),
+                    ('they_have_material', self.footing_material),
                     'or',
-                    ('they_have_material', object_material),
+                    ('they_have_material', self.object_material),
                 ),
                 actions=('modify_node_collision', 'collide', True),
             )

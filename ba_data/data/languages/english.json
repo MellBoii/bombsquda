@@ -1522,6 +1522,7 @@
     "showErrorsText": "show errors onscreen",
     "pauseMusicText": "music on pause menu",
     "noOnlineText": "no online server\nfunctionality",
+    "noWiggleText": "no wiggle dance (better in mobile)",
     "foxyJumpscareText": "random chance\nfor foxy jumpscare",
     "noParticlesText": "no particles (enable \nif hosting online)",
     "randomEntitiesText": "randomly get entities sometimes",
