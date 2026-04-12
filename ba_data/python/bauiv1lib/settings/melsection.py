@@ -76,6 +76,7 @@ class MelWindow(bui.MainWindow):
             ("squda_spazhardmode", "spazHardModeText", ['hardmode', 'okitem']),
             ("squda_parryalways", "parryAlwaysText", ['attempt_parry', 'voicelines/kris/pickup']),
             ("squda_dontshutdown", "dontShutdownText", ['gooditem', 'baditem']),
+            ("squda_nowiggledance", "noWiggleText", None),
             ("squda_dontdomarioman", "noMarioDelayText", ['quit', 'blip']),
             ("squda_richpresence", "discordRpcText", None),
             ("squda_enablemeter", "enableMeterText", ['shield2', 'shieldReflect']),

@@ -50,6 +50,11 @@ class Startup():
     cfg = bui.app.config
     # made by temp in the 'bombarmy' discussion in the discord server.
     config = bs.app.config
+    # disable some default options on android
+    if platform in ['android']:
+        disable_wiggledance = True
+    else:
+        disable_wiggledance = False
     conflist = {
         "squda_parryalways": False,
         "squda_richpresence": False,
@@ -79,6 +84,7 @@ class Startup():
         "squda_pausemusic": True,
         "squda_noonline": False,
         "squda_randomgrace": False,
+        "squda_nowiggledance": disable_wiggledance,
         "squda_entitychance": 0.1,
         "squda_botnames": True,
         "squda_ch1name": "NEWBIE",
