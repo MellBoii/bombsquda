@@ -1613,9 +1613,6 @@ class Spaz(bs.Actor):
         if abs(value) > 0.9:
             self._wiggle_count += 1
             self.wiggle_reset_timer = bs.Timer(0.3, resetwiggle)
-        else:
-            if self._wiggle_count > 0:
-                self._wiggle_count -= 1
         # start doin it if we wiggled around so much
         if self._wiggle_count > 14:
             self._start_wiggle_sequence()
@@ -1650,7 +1647,7 @@ class Spaz(bs.Actor):
         self.on_move(y=value, x=self.last_x)
         
     def _start_wiggle_sequence(self):
-        if bs.app.config.get('squda_nowiggledance', False):
+        if bs.app.config.get('squda_nowiggledance', False) == True:
             return
         if self.wiggling == True:
             self.resettimer = bs.Timer(0.5, self._stop_wiggle_sequence)
