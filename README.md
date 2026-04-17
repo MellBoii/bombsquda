@@ -30,13 +30,22 @@ look and feel like if it was a shitpost?"
 <p align="center">
     <picture>
         <img src="ba_data/textures2/howdoi.png">
-    </picture>
 </p>
 <p>Download Github Desktop and clone the repository, 
 make changes to some files, commit and push your changes, then make a pull request. 
 If everything looks fine, i'll accept the merge. :)
 All kinds of additions are accepted! As long as it isn't something that could potentially break the game.<br>
 (oh, and if you can, try helping with translations)
+</p>
+
+## Wait, how do I even play the videogame??
+<p align="center">
+    <picture>
+        <img src="https://github.com/user-attachments/assets/f337071e-d92d-4651-b93a-7ba0c65b107d">
+</p>
+<p>Press that shiny green "Code" button above the files on the Github page,
+then click "Download ZIP", then unzip it, of course.
+And finally, play the videogame! Yay
 </p>
 
 ## Anyone helped make this? Credits and such?
