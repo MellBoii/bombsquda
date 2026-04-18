@@ -89,6 +89,7 @@ class MainMenuActivity(bs.GameActivity[bs.Player, bs.Team]):
         self.aprilfools = mell.get_festivity() == 'april_fools'
         self.easter = mell.get_festivity() == 'easter'
         self.redditor = random.random() < 0.18
+        self.funny_logo = random.random() < 0.20 and not self.redditor
         self.allow_emeralds = False
         self._bot_spawn_types = {
             BomberBot: SpawnInfo(1.00, 0.00, 0.000),
@@ -485,59 +486,60 @@ class MainMenuActivity(bs.GameActivity[bs.Player, bs.Team]):
                     vr_depth_offset=5,
                     shadow=shadow,
                 )
-                x += spacing * 0.85
-                delay += delay_inc
-                self._make_word(
-                    'S',
-                    x,
-                    y - 25 + 0.8 * y_extra,
-                    scale=1.35 * base_scale,
-                    delay=delay,
-                    vr_depth_offset=14,
-                    shadow=shadow,
-                )
-                x += spacing
-                delay += delay_inc
-                self._make_word(
-                    'q',
-                    x,
-                    y + y_extra,
-                    delay=delay,
-                    scale=base_scale,
-                    shadow=shadow,
-                )
-                x += spacing * 0.9
-                delay += delay_inc
-                self._make_word(
-                    'u',
-                    x,
-                    y + y_extra,
-                    delay=delay,
-                    scale=base_scale,
-                    vr_depth_offset=7,
-                    shadow=shadow,
-                )
-                x += spacing * 0.9
-                delay += delay_inc
-                self._make_word(
-                    'd',
-                    x,
-                    y + y_extra,
-                    delay=delay,
-                    scale=base_scale,
-                    shadow=shadow,
-                )
-                x += spacing * 0.64
-                delay += delay_inc
-                self._make_word(
-                    'a',
-                    x,
-                    y + y_extra - 10,
-                    delay=delay,
-                    scale=1.1 * base_scale,
-                    vr_depth_offset=6,
-                    shadow=shadow,
-                )
+                if not self.funny_logo:
+                    x += spacing * 0.85
+                    delay += delay_inc
+                    self._make_word(
+                        'S',
+                        x,
+                        y - 25 + 0.8 * y_extra,
+                        scale=1.35 * base_scale,
+                        delay=delay,
+                        vr_depth_offset=14,
+                        shadow=shadow,
+                    )
+                    x += spacing
+                    delay += delay_inc
+                    self._make_word(
+                        'q',
+                        x,
+                        y + y_extra,
+                        delay=delay,
+                        scale=base_scale,
+                        shadow=shadow,
+                    )
+                    x += spacing * 0.9
+                    delay += delay_inc
+                    self._make_word(
+                        'u',
+                        x,
+                        y + y_extra,
+                        delay=delay,
+                        scale=base_scale,
+                        vr_depth_offset=7,
+                        shadow=shadow,
+                    )
+                    x += spacing * 0.9
+                    delay += delay_inc
+                    self._make_word(
+                        'd',
+                        x,
+                        y + y_extra,
+                        delay=delay,
+                        scale=base_scale,
+                        shadow=shadow,
+                    )
+                    x += spacing * 0.64
+                    delay += delay_inc
+                    self._make_word(
+                        'a',
+                        x,
+                        y + y_extra - 10,
+                        delay=delay,
+                        scale=1.1 * base_scale,
+                        vr_depth_offset=6,
+                        shadow=shadow,
+                    )
             self._make_logo(
                 base_x - 28,
                 125 + y + 1.2 * y_extra,
@@ -551,7 +553,7 @@ class MainMenuActivity(bs.GameActivity[bs.Player, bs.Team]):
             c3name = cfgget('squda_ch3name')
             c4name = cfgget('squda_ch4name')
             chosen_text = bs.Lstr(
-                resource=f'splashText{random.randint(1, 141)}',
+                resource=f'splashText{random.randint(1, 151)}',
                 subs=[
                     ('${SPAZ}', c1name),
                     ('${KRIS}', c2name),
@@ -609,6 +611,9 @@ class MainMenuActivity(bs.GameActivity[bs.Player, bs.Team]):
             if self.aprilfools:
                 self.modpack_name.node.text = 'the         .modpack'
                 self.splashtext.node.text = 'Yes'
+            if self.funny_logo:
+                self.modpack_name.node.text = 'Mell\'s Stupid'
+                bs.getsound('gong2').play()
             assert self.splashtext.node
             bs.animate(self.splashtext.node, 'opacity', {0.5: 0, 1.0: 1.0})
 
@@ -736,6 +741,8 @@ class MainMenuActivity(bs.GameActivity[bs.Player, bs.Team]):
         assert plus is not None
         if self.redditor:
             return 'redditorlogo'
+        if self.funny_logo:
+            return 'logo_what'
         if self.christmas:
             return 'logoChristmas'
         if self.aprilfools:
