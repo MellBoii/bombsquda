@@ -20,6 +20,7 @@ SCORE_RANKS = {
 RANK_ORDER = [None, 'D', 'C', 'B', 'A', 'S', 'SS', 'SSS', 'U']
 def clamp(num, min_val, max_val):
     return max(min(num, max_val), min_val)
+    
 class UltrakillMeter(bs.Actor):
     """
     A style-meter based on Ultrakill's.
