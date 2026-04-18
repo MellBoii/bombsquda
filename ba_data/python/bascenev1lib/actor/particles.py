@@ -71,7 +71,7 @@ class ParticleActor(bs.Actor):
         bs.animate(
             self.node,
             'mesh_scale',
-            {0: 0, 0.1: self.bscale},
+            {0: 0, 0.1: self.mscale},
         )
         self.dead = False
 
@@ -160,9 +160,8 @@ class ConfettiParticle(ParticleActor):
             position=position,
             texture=chosentex,
             mesh=bs.getmesh('shrapnel1'),
-            body_scale=0.7,
-            mesh_scale=0.1,
-            body_type='box',
+            body_scale=0.4,
+            mesh_scale=0.2,
         )
         self.scheduling = False
 
@@ -195,7 +194,7 @@ class SparkParticle(ParticleActor):
             texture=bs.gettexture(tex),
             mesh=bs.getmesh('flash'),
             body_scale=0.2,
-            mesh_scale=0.05,
+            mesh_scale=0.1,
             reflection=1.4
         )
         self.scheduling = False
@@ -262,7 +261,7 @@ class BloodRaindrop(bs.Actor):
         bs.animate(
             self.node,
             'mesh_scale',
-            {0: 0, 0.1: self.bscale},
+            {0: 0, 0.1: self.mscale},
         )
         self.dead = False
 
