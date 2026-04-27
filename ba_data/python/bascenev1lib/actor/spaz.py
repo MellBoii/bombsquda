@@ -344,6 +344,8 @@ class Spaz(bs.Actor):
         self.scream_sfx_node = None
         self.screaming = False
         self.scream_celebrate_timer = None
+        self.mortal_dmg_timer = None
+        self.mortal_phase = False
         self.last_punched_time = 0
         # entity checks
         self.kookood = False
@@ -448,6 +450,9 @@ class Spaz(bs.Actor):
         # we can override if a skin setting exists
         if self.skin:
             character = self.skin
+        fav_char = bs.app.config.get('squda_favchar', None)
+        if fav_char:
+            character = fav_char
         media = factory.get_media(character)
         self.media = media
         punchmats = (factory.punch_material, shared.attack_material)
@@ -500,6 +505,7 @@ class Spaz(bs.Actor):
 
             bs.timer(1.5, bs.Call(_safesetattr, self.node, 'invincible', False))
         self.hitpoints = self.default_hitpoints
+        self.oldhp = self.hitpoints
         self.defaulthand = media['hand_mesh']
         self.hitpoints_max = self.default_hitpoints
         self.shield_hitpoints: int | None = None
@@ -2784,7 +2790,7 @@ class Spaz(bs.Actor):
             ).autoretain()
             self._activity().globalsnode.paused = ogpause
             self.lasthittype = 'swoon'
-            self.shatter(True)
+            self._activate_mortal_damage()
             self.lasthittype = 'swoon'
             if self.character == 'Roaring Knight':
                 ba.app.classic.ach.award_local_achievement(
@@ -2792,6 +2798,58 @@ class Spaz(bs.Actor):
                 )
         bs.basetimer(2.1, swoon2)
         swoon1()
+    
+    def _activate_mortal_damage(self):
+        if not self.node:
+            return
+        if self.mortal_phase:
+            return
+        self.mortal_phase = True
+        bs.getsound('mortal_damage').play(
+            volume=1.5, position=self.node.position
+        )
+        self.updatemeter()
+        PopupText(
+            bs.Lstr(
+                resource='playerMortalDamage',
+                subs=[
+                    ('${NAME}', self.node.name)
+                ],
+            ),
+            position=self.node.position,
+            color=(0.8, 0, 0, 1),
+            scale=1.2,
+        ).autoretain()
+        def take_damage():
+            self.hitpoints -= 5
+            self.node.hurt = (
+                1.0 - float(self.hitpoints) / self.hitpoints_max
+            )
+            self.updatemeter()
+            bs.getsound('mortal_dmg_spike').play(position=self.node.position)
+            if self.hitpoints <= 0 or not self.is_alive():
+                self.die()
+                Blast(
+                    position=self.node.position,
+                    velocity=self.node.velocity,
+                    blast_radius=0.6,
+                    blast_type='tnt',
+                    source_player= None
+                )
+                if self.mortal_dmg_timer:
+                    self.mortal_dmg_timer = None
+        self.mortal_dmg_timer = bs.Timer(0.01, take_damage, repeat=True)
+    
+    def _deactivate_mortal_damage(self):
+        if not self.mortal_phase or not self.node:
+            return
+        if self.mortal_dmg_timer:
+            self.mortal_dmg_timer = None
+        self.mortal_phase = False
+        bs.getsound('scoreOG').play(volume=1.5, position=self.node.position)
+        self.hitpoints = self.hitpoints_max
+        self.updatemeter()
+        self.handlemessage(bs.CelebrateMessage(duration=3))
     
     def _randomly_attach_entity(self):
         choice = random.choice(list(ENTITY_CONFIG.keys()))
@@ -3344,6 +3402,7 @@ class Spaz(bs.Actor):
                 self._last_hit_time = None
                 self._num_times_hit = 0
                 self.updatemeter()
+                self._deactivate_mortal_damage()
             elif msg.poweruptype == 'metal':
                 self._activate_metalcap()
                 if self.powerups_expire:
@@ -3451,7 +3510,7 @@ class Spaz(bs.Actor):
                 # Check for source node. Most likely being punched.
                 if msg.srcnode:
                     # Get the other spaz's node.
-                    otherspaz = msg.srcnode.getdelegate(bs.Actor)
+                    otherspaz = msg.srcnode.getdelegate(Spaz)
                     # If the otherspaz is parrying, do something
                     # to prevent a infinite recursion.
                     if otherspaz.parrying == True:
@@ -3787,35 +3846,6 @@ class Spaz(bs.Actor):
                     damage *= 1.7
                     # Play sound.
                     bs.getsound('smaash').play(position=self.node.position)
-                    # Get important values.
-                    punchpos = (
-                        msg.pos[0] + msg.force_direction[0] * 0.02,
-                        msg.pos[1] + msg.force_direction[1] * 0.02,
-                        msg.pos[2] + msg.force_direction[2] * 0.02,
-                    )
-                    hurtiness = damage * 0.003
-                    flash_color = (1.0, 0.8, 0.4)
-                    # Flash our own light.
-                    light = bs.newnode(
-                        'light',
-                        attrs={
-                            'position': punchpos,
-                            'radius': 0.14 + hurtiness * 0.14,
-                            'intensity': 0.6 * (1.0 + 1.0 * hurtiness),
-                            'height_attenuated': False,
-                            'color': flash_color,
-                        },
-                    )
-                    flash = bs.newnode(
-                    'flash',
-                        attrs={
-                            'position': punchpos,
-                            'size': 0.37 + 0.27 * hurtiness,
-                            'color': flash_color,
-                        },
-                    )
-                    bs.timer(0.12, flash.delete)
-                    bs.timer(0.12, light.delete)
                     def checkifdied():
                         # Died? Do a custom earthbound-y sequence.
                         if not self.node:
@@ -3836,8 +3866,6 @@ class Spaz(bs.Actor):
                         color=(0.5, 0.5, 1, 1),
                         scale=1.8,
                     ).autoretain()
-                    if damage >= self.hitpoints and not self._dead:
-                        self.die()
                     bs.timer(1.5, checkifdied)
                 # try to show text if player has a actor position
                 def try_show(text, sound_name, color):
@@ -3971,7 +3999,8 @@ class Spaz(bs.Actor):
                 
                 if damage > 310.0 and self.node.hold_node:
                     self.node.hold_node = None
-
+                
+                self.old_hp = self.hitpoints
                 self.hitpoints -= damage
                 self.node.hurt = (
                     1.0 - float(self.hitpoints) / self.hitpoints_max
@@ -3995,6 +4024,7 @@ class Spaz(bs.Actor):
                             'Fireworked'
                         )
                     if damage >= 1700 and msg.hit_type == 'punch':
+                        self.hitpoints += damage
                         self.swoon()
                         return
                     if damage >= 1000 and msg.hit_type == 'punch':
@@ -4006,6 +4036,11 @@ class Spaz(bs.Actor):
                     if random.random() < 0.15:
                         self.firework_explode()
                         return
+                    if damage >= self.hitpoints and damage >= 530:
+                        if not self.mortal_phase:
+                            self.hitpoints += damage
+                            self._activate_mortal_damage()
+                            return
                     self.die()
 
             # If we're dead, take a look at the smoothed damage value
@@ -4071,6 +4106,9 @@ class Spaz(bs.Actor):
                             death_sound.play()
                     if self.yeehaws and self.last_player_attacked_by:
                         self.last_player_attacked_by.actor.increase_chain(self.yeehaws)
+                    if self.last_player_attacked_by:
+                        if self.last_player_attacked_by.actor.mortal_phase:
+                            self.last_player_attacked_by.actor._deactivate_mortal_damage()
                     if self.earthmeter:
                         self.play_meter_death_animation()
                     if self._has_star:

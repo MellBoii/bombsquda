@@ -36,8 +36,8 @@ class CharacterPicker(PopupWindow):
         delegate: CharacterPickerDelegate | None = None,
         scale: float | None = None,
         offset: tuple[float, float] = (0.0, 0.0),
-        tint_color: Sequence[float] = (1.0, 1.0, 1.0),
-        tint2_color: Sequence[float] = (1.0, 1.0, 1.0),
+        tint_color: Sequence[float] | None = None,
+        tint2_color: Sequence[float] | None = None,
         selected_character: str | None = None,
     ):
         # pylint: disable=too-many-locals
@@ -127,6 +127,8 @@ class CharacterPicker(PopupWindow):
         )
         index = 0
         mask_texture = bui.gettexture('characterIconMask')
+        default_tint = None
+        default_tint2 = None
         for y in range(rows):
             for x in range(columns):
                 pos = (
@@ -135,6 +137,11 @@ class CharacterPicker(PopupWindow):
                     - (y + 1) * (button_height + 2 * button_buffer_v)
                     + 12,
                 )
+                # replace the colors if we have none
+                if not tint_color:
+                    default_tint = bui.app.classic.spaz_appearances[self._spazzes[index]].default_color
+                if not tint2_color:
+                    default_tint2 = bui.app.classic.spaz_appearances[self._spazzes[index]].default_highlight
                 btn = bui.buttonwidget(
                     parent=self._subcontainer,
                     button_type='square',
@@ -145,8 +152,8 @@ class CharacterPicker(PopupWindow):
                     mask_texture=mask_texture,
                     label='',
                     color=(1, 1, 1),
-                    tint_color=tint_color,
-                    tint2_color=tint2_color,
+                    tint_color=tint_color if not default_tint else default_tint,
+                    tint2_color=tint2_color if not default_tint2 else default_tint2,
                     on_activate_call=bui.Call(
                         self._select_character, self._spazzes[index]
                     ),

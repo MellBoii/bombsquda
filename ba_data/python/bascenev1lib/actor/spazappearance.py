@@ -18,6 +18,7 @@ def get_appearances(include_locked: bool = False) -> list[str]:
     assert plus is not None
 
     assert bs.app.classic is not None
+    applist = []
     get_purchased = plus.get_v1_account_product_purchased
     disallowed = []
     display = plus.get_v1_account_display_string()
@@ -30,12 +31,12 @@ def get_appearances(include_locked: bool = False) -> list[str]:
         for item in character_dict.keys():
             if item not in owned:
                 disallowed.append(character_dict[item])
-        
-    return [
-        s
-        for s in list(bs.app.classic.spaz_appearances.keys())
-        if s not in disallowed
-    ]
+    for s in list(bs.app.classic.spaz_appearances.keys()):
+        if s not in disallowed:
+            applist.append(s)
+    for name in bs.app.classic.spaz_appearances:
+        validate_appearance(name, bs.app.classic.spaz_appearances[name])
+    return applist
 
 
 class Appearance:
@@ -77,6 +78,29 @@ class Appearance:
         self.default_color: tuple[float, float, float] | None = None
         self.default_highlight: tuple[float, float, float] | None = None
 
+def validate_appearance(name, app):
+    required = [
+        "jump_sounds",
+        "attack_sounds",
+        "impact_sounds",
+        "death_sounds",
+        "pickup_sounds",
+        "fall_sounds",
+        "victory_sounds",
+        "gloat_sounds",
+        "earthportrait",
+        "EBwin",
+        "EBlose",
+    ]
+
+    missing = []
+
+    for field in required:
+        if not hasattr(app, field):
+            missing.append(field)
+
+    if missing:
+        print(f"[APPEARANCE MISSING ASSETS] {name}: {', '.join(missing)}")
 
 def register_appearances() -> None:
     """Register our builtin spaz appearances."""
@@ -752,6 +776,7 @@ def register_appearances() -> None:
     t.death_sounds = ['voicelines/buddie/death' + str(i + 1) + '' for i in range(4)]
     t.pickup_sounds = ['voicelines/buddie/pickup' + str(i + 1) + '' for i in range(4)]
     t.fall_sounds = ['voicelines/buddie/fall' + str(i + 1) + '' for i in range(3)]
+    t.victory_sounds = t.jump_sounds
     t.style = 'bones'
     t.default_color = (251 / 255, 242 / 255, 51 / 255)
     t.default_highlight = (43 / 255, 41 / 255, 65 / 255)
@@ -788,3 +813,4 @@ def register_appearances() -> None:
     t.pickup_sounds = ['spazPickup01']
     t.fall_sounds = ['spazFall01']
     t.style = 'spaz'
+    t.victory_sounds = ['spazJump01']

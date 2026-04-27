@@ -11,12 +11,15 @@ import bauiv1 as bui
 import bascenev1 as bs
 import os
 import babase
+import random
 from bauiv1lib.popup import PopupMenu
+from bauiv1lib.characterpicker import CharacterPickerDelegate, CharacterPicker
+from bascenev1lib.mainmenu import MENU_MUSIC_AMOUNT
 
 if TYPE_CHECKING:
     from typing import Callable
     
-class MelWindow(bui.MainWindow):
+class MelWindow(bui.MainWindow, CharacterPickerDelegate):
     """Window for selecting BombSquda settings."""
     @staticmethod
     def _create(t, o, ft):
@@ -63,7 +66,7 @@ class MelWindow(bui.MainWindow):
         self._scroll_width = target_width - 30
         self._scroll_height = target_height - 45
         self._sub_width = min(500, self._scroll_width * 0.95)
-        self._sub_height = 1300.0
+        self._sub_height = 1400.0
         start_y = self._sub_height - 60
         spacing = 2
         scroll_bottom = yoffs - 56 - self._scroll_height
@@ -252,7 +255,7 @@ class MelWindow(bui.MainWindow):
             v_align='center',
         )
         choices = [str(None)]
-        choices.extend('MENU' + str(i + 1) for i in range(17))
+        choices.extend('MENU' + str(i + 1) for i in range(MENU_MUSIC_AMOUNT))
         self._music_popup = PopupMenu(
             parent=self._subcontainer,
             position=(col_x + 280 - xoffset, y),
@@ -264,6 +267,38 @@ class MelWindow(bui.MainWindow):
             current_choice=bui.app.config.get("squda_menumusic"),
         )
         
+        row += 1
+        y = start_y - row * row_height
+        bui.textwidget(
+            parent=self._subcontainer,
+            position=(col_x - xoffset, y + 25),
+            size=(0, 0),
+            text=bui.Lstr(resource=f"{self._r}.favChar"),
+            maxwidth=300,
+            scale=0.8,
+            h_align='left',
+            v_align='center',
+        )
+        char_label = bui.app.config.get('squda_favchar', None)
+        if not char_label:
+            char_label = bui.Lstr(resource=f"{self._r}.pickChar")
+        GAHH = 30
+        self._char_button = bui.buttonwidget(
+            label=char_label,
+            parent=self._subcontainer,
+            position=(col_x + 240 - xoffset - GAHH, y),
+            autoselect=False,
+            on_activate_call=self.open_characters,
+            size=(150, 50),
+        )
+        self._reset_char_button = bui.buttonwidget(
+            label=bui.Lstr(resource=f"{self._r}.resetText"),
+            parent=self._subcontainer,
+            position=(col_x + 400 - xoffset - GAHH, y),
+            autoselect=False,
+            on_activate_call=self.reset_character,
+            size=(150, 50),
+        )
         
         row += 1
         y = start_y - row * row_height
@@ -320,6 +355,42 @@ class MelWindow(bui.MainWindow):
         bs.screenmessage('doing media reload to apply change...')
         bui.app.classic.run_media_reload_benchmark()
     
+    def open_characters(self):
+        CharacterPicker(
+            parent=self._root_widget,
+            position=self._char_button.get_screen_space_center(),
+            delegate=self,
+        )
+    
+    @override
+    def on_character_picker_pick(self, character: str) -> None:
+        """A character has been selected by the picker."""
+        if not self._root_widget:
+            return
+        bui.getsound(
+            random.choice(
+                bui.app.classic.spaz_appearances[character].victory_sounds
+            )
+        ).play()
+        bui.app.config['squda_favchar'] = character
+        bui.app.config.commit()
+        bui.buttonwidget(edit=self._char_button, label=character)
+    
+    def reset_character(self):
+        character = bui.app.config.get('squda_favchar', None)
+        if character:
+            bui.getsound(
+                random.choice(
+                    bui.app.classic.spaz_appearances[character].death_sounds
+                )
+            ).play()
+        bui.app.config['squda_favchar'] = None
+        bui.app.config.commit()
+        bui.buttonwidget(
+            edit=self._char_button, 
+            label=bui.Lstr(resource=f"{self._r}.pickChar")
+        )
+        
     def _chance_choice(self, choice):
         key = "squda_entitychance"
         cfg = bui.app.config

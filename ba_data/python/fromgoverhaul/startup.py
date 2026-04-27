@@ -87,6 +87,7 @@ class Startup():
         "squda_nowiggledance": disable_wiggledance,
         "squda_entitychance": 0.1,
         "squda_botnames": True,
+        "squda_favchar": None,
         "squda_ch1name": "NEWBIE",
         "squda_ch2name": "KRIS",
         "squda_ch3name": "SNAKESHADOW",
