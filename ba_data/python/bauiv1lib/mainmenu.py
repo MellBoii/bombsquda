@@ -14,6 +14,8 @@ import babase as ba
 import bauiv1
 import fromgoverhaul.mell_resources as mell
 
+DEBUG_CUSTOM_GATHER = False
+
 if TYPE_CHECKING:
     from typing import Any, Callable
 
@@ -66,7 +68,6 @@ class MainMenuWindow(bui.MainWindow):
         self._watch_button: bui.Widget | None = None
         self._how_to_play_button: bui.Widget | None = None
         self._credits_button: bui.Widget | None = None
-        self.DEBUG_CUSTOM_GATHER = False
 
         self._refresh()
 
@@ -324,7 +325,7 @@ class MainMenuWindow(bui.MainWindow):
 
         thistdelay = self._tdelay + td2 * self._t_delay_inc
         ongather = (
-            self._start_online_activity if self.DEBUG_CUSTOM_GATHER
+            self._start_online_activity if DEBUG_CUSTOM_GATHER
             else self._gather_press
         )
         self._gather_button = bui.buttonwidget(
