@@ -8,6 +8,8 @@ from typing import TYPE_CHECKING
 import logging
 
 import bauiv1 as bui
+import random
+import os
 
 if TYPE_CHECKING:
     from typing import Any, Callable
@@ -167,25 +169,36 @@ class QuitWindow:
         if ui.quit_window is not None:
             ui.quit_window.delete()
             ui.quit_window = None
-        if swish:
-            bui.getsound('back').play()
-
-        if app.classic is None:
-            if bui.do_once():
-                logging.warning(
-                    'QuitWindow needs to be updated to work without classic.'
-                )
-            quit_resource = 'exitGameText'
-        else:
-            quit_resource = (
-                'quitGameText'
-                if app.classic.platform == 'mac'
-                else 'exitGameText'
+        try:
+            thelist = []
+            thelist.extend(                
+                item for item 
+                in os.listdir(
+                    bui.app.env.data_directory + '\\ba_data' + '\\audio\\'
+                ) 
+                if '.ogg' in item
             )
+            chosen = random.choice(thelist)
+            chosen = chosen.replace('.ogg', '')
+        except Exception as e:
+            print(e)
+            chosen = 'quit'
+        bui.getsound(chosen).play()
+        cfgget = bui.app.config.get
+        c1name = cfgget('squda_ch1name')
+        c2name = cfgget('squda_ch2name')
+        c3name = cfgget('squda_ch3name')
+        c4name = cfgget('squda_ch4name')
+        quit_resource = f'exitText{random.randint(1, 5)}'
         self._root_widget = ui.quit_window = ConfirmWindow(
             bui.Lstr(
-                resource=quit_resource,
-                subs=[('${APP_NAME}', bui.Lstr(resource='titleText'))],
+                resource=quit_resource, 
+                subs=[
+                    ('${SPAZ}', c1name),
+                    ('${KRIS}', c2name),
+                    ('${SS}', c3name),
+                    ('${NOOB}', c4name),
+                ],  
             ),
             lambda: (
                 bui.quit(confirm=False, quit_type=self._quit_type)
@@ -193,4 +206,6 @@ class QuitWindow:
                 else bui.quit(confirm=False)
             ),
             origin_widget=origin_widget,
+            ok_text=bui.Lstr(resource='quitOK'),
+            cancel_text=bui.Lstr(resource='quitCancel'),
         ).root_widget
