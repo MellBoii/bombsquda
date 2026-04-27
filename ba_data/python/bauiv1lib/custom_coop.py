@@ -96,9 +96,9 @@ class CustomCoopWindow(bui.MainWindow):
         if uiscale is bui.UIScale.SMALL:
             button_mult = 0.6
         bui.buttonwidget(
+            autoselect=True,
             parent=self._root_widget,
             position=(pos - button_width * button_mult - xoffs, yoffs - 200),
-            autoselect=True,
             size=(button_width, 60),
             label=bui.Lstr(resource='playText'),
             on_activate_call=self._play_press,
@@ -107,7 +107,7 @@ class CustomCoopWindow(bui.MainWindow):
         btn = bui.buttonwidget(
             parent=self._root_widget,
             position=(pos - button_width * button_mult - xoffs, yoffs - 200),
-            autoselect=True,
+            autoselect=False,
             size=(button_width, 60),
             label=bui.Lstr(resource='backText'),
             on_activate_call=self.main_window_back,
@@ -115,8 +115,17 @@ class CustomCoopWindow(bui.MainWindow):
         bui.containerwidget(edit=self._root_widget, cancel_button=btn)
     
     def _play_press(self):
-        bui.screenmessage(bui.Lstr(resource='mellNotDone'), color=(1, 0, 0))
-        bui.getsound('error').play()
+        if not bool(False):
+            bui.screenmessage(
+                bui.Lstr(resource='mellNotDone'), 
+                color=(1, 0, 0)
+            )
+            bui.getsound('error').play()
+            return
+        act = bs.get_foreground_host_activity()
+        with act.context:
+            act.fade_out_to_test()
+        bui.containerwidget(edit=self._root_widget, transition='out_left')
     
     @override
     def main_window_back(self):
