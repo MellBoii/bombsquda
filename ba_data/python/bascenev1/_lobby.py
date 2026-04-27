@@ -211,7 +211,7 @@ class Chooser:
         self._profilename = ''
         self._profilenames: list[str] = []
         self._ready: bool = False
-        self._front: bool = True
+        self._front: bool = False
         # --- Custom menu attrs ---
         self._menu_active = False
         self._menu_index = 0
@@ -363,6 +363,9 @@ class Chooser:
         self._inited = True
 
         self._set_ready(False)
+        # We can just ready up for them if it's a auto-join session... ish.
+        if getattr(bs.getsession(), 'lobby_autojoin', False):
+            bs.timer(0, lambda: self._handle_ready_msg(True))
 
     def _select_initial_profile(self) -> int:
         app = babase.app

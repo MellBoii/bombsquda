@@ -1,16 +1,17 @@
-# Released under the MIT License. See LICENSE for details.
-#
-"""Hot potato-ish gamemode that uses the Spongebob powerup mechanic."""
+"""Yeah. I'm doing it buddie."""
 
 # ba_meta require api 9
 # (see https://ballistica.net/wiki/meta-tag-system)
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, override
+from typing import TYPE_CHECKING, override, Callable
 from bascenev1lib.dialog import DialogueManager
 from bascenev1lib.gameutils import SharedObjects
+from bascenev1lib.actor.image_looped import LoopingImageAnimation
 from bascenev1lib.actor.portalradio import PortalRadio
+from bascenev1lib.actor.nodejumper import ImageJumper
+from bascenev1lib import eb_engine
 import bascenev1 as bs
 import random
 import time
@@ -18,263 +19,268 @@ import time
 if TYPE_CHECKING:
     from typing import Any, Sequence
 
-class Player(bs.Player['Team']):
-    """Our player type for this game."""
-
-
-class Team(bs.Team[Player]):
-    """Our team type for this game."""
-
-    def __init__(self) -> None:
-        self.survival_seconds: int | None = None
-        
-class TouchedMsg:
-    pass
-        
-class SignpostActor(bs.Actor):
-    """
-    Our signpost from Sonic CD. All it does is give 
-    a message to whoever touches it.
-    """
-    node: bs.Node
+# session..
+class TestSession(bs.Session):
+    def __init__(self):
+        depsets: Sequence[bs.DependencySet] = [] 
+        super().__init__(depsets)
+        self.lobby_autojoin = True
+        self.setactivity(bs.newactivity(TestActivity))
     
-    def __init__(
-        self,
-        position: Sequence[float] = (0.0, 3.0, 0.0),
-        type: str = 'future'
-    ):
-        super().__init__()
-        self.mesh = bs.getmesh('warpPost')
-        texname = 'warp' + type
-        self.tex = bs.gettexture(texname)
-        self.type = type
-        self.signpost_mat = bs.Material()
-        self.stop_giving = False
-        self.signpost_mat.add_actions(
-            conditions=('they_have_material', SharedObjects.get().player_material),
-            actions=(
-                ('modify_part_collision', 'collide', True),
-                ('modify_part_collision', 'physical', True),
-                ('message', 'our_node', 'at_connect', TouchedMsg()),
-            ),
-        )
-        self.node = bs.newnode(
-            'prop',
-            delegate=self,
-            attrs={
-                'body': 'box',
-                'position': position,
-                'mesh': self.mesh,
-                'light_mesh': self.mesh,
-                'shadow_size': 0.5,
-                'color_texture': self.tex,
-                'reflection': 'powerup',
-                'reflection_scale': [1.0],
-                'materials': (self.signpost_mat, SharedObjects.get().object_material),
-            },
-        )
-
-    @override
-    def handlemessage(self, msg: Any) -> Any:
-        assert not self.expired
-        if isinstance(msg, TouchedMsg):
-            # stop giving the states if
-            # we shouldn't anymore
-            if self.stop_giving == True:
-                return
-            node = bs.getcollision().opposingnode
-            self.activity.state = self.type
-            bs.getsound('cd_' + self.type).play(position=self.node.position)
-            self.stop_giving = True
-        elif isinstance(msg, bs.DieMessage):
-            if self.node:
-                if msg.immediate:
-                    self.node.delete()
-                else:
-                    bs.animate(self.node, 'mesh_scale', {0: 1, 0.6: 0})
-                    bs.timer(0.6, self.node.delete)
-
 # ba_meta export bascenev1.GameActivity
-class TestActivity(bs.TeamGameActivity[Player, Team]):
-    """A last-standing gametype based on Hot Potato."""
-
-    name = 'Testing Grounds'
-    description = 'Placing the holder!'
+class TestActivity(bs.GameActivity[bs.Player, bs.Team]):
+    name = ''
+    description = ''
     announce_player_deaths = True
+    suppress_zoomtext = True
+    default_music = bs.MusicType.SURVEY
     
+    @override
+    @classmethod
+    def get_supported_maps(cls, sessiontype: type[bs.Session]) -> list[str]:
+        return ['Nothing']
+        
     def __init__(self, settings: dict):
         super().__init__(settings)
-        # attribuuutes -------------------------------------
-        self.state = None # which part can we time travel to
-        # ee is short for eighty eight (88)
-        # but python doesn't allow attrs starting
-        # with numbers (gives a SyntaxError) so...
-        self.eemiles = False
-        self.which_future = 'bad' # how's the future?
-        self._tt_pending = False # is there a time travel check pending?
-        self._tt_halfway = False # halfway through the time travel?
-        # --------------------------------------------------
+        self.text_timer = None
+        self.waiting_on_join = False
         
-    # do the thing!
-    def speedcheck(self, p: bs.Player):
-        speed = p.actor.getspeed()
-        spaz = p.actor
-
-        if self.state is None:
-            return
-
-        if speed > 4.0:
-            bs.emitfx(
-                position=spaz.node.position,
-                velocity=spaz.node.velocity,
-                count=20,
-                scale=1.2,
-                spread=1.0,
-                chunk_type='spark',
-            )
-
-            self.eemiles = True
-
-            if not self._tt_pending:
-                self._tt_pending = True
-                self._tt_halfway = True
-
-                bs.timer(3.0, lambda: self._halfway_check(p))
-
-                bs.timer(6.0, lambda: self.checkfortt(plr=p))
-
-        else:
-            self.eemiles = False
-    
-    def _halfway_check(self, p: bs.Player):
-        if not self._tt_halfway:
-            return
-
-        if not self.eemiles:
-            print('Lost speed halfway — aborting time travel')
-            self._tt_pending = False
-            self._tt_halfway = False
-
-    def checkfortt(self, plr: bs.Player):
-        self._tt_pending = False
-        self._tt_halfway = False
-
-        print('checking...')
-
-        if self.state is None:
-            print('state is none, returning')
-            return
-
-        if not self.eemiles:
-            print('not eighty eight miles!!!')
-            self.state = None
-            return
-
-        print('is eighty eight miles, should time travel')
-
-        node = plr.actor.node
-        node.is_area_of_interest = False
-
-        bs.emitfx(
-            position=node.position,
-            velocity=node.velocity,
-            count=120,
-            scale=4.0,
-            spread=1.5,
-            chunk_type='spark',
-        )
-        bs.getsound('cd_ringed').play(position=node.position)
-        self.spdchktmr = None
-        bs.timer(0.1, node.delete)
-        self.state = None
-
-        
-            
     @override
-    def on_begin(self) -> None:
+    def on_begin(self):
         super().on_begin()
-        self.signpost = SignpostActor()
-        self.radio = PortalRadio((1, 3, 0))
-        DialogueManager(
-            {
-                0: {
-                    "character": "meliso",
-                    "expression": "surprised",
-                    "name": "Meliso",
-                    "text": "holy smokes is that spaz!?",
-                    "sound": "diagvoice/meliso",
-                },
-                1: {
-                    "text": "...",
-                    "sound": "tap",
-                },
-                2: {
-                    "character": "spaz",
-                    "expression": "angry",
-                    "name": "Newbie", 
-                    "text": "Shut up.{pause=0.2} I'm gonna fucking kill you.",
-                    "sound": "diagvoice/spaz",
-                },
-                3: {
-                    "character": "meliso",
-                    "expression": "neutral",
-                    "name": "Meliso",
-                    "text": "well jeez,{pause=0.2} you're really \nboring {sound=voicelines/spaz/hurt03}you know!",
-                    "sound": "diagvoice/meliso",
-                    "interrupt": True,
-                },
-                4: {
-                    "character": "spaz",
-                    "expression": "insane",
-                    "name": "Newbie",
-                    "text": (
-                        "BORING?{pause=0.4}{expr=angry} For not letting you FUCKING chainsaw me \ninto 2 "
-                        "halves like you tried last time?\n{pause=0.6}If that's boring, then being boring is now normal."
-                    ),
-                    "sound": "diagvoice/spaz",
-                }, 
-                "no": {
-                    "character": "meliso",
-                    "expression": "surprised",
-                    "name": "Meliso",
-                    "sound": "diagvoice/meliso",
-                    "text": "damn bro...",
-                },
-                "yes": {
-                    "character": "meliso",
-                    "expression": "observe",
-                    "name": "Meliso",
-                    "sound": "diagvoice/meliso",
-                    "text": "ok bye bye{eval=bs.getplayers()[0].actor.die()}",
-                },
-                5: {
-                    "character": "meliso",
-                    "expression": "neutral",
-                    "name": "Meliso",
-                    "text": "so like... want me to kill you or something?",
-                    "sound": "diagvoice/meliso",
-                    "choices": [
-                        ("Hell no!", "no"),
-                        ("Eh, why not.", "yes"),
-                    ],
-                },
+        node = bs.newnode(
+            'image',
+            attrs={
+                'fill_screen': True,
+                'texture': bs.gettexture('white'),
+                'color': (0, 0, 0),
+            },
+        )
+        spaz = bs.newnode(
+            'image',
+            attrs={
+                'texture': bs.gettexture('spaz_comad'),
+                'color': (1, 1, 1),
+                'scale': (100, 100),
+            },
+        )
+        bs.animate(spaz, 'opacity', {0.1: 0, 2: 1})
+        def text2():
+            self.make_floaty_text('You must wake up, SPAZ...', callback=self.ask_to_join)
+        bs.timer(3.0, lambda: self.make_floaty_text('SPAZ...', callback=text2))
+    
+    def next_activity(self):
+        node = bs.newnode(
+            'image',
+            attrs={
+                'fill_screen': True,
+                'texture': bs.gettexture('white2'),
+                'color': (1, 1, 1),
+            },
+        )
+        bs.animate(node, 'opacity', {0: 0, 2: 1})
+        bs.timer(2, lambda: self.session.setactivity(bs.newactivity(TestActivity2)))
+    
+    def text3(self):
+        self.make_floaty_text('Meliso has returned, and is coming\nback stronger than ever...', callback=self.text4)
+    def text4(self):
+        self.make_floaty_text('You must gather your friends...', callback=self.text5)
+    def text5(self):
+        self.make_floaty_text('..and together, with your strength...', callback=self.text6)
+    def text6(self):
+        self.make_floaty_text('...stop Meliso from causing total destruction.', callback=self.text7)
+    def text7(self):
+        self.make_floaty_text('The SQUDA\'s fate lies on you, SPAZ...', callback=self.text8)
+    def text8(self):
+        self.make_floaty_text('SPAZ... wake up...', callback=self.text9)
+    def text9(self):
+        self.make_floaty_text('...SPAZ..!', callback=self.next_activity)
+    
+    def ask_to_join(self):
+        self.waiting_on_join = True
+        if len(self.players) > 0:
+            #self.text3()
+            self.next_activity()
+            return
+        textnode = self.textnode_pressbtn = bs.newnode(
+            'text',
+            attrs={
+                'text': bs.Lstr(resource='pressToContinueActivity'),
+                'h_align': 'center',
+                'position': (0, 150),
+                'scale': 1.3,
+                'opacity': 0,
             }
         )
-            
-    @override
-    def spawn_player(self, player: Player) -> bs.Actor:
-        actor = self.spawn_player_spaz(player)
-        self.spdchktmr = bs.Timer(0.1, lambda: self.speedcheck(player), repeat=True)
-        return actor
+        bs.animate(textnode, 'opacity', {0: 0, 0.5: 0.5})
+    
+    def on_player_join(self, player: bs.Player):
+        if not self.waiting_on_join:
+            return
+        bs.animate(self.textnode_pressbtn, 'opacity', {0: 0.5, 1: 0})
+        self.text3()
         
+    def make_floaty_text(
+        self, 
+        text: str, 
+        callback: Callable | None = None
+    ):
+        full_text = text
+        self.current_text = ''
+        self.text_index = 0
+        textnode = bs.newnode(
+            'text',
+            attrs={
+                'text': self.current_text,
+                'h_align': 'center',
+                'position': (0, 190),
+                'scale': 1.3
+            }
+        )
+        pos = textnode.position
+        num1 = -0.2
+        num2 = 0.2
+        bs.animate_array(
+            textnode, 
+            'position', 
+            2,
+            {
+                0: (pos[0], pos[1]),
+                0.1: (pos[0] + random.uniform(num1, num2), pos[1] + random.uniform(num1, num2)),
+                0.2: (pos[0] + random.uniform(num1, num2), pos[1] + random.uniform(num1, num2)),
+                0.3: (pos[0] + random.uniform(num1, num2), pos[1] + random.uniform(num1, num2)),
+                0.4: (pos[0] + random.uniform(num1, num2), pos[1] + random.uniform(num1, num2)),
+                0.5: (pos[0], pos[1]),
+            },
+            loop=True
+        )
+        def fade_out():
+            def deleteit():
+                textnode.delete()
+                if callback:
+                    callback()
+            bs.animate(textnode, 'opacity', {0: 1, 1: 0})
+            bs.timer(1, deleteit)
+        def _type_tick():
+            if self.text_index >= len(full_text):
+                self.text_timer = None
+                bs.timer(1.7, fade_out)
+                return
+            char = full_text[self.text_index]
+            self.text_index += 1
+            self.current_text += char
+            textnode.text = self.current_text
+        self.text_timer = bs.Timer(0.05, _type_tick, repeat=True)
+
+class TestActivity2(bs.GameActivity[bs.Player, bs.Team]):
+    name = ''
+    description = ''
+    announce_player_deaths = True
+    suppress_zoomtext = True
+    
     @override
-    def handlemessage(self, msg: Any) -> Any:
-        # (Pylint Bug?) pylint: disable=missing-function-docstring
+    @classmethod
+    def get_supported_maps(cls, sessiontype: type[bs.Session]) -> list[str]:
+        return ['Nothing']
+        
+    def __init__(self, settings: dict):
+        super().__init__(settings)
+        self.text_timer = None
+    
+    def on_begin(self):
+        bg = bs.newnode(
+            'image',
+            attrs={
+                'texture': bs.gettexture('white'),
+                'color': (0.2, 0.2, 0.6),
+                'fill_screen': True,
+            },
+        )
+        self.scene = eb_engine.Scene(position=(600, 340), texture='special', scale=1.0)
+        spaz = bs.newnode(
+            'image',
+            attrs={
+                'texture': bs.gettexture('spaz_comad'),
+                'color': (1, 1, 1),
+                'scale': (100, 100),
+            },
+        )
+        self.spaz_anim_image = spaz
+        DialogueManager(
+            [
+                {
+                    "text": "WAKE UP DUMBASS!!!!!",
+                    "sound": "tap",
+                },
+                {
+                    "text": "...jeez, does this guy not hear me?!",
+                    "sound": "tap",
+                },
+                {
+                    "text": "..oh wait, I have an idea.",
+                    "sound": "tap",
+                },
+                {
+                    "text": "{eval=bs.getactivity().spaz_gets_bricked()}",
+                    "interrupt": True,
+                },
+            ],
+        )
+    
+    def spaz_gets_bricked(self):
+        bs.getsound('hook_throw').play()
+        brick = bs.newnode(
+            'image',
+            attrs={
+                'texture': bs.gettexture('windowHSmallVSmall'),
+                'color': (0.9, 0.2, 0.2),
+                'scale': (300, 300),
+                'position': (0, 0),
+                'absolute_scale': True,
+            },
+        )
+        time = 1.5
+        bs.animate_array(
+            brick, 
+            'scale', 
+            2,
+            {
+                0.0: (500, 500),
+                time * 0.5: (300, 300),
+                time: (30, 30),
+            }
+        )
+        bs.animate(brick, 'rotate',
+            {
+                0: 0,
+                time: 180,
+            }
+        )
+        ImageJumper.jump_to_position(
+            brick, 
+            target_pos=self.spaz_anim_image.position,
+            time=time,
+            height=500,
+        )
+        def gets_hit():
+            bs.getsound('bigImpact2').play()
+            ImageJumper.jump_image(brick, fall_speed=-700, jump_force=600)
+            self.spaz_anim_image.delete()
+            LoopingImageAnimation(
+                scale=(100, 100), 
+                prefix='spaz_wakeup', 
+                frame_count=7, 
+                loop=False,
+                frame_delay=0.05,
+            )
+            self.scene._move(y=-15)
+            
+        bs.timer(time, gets_hit)
+    
+    @override
+    def spawn_player(self, player: bs.Player):
+        return
+        
+        
 
-        if isinstance(msg, bs.PlayerDiedMessage):
-            # Augment standard behavior.
-            super().handlemessage(msg)
-
-            player = msg.getplayer(Player)
-            self.spdchktmr = None
-            self.respawn_player(player)
+    

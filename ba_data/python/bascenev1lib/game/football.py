@@ -883,13 +883,13 @@ class FootballCoopGame(bs.CoopGameActivity[Player, Team]):
     def do_end(self, outcome: str) -> None:
         """End the game with the specified outcome."""
         if outcome == 'defeat':
-            self.fade_to_red()
+            delay = self.fade_to_red()
         assert self._final_time_ms is not None
         scoreval = (
             None if outcome == 'defeat' else int(self._final_time_ms // 10)
         )
         self.end(
-            delay=3.0,
+            delay=delay,
             results={
                 'outcome': outcome,
                 'score': scoreval,

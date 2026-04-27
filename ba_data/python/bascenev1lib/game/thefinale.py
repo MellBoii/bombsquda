@@ -22,6 +22,8 @@ from bascenev1lib.actor.bomb import TNTSpawner
 from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.actor.powerupbox import PowerupBoxFactory, PowerupBox
 from bascenev1lib.actor.overhead_text import OverheadText
+from bascenev1lib.actor.particles import ConfettiParticle
+from bascenev1lib.actor.nodejumper import ImageJumper
 # Fuck it, ralsieBot is back. If we want hard...
 # ..we GET HARD. 
 from bascenev1lib.actor.spazbot import (
@@ -107,7 +109,7 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
         self._excludepowerups: list[str] = []
         self._scoreboard: Scoreboard | None = None
         self._score = 0
-        self.points_to_win = 2000
+        self.points_to_win = 1300
         self._bots = SpazBotSet()
         self._dingsound = bs.getsound('dingSmall')
         self._dingsoundhigh = bs.getsound('dingSmallHigh')
@@ -119,6 +121,7 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
         self._alrdidach2 = False
         self._alrdidach3 = False
         self.easymode = settings['easy_mode']
+        self.win_music_override = bs.MusicType.VICTORYFINAL
 
         # For each bot type: [spawnrate, increase, d_increase]
         self._bot_spawn_types = {
@@ -179,7 +182,6 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
             bs.MusicType.LAP3
             
         ]
-        bs.setmusic(random.choice(random_musicas))
         self.points_text = bs.newnode(
                 'text',
                 attrs={
@@ -195,6 +197,25 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
                     'text': '',
                 },
             )
+        ct = self.globalsnode.tint
+        bs.animate_array(
+            self.globalsnode, 
+            'tint', 
+            3,
+            {
+                0.4: (0, 0, 0),
+                0.65: ct,
+                0.9: (ct[0] * 1.5, ct[1] * 1.5, ct[2] * 1.5),
+                1.1: ct,
+            }
+        )
+        bs.animate(self.points_text, 'opacity',
+            {
+                1.1: 0,
+                1.5: 1,
+            }
+        )
+        bs.timer(0.9, lambda: bs.setmusic( random.choice( random_musicas ) ) )
         self._update_scores()
 
     @override
@@ -322,7 +343,7 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
     def do_end(self, outcome: str, delay: float = 0.0) -> None:
         """End the game."""
         if outcome == 'defeat':
-            self.fade_to_red()
+            delay = self.fade_to_red()
         self.end(
             delay=delay,
             results={
@@ -393,6 +414,37 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
         for spawninfo in self._bot_spawn_types.values():
             spawninfo.spawnrate += spawninfo.increase
             spawninfo.increase += spawninfo.dincrease
+    
+    def _drop_confetti(
+        self, position: Sequence[float], velocity: Sequence[float]
+    ) -> None:
+        actor = ConfettiParticle(position=position).autoretain()
+        actor.node.velocity = velocity
+        
+
+    def _drop_confetti_cluster(self) -> None:
+        # Drop several bombs in series.
+        delay = 0.0
+        if random.random() < 0.13:
+            bs.getsound('default_win').play()
+        for _i in range(random.randrange(1, 3)):
+            # Drop them somewhere within our bounds with velocity pointing
+            # toward the opposite side.
+            pos = (
+                random.randint(-6, 6),
+                5,
+                random.randint(-9, 6),
+            )
+            dropdir = -1.0 if pos[0] > 0 else 1.0
+            vel = (
+                (-5.0 + random.random() * 50.0) * dropdir,
+                random.uniform(-3.066, 2),
+                random.randint(-3, 3),
+            )
+            self._drop_confetti(pos, vel)
+    
+    def _start_confetti_shower(self):
+        bs.timer(0.06, self._drop_confetti_cluster, repeat=True)
 
     def _update_scores(self) -> None:
         score = self._score
@@ -400,18 +452,45 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
         if score >= self.points_to_win:
             if not getattr(self, '_game_over', False):
                 self._game_over = True
-                self.end_game()
                 self.show_zoom_message(
                     bs.Lstr(resource='victoryText'), scale=1.0, duration=3.0
                 )
                 self.celebrate(20.0)
+                self._bot_update_timer = None
                 self._bots.clearslowly()
                 bs.cameraflash()
                 for player in self.players:
                     player.actor.say()
-                bs.getsound('srank').play()
+                bs.setmusic(None)
+                bs.getsound('finaleWin').play()
+                for player in self.players:
+                    if getattr(player.actor, 'earthchar', None):
+                        time = 1.0
+                        def do_it(time: int, node: bs.Node):
+                            ImageJumper.jump_to_position(
+                                node,
+                                target_pos=node.position,
+                                time=time,
+                                height=150,
+                            )
+                        player.actor.earthchar.texture = player.actor.media['EBwin']
+                        do_it(time=time, node=player.actor.earthchar)
+                        self.ahhhtimers = []
+                        self.ahhhtimers.append(
+                            bs.Timer(
+                                time + 0.01, 
+                                bs.Call(
+                                    do_it, 
+                                    time=time, 
+                                    node=player.actor.earthchar
+                                ), 
+                                repeat=True
+                            )
+                        )
+                bs.timer(0.5, self._start_confetti_shower)
+                time = 12.6
+                self.do_end(delay=time, outcome='victory')
                 bs.app.classic.ach.award_local_achievement('I am the BombSquad:tm:')
-                self._bot_update_timer = None
                 self.points_text.text = 'yuo\'re winner :)'
                 return
         assert self._scoreboard is not None
@@ -490,13 +569,9 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
     @override
     def end_game(self) -> None:
         # (Pylint bug?) pylint: disable=missing-function-docstring
-        if self._score >= self.points_to_win:
-            bs.setmusic(bs.MusicType.VICTORYFINAL, continuous=True)
-            bs.pushcall(bs.WeakCall(self.do_end, 'victory', delay=6.5))
-        else:
-            assert self._bots is not None
-            self._bots.final_celebrate()
-            bs.pushcall(bs.WeakCall(self.do_end, 'defeat', delay=2.1))
+        assert self._bots is not None
+        self._bots.final_celebrate()
+        bs.pushcall(bs.WeakCall(self.do_end, 'defeat', delay=2.1))
 
     def _checkroundover(self) -> None:
         """End the round if conditions are met."""

@@ -845,8 +845,7 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
         """End the game now with the provided outcome."""
 
         if outcome == 'defeat':
-            delay = 2.0
-            self.fade_to_red()
+            delay = self.fade_to_red()
         else:
             delay = 0
 

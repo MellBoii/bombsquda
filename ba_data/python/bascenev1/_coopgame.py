@@ -371,7 +371,7 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
             # Now bring up a celebration banner.
             ach.announce_completion(sound=sound)
 
-    def fade_to_red(self) -> None:
+    def fade_to_red(self):
         """Fade the screen to red; (such as when the good guys have lost)."""
         from bascenev1 import _gameutils
         
@@ -380,7 +380,7 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
         assert isinstance(player1, ba.Player)
         
         bs.broadcastmessage(f"{p1name} lost the battle...", color=(1.0,0.1,0.1))
-        bs.getsound('loss').play(3.3)
+        bs.getsound('loss').play(1.7)
         bs.setmusic(None)
 
         c_existing = self.globalsnode.tint
@@ -396,6 +396,8 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
         _gameutils.animate(cnode, 'input1', {0: c_existing[1], 2.0: 0})
         _gameutils.animate(cnode, 'input2', {0: c_existing[2], 2.0: 0})
         cnode.connectattr('output', self.globalsnode, 'tint')
+        delay = 4
+        return delay
 
     def setup_low_life_warning_sound(self) -> None:
         """Set up a beeping noise to play when any players are near death."""

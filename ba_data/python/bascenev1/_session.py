@@ -616,17 +616,8 @@ class Session:
         self, activity: bascenev1.Activity, results: Any
     ) -> None:
         # Run the subclass callback in the session context.
-        try:
-            with self.context:
-                self.on_activity_end(activity, results)
-        except Exception:
-            logging.error(
-                'Error in on_activity_end() for session %s'
-                ' activity %s with results %s',
-                self,
-                activity,
-                results,
-            )
+        with self.context:
+            self.on_activity_end(activity, results)
 
     def _request_player(self, sessionplayer: bascenev1.SessionPlayer) -> bool:
         """Called by the native layer when a player wants to join."""

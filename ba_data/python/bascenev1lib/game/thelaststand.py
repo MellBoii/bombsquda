@@ -214,9 +214,9 @@ class TheLastStandGame(bs.CoopGameActivity[Player, Team]):
     def do_end(self, outcome: str) -> None:
         """End the game."""
         if outcome == 'defeat':
-            self.fade_to_red()
+            delay = self.fade_to_red()
         self.end(
-            delay=2.0,
+            delay=delay,
             results={
                 'outcome': outcome,
                 'score': self._score,

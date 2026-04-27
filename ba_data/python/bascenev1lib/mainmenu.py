@@ -46,6 +46,8 @@ if TYPE_CHECKING:
 
     import bacommon.bs
 
+MENU_MUSIC_AMOUNT = 21
+
 
 class MainMenuActivity(bs.GameActivity[bs.Player, bs.Team]):
     """Activity showing the rotating main menu bg stuff."""
@@ -128,20 +130,24 @@ class MainMenuActivity(bs.GameActivity[bs.Player, bs.Team]):
         return self.spawn_player_spaz(player, position = (0, 5, 0))
     
     def hide_menu_text(self):
+        # just get the modpack name text's opacity for now
+        c_op = self.modpack_name.node.opacity
         for nodeactor in self._word_actors:
             if getattr(nodeactor.node, 'shadow', None):
-                bs.animate(nodeactor.node, 'shadow', {0: 0.2, 0.7: 0})
-            bs.animate(nodeactor.node, 'opacity', {0: 1, 0.7: 0})
-        bs.animate(self.modpack_name.node, 'opacity', {0: 1, 0.7: 0})
-        bs.animate(self.splashtext.node, 'opacity', {0: 1, 0.7: 0})
+                bs.animate(nodeactor.node, 'shadow', {0: nodeactor.node.shadow, 0.7: 0})
+            bs.animate(nodeactor.node, 'opacity', {0: c_op, 0.7: 0})
+        bs.animate(self.modpack_name.node, 'opacity', {0: c_op, 0.7: 0})
+        bs.animate(self.splashtext.node, 'opacity', {0: c_op, 0.7: 0})
     
     def show_menu_text(self):
+        # just get the modpack name text's opacity for now
+        c_op = self.modpack_name.node.opacity
         for nodeactor in self._word_actors:
             if getattr(nodeactor.node, 'shadow', None):
-                bs.animate(nodeactor.node, 'shadow', {0: 0, 0.7: 0.2})
-            bs.animate(nodeactor.node, 'opacity', {0: 0, 0.7: 1})
-        bs.animate(self.modpack_name.node, 'opacity', {0: 0, 0.7: 1})
-        bs.animate(self.splashtext.node, 'opacity', {0: 0, 0.7: 1})
+                bs.animate(nodeactor.node, 'shadow', {0: c_op, 0.7: 0.2})
+            bs.animate(nodeactor.node, 'opacity', {0: c_op, 0.7: 1})
+        bs.animate(self.modpack_name.node, 'opacity', {0: c_op, 0.7: 1})
+        bs.animate(self.splashtext.node, 'opacity', {0: c_op, 0.7: 1})
     
     @override
     def on_player_leave(self, player: bs.Player):
@@ -341,6 +347,20 @@ class MainMenuActivity(bs.GameActivity[bs.Player, bs.Team]):
         )
 
         app.classic.invoke_main_menu_ui()
+    
+    def fade_out_to_test(self):
+        from bascenev1lib.game.testing import TestSession
+        node = bs.newnode(
+            'image',
+            attrs={
+                'fill_screen': True,
+                'texture': bs.gettexture('white'),
+                'color': (0, 0, 0),
+                'opacity': 0,
+            },
+        )
+        bs.animate(node, 'opacity', {0: 0, 2: 1})
+        bs.timer(2, lambda: bs.new_host_session(TestSession) )
         
     def do_quit(self):
         from bascenev1lib.actor.nodejumper import ImageJumper
@@ -870,13 +890,13 @@ class MainMenuActivity(bs.GameActivity[bs.Player, bs.Team]):
     
     def menu_music(self) -> None:
         assert bs.app.classic is not None
-        music_choices = ['MENU' + str(i + 1) for i in range(17)]
+        music_choices = ['MENU' + str(i + 1) for i in range(MENU_MUSIC_AMOUNT)]
         chosen = random.choice(music_choices)
         custom = bui.app.config.get('squda_menumusic')
         if custom and custom != 'None':
             chosen = custom
         if self.redditor:
-            chosen = "MENU18"
+            chosen = "RMENU"
         if self.aprilfools:
             chosen = 'MENU67'
         self.chosen_music = getattr(bs.MusicType, chosen)

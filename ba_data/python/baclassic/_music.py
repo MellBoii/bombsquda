@@ -55,6 +55,10 @@ ASSET_SOUNDTRACK_ENTRIES: dict[MusicType, AssetSoundtrackEntry] = {
     MusicType.MENU16: AssetSoundtrackEntry('music/menuMusic16'),
     MusicType.MENU17: AssetSoundtrackEntry('music/menuMusic17'),
     MusicType.MENU18: AssetSoundtrackEntry('music/menuMusic18'),
+    MusicType.MENU19: AssetSoundtrackEntry('music/menuMusic19'),
+    MusicType.MENU20: AssetSoundtrackEntry('music/menuMusic20'),
+    MusicType.MENU21: AssetSoundtrackEntry('music/menuMusic21'),
+    MusicType.RMENU: AssetSoundtrackEntry('music/redditorMenu'),
     MusicType.MENU67: AssetSoundtrackEntry('music/stupidfuckingmenu'), 
     MusicType.VICTORY: AssetSoundtrackEntry(
         'music/victoryMusic', volume=1.2, loop=False
@@ -149,7 +153,7 @@ ASSET_SOUNDTRACK_ENTRIES: dict[MusicType, AssetSoundtrackEntry] = {
     MusicType.LAP9: AssetSoundtrackEntry('music/lap9'),
     MusicType.CRASH_HANDLER: AssetSoundtrackEntry('music/crash_handler'),
     MusicType.SHOP: AssetSoundtrackEntry('music/shop'),
-    MusicType.STARMAN: AssetSoundtrackEntry('music/smb1r_star', volume=1.3),
+    MusicType.STARMAN: AssetSoundtrackEntry('music/starman', volume=1.0, loop=False),
     MusicType.HARDMODE1: AssetSoundtrackEntry('music/stronger', volume=1.0),
     MusicType.HARDMODE2: AssetSoundtrackEntry('music/asgore', volume=1.0),
     MusicType.HARDMODE3: AssetSoundtrackEntry('music/sans', volume=1.0),

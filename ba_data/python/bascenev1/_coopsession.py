@@ -388,6 +388,12 @@ class CoopSession(Session):
         env = app.env
         classic = app.classic
         assert classic is not None
+        win_music_override = None
+        lose_music_override = None
+        if getattr(activity, 'win_music_override', None):
+            win_music_override = activity.win_music_override
+        if getattr(activity, 'lose_music_override', None):
+            lose_music_override = activity.lose_music_override
 
         # If we're running a TeamGameActivity we'll have a GameResults
         # as results. Otherwise its an old CoopGameActivity so its giving
@@ -554,6 +560,8 @@ class CoopSession(Session):
                             'outcome': outcome,
                             'campaign': self.campaign,
                             'level': self.campaign_level_name,
+                            'win_music_override': win_music_override,
+                            'lose_music_override': lose_music_override,
                         },
                     )
                 )

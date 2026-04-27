@@ -24,10 +24,9 @@ class MusicType(Enum):
     'situations'. The actual music played for each type can be overridden
     by the game or by the user.
     """
-
-    # ok lesson learned dont rename default music so it doesnt break vanilla online-play
-    # perhaps should add music for when playing online?? seems cool audibly
-    # also, don't rename the other names. they'll break if you pause and upnause.
+    
+    # don't rename the strings, 
+    # some music breaks if you do
     MENU1 = 'MENU1'
     MENU2 = 'MENU2'
     MENU3 = 'MENU3'
@@ -46,7 +45,11 @@ class MusicType(Enum):
     MENU16 = 'MENU16'
     MENU17 = 'MENU17'
     MENU18 = 'MENU18'
+    MENU19 = 'MENU19'
+    MENU20 = 'MENU20'
+    MENU21 = 'MENU21'
     MENU67 = 'MENU67'
+    RMENU = 'RMENU'
     VICTORY = 'Victory'
     VICTORYFINAL = 'VictoryFinal'
     COOP_SELECT = 'Coop_Select'
@@ -201,11 +204,15 @@ def show_music_now_playing(music_type: bs.MusicType | str) -> None:
         bs.MusicType.MENU15: "Pollyanna Rock My World - Furries in a blender",
         bs.MusicType.MENU16: "Wii Theme but it's September - Mr Rock",
         bs.MusicType.MENU17: "The Final Fight - Sonic 3D Blast",
-        bs.MusicType.MENU18: "Clock Strikes 12 - Reddit Bullshit",
+        bs.MusicType.MENU18: "Title Screen - New Super Mario Bros. Wii",
+        bs.MusicType.MENU19: "Main Theme - Angry Birds",
+        bs.MusicType.MENU20: "Main Theme (Ssvsab Remix) - Angry Birds",
+        bs.MusicType.MENU21: "Title Theme - Super Mario 64",
+        bs.MusicType.RMENU: "Clock Strikes 12 - Reddit Bullshit",
         bs.MusicType.MENU67: "Super Compressed Version of the JRMP Menu Music That Isn't Really From JRMP But I Also Sing It With Myself Whilst Screaming - Mell",
-        bs.MusicType.CREDITS: "Sonic Mania Unused Credits - Tee Lopes",
+        bs.MusicType.CREDITS: "Staff Roll - Super Mario 3D Land",
         bs.MusicType.SNESCOURSE: "SNES Battle Course - Mario Kart World",
-        bs.MusicType.SNESCOURSE2: "Battle Course - Super Mario Kart",
+        bs.MusicType.SNESCOURSE2: "SNES Battle Course 4 - Mario Kart Wii",
         bs.MusicType.DEFEAT: "Faint Courage - Deltarune Chapter 2 OST",
         bs.MusicType.FINALDESTINATION: "Final Destination - Super Smash Bros Melee",
         bs.MusicType.THEFINALE: "In The Finale - Bowser's Inside Story",
@@ -232,7 +239,7 @@ def show_music_now_playing(music_type: bs.MusicType | str) -> None:
         bs.MusicType.SPORTS: "Opening Movie (Beta Mix) - Eek! The Cat",
         bs.MusicType.FOOTBALL: "GOLF CENTRAL - Uncanny Cat Golf",
         bs.MusicType.VICTORY: "Stars and Stripes Forever (Metal Rock Remix) - Blue Claw Philharmonic",
-        bs.MusicType.VICTORYFINAL: "Stars and Stripes Forever (Metal Rock Remix, Longer) - Blue Claw Philharmonic",
+        bs.MusicType.VICTORYFINAL: "Tracking Device - Half Life 2",
         bs.MusicType.ONSLAUGHT: "Ruder Buster - Deltarune",
         bs.MusicType.SURVIVAL: "Tough Guy Alert! - M&L:BIS GaMetal Remix",
         bs.MusicType.ONSLAUGHT2: "Rude Buster - Deltarune",
@@ -240,8 +247,8 @@ def show_music_now_playing(music_type: bs.MusicType | str) -> None:
         bs.MusicType.MODULATINGTIME: "A Journey in Modulating Time - MaliceX",
         bs.MusicType.KEEP_AWAY: "Flying Battery Zone 1 - Tee Lopes",
         bs.MusicType.KEEP_AWAY2: "Flying Battery Zone 2 - Tee Lopes",
-        bs.MusicType.MARCHING: "Boss - Bowser Jr.'s Journey",
-        bs.MusicType.RUNAROUNDFINAL: "Final Boss - Bowser Jr.'s Journey",
+        bs.MusicType.MARCHING: "Loonboon - Plants VS Zombies",
+        bs.MusicType.RUNAROUNDFINAL: "Brainiac Maniac - Plants VS Zombies",
         bs.MusicType.DS1: "Battle Theme - Mario Kart DS",
         bs.MusicType.DS2: "Waluigi Pinball - Mario Kart DS",
         bs.MusicType.DS3: "Twilight House - Mario Kart Wii",
@@ -255,11 +262,10 @@ def show_music_now_playing(music_type: bs.MusicType | str) -> None:
         bs.MusicType.RUN_AWAY: "Tough Guy Alert! - M&L Bowser's Inside Story - GaMetal Cover",
         bs.MusicType.FEEL_THE_FURY: "Feel The Fury - ThatGuyRamon",
         bs.MusicType.RAINBOW_ROAD: "Rainbow Road Pentagon Path Remix - B1itz Lunar",
-        bs.MusicType.STARMAN: "Starman (Hurry) - SMB1 Re-Tuned (Super Mario Bros. 1 Remastered)",
+        bs.MusicType.STARMAN: "Invincibility (Starman) - Sonic Robo Blast 2",
         bs.MusicType.HARDMODE1: "Stronger Enemies - Undertale OST",
         bs.MusicType.HARDMODE2: "ASGORE - Undertale OST",
         bs.MusicType.HARDMODE3: "Song That Might Play When You Fight Sans - Undertale OST",
-        bs.MusicType.COOP_VICTORY: "Zone Clear - Skateboard Sonic (Sonic Robo Blast 2)",
     }
     # Get the music name from the list.
     # If we don't get any, tell the player it's either unknown
@@ -274,20 +280,26 @@ def show_music_now_playing(music_type: bs.MusicType | str) -> None:
         uiscale = bui.app.ui_v1.uiscale
         base_y = 0
         step_y = 30
+        front = True
+        time = 5
 
         slot = _get_free_slot(activity.music_texts)
         ypos = base_y + slot * step_y
         xpos = 635
-        ofscrX = 1500
+        offscrX = 1500
         tscale = (
             1.3 if uiscale is bui.UIScale.SMALL
+            else 0.8
+        )
+        i_scale = (
+            1.5 if uiscale is bui.UIScale.SMALL
             else 0.8
         )
         # make our disc image..
         img = Image(
             bs.gettexture('coverDisc'),
-            position=(ofscrX, ypos),
-            scale=(300, 300),
+            position=(offscrX, ypos),
+            scale=(300 * i_scale, 300 * i_scale),
             attach=Image.Attach.BOTTOM_CENTER,
             color=(1, 1, 1, 0.5),
         ).autoretain()
@@ -299,7 +311,7 @@ def show_music_now_playing(music_type: bs.MusicType | str) -> None:
                     ('${MUSIC}', name)
                 ],
             ),
-            position=(ofscrX, ypos),
+            position=(offscrX, ypos),
             h_attach=Text.HAttach.CENTER,
             h_align=Text.HAlign.RIGHT,
             v_attach=Text.VAttach.BOTTOM,
@@ -308,31 +320,37 @@ def show_music_now_playing(music_type: bs.MusicType | str) -> None:
             shadow=0.5,
             flatness=0.5,
         ).autoretain()
+        txt.node.front = front
+        img.node.front = front
         activity.music_texts[slot] = txt
-        # animate text going on screen then back out
-        bs.animate_array(
-            txt.node,
-            "position",
-            2,
-            {
-                0.0: (ofscrX, ypos),
-                1.0: (xpos, ypos),  # visible position
-                6.0: (xpos, ypos),  # stay for ~6s
-                7.0: (ofscrX, ypos),  # slide back out
-            },
-        )
-        # repeat for image
-        bs.animate_array(
-            img.node,
-            "position",
-            2,
-            {
-                0.0: (ofscrX, ypos),
-                1.0: (xpos, ypos),  # visible position
-                6.0: (xpos, ypos),  # stay for ~6s
-                7.0: (ofscrX, ypos),  # slide back out
-            },
-        )
+        # animations
+        def posi(node):
+            bs.animate_array(
+                node,
+                "position",
+                2,
+                {
+                    0.0: (offscrX, ypos),
+                    1.0: (xpos, ypos),
+                    time - 1: (xpos, ypos),
+                    time: (offscrX, ypos),
+                }
+            )
+        def opac(node):
+            bs.animate(
+                node,
+                "opacity",
+                {
+                    0.0: 0.0,
+                    0.5: 1.0,
+                    time - 1: 1.0,
+                    time: 0.0
+                }
+            )
+        opac(txt.node)
+        opac(img.node)
+        posi(txt.node)
+        posi(img.node)
         # define stuff
         def add_one():
             # add 5 to rotation
@@ -345,8 +363,8 @@ def show_music_now_playing(music_type: bs.MusicType | str) -> None:
             activity.music_texts.pop(slot, None)
             img.rotatetimer = None
         # timers
-        img.rotatetimer = bs.Timer(0.01, add_one, repeat=True)
-        bs.timer(7.0, do_delete)
+        img.rotatetimer = bs.BaseTimer(0.01, add_one, repeat=True)
+        bs.timer(7, do_delete)
 
 def setmusic(musictype: MusicType | None, continuous: bool = False, show_playing: bool = True) -> None:
     """Set the app to play (or stop playing) a certain type of music.
@@ -389,17 +407,6 @@ def setmusic(musictype: MusicType | None, continuous: bool = False, show_playing
         activity._lyric_player.stop()
         activity._lyric_player = None
 
-    # Start lyrics if needed
-    if musictype == bs.MusicType.FEEL_THE_FURY:
-        lp = LyricPlayer(
-            mell.FEEL_THE_FURY,
-            loop=True,
-            song_length=213,
-            offset=-1.20,
-        )
-        activity._lyric_player = lp
-        lp.play()
-
     with activity.context:
         # Don't show game-set music if the player
         # is using the boombox
@@ -440,8 +447,10 @@ def test_musicnames():
     refrain from using this unless you wanna test 
     if the Now Playing is missing any musictypes
     """
-    list = [getattr(bs.MusicType, music_type) for music_type in 
-    dir(bs.MusicType) if not music_type.startswith('__')]
+    list = [
+        getattr(bs.MusicType, music_type) for music_type in 
+        dir(bs.MusicType) if not music_type.startswith('__')
+    ]
     for musictype in list:
         bs.setmusic(musictype)
 

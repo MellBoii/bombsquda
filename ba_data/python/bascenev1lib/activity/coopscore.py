@@ -39,6 +39,8 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
         self.inherits_vr_camera_offset = True
         self.inherits_music = True
         self.use_fixed_vr_overlay = True
+        self._win_music = settings['win_music_override']
+        self._lose_music = settings['lose_music_override']
 
         self._do_new_rating: bool = self.session.tournament_id is not None
 
@@ -202,9 +204,15 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
             fade_time=0.45, start_faded=False, show_logo=True, flash=not self._victory
         )
         if self._victory:
-            bs.setmusic(bs.MusicType.SCORES)
+            if self._win_music:
+                bs.setmusic(self._win_music)
+            else:
+                bs.setmusic(bs.MusicType.SCORES)
         else:
-            bs.setmusic(bs.MusicType.DEFEAT)
+            if self._lose_music:
+                bs.setmusic(self._lose_music)
+            else:
+                bs.setmusic(bs.MusicType.DEFEAT)
 
     def _ui_menu(self) -> None:
         bui.containerwidget(edit=self._root_ui, transition='out_left')

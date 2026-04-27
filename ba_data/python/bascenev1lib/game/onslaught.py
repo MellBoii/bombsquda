@@ -1332,7 +1332,7 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
     def do_end(self, outcome: str, delay: float = 0.5) -> None:
         """End the game with the specified outcome."""
         if outcome == 'defeat':
-            self.fade_to_red()
+            delay = self.fade_to_red()
         score: int | None
         if self._wavenum >= 2:
             score = self._score
