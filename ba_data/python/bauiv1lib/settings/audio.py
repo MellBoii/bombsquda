@@ -196,6 +196,7 @@ class AudioSettingsWindow(bui.MainWindow):
 
     @override
     def on_main_window_close(self) -> None:
+        bui.app.config.commit()
         self._save_state()
 
     def _do_soundtracks(self) -> None:
