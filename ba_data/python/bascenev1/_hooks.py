@@ -197,7 +197,10 @@ def filter_chat_message(msg: str, client_id: int) -> str | None:
             (plr for plr in activity.players if plr.getname() == name),
             None
         )
-        player_id = activity.players.index(player)
+        try:
+            player_id = activity.players.index(player)
+        except:
+            player_id = None
 
     if msg.startswith('/'):
         return handle_command(
