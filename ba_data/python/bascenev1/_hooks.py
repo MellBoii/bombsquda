@@ -88,7 +88,7 @@ def handle_command(msg: str, roster_entry: dict, client_id: int) -> None:
             bs.broadcastmessage('Ending activity (/end was sent)')
             if activity:
                 with activity.context:
-                    if hasattr(activity, 'end_game', None):
+                    if hasattr(activity, 'end_game'):
                         activity.end_game()
             return None
         players = activity.players
@@ -185,14 +185,19 @@ def filter_chat_message(msg: str, client_id: int) -> str | None:
     )
 
     if roster_entry is None:
-        return None
+        return msg
 
     display = roster_entry.get('display_string', 'Unknown Player')
     client_id = roster_entry.get('client_id')
     players = roster_entry.get('players')
     player_id = None
     if players:
-        player_id = players[0].get('id')
+        name = players[0].get('name')
+        player = next(
+            (plr for plr in activity.players if plr.getname() == name),
+            None
+        )
+        player_id = activity.players.index(player)
 
     if msg.startswith('/'):
         return handle_command(
