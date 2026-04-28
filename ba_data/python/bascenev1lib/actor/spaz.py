@@ -2821,6 +2821,9 @@ class Spaz(bs.Actor):
             scale=1.2,
         ).autoretain()
         def take_damage():
+            if not self.node:
+                self.mortal_dmg_timer = None
+                return
             self.hitpoints -= 5
             self.node.hurt = (
                 1.0 - float(self.hitpoints) / self.hitpoints_max
@@ -4104,11 +4107,14 @@ class Spaz(bs.Actor):
                             random.choice(death_sound).play()
                         else:
                             death_sound.play()
-                    if self.yeehaws and self.last_player_attacked_by:
-                        self.last_player_attacked_by.actor.increase_chain(self.yeehaws)
-                    if self.last_player_attacked_by:
-                        if self.last_player_attacked_by.actor.mortal_phase:
-                            self.last_player_attacked_by.actor._deactivate_mortal_damage()
+                            
+                    last_player = getattr(self, 'last_player_attacked_by', None)
+                    if last_player and last_player is not self.source_player:
+                        if self.yeehaws and last_player:
+                            last_player.actor.increase_chain(self.yeehaws)
+                        if last_player.actor.mortal_phase:
+                            last_player.actor._deactivate_mortal_damage()
+                            
                     if self.earthmeter:
                         self.play_meter_death_animation()
                     if self._has_star:
