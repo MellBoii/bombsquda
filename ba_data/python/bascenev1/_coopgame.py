@@ -380,8 +380,7 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
         assert isinstance(player1, ba.Player)
         
         bs.broadcastmessage(f"{p1name} lost the battle...", color=(1.0,0.1,0.1))
-        bs.getsound('loss').play(1.7)
-        bs.setmusic(None)
+        bs.setmusic(bs.MusicType.COOP_LOSS, show_playing=False)
 
         c_existing = self.globalsnode.tint
         cnode = _bascenev1.newnode(

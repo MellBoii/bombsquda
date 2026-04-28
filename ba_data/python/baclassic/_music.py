@@ -105,6 +105,7 @@ ASSET_SOUNDTRACK_ENTRIES: dict[MusicType, AssetSoundtrackEntry] = {
     MusicType.CREDITS: AssetSoundtrackEntry('music/creditsroll', loop=False),
     MusicType.BUSINESS: AssetSoundtrackEntry('music/porky'),
     MusicType.DEFEAT: AssetSoundtrackEntry('music/coopResultsMusic'),
+    MusicType.COOP_LOSS: AssetSoundtrackEntry('loss', volume=1.4),
     MusicType.GRAND_ROMP: AssetSoundtrackEntry('music/grandRompMusic', volume=1.5),
     MusicType.OPENING: AssetSoundtrackEntry('music/openingcreditsBTTDW', volume=1.0, loop=False),
     MusicType.RAGE: AssetSoundtrackEntry('music/ebhh_megalovania', volume=1.2),

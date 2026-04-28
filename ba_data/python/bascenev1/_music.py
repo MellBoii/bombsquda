@@ -104,6 +104,7 @@ class MusicType(Enum):
     SRB2_PINCH = 'SRB2_Pinch'
     MARCHING = 'Marching'
     DEFEAT = 'Defeat'
+    COOP_LOSS = 'Coop_Loss'
     CREDITS = 'Credits'
     THEFINALE = 'TheFinale'
     FINALDESTINATION = 'FinalDestination'
