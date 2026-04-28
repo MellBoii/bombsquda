@@ -121,6 +121,7 @@ class StoreSubsystem:
                 'characters.grace': {'character': 'John Grace'},
                 'characters.homer': {'character': 'Homer'},
                 'characters.ogspaz': {'character': 'OG Spaz'},
+                'characters.rem': {'character': 'Rem'},
                 'maps.lake_frigid': {'map_type': maps.LakeFrigid},
             }
         return babase.app.classic.store_items
@@ -215,6 +216,7 @@ class StoreSubsystem:
                     'characters.ogspaz',
                     'characters.orangecap',
                     'characters.homer',
+                    'characters.rem',
                 ]
             }
         ]
