@@ -1937,7 +1937,9 @@
   "translations": {
     "characterNames": {
 		"GummyBoiYT": "Snakeling",
-		"Spaz": "Spazling"
+		"Spaz": "Spazling",
+		"Ire": "Ire-ish",
+		"Dozer": "Doze-alike",
     },
     "coopLevelNames": {
       "${GAME} Training": "${GAME} ez",
