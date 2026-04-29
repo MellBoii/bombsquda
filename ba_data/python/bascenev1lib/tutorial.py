@@ -2086,7 +2086,7 @@ class TutorialActivity(bs.Activity[Player, Team]):
                         relative_to=0,
                         make_current=False,
                         color=(0, 0.8, 1),
-                        highlight=(0.2, 0.2, 0.2),
+                        highlight=(0.5, 0.5, 0.5),
                         name=bs.Lstr(resource=f'{self._r}.randomName4Text'),
                         character='GummyBoiYT',
                     ),
@@ -2135,6 +2135,14 @@ class TutorialActivity(bs.Activity[Player, Team]):
                         bs.Lstr(resource=f'{self._r}.phrase17Text')
                     ),  # not a very good throw
                     DelayOld(3000),
+                    SpawnSpaz(
+                        0,
+                        (1.5, 4.3, -4.0),
+                        make_current=True,
+                        flash=False,
+                        angle=0,
+                    ),
+                    DelayOld(500),
                     Text(
                         bs.Lstr(resource=f'{self._r}.phrase18Text')
                     ),  # moving helps you get distance
