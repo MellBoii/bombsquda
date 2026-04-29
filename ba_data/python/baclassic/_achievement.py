@@ -130,7 +130,7 @@ class AchievementSubsystem:
             ),
             Achievement(
                 'DozireDeath',
-                'achievementDozire',
+                'achievementEntityLookalike',
                 (1, 1, 1),
                 '',
                 award=5,
