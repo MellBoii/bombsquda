@@ -785,9 +785,9 @@ def register_appearances() -> None:
     t = Appearance('Rem')
     t.color_texture = 'remColor'
     t.color_mask_texture = 'remColorMask'
-    t.earthportrait = 'earthbound/budbound'
-    t.EBlose = 'earthbound/budbound_lose'
-    t.EBwin = 'earthbound/budbound_win'
+    t.earthportrait = 'earthbound/rembound'
+    t.EBlose = 'earthbound/rembound_lose'
+    t.EBwin = 'earthbound/rembound_win'
     t.icon_texture = 'remIcon'
     t.icon_mask_texture = 'remIconCM'
     t.head_mesh = 'remHead'
