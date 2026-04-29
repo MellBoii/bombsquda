@@ -311,7 +311,7 @@ class MultiTeamSession(Session):
         from bascenev1._messages import CelebrateMessage
         from bascenev1lib.actor.background import Background
         
-        if bs.get_foreground_host_activity().shouldntannounce == True:
+        if getattr(self.getactivity(), 'shouldntannounce', False):
             return
         bascenev1.setmusic(None)
         if announce_winning_team:
@@ -345,9 +345,8 @@ class MultiTeamSession(Session):
                 bs.getsound('bellDraw').play()
                 bs.broadcastmessage('It\'s a draw...')
             def do_bg():
-                from bascenev1lib.actor.background import Background
                 Background(fade_time=1.0).autoretain()
-            ba.apptimer(2.5, do_bg)
+            bs.basetimer(2.5, do_bg)
 
 
 class ShuffleList:
