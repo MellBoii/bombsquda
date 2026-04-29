@@ -24,6 +24,7 @@ class Ire(bs.Actor):
         self.name_text = None
         self.check_timer = None
         self._slot = 0
+        self.times_avoided = 0
 
     def _get_free_space(self):
         # ok... get a free space based on how many of us
@@ -37,8 +38,7 @@ class Ire(bs.Actor):
             return slot
         entities = self._activity().entities
         self._slot = _get_free_slot(entities)
-        # we can also get the player's color here
-        if len(entities) > 0:
+        if len(self.getactivity().players) > 0:
             self.color = self.actor().node.color
             self.high = self.actor().node.highlight
         else:
@@ -159,8 +159,14 @@ class Ire(bs.Actor):
         return
     
     def _animate_out(self):
-        self.recreate_head('ifrown', frames=3, delay=0.05, repeat=True)
-        bs.timer(0.3, self._delete)
+        self.times_avoided += 1
+        # if we got avoided too many times, start doing another expression
+        if self.times_avoided >= 6:
+            expression = 'iangry'
+        else:
+            expression = 'ifrown'
+        self.recreate_head(expression, frames=3, delay=0.05, repeat=True)
+        bs.timer(0.5, self._delete)
     
     def _death(self):
         bs.getsound('ideath').play(1.2)
@@ -179,6 +185,7 @@ class Ire(bs.Actor):
             )
         )
         def die():
+            # dont die if the player is parrying
             if self.actor().parrying:
                 self.actor().sugarcoat_overlay(sound='bellMed', image='sugarcoatparry')
                 self.actor().mpa()
