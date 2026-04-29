@@ -525,7 +525,7 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
             # Respawn them shortly.
             from bascenev1lib.actor.respawnicon import RespawnIcon
             assert self.initialplayerinfos is not None
-            respawn_time = 35.0 + len(self.initialplayerinfos) * 1.5
+            respawn_time = 7.0 * len(self.initialplayerinfos)
             player.respawn_timer = bs.Timer(
                 respawn_time, bs.Call(self.spawn_player_if_exists, player)
             )
