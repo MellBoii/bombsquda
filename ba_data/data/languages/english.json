@@ -1220,12 +1220,14 @@
     "boomboxText": "boombox",
     "justPlayerText": "only ${NAME}",
     "leaveGameText": "leave session",
-    "leavePartyConfirmText": "are you sure about this \ncuh you can win",
+    "leavePartyConfirmText": "get outta this party?",
     "leavePartyText": "ragequit buttn",
     "quitText": "get outt",
     "resumeText": "continue",
     "settingsText": "Settings",
 	"rpcText": "at the Main Menu screen",
+	"pauseGame": "pause game",
+	"unpauseGame": "unpause game",
 	"DiscordText": "Discord Server"
   },
   "playlistBrowser": {

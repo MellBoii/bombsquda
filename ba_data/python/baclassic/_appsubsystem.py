@@ -270,8 +270,7 @@ class ClassicAppSubsystem(babase.AppSubsystem):
                     globs.paused = True
                     self.savedmusic = globs.music
                     bascenev1.getsound('pause').play()
-                    import babase
-                    if babase.app.config.get("squda_pausemusic") == True:
+                    if bascenev1.app.config.get("squda_pausemusic") == True:
                         bascenev1.setmusic(None)
                         bascenev1.setmusic(bascenev1.MusicType.PAUSE)
 
@@ -844,9 +843,11 @@ class ClassicAppSubsystem(babase.AppSubsystem):
             # that lead us here.
             if babase.app.env.gui:
                 bauiv1.getsound('swish').play()
-
-            # Pause gameplay.
-            self.pause()
+            
+            # Only pause if we can't get a game roster 
+            # (basically connected players, likely in singleplayer)
+            if not bascenev1.get_game_roster():
+                self.pause()
 
             babase.app.ui_v1.set_main_window(
                 InGameMenuWindow(), is_top_level=True, suppress_warning=True

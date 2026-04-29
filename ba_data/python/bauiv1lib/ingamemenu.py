@@ -43,20 +43,42 @@ class InGameMenuWindow(bui.MainWindow):
         self._button_height = 45.0
         self._width = 100.0
         self._height = 100.0
+        self._have_pause_btn = bs.get_foreground_host_session() is not None
         self._refresh()
-        self.boomboxbtn = bui.buttonwidget(
+        extra_buttons_x = -470
+        extra_buttons_y = -140
+        bui.buttonwidget(
             parent=self._root_widget,
-            position=(-510, -220),
-            button_type='square',
-            size=(180, 80),
-            label='Boombox',
-            autoselect=True,
+            position=(extra_buttons_x, extra_buttons_y),
+            size=(self._button_width, self._button_height),
+            label=bui.Lstr(resource='mainMenu.boomboxText'),
+            autoselect=self._use_autoselect,
             on_activate_call=self.boombox_press
+        )
+        bui.buttonwidget(
+            parent=self._root_widget,
+            position=(extra_buttons_x, extra_buttons_y - 45),
+            size=(self._button_width, self._button_height),
+            label=bui.Lstr(resource='playerProfilesWindow.titleText'),
+            autoselect=self._use_autoselect,
+            on_activate_call=self.open_profiles_window,
         )
         
     def boombox_press(self) -> None:
         from bauiv1lib.radio import RadioWindow
         RadioWindow()
+    
+    def open_profiles_window(self) -> None:
+        # pylint: disable=cyclic-import
+        from bauiv1lib.profile.browser import ProfileBrowserWindow
+
+        # no-op if our underlying widget is dead or on its way out.
+        if not self._root_widget or self._root_widget.transitioning_out:
+            return
+
+        self.main_window_replace(
+            ProfileBrowserWindow()
+        )
         
     @override
     def get_main_window_state(self) -> bui.MainWindowState:
@@ -138,8 +160,26 @@ class InGameMenuWindow(bui.MainWindow):
                 autoselect=self._use_autoselect,
                 label=bui.Lstr(resource=f'{self._r}.leavePartyText'),
                 on_activate_call=self._confirm_leave_party,
-            )            
-
+            )
+            
+        if self._have_pause_btn:
+            h, v, scale = positions[self._p_index]
+            activity = bs.get_foreground_host_activity()
+            paused = activity.globalsnode.paused == True
+            if paused:
+                label = bui.Lstr(resource=f'{self._r}.unpauseGame')
+            else:
+                label = bui.Lstr(resource=f'{self._r}.pauseGame')
+            self.pause_button = bui.buttonwidget(
+                parent=self._root_widget,
+                position=(h - self._button_width * 0.5 * scale, v),
+                scale=scale,
+                size=(self._button_width, self._button_height),
+                autoselect=self._use_autoselect,
+                label=label,
+                on_activate_call=self._pause_or_resume_game,
+            )
+            
         # Add speed-up/slow-down buttons for replays. Ideally this
         # should be part of a fading-out playback bar like most media
         # players but this works for now.
@@ -334,6 +374,8 @@ class InGameMenuWindow(bui.MainWindow):
 
         self._width = 250.0
         self._height = 250.0 if self._input_player else 180.0
+        if self._have_pause_btn:
+            self._height += 50
         if arcade_or_demo and self._input_player:
             self._height -= 40
         # if not self._have_settings_button:
@@ -605,3 +647,19 @@ class InGameMenuWindow(bui.MainWindow):
 
     # def __del__(self) -> None:
     #     self._resume()
+
+    def _pause_or_resume_game(self):
+        activity = bs.get_foreground_host_activity()
+        paused = activity.globalsnode.paused == True
+        if paused:
+            bui.app.classic.resume()
+            bui.buttonwidget(
+                edit=self.pause_button, 
+                label=bui.Lstr(resource=f'{self._r}.pauseGame')
+            )
+        else:
+            bui.app.classic.pause()
+            bui.buttonwidget(
+                edit=self.pause_button, 
+                label=bui.Lstr(resource=f'{self._r}.unpauseGame')
+            )
