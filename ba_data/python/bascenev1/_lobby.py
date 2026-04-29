@@ -230,24 +230,7 @@ class Chooser:
             'THERE': ['IS', 'NO', 'SKINS']
         }
         self._ensure_player_settings()
-        # Sound list is a list of strings. 
-        # Actual sounds are in sound_dict.
-        self._sound_list = [
-            'reflector',
-            'head explode',
-            'outta here',
-            'foxy',
-            'lobotomy',
-            'Equip',
-            'ultra instinct',
-            'keemstar',
-            'swish',
-            'WITHER AND DIE',
-            'reprieve',
-            'spongebob',
-        ]
-        # Sound dict. Gives a sound to
-        # a string.
+        # Sounds defined here
         self._sound_dict = {
             'reflector': bs.getsound('attempt_parry'),
             'head explode': bs.getsound('bananasnipe'),
@@ -945,7 +928,7 @@ class Chooser:
     def _handle_sound_slider(self, direction: int) -> None:
         self._sound_index = (
             self._sound_index + direction
-        ) % len(self._sound_list)
+        ) % len( list( self._sound_dict.keys() ) )
         self.movesound.play()
         self._update_text()
     
@@ -961,7 +944,7 @@ class Chooser:
     
     def _handle_sound_play(self) -> None:
         try:
-            current = self._sound_list[self._sound_index]
+            current = list( self._sound_dict.keys() )[self._sound_index]
             sound = self._sound_dict[current]
             sound.play()
         except:
@@ -1117,7 +1100,8 @@ class Chooser:
 
                     sub = f'{downa} {option} {upa}: {lefta} {str(current).upper()} {righta}'
                 elif self._submenu_mode == 'sound':
-                    sub = f'{lefta} {self._sound_list[self._sound_index]} {righta}'
+                    current = list( self._sound_dict.keys() )[self._sound_index]
+                    sub = f'{lefta} {current} {righta}'
                 elif self._submenu_mode == 'skin':
                     name = self._character_names[self._character_index]
                     sub = f'{lefta} {self.skins[name][self._skin_index]} {righta}'
