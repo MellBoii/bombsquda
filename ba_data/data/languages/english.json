@@ -92,9 +92,9 @@
       "name": "Not Worth Succumbing"
     },
 	"DozireDeath": {
-      "descriptionFull": "Die to Ire (Entity) as Ire (or Dozer as Dozer)",
-      "descriptionFullComplete": "Died to Ire (Entity) as Ire (or Dozer as Dozer). How's that work??",
-      "name": "Quite Ironic"
+      "descriptionFull": "Die to a entity as their look-alike",
+      "descriptionFullComplete": "Died to a entity as their look-alike",
+      "name": "Who's Who?"
     },
 	"Mustachioed": {
       "descriptionFull": "Stomp a opponent by jumping on their head (UNOBTAINABLE FOR NOW)",
