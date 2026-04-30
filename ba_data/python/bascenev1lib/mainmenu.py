@@ -93,6 +93,7 @@ class MainMenuActivity(bs.GameActivity[bs.Player, bs.Team]):
         self.redditor = random.random() < 0.18
         self.funny_logo = random.random() < 0.20 and not self.redditor
         self.allow_emeralds = False
+        self.bots_enabled = True
         self._bot_spawn_types = {
             BomberBot: SpawnInfo(1.00, 0.00, 0.000),
             BomberBotPro: SpawnInfo(0.00, 0.05, 0.001),
@@ -148,6 +149,23 @@ class MainMenuActivity(bs.GameActivity[bs.Player, bs.Team]):
             bs.animate(nodeactor.node, 'opacity', {0: c_op, 0.7: 1})
         bs.animate(self.modpack_name.node, 'opacity', {0: c_op, 0.7: 1})
         bs.animate(self.splashtext.node, 'opacity', {0: c_op, 0.7: 1})
+    
+    def disable_bots(self):
+        with self.context:
+            self.bots_enabled = False
+            self._bot_update_timer = None
+            self._bots.clear()
+    
+    def enable_bots(self):
+        with self.context:
+            self.bots_enabled = True
+            time = 2.3
+            if self.aprilfools:
+                time = 0.8
+            self._update_bots()
+            self._bot_update_timer = bs.Timer(
+                time, self._update_bots, repeat=True
+            )
     
     @override
     def on_player_leave(self, player: bs.Player):
@@ -1250,3 +1268,19 @@ class MainMenuSession(bs.Session):
 
         # Any ending activity leads us into the main menu one.
         self.setactivity(bs.newactivity(MainMenuActivity))
+    
+    def get_custom_menu_entries(self) -> list[dict[str, Any]]:
+        if self.getactivity().bots_enabled:
+            return [
+                {
+                    'label': ba.Lstr(resource='mainMenu.disableBots'),
+                    'call': bs.WeakCall(self.getactivity().disable_bots),
+                }
+            ]
+        else:
+            return [
+                {
+                    'label': ba.Lstr(resource='mainMenu.enableBots'),
+                    'call': bs.WeakCall(self.getactivity().enable_bots),
+                }
+            ]
