@@ -128,6 +128,7 @@ class LocaleSubsystem(AppSubsystem):
         if (
             rlocale is cls.ENGLISH
             or rlocale is cls.PORTUGUESE_BRAZIL
+            or rlocale is cls.SPANISH
         ):
             return True
 
