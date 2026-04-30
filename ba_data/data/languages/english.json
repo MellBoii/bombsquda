@@ -1232,6 +1232,23 @@
 	"enableBots": "enable bots",
 	"DiscordText": "Discord Server"
   },
+  "discordRPC": {
+	"menuText": "l👀king around the menu..",
+	"coopMultiplayerText": "with ${LIST}",
+	"coopSingleplayerText": "playing as ${CHAR} (${NAME})",
+	"activityPlaying": "playin ${ACTIVITY}",
+	"coopScoreRankText": "SCORE: ${SCORE} RANK: ${RANK}",
+	"noOne": "No one",
+	"noPlayers": "no players?",
+	"charSelectText": "selecting characters",
+	"lobbyText": "the lobby",
+	"partyNameFallback": "a Party",
+	"playingOnline": "playing online in ${PARTY}",
+	"playingOnlineSimple": "playing online",
+	"watchingReplay": "watching a replay",
+	"watchingCredits": "watching the credits",
+	"replayText": "replay"
+  },
   "playlistBrowser": {
 	"rpcText": "browsing playlists"
   },

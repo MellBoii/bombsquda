@@ -71,7 +71,7 @@ class RichPresence:
         def __init__(self):           
             self.presence = Presence(portal_id)
             self.mode = 'menu'
-            self._r = "rpc"
+            self._r = 'discordRPC'
             self.starting_time = int(time.time())
             self.map = None
             self.last_mode = None
@@ -111,7 +111,7 @@ class RichPresence:
                     self.presence.set(
                     {  
                         
-                        "details": 'l👀king around the menu..',
+                        "details": bs.Lstr(resource=f'{self._r}.menuText').evaluate(),
                         "assets": {
                             "large_image": "logo",
                             "large_text": f"BombSquda v{melly.version}\nlinebreak",
@@ -126,10 +126,10 @@ class RichPresence:
                     self.presence.set(
                     {  
                         
-                        "details": 'afk in the menu..',
+                        "details": bs.Lstr(resource=f'{self._r}.menuAFKText').evaluate(),
                         "assets": {
                             "large_image": "logo",
-                            "large_text": f"BombSquda v{melly.version}\nlinebreak",
+                            "large_text": f"BombSquda v{melly.version}",
                         },
                         "timestamps": {"start": self.starting_time},
                     }
@@ -151,30 +151,53 @@ class RichPresence:
                         for player in players:
                             playerformatted.append(f'{player.getname()} ({player.character})')
                         if not playerformatted:
-                            playerformatted = ['no one']
-                        state = f'with {", ".join(playerformatted)}'
+                            playerformatted = [bs.Lstr(resource=f'{self._r}.noOne').evaluate()]
+                        list = ", ".join(playerformatted)
+                        state = bs.Lstr(
+                            resource=f'{self._r}.coopMultiplayerText',
+                            subs=[
+                                ('${LIST}', list),
+                            ]
+                        ).evaluate()
                     else:
                         party = None
                         try:
                             name = players[0].getname()
                         except IndexError:
-                            name = 'No one'
+                            name = bs.Lstr(resource=f'{self._r}.noOne').evaluate()
                         try:
                             character = players[0].character
                         except IndexError:
-                            character = 'no players?'
-                        state = f'playing as {name} ({character})'
+                            character = bs.Lstr(resource=f'{self._r}.noPlayers').evaluate()
+                        state = bs.Lstr(
+                            resource=f'{self._r}.coopSingleplayerText',
+                            subs=[
+                                ('${NAME}', name),
+                                ('${CHAR}', character),
+                            ]
+                        ).evaluate()
                         
                     small_text2 = f'({session.campaign_level_name})' if isinstance(session, bs.CoopSession) else ''
                     if not sesssion:
                         sesssion = ''
+                    pltext = bs.Lstr(
+                        resource=f'{self._r}.activityPlaying',
+                        subs=[
+                            ('${ACTIVITY}', activity.name),
+                        ]
+                    ).evaluate()
+                    pltextcoop = bs.Lstr(
+                        resource=f'{self._r}.coopScoreRankText',
+                        subs=[
+                            ('${SCORE}', activity._score),
+                            ('${RANK}', activity.ultrameter._rank),
+                        ]
+                    ).evaluate()
                     self.presence.set(
                         {  
-                            "details": 
-                            'playin ' + activity.name
-                            if not isinstance(session, bs.CoopSession)
-                            else(
-                                f"SCORE: {activity._score} RANK: {bs.get_foreground_host_activity().ultrameter._rank}"
+                            "details": (
+                                pltext if not isinstance(session, bs.CoopSession)
+                                else pltextcoop
                             ),
                             "state": state,
                             "assets": {
@@ -191,10 +214,10 @@ class RichPresence:
                 elif self.mode == 'lobby':
                     self.presence.set(
                         {  
-                            "details": 'selecting characters',
+                            "details": bs.Lstr(resource=f'{self._r}.charSelectText').evaluate(),
                             "state": 'Party',
                             "assets": {
-                                "large_text": 'The Lobby',
+                                "large_text": bs.Lstr(resource=f'{self._r}.lobbyText').evaluate(),
                                 "small_image": sesssion_image,
                                 "small_text": sesssion,
                             },
@@ -215,18 +238,25 @@ class RichPresence:
                     try:
                         name = bs.get_connection_to_host_info_2().name
                     except:
-                        name = 'a Party'
+                        name = bs.Lstr(resource=f'{self._r}.partyNameFallback').evaluate()
                     
                     if not name:
-                        name = 'a Party'
+                        name = bs.Lstr(resource=f'{self._r}.partyNameFallback').evaluate()
+                    
+                    lstr = bs.Lstr(
+                        resource=f'{self._r}.playingOnline',
+                        subs=[
+                            ('${PARTY}', name),
+                        ]
+                    )
 
                     self.presence.set(
                         {  
-                            "details": f'playin online in {name}',
+                            "details": lstr.evaluate(),
                             "state": 'Party',
                             "assets": {
                                 "large_image": 'online',
-                                "large_text": 'Playing Online',
+                                "large_text": bs.Lstr(resource=f'{self._r}.playingOnlineSimple').evaluate(),
                             },
                             "timestamps": {"start": self.starting_time},
                             "party": {
@@ -240,11 +270,11 @@ class RichPresence:
                     self.presence.set(
                         {  
                         "details": 
-                            'watching a replay',
+                            bs.Lstr(resource=f'{self._r}.watchingReplay').evaluate(),
                         "state": 'Party',
                         "assets": {
                             "large_image": 'replay',
-                            "large_text": 'replay',
+                            "large_text": bs.Lstr(resource=f'{self._r}.replayText'),
                         },
                         "timestamps": {"start": self.starting_time},
                         "party": {
@@ -259,7 +289,7 @@ class RichPresence:
                     self.presence.set(
                         {  
                         "details": 
-                            'watching the credits',
+                            bs.Lstr(resource=f'{self._r}.watchingCredits'),
                         "assets": {
                             "small_image": 'replay'
                         },
