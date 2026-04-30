@@ -185,8 +185,8 @@ class RichPresence:
                         pltext = bs.Lstr(
                             resource=f'{self._r}.coopScoreRankText',
                             subs=[
-                                ('${SCORE}', activity._score),
-                                ('${RANK}', activity.ultrameter._rank),
+                                ('${SCORE}', str(activity._score)),
+                                ('${RANK}', str(activity.ultrameter._rank)),
                             ]
                         ).evaluate()
                     else:
@@ -199,7 +199,7 @@ class RichPresence:
                         
                     self.presence.set(
                         {  
-                            "details": pltext
+                            "details": pltext,
                             "state": state,
                             "assets": {
                                 "large_image": map_image,
