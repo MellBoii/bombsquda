@@ -180,25 +180,26 @@ class RichPresence:
                     small_text2 = f'({session.campaign_level_name})' if isinstance(session, bs.CoopSession) else ''
                     if not sesssion:
                         sesssion = ''
-                    pltext = bs.Lstr(
-                        resource=f'{self._r}.activityPlaying',
-                        subs=[
-                            ('${ACTIVITY}', activity.name),
-                        ]
-                    ).evaluate()
-                    pltextcoop = bs.Lstr(
-                        resource=f'{self._r}.coopScoreRankText',
-                        subs=[
-                            ('${SCORE}', activity._score),
-                            ('${RANK}', activity.ultrameter._rank),
-                        ]
-                    ).evaluate()
+                    
+                    if isinstance(session, bs.CoopSession):
+                        pltext = bs.Lstr(
+                            resource=f'{self._r}.coopScoreRankText',
+                            subs=[
+                                ('${SCORE}', activity._score),
+                                ('${RANK}', activity.ultrameter._rank),
+                            ]
+                        ).evaluate()
+                    else:
+                        pltext = bs.Lstr(
+                            resource=f'{self._r}.activityPlaying',
+                            subs=[
+                                ('${ACTIVITY}', activity.name),
+                            ]
+                        ).evaluate()
+                        
                     self.presence.set(
                         {  
-                            "details": (
-                                pltext if not isinstance(session, bs.CoopSession)
-                                else pltextcoop
-                            ),
+                            "details": pltext
                             "state": state,
                             "assets": {
                                 "large_image": map_image,
