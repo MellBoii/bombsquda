@@ -203,9 +203,11 @@ def show_post_purchase_message() -> None:
 
 
 def language_test_toggle() -> None:
-    _babase.app.lang.setlanguage(
-        'PortugueseBrazil' if _babase.app.lang.language == 'English' else 'English'
-    )
+    current = _babase.app.lang.language
+    tlist = ['English', 'PortugueseBrazil', 'Spanish']
+    index = tlist.index(current) - 1
+    new = tlist[index]
+    _babase.app.lang.setlanguage(new)
 
 
 def award_in_control_achievement() -> None:

@@ -30,6 +30,7 @@ class Locale(Enum):
 
     ENGLISH = 'eng'
     PORTUGUESE_BRAZIL = 'prtg_brz'
+    SPANISH = 'sp'
 
     # Note: We use if-statement chains here so we can use assert_never()
     # to ensure we cover all existing values. But we cache lookups so
@@ -52,6 +53,8 @@ class Locale(Enum):
             return 'English'
         if self is cls.PORTUGUESE_BRAZIL:
             return 'PortugueseBrazil'
+        if self is cls.SPANISH:
+            return 'Spanish'
 
         # Make sure we've covered all cases.
         assert_never(self)
@@ -89,6 +92,8 @@ class Locale(Enum):
             return 'English'
         if self is cls.PORTUGUESE_BRAZIL:
             return 'Portuguese (Brazil)'
+        if self is cls.PORTUGUESE_BRAZIL:
+            return 'Spanish'
         # Make sure we've covered all cases.
         assert_never(self)
 
@@ -103,8 +108,10 @@ class Locale(Enum):
 
         if self is cls.ENGLISH:
             return R.ENGLISH
-        if self is cls.PORTUGUESE_BRAZIL or self is cls.PORTUGUESE:
+        if self is cls.PORTUGUESE_BRAZIL:
             return R.PORTUGUESE_BRAZIL
+        if self is cls.SPANISH:
+            return R.SPANISH
 
         # Make sure we're covering all cases.
         assert_never(self)
@@ -122,6 +129,7 @@ class LocaleResolved(Enum):
 
     ENGLISH = 'eng'
     PORTUGUESE_BRAZIL = 'prtg_brz'
+    SPANISH = 'spanish'
 
     # Note: We use if-statement chains here so we can use assert_never()
     # to ensure we cover all existing values. But we cache lookups so
@@ -148,6 +156,8 @@ class LocaleResolved(Enum):
             return Locale.ENGLISH
         if self is cls.PORTUGUESE_BRAZIL:
             return Locale.PORTUGUESE_BRAZIL
+        if self is cls.SPANISH:
+            return Locale.SPANISH
 
         # Make sure we're covering all cases.
         assert_never(self)
