@@ -77,7 +77,11 @@ class UKHook(bs.Actor):
         bs.animate(self.node, 'mesh_scale', {0: 0, 0.2: self.scale})
         
     def _update_hook(self):
-        if not self._hooked_node or not self.node:
+        if (
+            not self._hooked_node 
+            or not self.node 
+            or not self.owner.node
+        ):
             if self.soundloop:
                 self.soundloop.volume = 0
             if self.node:

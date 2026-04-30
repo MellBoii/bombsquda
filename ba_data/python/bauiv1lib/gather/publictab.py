@@ -1173,34 +1173,27 @@ class PublicGatherTab(GatherTab):
                 p[1].index,
             )
         )
+        
+        filterval = self._filter_value.lower().strip()
 
-        # If signed out or errored, show no parties.
-        if (
-            plus.get_v1_account_state() != 'signed_in'
-            or not self._have_valid_server_list
-        ):
-            self._parties_displayed = {}
-        else:
-            filterval = self._filter_value.lower().strip()
+        def matches(party_name: str) -> bool:
+            name = party_name.lower()
 
-            def matches(party_name: str) -> bool:
-                name = party_name.lower()
+            # Always require tag
+            if TAG.lower() not in name:
+                return False
 
-                # Always require tag
-                if TAG.lower() not in name:
-                    return False
+            # If user typed something, apply it too
+            if filterval:
+                return filterval in name
 
-                # If user typed something, apply it too
-                if filterval:
-                    return filterval in name
+            return True
 
-                return True
-
-            self._parties_displayed = {
-                k: v
-                for k, v in self._parties_sorted
-                if matches(v.name)
-            }
+        self._parties_displayed = {
+            k: v
+            for k, v in self._parties_sorted
+            if matches(v.name)
+        }
         # Any time our selection disappears from the displayed list, go
         # back to auto-selecting the top entry.
         if (

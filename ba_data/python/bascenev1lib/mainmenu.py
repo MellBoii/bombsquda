@@ -374,7 +374,7 @@ class MainMenuActivity(bs.GameActivity[bs.Player, bs.Team]):
         ImageJumper.jump_image(self.modpack_name.node)
         ImageJumper.jump_image(self.splashtext.node)
         bs.setmusic(None)
-        bs.timer(0.01, lambda: bs.camerashake(3), repeat=True)
+        bs.timer(0.01, lambda: bs.camerashake(2), repeat=True)
         rsfx = [
             'explosion01',
             'explosion02',

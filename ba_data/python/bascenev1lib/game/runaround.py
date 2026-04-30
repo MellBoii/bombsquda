@@ -917,6 +917,7 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
                 base_delay += 0.85
                 self._winsound.play()
                 bs.getsound('music/coop_victory').play()
+                bs.setmusic(None)
                 bs.cameraflash()
                 self._game_over = True
                 bs.timer(base_delay, bs.Call(self.do_end, 'victory'))
