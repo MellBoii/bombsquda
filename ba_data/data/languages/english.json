@@ -1228,6 +1228,8 @@
 	"rpcText": "at the Main Menu screen",
 	"pauseGame": "pause game",
 	"unpauseGame": "unpause game",
+	"disableBots": "disable bots",
+	"enableBots": "enable bots",
 	"DiscordText": "Discord Server"
   },
   "playlistBrowser": {
@@ -1358,7 +1360,9 @@
     "twoToEightPlayersText": "2-8 players",
     "whichCampaign": "which campaing bro",
     "regularCampaign": "default campaign",
-    "customCampaign": "custom campaign (wip)"
+    "customCampaign": "custom campaign (wip)",
+	"joinGameHelpText": "remember to press a button to join the game :3\nyou can always back out via the pause menu",
+	"goIngame": "go to the main menu game"
   },
   "playerCountAbbreviatedText": "${COUNT}p",
   "playerDelayedJoinText": "${PLAYER} got here late and will join laterer",
@@ -1721,7 +1725,6 @@
   "notGatheredText": "Nice wifi you got there!",
   "titleWindow": {
 	"quitFuckinGame": "quit game",
-	"goIngame": "enter minigame",
 	"pressStart": "PRESS A KEY/BUTTON",
 	"tapStart": "TAP THE SCREEN",
 	"rpcText": "at the Titlescreen"

@@ -211,6 +211,18 @@ class PlayWindow(bui.MainWindow):
                 button_type='square',
                 on_activate_call=self._coop,
             )
+            bui.buttonwidget(
+                parent=self._root_widget,
+                position=(
+                    width * 0.3, 
+                    v - 80
+                ),
+                size=(500, 80),
+                scale=0.8,
+                text_scale=1.2,
+                label=bui.Lstr(resource=f'{self._r}.goIngame'),
+                on_activate_call=self.close_out,
+            )
 
             if uiscale is bui.UIScale.SMALL:
                 bui.widget(
@@ -592,6 +604,10 @@ class PlayWindow(bui.MainWindow):
                 origin_widget=self._coop_button,
             )
         )
+    
+    def close_out(self):
+        bui.screenmessage(bui.Lstr(resource=f'{self._r}.joinGameHelpText'))
+        bui.containerwidget(edit=self._root_widget, transition='out_scale')
 
     def _team_tourney(self) -> None:
         # pylint: disable=cyclic-import
