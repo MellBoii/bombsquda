@@ -257,7 +257,36 @@ def register_appearances() -> None:
     t.victory_sounds = ['voicelines/snakey/win']
     t.style = 'bones'
     t.default_color = (1, 1, 0)
-    t.default_highlight = (0, 0.1, 1)
+    t.default_highlight = (0, 0.3, 1)
+    
+    # stop holding stuff twinny ###################################
+    t = Appearance('Kookoo')
+    t.color_texture = 'kookuColor'
+    t.color_mask_texture = 'kookuColorMask'
+    t.icon_texture = 'kookuIcon'
+    t.icon_mask_texture = 'kookuIconCM'
+    t.earthportrait = 'earthbound/dozerbound'
+    t.EBlose = 'earthbound/dozerbound_lose'
+    t.EBwin = 'earthbound/dozerbound_win'
+    t.head_mesh = 'kookuHead'
+    t.torso_mesh = 'kookuTorso'
+    t.pelvis_mesh = 'none'
+    t.upper_arm_mesh = 'kookuUpperArm'
+    t.forearm_mesh = 'kookuForeArm'
+    t.hand_mesh = 'kookuHand'
+    t.upper_leg_mesh = 'kookuUpperLeg'
+    t.lower_leg_mesh = 'kookuLowerLeg'
+    t.toes_mesh = 'none'
+    noob_sounds = ['voicelines/noob/sound' + str(i + 1) + '' for i in range(6)]
+    t.jump_sounds = noob_sounds
+    t.attack_sounds = noob_sounds
+    t.impact_sounds = ['voicelines/noob/hurt' + str(i + 1) + '' for i in range(7)]
+    t.death_sounds = ['voicelines/noob/death']
+    t.pickup_sounds = noob_sounds
+    t.fall_sounds = ['voicelines/noob/fall']
+    t.style = 'bones'
+    t.default_color = (0.1, 0.1, 1)
+    t.default_highlight = (0.2, 0.2, 1)
 
     # that fucking ninja that i hate ##########################################
     t = Appearance('GummyBoiYT')
