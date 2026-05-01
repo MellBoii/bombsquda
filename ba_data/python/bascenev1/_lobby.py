@@ -217,7 +217,7 @@ class Chooser:
         self._menu_index = 0
         self._settings_index = 0
         self._sound_index = 0
-        self._skin_index = 0
+        self._skin_index = -1
         self._submenu_mode: str | None = None  # None, 'character', 'settings'
         self.settings = ['parry button', 'bomb skin', 'scream sound']
         self.settings_options = {
@@ -227,8 +227,11 @@ class Chooser:
         }
         self.menu_options = ['ready', 'settings', 'character', 'sound', 'skin']
         self.skins = {
-            'THERE': ['IS', 'NO', 'SKINS']
+            'OG Spaz': ['OGSpazMetal']
         }
+        # For every character, add a 'no skin' option
+        for key in self.skins.keys():
+            self.skins[key].append(None)
         self._ensure_player_settings()
         # Sounds defined here
         self._sound_dict = {
@@ -1085,26 +1088,40 @@ class Chooser:
         else:
             name_text = babase.Lstr(value=self._getname(full=True))
             self._text_node.text = name_text
+            # AARRROWWSSSSS
             lefta = babase.charstr(babase.SpecialChar.LEFT_ARROW)
             righta = babase.charstr(babase.SpecialChar.RIGHT_ARROW)
             upa = babase.charstr(babase.SpecialChar.UP_ARROW)
             downa = babase.charstr(babase.SpecialChar.DOWN_ARROW)
             # most hardcoded bullshit i've made
             if self._menu_active:
+                # selecting a character
                 if self._submenu_mode == 'character':
-                    sub = f'{lefta} {self._character_names[self._character_index]} {righta}'
+                    name = self._character_names[self._character_index]
+                    sub = f'{lefta} {name} {righta}'
+                # seleccting settings
                 elif self._submenu_mode == 'settings':
                     settings = self._ensure_player_settings()
                     option = self.settings[self._settings_index]
                     current = settings.get(option, self.settings_options[option][0])
 
                     sub = f'{downa} {option} {upa}: {lefta} {str(current).upper()} {righta}'
+                # selecting sounds
                 elif self._submenu_mode == 'sound':
                     current = list( self._sound_dict.keys() )[self._sound_index]
                     sub = f'{lefta} {current} {righta}'
+                # selecting a skin
                 elif self._submenu_mode == 'skin':
                     name = self._character_names[self._character_index]
-                    sub = f'{lefta} {self.skins[name][self._skin_index]} {righta}'
+                    current = self.skins[name][self._skin_index]
+                    classic = bs.app.classic
+                    apps = classic.spaz_appearances
+                    try:
+                        skin_name = apps[current].skin_name
+                    except:
+                        skin_name = None
+                    sub = f'{lefta} {skin_name} {righta}'
+                # main menu
                 else:
                     options = self.menu_options
                     sub = f'{upa}{options[self._menu_index]}{downa}'

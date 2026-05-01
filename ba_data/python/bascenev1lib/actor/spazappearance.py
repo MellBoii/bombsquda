@@ -50,6 +50,7 @@ class Appearance:
                 f'spaz appearance name "{self.name}" already exists.'
             )
         bs.app.classic.spaz_appearances[self.name] = self
+        self.skin_name = ''
         self.color_texture = 'white'
         self.color_mask_texture = 'white'
         self.icon_texture = 'white'
@@ -871,4 +872,45 @@ def register_appearances() -> None:
     t.pickup_sounds = ['spazPickup01']
     t.fall_sounds = ['spazFall01']
     t.style = 'spaz'
+    t.victory_sounds = ['spazJump01']
+    
+    
+    # ---------------------------- SKINS --------------------------------------------
+    
+    # The Original      Spaz ###################################
+    t = Appearance('OGSpazMetal')
+    # skin name is a simple, neutral version of
+    # the skin's name, so in this case 'Metal OG Spaz' (metal skin for og spaz)
+    # would just be called Metal, or something of the sorts.
+    t.skin_name = 'Metal'
+    t.color_texture = 'metalSpazColor'
+    t.color_mask_texture = 'metalSpazCM'
+    t.icon_texture = 'spazIcon'
+    t.icon_mask_texture = 'spazIconCM'
+    t.head_mesh = 'spazHead'
+    t.torso_mesh = 'spazTorso'
+    t.pelvis_mesh = 'spazPelvis'
+    t.upper_arm_mesh = 'spazUpperArm'
+    t.forearm_mesh = 'spazForeArm'
+    t.hand_mesh = 'spazHand'
+    t.upper_leg_mesh = 'spazUpperLeg'
+    t.lower_leg_mesh = 'spazLowerLeg'
+    t.toes_mesh = 'spazToes'
+    t.jump_sounds = ['spazJump01', 'spazJump02', 'spazJump03', 'spazJump04']
+    t.attack_sounds = [
+        'spazAttack01',
+        'spazAttack02',
+        'spazAttack03',
+        'spazAttack04',
+    ]
+    t.impact_sounds = [
+        'spazImpact01',
+        'spazImpact02',
+        'spazImpact03',
+        'spazImpact04',
+    ]
+    t.death_sounds = ['spazDeath01']
+    t.pickup_sounds = ['spazPickup01']
+    t.fall_sounds = ['spazFall01']
+    t.style = 'cyborg'
     t.victory_sounds = ['spazJump01']
