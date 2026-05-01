@@ -4928,11 +4928,20 @@ class Spaz(bs.Actor):
             self.sugarcoat_overlay(sound='block', image='white')
             self.shatter()
         elif intensity >= 5.0:
-            sounds = SpazFactory.get().impact_sounds_harder
+            if self.node.style == 'cyborg':
+                sounds = SpazFactory.get().impact_sounds_harder_metal
+            else:
+                sounds = SpazFactory.get().impact_sounds_harder
         elif intensity >= 3.0:
-            sounds = SpazFactory.get().impact_sounds_hard
+            if self.node.style == 'cyborg':
+                sounds = SpazFactory.get().impact_sounds_hard_metal
+            else:
+                sounds = SpazFactory.get().impact_sounds_hard
         else:
-            sounds = SpazFactory.get().impact_sounds_medium
+            if self.node.style == 'cyborg':
+                sounds = SpazFactory.get().impact_sounds_medium_metal
+            else:
+                sounds = SpazFactory.get().impact_sounds_medium
         sound = sounds[random.randrange(len(sounds))]
         sound.play(position=pos, volume=1.3)
 

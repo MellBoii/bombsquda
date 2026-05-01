@@ -110,6 +110,15 @@ class SpazFactory:
             bs.getsound('impactHard2'),
             bs.getsound('impactHard3'),
         )
+        self.impact_sounds_medium_metal = (
+            bs.getsound('bombDrop02'),
+        )
+        self.impact_sounds_hard_metal = (
+            bs.getsound('bombDrop01'),
+        )
+        self.impact_sounds_harder_metal = (
+            bs.getsound('bigImpact2'),
+        )
         self.impact_sounds_harder = (
             bs.getsound('bigImpact'),
             bs.getsound('bigImpact2'),
