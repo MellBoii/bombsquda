@@ -4401,7 +4401,7 @@ class Spaz(bs.Actor):
     
     def set_last_victim(self, name: str = '', character: str = ''):
         self.last_victim_character = character
-        self.last_victim_name = name
+        self.last_victim_name = name if name else character
         # reset so we don't keep it if 
         # we kill without triggering this somehow
         def reset():
@@ -4437,10 +4437,11 @@ class Spaz(bs.Actor):
         self.hitpoints += 210
         self.updatemeter()
         bs.getsound('cheer2').play(position=self.node.position)
+        name = self.node.name if self.node.name else self.character
         PopupText(
             bs.Lstr(
                 resource='cheeredPlayer',
-                subs=[('${NAME}', self.node.name)]
+                subs=[('${NAME}', name)]
             ),
             position=self.node.position,
             scale=1.4,
