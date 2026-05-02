@@ -386,7 +386,7 @@ class Spaz(bs.Actor):
             self.punchscale = 0.5
             self.punchcwd = 1
             self.weakcwd = 0.0001
-            self.weakscale = 6
+            self.weakscale = 50
             self.knightscale = 0
             self.knightcwd = 9999
         # stats for punch
@@ -2813,7 +2813,7 @@ class Spaz(bs.Actor):
             bs.Lstr(
                 resource='playerMortalDamage',
                 subs=[
-                    ('${NAME}', self.node.name)
+                    ('${NAME}', self.node.name if self.node.name else self.character)
                 ],
             ),
             position=self.node.position,
