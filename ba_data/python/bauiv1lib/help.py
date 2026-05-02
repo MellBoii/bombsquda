@@ -688,7 +688,7 @@ class HelpWindow(bui.MainWindow):
             bui.get_string_width(txt, suppress_warning=True) * txt_scale,
         )     
         hval2 = h - (txt_width * 0.4)
-        hval3 = h - (txt_width - 440)
+        hval3 = h - (txt_width)
         bui.textwidget(
             parent=self._subcontainer,
             position=(h, v),
@@ -700,22 +700,6 @@ class HelpWindow(bui.MainWindow):
             color=paragraph,
             v_align='center',
             flatness=1.0,
-        )
-        bui.imagewidget(
-            parent=self._subcontainer,
-            size=(scale, scale),
-            position=(hval2, v + yfuckoffs),
-            texture=tex,
-            color=(1, 1, 1),
-            opacity=1.0,
-        )
-        bui.imagewidget(
-            parent=self._subcontainer,
-            size=(scale, scale),
-            position=(hval3, v + yfuckoffs),
-            texture=tex,
-            color=(1, 1, 1),
-            opacity=1.0,
         )
         
         v -= spacing * 40.0
