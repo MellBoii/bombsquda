@@ -70,18 +70,22 @@ class Sorrow(bs.Actor):
     def _resolve(self):
         if not self.actor().sorrowful:
             return
-        if not self.actor().node.hold_node:
+        self._delete()
+        hnode = self.actor().node.hold_node
+        # player not holding something
+        if not hnode:
             if self.actor().parrying:
                 self.actor().sugarcoat_overlay(sound='bellMed', image='sugarcoatparry')
+                self.actor().mpa()
                 return
             self.actor().shatter(True)
             self.actor().killed_by_entity('sorrow')
+        # player is holding something
         elif self.actor().node.hold_node:
-            hnode = self.actor().node.hold_node
             sactor = hnode.getdelegate(bs.Actor)
+            # if it's a spaz, kill it 
             if sactor and hnode.getnodetype() == 'spaz':
                 sactor.shatter(True)
-        self._delete()
         bs.getsound('safter').play(1.5)
     
     def _shake(self):
