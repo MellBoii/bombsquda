@@ -359,6 +359,8 @@ class SpazFactory:
                 'gloat_sounds': [bs.getsound(s) for s in char.gloat_sounds],
                 'color_texture': bs.gettexture(char.color_texture),
                 'color_mask_texture': bs.gettexture(char.color_mask_texture),
+                'icon_texture': bs.gettexture(char.icon_texture),
+                'icon_mask_texture': bs.gettexture(char.icon_mask_texture),
                 'head_mesh': bs.getmesh(char.head_mesh),
                 'torso_mesh': bs.getmesh(char.torso_mesh),
                 'pelvis_mesh': bs.getmesh(char.pelvis_mesh),

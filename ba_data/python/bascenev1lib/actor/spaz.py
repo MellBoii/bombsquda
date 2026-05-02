@@ -5249,3 +5249,60 @@ class Spaz(bs.Actor):
             )
             self.node.billboard_opacity = 0.0
             self._deactivate_star()
+    
+    def do_funny_poof(self):
+        # COULD be a chance the node 
+        # doesn't exist anymore, so gotta be careful
+        if not self.node:
+            return
+        bs.getsound('player_poof').play(
+            position=self.node.position,
+            volume=1.2,
+        )
+        bs.emitfx(
+            position=self.node.position,
+            velocity=self.node.velocity,
+            count=53,
+            scale=1.0,
+            spread=1.3,
+            chunk_type='spark',
+        )
+        bs.emitfx(
+            position=self.node.position,
+            velocity=self.node.velocity,
+            count=int(2.0 + random.random() * 4),
+            emit_type='tendrils',
+            tendril_type='smoke',
+        )
+        
+    
+    def reset_character(self, do_funny_poof: bool = True):
+        if not self.node:
+            return
+        factory = SpazFactory.get()
+        media = factory.get_media(self.character)
+        thisdict = {
+            'jump_sounds': media['jump_sounds'],
+            'attack_sounds': media['attack_sounds'],
+            'impact_sounds': media['impact_sounds'],
+            'death_sounds': media['death_sounds'],
+            'pickup_sounds': media['pickup_sounds'],
+            'fall_sounds': media['fall_sounds'],
+            'color_texture': media['color_texture'],
+            'color_mask_texture': media['color_mask_texture'],
+            'head_mesh': media['head_mesh'],
+            'torso_mesh': media['torso_mesh'],
+            'pelvis_mesh': media['pelvis_mesh'],
+            'upper_arm_mesh': media['upper_arm_mesh'],
+            'forearm_mesh': media['forearm_mesh'],
+            'hand_mesh': media['hand_mesh'],
+            'upper_leg_mesh': media['upper_leg_mesh'],
+            'lower_leg_mesh': media['lower_leg_mesh'],
+            'toes_mesh': media['toes_mesh'],
+            'style': factory.get_style(self.character),
+        }
+        for key in thisdict.keys():
+            value = thisdict[key]
+            setattr(self.node, key, value)
+        if do_funny_poof:
+            self.do_funny_poof()

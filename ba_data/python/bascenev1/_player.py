@@ -258,7 +258,20 @@ class Player[TeamT: bascenev1.Team]:
         """
         assert self._postinited
         assert not self._expired
-        return self._sessionplayer.get_icon()
+        from bascenev1lib.actor.spazfactory import SpazFactory
+        fac = SpazFactory.get()
+        media = fac.get_media(self.character)
+        # instead of using the session player's
+        # icon, use ours so we have a icon that changes
+        # everytime our character changes
+        dictio = {
+            'texture': media['icon_texture'],
+            'tint_texture': media['icon_mask_texture'],
+            'tint_color': self.color,
+            'tint2_color': self.highlight,
+        }
+        return dictio
+        
 
     def assigninput(
         self,

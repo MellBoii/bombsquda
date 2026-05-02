@@ -13,6 +13,8 @@ import babase as ba
 import _bascenev1
 import bascenev1 as bs
 import bauiv1 as bui
+import shlex
+import ast
 
 if TYPE_CHECKING:
     from typing import Any
@@ -23,12 +25,159 @@ _end_votes: set[str] = set()
 _vote_activity_id: int | None = None
 reset_timer = None
 
+def servermessage(msg: str):
+    bs.chatmessage(msg, sender_override='Server')
+    
+def parse_tuple(arg, display):
+    try:
+        return ast.literal_eval(arg)
+    except Exception:
+        servermessage(f'{display}, invalid format: {arg}')
+        return None
+commands = {}
+
+class Command:
+    def __init__(self, func, usage='', desc=''):
+        self.func = func
+        self.usage = usage
+        self.desc = desc
+
+def register(name, usage='', desc=''):
+    def decorator(func):
+        commands[name] = Command(func, usage, desc)
+        return func
+    return decorator
+
+class CommandContext:
+    def __init__(self, msg, roster_entry, player_index):
+        self.msg = msg
+        self.parts = shlex.split(msg)
+        self.cmd = self.parts[0].lower()
+        self.args = self.parts[1:]
+
+        self.display = roster_entry.get('display_string', 'Unknown Player')
+        self.account_id = roster_entry.get('account_id')
+        self.activity = bs.get_foreground_host_activity()
+        self.is_sp = roster_entry.get('singleplayer', False)
+
+        self.player = None
+
+        if self.activity:
+            players = self.activity.players
+            try:
+                if 0 <= player_index < len(players):
+                    self.player = players[player_index]
+            except TypeError:
+                self.player = None
+
+@register('/help', desc='List commands', usage='/help')
+def cmd_help(ctx: CommandContext):
+    for name, cmd in commands.items():
+        servermessage(f' {name} - {cmd.desc} | {cmd.usage}')
+
+@register('/char', usage='/char <name>', desc='Change character')
+def cmd_char(ctx: CommandContext):
+    if not ctx.args:
+        bs.chatmessage(f'{ctx.display}, usage: {commands[ctx.cmd].usage}')
+        return
+
+    name = ctx.args[0]
+
+    try:
+        character = bs.app.classic.spaz_appearances[name]
+    except KeyError:
+        servermessage(f'{ctx.display}: character "{name}" doesn\'t exist!')
+        return
+
+    ctx.player.character = character.name
+
+    if ctx.player.actor:
+        with ctx.activity.context:
+            ctx.player.actor.character = character.name
+            ctx.player.actor.reset_character()
+
+@register('/color', usage='/color (r, g, b)', desc='Set player color')
+def cmd_color(ctx: CommandContext):
+    if not ctx.args:
+        servermessage(f'{ctx.display}, usage: {commands[ctx.cmd].usage}')
+        return
+
+    value = parse_tuple(' '.join(ctx.args), ctx.display)
+    if value is None:
+        return
+
+    with ctx.activity.context:
+        ctx.player.color = value
+        if ctx.player.actor and ctx.player.actor.node:
+            ctx.player.actor.node.color = value
+            ctx.player.actor.node.name_color = value
+
+@register('/highlight', usage='/highlight (r, g, b)', desc='Set highlight color')
+def cmd_highlight(ctx: CommandContext):
+    if not ctx.args:
+        servermessage(f'{ctx.display}, usage: {commands[ctx.cmd].usage}')
+        return
+
+    value = parse_tuple(' '.join(ctx.args), ctx.display)
+    if value is None:
+        return
+
+    with ctx.activity.context:
+        ctx.player.highlight = value
+        if ctx.player.actor and ctx.player.actor.node:
+            ctx.player.actor.node.highlight = value
+
+@register('/end', usage='/end', desc='Vote to, or end the game')
+def cmd_end(ctx: CommandContext):
+    def reset_end_votes():
+        _end_votes.clear()
+        with ctx.activity.context:
+            bs.getsound('vote_failed').play()
+            bs.broadcastmessage("The vote was canceled (not enough votes).")
+            
+    # In singleplayer, end immediately
+    if ctx.is_sp:
+        bs.broadcastmessage('Ending activity (/end was sent)')
+        if activity:
+            with activity.context:
+                if hasattr(activity, 'end_game'):
+                    activity.end_game()
+                    
+    player = ctx.activity.players.index(ctx.player)
+    
+    # In Multiplayer, do voting
+    if player in _end_votes:
+        servermessage(f'{player.getname()}, you already voted!')
+        return
+
+    global reset_timer
+    _end_votes.add(player)
+    needed = len(bs.get_game_roster())
+    current = len(_end_votes)
+    with ctx.activity.context:
+        if len(_end_votes) <= 1:
+            bs.getsound('vote_started').play()
+        else:
+            bs.getsound('vote_added').play()
+        reset_timer = ba.AppTimer(8, reset_end_votes)
+        bs.broadcastmessage(
+            f'{ctx.player.getname()} voted to end the game '
+            f'({current}/{needed})'
+        )
+    
+    if current >= needed:
+        _end_votes.clear()
+        with ctx.activity.context:
+            bs.broadcastmessage('Vote passed! Ending activity.')
+            reset_timer = None
+            bs.getsound('vote_passed').play()
+            if hasattr(ctx.activity, 'end_game'):
+                ctx.activity.end_game()
 
 def launch_main_menu_session() -> None:
     assert babase.app.classic is not None
 
     _bascenev1.new_host_session(babase.app.classic.get_main_menu_session())
-
 
 def get_player_icon(sessionplayer: bascenev1.SessionPlayer) -> dict[str, Any]:
     info = sessionplayer.get_icon_info()
@@ -39,111 +188,22 @@ def get_player_icon(sessionplayer: bascenev1.SessionPlayer) -> dict[str, Any]:
         'tint2_color': info['tint2_color'],
     }
 
-def handle_command(msg: str, roster_entry: dict, client_id: int) -> None:
-    display = roster_entry.get('display_string', 'Unknown Player')
-    account_id = roster_entry.get('account_id')
-    is_sp = roster_entry.get('singleplayer', False)
-    parts = msg.split()
-    cmd = parts[0].lower()
-    activity = bs.get_foreground_host_activity()
-    if not activity:
+def handle_command(msg: str, roster_entry: dict, player_index: int):
+    ctx = CommandContext(msg, roster_entry, player_index)
+
+    if not ctx.activity:
         return msg
 
-    if cmd == '/kill':
-        if not is_sp:
-            bs.chatmessage('Only available in Singleplayer!')
-            return
-        if len(parts) < 2:
-            bs.chatmessage(f'{display}: usage: /kill <player_index>')
-            return None
-        try:
-            index = int(parts[1])
-        except ValueError:
-            bs.chatmessage(f'{display}: player number must be an integer.')
-            return None
+    command = commands.get(ctx.cmd)
+    if not command:
+        return msg
 
-        players = activity.players
+    if not ctx.player and not ctx.is_sp:
+        servermessage(f'{ctx.display}, you must be in-game!')
+        return msg
 
-        if index < 0 or index >= len(players):
-            bs.chatmessage(
-                f'{display}: player {index} does not exist '
-                f'(0–{len(players) - 1}).'
-            )
-            return None
-
-        player = players[index]
-        actor = getattr(player, 'actor', None)
-
-        if actor is None:
-            bs.chatmessage(f'{display}: player {index} has no actor.')
-            return None
-        with activity.context:
-            actor.die()
-        bs.broadcastmessage(f'{display} killed player {index}.')
-        return None
-    
-    elif cmd == '/end':
-        # In singleplayer, end immediately
-        if is_sp:
-            bs.broadcastmessage('Ending activity (/end was sent)')
-            if activity:
-                with activity.context:
-                    if hasattr(activity, 'end_game'):
-                        activity.end_game()
-            return None
-        players = activity.players
-        try:
-            player = players[client_id]
-        except IndexError:
-            player = None
-        # In Multiplayer, do voting
-        if not player:
-            bs.chatmessage(f'{display}, you have to be in-game to vote!')
-            return None
-        if client_id in _end_votes:
-            bs.chatmessage(f'{player.getname()}, you already voted!')
-            return None
-        if not _end_votes:
-            global reset_timer
-            with activity.context:
-                bs.getsound('vote_started').play()
-            reset_timer = ba.AppTimer(8, reset_end_votes)
-        else:
-            with activity.context:
-                bs.getsound('vote_added').play()
-            reset_timer = ba.AppTimer(8, reset_end_votes)
-        _end_votes.add(client_id)
-            
-        voters = _end_votes
-        needed = len(bs.get_game_roster())
-        current = len(_end_votes)
-        
-        with activity.context:
-            bs.broadcastmessage(
-                f'{player.getname()} voted to end the game '
-                f'({current}/{needed})'
-            )
-
-        # ── Majority reached ─────────────────────────
-        if current >= needed:
-            _end_votes.clear()
-            if activity:
-                with activity.context:
-                    bs.broadcastmessage('Vote passed! Ending activity.')
-                    reset_timer = None
-                    bs.getsound('vote_passed').play()
-                    activity.end_game()
-    else:
-        bs.broadcastmessage('Not a valid command!')
-        return None
-    return None
-
-def reset_end_votes():
-    activity = bs.get_foreground_host_activity()
-    bs.broadcastmessage("The vote was canceled (not enough votes).")
-    _end_votes.clear()
-    with activity.context:
-        bs.getsound('vote_failed').play()
+    command.func(ctx)
+    return msg
 
 def filter_chat_message(msg: str, client_id: int) -> str | None:
     roster = bs.get_game_roster()
@@ -165,7 +225,7 @@ def filter_chat_message(msg: str, client_id: int) -> str | None:
             return handle_command(
                 msg=msg,
                 roster_entry=fake_entry,
-                client_id=0
+                player_index=0
             )
         if activity:
             with activity.context:
@@ -206,7 +266,7 @@ def filter_chat_message(msg: str, client_id: int) -> str | None:
         return handle_command(
             msg=msg,
             roster_entry=roster_entry,
-            client_id=player_id
+            player_index=player_id
         )
     if activity:
         with activity.context:
