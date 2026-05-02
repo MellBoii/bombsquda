@@ -182,11 +182,14 @@ class RichPresence:
                         sesssion = ''
                     
                     if isinstance(session, bs.CoopSession):
+                        score = getattr(activity, '_score', None)
+                        meter = getattr(activity, 'ultrameter', None)
+                        rank = getattr(meter, '_rank', None)
                         pltext = bs.Lstr(
                             resource=f'{self._r}.coopScoreRankText',
                             subs=[
-                                ('${SCORE}', str(activity._score)),
-                                ('${RANK}', str(activity.ultrameter._rank)),
+                                ('${SCORE}', str(score)),
+                                ('${RANK}', str(rank)),
                             ]
                         ).evaluate()
                     else:
