@@ -94,7 +94,10 @@ def get_festivity():
     day = today.day
     month = today.month
     christmas = month == 12 and day == 25
-    aprilfools = month == 4 and day == 1
+    aprilfools = (
+        month == 4 and day == 1
+        or bui.app.config.get('squda_forceapril', False)
+    )
     easter = plus.get_v1_account_misc_read_val('easter', False)
     if aprilfools:
         return "april_fools"

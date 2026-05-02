@@ -239,7 +239,14 @@ class SendInfoWindow(bui.MainWindow):
         for player in bs.getplayers():
             player.actor.create_mime()
     def april(self):
-        bs.screenmessage('Not functional. Sorry :^)')
+        enabled = bui.app.config.get('squda_forceapril')
+        bui.app.config['squda_forceapril'] = True if not enabled else False
+        enabled = bui.app.config.get('squda_forceapril')
+        if enabled:
+            bui.screenmessage('Happy April Fools!\nEnter code again to disable.')
+        else:
+            bui.screenmessage('Back to normal.')
+            
     def unlock_ire(self):
         dict = bui.app.config.get('squda_storeowned', {})
         item = 'characters.ire'

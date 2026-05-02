@@ -16,6 +16,23 @@ from bascenev1._dependency import DependencyComponent
 from bascenev1._messages import UNHANDLED
 import fromgoverhaul.mell_resources as mell
 
+ERROR_APRILFOOLS_LIST = [
+    'Fuck you',
+    'mell was here',
+    'STOP PLAYING THIS FUJCKEGJQRNGHEEGTAMEMTQE',
+    'Bugs have been found in the bugs.',
+    'You is not defined',
+    'Something evil will happen!',
+    'Sorry i dont know how to Python',
+    'im cracking your mo,m',
+    'goony stop messing with my code',
+    'claude please fix this code for me :3',
+    'SyntaxErrorSyntaxErrorSyntaxError\nSyntaxErrorSyntaxErrorSyntaxError\nSyntaxErrorSyntaxErrorSyntaxError\nSyntaxErrorSyntaxErrorSyntaxErrorSyntaxErrorSyntaxErrorSyntaxError',
+    'spaz5',
+    'This Game sucks. IM quwittgin it',
+    'horse walked in',
+]
+
 
 if TYPE_CHECKING:
     from typing import Any
@@ -386,39 +403,38 @@ class Activity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
                     n = random.randint(1, 32)
                     sound_name = f"randomnoises/noisePolution{n}"
                     bs.getsound(sound_name).play()
-            if aprilfools:
-                lists = [
-                    'Fuck you',
-                    'mell was here',
-                    'STOP PLAYING THIS FUJCKEGJQRNGHEEGTAMEMTQE',
-                    'Bugs have been found in the bugs.',
-                    'You is not defined',
-                    'Something evil will happen!',
-                    'Sorry i dont know how to Python',
-                    'im cracking your mo,m',
-                    'goony stop messing with my code',
-                    'claude please fix this code for me :3',
-                ]
-                if random.random() < 0.2:
-                    bs.broadcastmessage(
-                        f'An error occured:\n{random.choice(lists)}', 
-                        color=(1, 0, 0),
-                    )
-                    bs.getsound('error').play(1.5)
         def roll():
             if ba.app.config.get("squda_foxyjumpscare", False):
                 self.randNumber = random.randint(1,1000)
                 if self.randNumber == 6:
-                    bs.getsound('jumpscare').play()
+                    bs.getsound('jumpscare').play(volume=1.5)
                     self.nodename = bs.newnode('image',
                         attrs={
                             'texture': bs.gettexture('foxy'),
                             'fill_screen': True,
                             'opacity': 1.0,
                             'color': (1, 1, 1),
+                            'front': True,
                         }
                     )
+                    bs.animate(
+                        self.nodename, 
+                        'opacity',
+                        {
+                            0.0: 0,
+                            0.01: 1,
+                            1.2: 1,
+                            1.6: 0,
+                        },
+                    )
                     bs.basetimer(1.6, self.nodename.delete)
+            if aprilfools:
+                if random.random() < 0.01:
+                    bs.broadcastmessage(
+                        f'An error occured:\n{random.choice(ERROR_APRILFOOLS_LIST)}', 
+                        color=(1, 0, 0),
+                    )
+                    bs.getsound('error').play(1.5)
         self.noisePolTimer = bs.BaseTimer(noisetime, checkdosound, repeat=True)
         self.foxyTimer = bs.BaseTimer(foxytime, roll, repeat=True)
 
