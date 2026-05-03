@@ -25,6 +25,7 @@ from bascenev1 import _map
 from bascenev1 import _music
 import bascenev1 as bs
 import babase as ba
+import fromgoverhaul.mell_resources as mell
 
 if TYPE_CHECKING:
     from typing import Any, Callable, Sequence
@@ -1256,6 +1257,7 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
             self._did_hurryup = True
             bs.setmusic(bs.MusicType.HURRYUP)
             bs.broadcastmessage(babase.Lstr(resource='hurryUp'))
+            mell.announcer_say('hurryup')
             if base_music == None:
                 bs.timer(2.0, lambda: bs.setmusic(None))
             else:
@@ -1265,6 +1267,7 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
             if random.random() < 0.6:
                 self.did_overtime = True
                 bs.broadcastmessage(babase.Lstr(resource='overTime'))
+                mell.announcer_say('overtime')
                 self._standard_time_limit_time += 60
                 bs.setmusic(bs.MusicType.SRB2_OVERTIME)
                 node = self._standard_time_limit_text.node

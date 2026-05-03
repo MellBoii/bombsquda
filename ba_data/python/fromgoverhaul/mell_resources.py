@@ -191,6 +191,80 @@ def add_spaz(
             f"{notif_type} invalid. Allowed: ['screen', 'popup']"
         )
 
+def announcer_say(voiceline: str):
+    import bascenev1 as bs
+    import random
+    thisannouncer = 'announcer'
+    volume = 1.0
+    # make a function for getting sound that uses the
+    # path to our voicelines
+    def gs(sound: str):
+        return bs.getsound(f'voicelines/{thisannouncer}/{sound}')
+    # voiceline should correlate to something here
+    sound_dict = {
+        # situations
+        'overtime': gs('overtime'),
+        'homerun': gs('homerun'),
+        'out_park': gs('out_park'),
+        'winneris': gs('winneris'),
+        'youwon': gs('youwon'),
+        'hurryup': gs('hurryup'),
+        'game': gs('game'),
+        'draw': gs('draw'),
+        'team': gs('team'),
+        # team colors
+        'purple': gs('purple'),
+        'orange': gs('orange'),
+        'green': gs('green'),
+        'blue': gs('blue'),
+        'red': gs('red'),
+        'yellow': gs('yellow'),
+        'white': gs('white'),
+        'black': gs('black'),
+        # numbers
+        '0': gs('zero'),
+        '1': gs('one'),
+        '2': gs('two'),
+        '3': gs('three'),
+        '4': gs('four'),
+        # characters
+        'Susie': gs('susie'),
+        'Rayman': gs('rayman'),
+        'Kris': gs('kris'),
+        'Ralsei': gs('ralsei'),
+        'Roaring Knight': gs('knight'),
+        'Noob': gs('noob'),
+        'Mell': gs('mell'),
+        'GummyBoiYT': gs('snakeling'),
+        'Rayman': gs('rayman'),
+        'Bowser': gs('bowser'),
+        'Orangecap': gs('ocap'),
+        'The Noise': gs('noise'),
+        'Taobao Mascot': gs('taobao'),
+        'SM64 Mario': gs('mario'),
+        'Sonic': gs('sonic'),
+        'Kirby': gs('kirby'),
+        'Tails': gs('tails'),
+        'Buddie': gs('buddie'),
+        'Rem': gs('rem'),
+        'John Grace': gs('john'),
+        'Homer': gs('homer'),
+        'OG Spaz': gs('ogspaz'),
+        'Ire': gs('ire'),
+        'Dozer': gs('dozer'),
+    }
+    # get the voiceline sound equivalent and play it
+    if voiceline in sound_dict:
+        choice = sound_dict[voiceline]
+        # if its a list, we can pick a random sound of it
+        if isinstance(choice, list):
+            random.choice(choice).play(volume=volume)
+        else:
+            choice.play(volume=volume)
+    else:
+        gs('unknown').play(volume=volume)
+        print(f'ANNOUNCER VOICELINE {voiceline} IS UNKNOWN')
+
 def get_unique_bs_id():
     """Gets the player's unique BombSquda ID.
     If it exists in the config, just returns that.
