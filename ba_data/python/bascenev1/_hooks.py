@@ -37,7 +37,13 @@ def parse_tuple(arg, display):
 commands = {}
 
 class Command:
-    def __init__(self, func, usage='', desc=''):
+    def __init__(
+        self, 
+        func, 
+        usage: str ='', 
+        desc: str ='', 
+        owner_only: bool = False
+    ):
         self.func = func
         self.usage = usage
         self.desc = desc
@@ -138,10 +144,10 @@ def cmd_end(ctx: CommandContext):
     # In singleplayer, end immediately
     if ctx.is_sp:
         bs.broadcastmessage('Ending activity (/end was sent)')
-        if activity:
-            with activity.context:
-                if hasattr(activity, 'end_game'):
-                    activity.end_game()
+        if ctx.activity:
+            with ctx.activity.context:
+                if hasattr(ctx.activity, 'end_game'):
+                    ctx.activity.end_game()
                     
     player = ctx.activity.players.index(ctx.player)
     

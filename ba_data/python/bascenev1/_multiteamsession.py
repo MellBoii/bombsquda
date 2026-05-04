@@ -13,6 +13,7 @@ import babase as ba
 import bascenev1 as bs
 
 import _bascenev1
+import fromgoverhaul.mell_resources as mell
 from bascenev1._session import Session
 import bascenev1lib
 import bascenev1
@@ -290,6 +291,38 @@ class MultiTeamSession(Session):
         """Switch to a score screen after leaving a round."""
         del results  # Unused arg.
         logging.error('This should be overridden.', stack_info=True)
+    
+    def string_for_color(self, color):
+        """
+        color: (r, g, b) in 0–1 range
+        returns: string
+        """
+        COLOR_TEXTURES = {
+            'purple': (0.6, 0.2, 0.8),
+            'orange': (1.0, 0.5, 0.1),
+            'green':  (0.2, 0.8, 0.2),
+            'blue':   (0.2, 0.4, 1.0),
+            'red':    (1.0, 0.2, 0.2),
+            'yellow': (1.0, 0.9, 0.2),
+            'white':  (1.0, 1.0, 1.0),
+            'black':  (0.0, 0.0, 0.0),
+        }
+        def color_distance(a, b):
+            return (
+                (a[0] - b[0]) ** 2 +
+                (a[1] - b[1]) ** 2 +
+                (a[2] - b[2]) ** 2
+            )
+        best_tex = None
+        best_dist = float('inf')
+
+        for tex, tex_color in COLOR_TEXTURES.items():
+            d = color_distance(color, tex_color)
+            if d < best_dist:
+                best_dist = d
+                best_tex = tex
+
+        return best_tex
 
     def announce_game_results(
         self,
@@ -327,12 +360,33 @@ class MultiTeamSession(Session):
                 # Some languages say "FOO WINS" different for teams vs players.
                 if isinstance(self, FreeForAllSession):
                     wins_resource = 'winsPlayerText'
+                    ffa = True
                 else:
                     wins_resource = 'winsTeamText'
+                    ffa = False
                 wins_text = babase.Lstr(
                     resource=wins_resource,
                     subs=[('${NAME}', winning_sessionteam.name)],
                 )
+                # say a nice neutral-ish winner sentence
+                mell.announcer_say('winneris')
+                time = 1.5
+                if ffa:
+                    players = winning_sessionteam.activityteam.players
+                    character = players[0].character
+                    # say the character's name!!
+                    bs.timer(time, lambda: mell.announcer_say(character))
+                else:
+                    team = winning_sessionteam.activityteam
+                    colorstr = self.string_for_color(team.color)
+                    act = self.getactivity()
+                    # say TEAM, so then we transition into its color
+                    bs.timer(time, lambda: mell.announcer_say('team'))
+                    tn_delay = 0.5
+                    if colorstr:
+                        bs.timer(time + tn_delay, lambda: mell.announcer_say(colorstr))
+                    else:
+                        bs.timer(time + tn_delay, lambda: mell.announcer_say( str(act.teams.index(team) + 1) ) )
                 activity.show_zoom_message(
                     wins_text,
                     scale=0.85,
@@ -343,7 +397,10 @@ class MultiTeamSession(Session):
                 
             else:
                 bs.getsound('bellDraw').play()
-                bs.broadcastmessage('It\'s a draw...')
+                bs.timer(0.4, lambda: mell.announcer_say('draw'))
+                bs.broadcastmessage(
+                    bs.Lstr(resource='drawMSGText')
+                )
             def do_bg():
                 Background(fade_time=1.0).autoretain()
             bs.basetimer(2.5, do_bg)
