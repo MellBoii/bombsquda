@@ -48,6 +48,7 @@ class MusicType(Enum):
     MENU19 = 'MENU19'
     MENU20 = 'MENU20'
     MENU21 = 'MENU21'
+    MENU22 = 'MENU22'
     MENU67 = 'MENU67'
     RMENU = 'RMENU'
     VICTORY = 'Victory'
@@ -209,6 +210,7 @@ def show_music_now_playing(music_type: bs.MusicType | str) -> None:
         bs.MusicType.MENU19: "Main Theme - Angry Birds",
         bs.MusicType.MENU20: "Main Theme (Ssvsab Remix) - Angry Birds",
         bs.MusicType.MENU21: "Title Theme - Super Mario 64",
+        bs.MusicType.MENU22: "Main Menu - Hotel Mario",
         bs.MusicType.RMENU: "Clock Strikes 12 - Reddit Bullshit",
         bs.MusicType.MENU67: "Super Compressed Version of the JRMP Menu Music That Isn't Really From JRMP But I Also Sing It With Myself Whilst Screaming - Mell",
         bs.MusicType.CREDITS: "Staff Roll - Super Mario 3D Land",

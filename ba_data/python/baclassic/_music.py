@@ -58,6 +58,7 @@ ASSET_SOUNDTRACK_ENTRIES: dict[MusicType, AssetSoundtrackEntry] = {
     MusicType.MENU19: AssetSoundtrackEntry('music/menuMusic19'),
     MusicType.MENU20: AssetSoundtrackEntry('music/menuMusic20'),
     MusicType.MENU21: AssetSoundtrackEntry('music/menuMusic21'),
+    MusicType.MENU22: AssetSoundtrackEntry('music/menuMusic22'),
     MusicType.RMENU: AssetSoundtrackEntry('music/redditorMenu'),
     MusicType.MENU67: AssetSoundtrackEntry('music/stupidfuckingmenu'), 
     MusicType.VICTORY: AssetSoundtrackEntry(

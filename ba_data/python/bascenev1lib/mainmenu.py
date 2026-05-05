@@ -46,7 +46,7 @@ if TYPE_CHECKING:
 
     import bacommon.bs
 
-MENU_MUSIC_AMOUNT = 21
+MENU_MUSIC_AMOUNT = 22
 
 
 class MainMenuActivity(bs.GameActivity[bs.Player, bs.Team]):
