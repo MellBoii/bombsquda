@@ -238,6 +238,9 @@ class SendInfoWindow(bui.MainWindow):
     def mime(self):
         for player in bs.getplayers():
             player.actor.create_mime()
+    def rue(self):
+        for player in bs.getplayers():
+            player.actor.create_rue()
     def april(self):
         enabled = bui.app.config.get('squda_forceapril')
         bui.app.config['squda_forceapril'] = True if not enabled else False
@@ -309,6 +312,7 @@ class SendInfoWindow(bui.MainWindow):
             'DOZE': self.dozer,
             'WRATHFUL': self.ire,
             'GOONY': self.mime,
+            'RUESOME': self.rue,
             'BLOODY RAIN': self.sorrow,
             'DEV INCLUSIVE': self.unlock_ire,
             'YELLOW IRE': self.unlock_dozer,

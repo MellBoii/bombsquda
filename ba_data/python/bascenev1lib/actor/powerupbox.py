@@ -29,82 +29,6 @@ class PowerupBoxFactory:
     and can be retrieved via bs.Powerup.get_factory().
     """
 
-    mesh: bs.Mesh
-    """The bs.Mesh of the powerup box."""
-
-    mesh_simple: bs.Mesh
-    """A simpler bs.Mesh of the powerup box, for use in shadows, etc."""
-
-    tex_bomb: bs.Texture
-    """Triple-bomb powerup bs.Texture."""
-
-    tex_punch: bs.Texture
-    """Punch powerup bs.Texture."""
-
-    tex_ice_bombs: bs.Texture
-    """Ice bomb powerup bs.Texture."""
-
-    tex_sticky_bombs: bs.Texture
-    """Sticky bomb powerup bs.Texture."""
-
-    tex_shield: bs.Texture
-    """Shield powerup bs.Texture."""
-
-    tex_impact_bombs: bs.Texture
-    """Impact-bomb powerup bs.Texture."""
-
-    tex_health: bs.Texture
-    """Health powerup bs.Texture."""
-
-    tex_land_mines: bs.Texture
-    """Land-mine powerup bs.Texture."""
-
-    tex_curse: bs.Texture
-    """Curse powerup bs.Texture."""
-    
-    tex_metal: bs.Texture
-    """Metal powerup bs.Texture."""
-    
-    tex_deton: bs.Texture
-    """Deton powerup bs.Texture."""
-    
-    tex_fireball: bs.Texture
-    """Fireball powerup bs.Texture."""
-
-    tex_hook: bs.Texture
-    """Hook powerup bs.Texture."""
-    
-    tex_bloxy: bs.Texture
-    """Bloxy powerup bs.Texture."""
-    
-    tex_random: bs.Texture
-    """Roulette powerup bs.Texture."""
-    
-    tex_strong: bs.Texture
-    """Metal powerup bs.Texture."""
-
-    tex_spongebob: bs.Texture
-    """Spongebob powerup bs.Texture."""
-    
-    tex_star: bs.Texture
-    """Spongebob powerup bs.Texture."""
-
-    health_powerup_sounds: Sequence[bs.Sound]
-    """bs.Sound played when a health powerup is accepted."""
-
-    powerup_sound: bs.Sound
-    """bs.Sound played when a powerup is accepted."""
-
-    powerdown_sound: bs.Sound
-    """bs.Sound that can be used when powerups wear off."""
-
-    powerup_material: bs.Material
-    """bs.Material applied to powerup boxes."""
-
-    powerup_accept_material: bs.Material
-    """Powerups will send a bs.PowerupMessage to anything they touch
-       that has this bs.Material applied."""
-
     _STORENAME = bs.storagename()
 
     def __init__(self) -> None:
@@ -144,6 +68,7 @@ class PowerupBoxFactory:
         self.tex_ire = bs.gettexture('curseIre')
         self.tex_sorrow = bs.gettexture('curseSorrow')
         self.tex_mime = bs.gettexture('curseMime')
+        self.tex_rue = bs.gettexture('curseRue')
         self.health_powerup_sounds = (
             bs.getsound('healthPowerup'),
             bs.getsound('healthPowerup2'),

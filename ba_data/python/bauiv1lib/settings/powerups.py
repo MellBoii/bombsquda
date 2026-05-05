@@ -81,6 +81,7 @@ class PowerupSetupWindow(bui.MainWindow):
         self.tex_ire = bui.gettexture('curseIre')
         self.tex_sorrow = bui.gettexture('curseSorrow')
         self.tex_mime = bui.gettexture('curseMime')
+        self.tex_rue = bui.gettexture('curseRue')
         
         self._powerups = dict(bs._powerup.get_default_powerup_distribution())
         self._scroll = bui.scrollwidget(

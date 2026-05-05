@@ -1,7 +1,6 @@
 """gooner"""
 from __future__ import annotations
-from bascenev1lib.actor.emerald import TouchedMsg
-from bascenev1lib.gameutils import SharedObjects
+from bascenev1lib.gameutils import SharedObjects, TouchedMessage
 import bascenev1 as bs
 import fromgoverhaul.mell_resources as mell
 import random
@@ -19,26 +18,8 @@ class Mime(bs.Actor):
         self.frame_count = 3
         self.frame_delay = 0.1
         self.node: bs.Node | None = None
-        # we only generate material ONCE. PLEASE.
-        # NO MOR EMATERIAL ERRORS PLEASE I SWEAR IM CRYING
-        self.material = bs.Material()
         shared = SharedObjects.get()
-        self.material.add_actions(
-            conditions=('they_have_material', shared.object_material),
-            actions=(
-                ('modify_part_collision', 'collide', True),
-                ('modify_part_collision', 'physical', True),
-                ('message', 'our_node', 'at_connect', TouchedMsg()),
-            ),
-        )
-        self.material.add_actions(
-            conditions=('they_have_material', shared.player_material),
-            actions=(
-                ('modify_part_collision', 'collide', True),
-                ('modify_part_collision', 'physical', True),
-                ('message', 'our_node', 'at_connect', TouchedMsg()),
-            ),
-        )
+        self.material = shared.touch_material
         self.volume = 0.9
     
     def move_tick(self):
@@ -210,7 +191,7 @@ class Mime(bs.Actor):
                 )
                 self._delete()
         # aha! came into contact with something
-        elif isinstance(msg, TouchedMsg):
+        elif isinstance(msg, TouchedMessage):
             from bascenev1lib.actor.spaz import Spaz
             toucher = bs.getcollision().opposingnode
             actor = None

@@ -47,6 +47,7 @@ class SharedObjects:
         self._railing_material: bs.Material | None = None
         self._particle_material: bs.Material | None = None
         self._sorrowful_material: bs.Material | None = None
+        self._touch_material: bs.Material | None = None
 
     @classmethod
     def get(cls) -> SharedObjects:
@@ -201,6 +202,28 @@ class SharedObjects:
                 actions=('modify_node_collision', 'collide', True),
             )
         return self._sorrowful_material
+    
+    @property
+    def touch_material(self) -> bs.Material:
+        if self._touch_material is None:
+            self._touch_material = mat = bs.Material()
+            mat.add_actions(
+                conditions=('they_have_material', self.object_material),
+                actions=(
+                    ('modify_part_collision', 'collide', True),
+                    ('modify_part_collision', 'physical', True),
+                    ('message', 'our_node', 'at_connect', TouchedMessage(1)),
+                ),
+            )
+            mat.add_actions(
+                conditions=('they_have_material', self.player_material),
+                actions=(
+                    ('modify_part_collision', 'collide', True),
+                    ('modify_part_collision', 'physical', True),
+                    ('message', 'our_node', 'at_connect', TouchedMessage(1)),
+                ),
+            )
+        return self._touch_material
 
     @property
     def region_material(self) -> bs.Material:

@@ -32,6 +32,8 @@ def get_appearances(include_locked: bool = False) -> list[str]:
             if item not in owned:
                 disallowed.append(character_dict[item])
     for s in list(bs.app.classic.spaz_appearances.keys()):
+        if bs.app.classic.spaz_appearances[s].hidden:
+            disallowed.append(s)
         if s not in disallowed:
             applist.append(s)
     for name in bs.app.classic.spaz_appearances:
@@ -51,6 +53,7 @@ class Appearance:
             )
         bs.app.classic.spaz_appearances[self.name] = self
         self.skin_name = ''
+        self.hidden = False
         self.color_texture = 'white'
         self.color_mask_texture = 'white'
         self.icon_texture = 'white'
@@ -873,6 +876,13 @@ def register_appearances() -> None:
     t.fall_sounds = ['spazFall01']
     t.style = 'spaz'
     t.victory_sounds = ['spazJump01']
+
+    # wait this is a ACTUAL entity! why is this here! ###################################
+    t = Appearance('RueEntityDataLmfao')
+    t.hidden = True
+    t.color_texture = 'rueColor'
+    t.color_mask_texture = 'white'
+    t.torso_mesh = 'rue'
     
     
     # ---------------------------- SKINS --------------------------------------------
@@ -883,6 +893,8 @@ def register_appearances() -> None:
     # the skin's name, so in this case 'Metal OG Spaz' (metal skin for og spaz)
     # would just be called Metal, or something of the sorts.
     t.skin_name = 'Metal'
+    # ALWAYS set a skin as hidden.
+    t.hidden = True
     t.color_texture = 'metalSpazColor'
     t.color_mask_texture = 'metalSpazCM'
     t.icon_texture = 'spazIcon'

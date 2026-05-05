@@ -39,6 +39,7 @@ from bascenev1lib.actor.entities.dozer import Dozer
 from bascenev1lib.actor.entities.ire import Ire
 from bascenev1lib.actor.entities.sorrow import Sorrow
 from bascenev1lib.actor.entities.mime import Mime
+from bascenev1lib.actor.entities.rue import Rue
 
 
 if TYPE_CHECKING:
@@ -191,6 +192,15 @@ ENTITY_CONFIG = {
         'wear_off': '_mime_wear_off',
         'kill': '_kill_mime_if_it_still_exists',
         'texture': lambda: PowerupBoxFactory.get().tex_mime,
+    },
+    'rue': {
+        'attr_flag': 'rued',
+        'attr_obj': 'rue',
+        'class': Rue,
+        'flash': '_rue_wear_off_flash',
+        'wear_off': '_rue_wear_off',
+        'kill': '_kill_rue_if_it_still_exists',
+        'texture': lambda: PowerupBoxFactory.get().tex_rue,
     },
 }
 
@@ -353,9 +363,12 @@ class Spaz(bs.Actor):
         self.ired = False
         self.sorrowful = False
         self.mimed = False
+        self.rued = False
         
         self.last_x = 0
         self.last_y = 0
+        self.last_last_x = 0
+        self.last_last_y = 0
         
         self.ire = None
         self.kookoo = None
@@ -1612,6 +1625,8 @@ class Spaz(bs.Actor):
         if self._has_metalcap:
             value *= 0.5
         self.node.move_left_right = value
+        if value > 0.3:
+            self.last_last_x = value
         self.on_move(x=value, y=self.last_y)
         def resetwiggle():
             self._wiggle_count = 0
@@ -1647,6 +1662,8 @@ class Spaz(bs.Actor):
     def on_move_up_down(self, value: float) -> None:
         if not self.node:
             return
+        if value > 0.3:
+            self.last_last_y = value
         if self._has_metalcap:
             value *= 0.5
         self.node.move_up_down = value
@@ -5145,12 +5162,29 @@ class Spaz(bs.Actor):
             self.node.billboard_texture = PowerupBoxFactory.get().tex_mime
             self.node.billboard_opacity = 1.0
             self.node.billboard_cross_out = True
+    
+    def _rue_wear_off_flash(self) -> None:
+        if self.node:
+            self.node.billboard_texture = PowerupBoxFactory.get().tex_rue
+            self.node.billboard_opacity = 1.0
+            self.node.billboard_cross_out = True
         
     def _mime_wear_off(self) -> None:
         self.mimed = False
         self.mime.stop()
         self._kill_mime_if_it_still_exists()
         self.mime = None
+        if self.node:
+            PowerupBoxFactory.get().powerup_sound.play(
+                position=self.node.position,
+            )
+            self.node.billboard_opacity = 0.0
+    
+    def _rue_wear_off(self) -> None:
+        self.rued = False
+        self.rue.stop()
+        self._kill_rue_if_it_still_exists()
+        self.rue = None
         if self.node:
             PowerupBoxFactory.get().powerup_sound.play(
                 position=self.node.position,
@@ -5187,6 +5221,12 @@ class Spaz(bs.Actor):
             bs.getsound('playerLeft').play(volume=2, position=self.node.position)
             self.mime._delete()
     
+    def _kill_rue_if_it_still_exists(self):
+        """Does what it says."""
+        if self.rue.exists2:
+            bs.getsound('playerLeft').play(volume=2, position=self.node.position)
+            self.rue._delete()
+    
     # debug helpers
     def create_kookoo(self):
         self.kookoo = Kookoo(actor=weakref.ref(self))
@@ -5204,6 +5244,10 @@ class Spaz(bs.Actor):
         self.mime = Mime(actor=weakref.ref(self))
         self.mime.start()
         self.mimed = True
+    def create_rue(self):
+        self.rue = Rue(actor=weakref.ref(self))
+        self.rue.start()
+        self.rued = True
     def create_sorrow(self):
         self.sorrow = Sorrow(actor=weakref.ref(self))
         self.sorrow.start()
