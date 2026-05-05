@@ -75,12 +75,13 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
             col_x -= 40
         raw_settings = [
             ("squda_noisepolution", "noisePollutionText", None),
+            ("squda_skipintro", "skipIntroText", None),
             ("squda_foxyjumpscare", "foxyJumpscareText", None),
             ("squda_spazhardmode", "spazHardModeText", ['hardmode', 'okitem']),
             ("squda_parryalways", "parryAlwaysText", ['attempt_parry', 'voicelines/kris/pickup']),
             ("squda_dontshutdown", "dontShutdownText", ['gooditem', 'baditem']),
             ("squda_nowiggledance", "noWiggleText", None),
-            ("squda_dontdomarioman", "noMarioDelayText", ['quit', 'blip']),
+            ("squda_dontdomarioman", "noMarioDelayText", ['blip', 'quit']),
             ("squda_richpresence", "discordRpcText", None),
             ("squda_enablemeter", "enableMeterText", ['shield2', 'shieldReflect']),
             ("squda_nosugarcoats", "noSugarcoatingText", ['bellLow', 'bellMed']),

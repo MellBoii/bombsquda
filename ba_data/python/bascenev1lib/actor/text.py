@@ -101,26 +101,11 @@ class Text(bs.Actor):
         )
 
         if transition is self.Transition.FADE_IN:
-            if flash:
-                raise RuntimeError(
-                    'fixme: flash and fade-in currently cant both be on'
-                )
-            cmb = bs.newnode(
-                'combine',
-                owner=self.node,
-                attrs={
-                    'input0': color[0],
-                    'input1': color[1],
-                    'input2': color[2],
-                    'size': 4,
-                },
-            )
-            keys = {transition_delay: 0.0, transition_delay + 0.5: color[3]}
+            keys = {transition_delay: 0.0, transition_delay + 0.5: 1}
             if transition_out_delay is not None:
-                keys[transition_delay + transition_out_delay] = color[3]
+                keys[transition_delay + transition_out_delay] = 1
                 keys[transition_delay + transition_out_delay + 0.5] = 0.0
-            bs.animate(cmb, 'input3', keys)
-            cmb.connectattr('output', self.node, 'color')
+            bs.animate(self.node, 'opacity', keys)
 
         if flash:
             mult = 2.0

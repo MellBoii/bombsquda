@@ -1420,6 +1420,7 @@
   "pressAnyKeyButtonPlayAgainText": "press any key or button to continue",
   "pressAnyKeyButtonText": "press any key or button",
   "pressAnyKeyText": "press any key",
+  "pressAnythingToSkipIntro": "press anywhere to skip...",
   "pressJumpToFlyText": "** spam jump to fly **",
   "pressPunchToJoinText": "press PUNCH to join...",
   "pressToOverrideCharacterText": "press ${BUTTONS} to override your character",
@@ -1541,6 +1542,7 @@
   "melWindow": {
     "titleText": "bombsquda config",
     "noisePollutionText": "make my game inaudible",
+    "skipIntroText": "always skip intro",
     "spazHardModeText": "evil fucking hard mode!!!",
     "parryAlwaysText": "i wanna parry all the time",
     "dontShutdownText": "pls dont shutdown my pc",

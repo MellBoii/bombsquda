@@ -181,8 +181,14 @@ def cmd_end(ctx: CommandContext):
                 ctx.activity.end_game()
 
 def launch_main_menu_session() -> None:
-    assert babase.app.classic is not None
-
+    if getattr(ba.app, 'intro_done', None) is None:
+        disable_intro = ba.app.config.get('squda_skipintro', False)
+        ba.app.intro_done = True if disable_intro is True else False
+    if not ba.app.intro_done:
+        from bascenev1lib.intros.session import IntroSession
+        _bascenev1.new_host_session(IntroSession)
+        ba.app.intro_done = True
+        return
     _bascenev1.new_host_session(babase.app.classic.get_main_menu_session())
 
 def get_player_icon(sessionplayer: bascenev1.SessionPlayer) -> dict[str, Any]:
