@@ -57,6 +57,8 @@ class Startup():
         disable_wiggledance = False
     conflist = {
         "squda_parryalways": False,
+        "squda_skipintro": False,
+        "squda_chaosemeralds": True,
         "squda_richpresence": False,
         "squda_spazfuckedup": False,
         "squda_spazhardmode": False,

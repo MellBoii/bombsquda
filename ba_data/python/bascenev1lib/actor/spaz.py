@@ -375,6 +375,7 @@ class Spaz(bs.Actor):
         self.sorrow = None
         self.dozer = None
         self.mime = None
+        self.rue = None
 
         self.source_player = source_player
         self._dead = False
@@ -679,7 +680,8 @@ class Spaz(bs.Actor):
             self.dozer,
             self.kookoo,
             self.sorrow,
-            self.mime
+            self.mime,
+            self.rue
         ]
         for entity in entities_tofuckingnuke:
             if entity is not None:
@@ -745,7 +747,7 @@ class Spaz(bs.Actor):
     def _turbo_filter_add_press(self, source: str) -> None:
         """
         Can pass all button presses through here; if we see an obscene number
-        of them in a short time let's shame/pushish this guy for using turbo.
+        of them in a short time let's shame/punish this guy for using turbo.
         """
         t_ms = int(bs.basetime() * 1000.0)
         assert isinstance(t_ms, int)
@@ -1306,7 +1308,7 @@ class Spaz(bs.Actor):
             self._roulette_active = False
             return
         self._roulette_active = False
-        baditems = ['curse', 'spongebob', 'kookoo', 'dozer', 'ire', 'sorrow', 'mime']
+        baditems = ['curse', 'spongebob', 'kookoo', 'dozer', 'ire', 'sorrow', 'mime', 'rue']
         gooditems = ['metal', 'punch']
         if self._roulette_current in baditems:
             bs.getsound('baditem').play(position=self.node.position)
@@ -3142,11 +3144,11 @@ class Spaz(bs.Actor):
                 )
                 self._mime_wear_off_flash_timer = bs.Timer(
                     (POWERUP_WEAR_OFF_TIME_K - 2000) / 1000.0,
-                    bs.WeakCall(self._dozer_wear_off_flash),
+                    bs.WeakCall(self._mime_wear_off_flash),
                 )
                 self._mime_wear_off_timer = bs.Timer(
                     POWERUP_WEAR_OFF_TIME_K / 1000.0,
-                    bs.WeakCall(self._dozer_wear_off),
+                    bs.WeakCall(self._mime_wear_off),
                 )
                 self.mime = Dozer(actor=weakref.ref(self))
                 self.mime.start()
@@ -3171,7 +3173,7 @@ class Spaz(bs.Actor):
                 )
                 self._ire_wear_off_flash_timer = bs.Timer(
                     (POWERUP_WEAR_OFF_TIME_K - 2000) / 1000.0,
-                    bs.WeakCall(self._sorrow_wear_off_flash),
+                    bs.WeakCall(self._ire_wear_off_flash),
                 )
                 self._ire_wear_off_timer = bs.Timer(
                     POWERUP_WEAR_OFF_TIME_K / 1000.0,
@@ -3209,7 +3211,35 @@ class Spaz(bs.Actor):
                 self.sorrow = Sorrow(actor=weakref.ref(self))
                 self.sorrow.start()
                 self.sorrowful = True
-                
+            # that one bum that really likes chains
+            elif msg.poweruptype == 'rue':
+                self.scary_text(
+                    bs.Lstr(resource='rueAppears').evaluate(),
+                    color=(1, 1, 1),
+                    xpos=-5,
+                    endtime=7,
+                    spacing_y=0.55,
+                    spacing_x=0.17,
+                )
+                tex = PowerupBoxFactory.get().tex_rue
+                self.node.mini_billboard_2_texture = tex
+                t_ms = int(bs.time() * 1000.0)
+                assert isinstance(t_ms, int)
+                self.node.mini_billboard_2_start_time = t_ms
+                self.node.mini_billboard_2_end_time = (
+                    t_ms + POWERUP_WEAR_OFF_TIME_K
+                )
+                self._rue_wear_off_flash_timer = bs.Timer(
+                    (POWERUP_WEAR_OFF_TIME_K - 2000) / 1000.0,
+                    bs.WeakCall(self._rue_wear_off_flash),
+                )
+                self._rue_wear_off_timer = bs.Timer(
+                    POWERUP_WEAR_OFF_TIME_K / 1000.0,
+                    bs.WeakCall(self._rue_wear_off),
+                )
+                self.rue = Rue(actor=weakref.ref(self))
+                self.rue.start()
+                self.rued = True
             elif msg.poweruptype == 'triple_bombs':
                 tex = PowerupBoxFactory.get().tex_bomb
                 self._flash_billboard(tex)
@@ -5264,7 +5294,6 @@ class Spaz(bs.Actor):
             ba.app.classic.ach.award_local_achievement(
                 'DozireDeath'
             )
-        pass
             
     def _metal_wear_off_flash(self) -> None:
         if self.node:

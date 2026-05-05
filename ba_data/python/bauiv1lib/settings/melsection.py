@@ -66,7 +66,7 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
         self._scroll_width = target_width - 30
         self._scroll_height = target_height - 45
         self._sub_width = min(500, self._scroll_width * 0.95)
-        self._sub_height = 1450.0
+        self._sub_height = 1500.0
         start_y = self._sub_height - 60
         spacing = 2
         scroll_bottom = yoffs - 56 - self._scroll_height
@@ -78,6 +78,7 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
             ("squda_skipintro", "skipIntroText", None),
             ("squda_foxyjumpscare", "foxyJumpscareText", None),
             ("squda_spazhardmode", "spazHardModeText", ['hardmode', 'okitem']),
+            ("squda_chaosemeralds", "enableEmeraldsText", None),
             ("squda_parryalways", "parryAlwaysText", ['attempt_parry', 'voicelines/kris/pickup']),
             ("squda_dontshutdown", "dontShutdownText", ['gooditem', 'baditem']),
             ("squda_nowiggledance", "noWiggleText", None),

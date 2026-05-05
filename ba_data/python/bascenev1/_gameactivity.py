@@ -250,7 +250,8 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         self.did_overtime = False
         self.new_emerald = None
         self.emeralds = []
-        self.allow_emeralds = True
+        config_emeralds = bs.app.config.get('squda_chaosemeralds', True)
+        self.allow_emeralds = config_emeralds
         self.lp = None
         # significantly boost emerald drop
         # chance in coop (so bots get a chance, and
