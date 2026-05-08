@@ -606,6 +606,7 @@ class Spaz(bs.Actor):
         self.punch_callback: Callable[[Spaz], Any] | None = None
         self.pick_up_powerup_callback: Callable[[Spaz], Any] | None = None
         self.emeralds = []
+        self.voicelines = []
         self.emeralds_indicator = None
         self.update_emerald_indicator()
         self.flashing = False
@@ -629,6 +630,7 @@ class Spaz(bs.Actor):
         self.pick_up_powerup_callback = None
         self.sparkies = None
         self.super_flash = None
+        self.stop_voicelines()
 
         # Clean up timers to prevent leaks
         timers_to_clear = [
@@ -2192,7 +2194,18 @@ class Spaz(bs.Actor):
                 self.equip_shields()
             self.equip_boxing_gloves()
             self.canparry = True
-            random.choice(self.media['gloat_sounds']).play(position=self.node.position)
+            sound = random.choice(self.media['gloat_sounds'])
+            node = bs.newnode(
+                'sound',
+                owner=self.node,
+                attrs={
+                    'sound': sound,
+                    'loop': False,
+                    'position': self.node.position,
+                }
+            )
+            self.node.connectattr('position', node, 'position')
+            self.voicelines.append(node)
             if not shouldntsetmusic:
                 # music setters (character based)
                 gnode = self.activity.globalsnode
@@ -3734,9 +3747,13 @@ class Spaz(bs.Actor):
             # Reset our times parried, due to getting hurt.
             self.timesparried = 0
             bs.timer(0.1, self.updatemeter)
+            self.stop_voicelines()
             source_player = msg.get_source_player(bs.Player)
             if source_player:
                 self.last_player_attacked_by = source_player
+                if self.source_player:
+                    if source_player.team == self.source_player.team:
+                        self.handle_ffire()
             # Change last hit type to the message's hit type.
             self.lasthittype = msg.hit_type
             # If they've got a shield, deliver it to that instead.
@@ -4170,6 +4187,7 @@ class Spaz(bs.Actor):
                     bs.timer(4.0, self.node.delete)
                     self.drop_emeralds()
                     self.explode_deton_bombs()
+                    self.stop_voicelines()
         elif isinstance(msg, bs.OutOfBoundsMessage):
             if self.parrying == True:
                 self.tptosafety()
@@ -4392,7 +4410,18 @@ class Spaz(bs.Actor):
         elif isinstance(msg, bs.CelebrateMessage):
             if self.node:
                 self.node.handlemessage('celebrate', int(msg.duration * 1000))
-                random.choice(self.media['victory_sounds']).play(position=self.node.position)
+                sound = random.choice(self.media['victory_sounds'])
+                node = bs.newnode(
+                    'sound',
+                    owner=self.node,
+                    attrs={
+                        'sound': sound,
+                        'loop': False,
+                        'position': self.node.position,
+                    }
+                )
+                self.node.connectattr('position', node, 'position')
+                self.voicelines.append(node)
         else:
             return super().handlemessage(msg)
         return None
@@ -5355,6 +5384,7 @@ class Spaz(bs.Actor):
             return
         factory = SpazFactory.get()
         media = factory.get_media(self.character)
+        self.media = media
         thisdict = {
             'jump_sounds': media['jump_sounds'],
             'attack_sounds': media['attack_sounds'],
@@ -5380,3 +5410,59 @@ class Spaz(bs.Actor):
             setattr(self.node, key, value)
         if do_funny_poof:
             self.do_funny_poof()
+    
+    def handle_betrayal_notice(self):
+        if not self.node or not self.is_alive():
+            return
+        if len(self.media['teamkill_sounds']) == 0:
+            sound = self.media['impact_sounds']
+            sound = random.choice(sound)
+        else:
+            sound = self.media['teamkill_sounds']
+            sound = random.choice(sound)
+        def playit(sound):
+            if not self.node or not self.is_alive():
+                return
+            node = bs.newnode(
+                'sound',
+                owner=self.node,
+                attrs={
+                    'sound': sound,
+                    'loop': False,
+                    'position': self.node.position,
+                }
+            )
+            self.node.connectattr('position', node, 'position')
+            self.voicelines.append(node)
+        time = 1.0 * random.random()
+        bs.timer(time, bs.Call(playit, sound))
+    
+    def handle_ffire(self):
+        if len(self.media['ffire_sounds']) == 0:
+            sound = self.media['attack_sounds']
+            sound = random.choice(sound)
+        else:
+            sound = self.media['ffire_sounds']
+            sound = random.choice(sound)
+        def playit(sound):
+            if not self.node or not self.is_alive():
+                return
+            node = bs.newnode(
+                'sound',
+                owner=self.node,
+                attrs={
+                    'sound': sound,
+                    'loop': False,
+                    'position': self.node.position,
+                }
+            )
+            self.node.connectattr('position', node, 'position')
+            self.voicelines.append(node)
+        time = 1.0 * random.random()
+        bs.timer(time, bs.Call(playit, sound))
+    
+    def stop_voicelines(self):
+        for node in self.voicelines:
+            if node:
+                node.volume = 0
+                node.delete()

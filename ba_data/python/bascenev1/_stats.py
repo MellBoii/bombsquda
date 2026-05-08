@@ -527,6 +527,15 @@ class Stats:
                     color=color,
                     image=image,
                 )
+            if killed:
+                if killer is not None and killer.team is player.team:
+                    for player in player.team.players:
+                        if (
+                            player.actor 
+                            and killer != player
+                        ):
+                            player.actor.handle_betrayal_notice()
+                            
             if killed and _bascenev1.getactivity().announce_player_deaths:
                 if killer is player:
                     hit = killer.actor.lasthittype

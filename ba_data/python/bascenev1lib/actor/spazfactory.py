@@ -357,6 +357,8 @@ class SpazFactory:
                 'fall_sounds': [bs.getsound(s) for s in char.fall_sounds],
                 'victory_sounds': [bs.getsound(s) for s in char.victory_sounds],
                 'gloat_sounds': [bs.getsound(s) for s in char.gloat_sounds],
+                'ffire_sounds': [bs.getsound(s) for s in char.ffire_sounds],
+                'teamkill_sounds': [bs.getsound(s) for s in char.teamkill_sounds],
                 'color_texture': bs.gettexture(char.color_texture),
                 'color_mask_texture': bs.gettexture(char.color_mask_texture),
                 'icon_texture': bs.gettexture(char.icon_texture),
