@@ -219,7 +219,7 @@ class StoreSubsystem:
                     'characters.orangecap',
                     'characters.homer',
                     'characters.rem',
-                    'characters.sparkii'
+                    'characters.sparkii',
                     'characters.kookoo'
                 ]
             }
