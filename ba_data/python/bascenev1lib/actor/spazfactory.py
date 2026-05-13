@@ -21,64 +21,6 @@ class SpazFactory:
     the shared factory for the current activity.
     """
 
-    impact_sounds_medium: Sequence[bs.Sound]
-    """A tuple of bs.Sound-s for when a bs.Spaz hits something kinda hard."""
-
-    impact_sounds_hard: Sequence[bs.Sound]
-    """A tuple of bs.Sound-s for when a bs.Spaz hits something really hard."""
-
-    impact_sounds_harder: Sequence[bs.Sound]
-    """A tuple of bs.Sound-s for when a bs.Spaz hits something really
-       really hard."""
-    
-    lobotomy: Sequence[bs.Sound]
-    """Sound for when players hit themselves 
-       VERY hard."""
-
-    single_player_death_sound: Sequence[bs.Sound]
-    """The sound that plays for an 'important' spaz death such as in
-       co-op games."""
-
-    punch_sound_weak: bs.Sound
-    """A weak punch bs.Sound."""
-
-    punch_sound: bs.Sound
-    """A standard punch bs.Sound."""
-
-    punch_sound_strong: Sequence[bs.Sound]
-    """A tuple of stronger sounding punch bs.Sounds."""
-
-    punch_sound_stronger: bs.Sound
-    """A really really strong sounding punch bs.Sound."""
-
-    swish_sound: bs.Sound
-    """A punch swish bs.Sound."""
-
-    block_sound: bs.Sound
-    """A bs.Sound for when an attack is blocked by invincibility."""
-
-    shatter_sound: bs.Sound
-    """A bs.Sound for when a frozen bs.Spaz shatters."""
-
-    splatter_sound: bs.Sound
-    """A bs.Sound for when a bs.Spaz blows up via curse."""
-
-    spaz_material: bs.Material
-    """A bs.Material applied to all of parts of a bs.Spaz."""
-
-    roller_material: bs.Material
-    """A bs.Material applied to the invisible roller ball body that
-       a bs.Spaz uses for locomotion."""
-
-    punch_material: bs.Material
-    """A bs.Material applied to the 'fist' of a bs.Spaz."""
-
-    pickup_material: bs.Material
-    """A bs.Material applied to the 'grabber' body of a bs.Spaz."""
-
-    curse_material: bs.Material
-    """A bs.Material applied to a cursed bs.Spaz that triggers an explosion."""
-
     _STORENAME = bs.storagename()
 
     def _preload(self, character: str) -> None:
@@ -298,7 +240,8 @@ class SpazFactory:
 
         self.shield_up_sound = (
             bs.getsound('shieldUp'),
-            bs.getsound('shield2')
+            bs.getsound('shield2'),
+            bs.getsound('shield3'),
         )
         self.shield_down_sound = bs.getsound('shieldDown')
         self.shield_hit_sound = bs.getsound('shieldHit')
@@ -375,6 +318,9 @@ class SpazFactory:
                 'earthportrait': bs.gettexture(char.earthportrait),
                 'EBlose': bs.gettexture(char.EBlose),
                 'EBwin': bs.gettexture(char.EBwin),
+                'style': char.style,
+                'general_style': char.general_style,
+                'expression_changes': char.expression_changes,
             }
         else:
             media = self.spaz_media[character]
