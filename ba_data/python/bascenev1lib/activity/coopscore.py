@@ -14,6 +14,7 @@ import bacommon.bs
 from bacommon.login import LoginType
 import bascenev1 as bs
 import bauiv1 as bui
+import babase as ba
 
 from bascenev1lib.actor.text import Text
 from bascenev1lib.actor.zoomtext import ZoomText
@@ -581,7 +582,7 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
             on_cancel_call=menu_button.activate,
         )
 
-    def _player_press(self) -> None:
+    def _player_press(self, outcome: str) -> None:
         # (Only for headless builds).
 
         # If this activity is a good 'end point', ask server-mode just
@@ -597,43 +598,50 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
                 bs.app.classic.server.handle_transition()
             )
             assert isinstance(self._server_transitioning, bool)
+        else:
+            self._server_transitioning = False
 
         # If server-mode is handling this, don't do anything ourself.
-        if self._server_transitioning is True:
+        if (
+            self._server_transitioning is True 
+            and bs.app.classic.server is not None
+        ):
             return
 
         # Otherwise restart current level.
         self._campaign.set_selected_level(self._level_name)
         with self.context:
-            self.end({'outcome': 'restart'})
+            self.end({'outcome': outcome})
 
     def _safe_assign(self, player: bs.Player) -> None:
-        # (Only for headless builds).
-
         # Just to be extra careful, don't assign if we're transitioning out.
         # (though theoretically that should be ok).
         if not self.is_transitioning_out() and player:
             player.assigninput(
                 (
                     bs.InputType.JUMP_PRESS,
-                    bs.InputType.PUNCH_PRESS,
                     bs.InputType.BOMB_PRESS,
                     bs.InputType.PICK_UP_PRESS,
                 ),
-                self._player_press,
+                bs.WeakCall(self._player_press, 'restart'),
+            )
+            player.assigninput(
+                bs.InputType.PUNCH_PRESS, 
+                bs.WeakCall(
+                    self._player_press, 'next_level'
+                )
             )
 
     @override
     def on_player_join(self, player: bs.Player) -> None:
         super().on_player_join(player)
+        
+        # Host can't press retry button, so anyone can do it instead.
+        time_till_assign = max(
+            0, self._birth_time + self._min_view_time - bs.time()
+        )
 
-        if bs.app.classic is not None and bs.app.classic.server is not None:
-            # Host can't press retry button, so anyone can do it instead.
-            time_till_assign = max(
-                0, self._birth_time + self._min_view_time - bs.time()
-            )
-
-            bs.timer(time_till_assign, bs.WeakCall(self._safe_assign, player))
+        bs.timer(time_till_assign, bs.WeakCall(self._safe_assign, player))
 
     @override
     def on_begin(self) -> None:
@@ -772,25 +780,28 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
             position=(0, 230),
         ).autoretain()
 
-        if app.classic is not None and app.classic.server is None:
-            # If we're running in normal non-headless build, show this text
-            # because only host can continue the game.
+        if len(self._playerinfos) > 1:
             adisp = plus.get_v1_account_display_string()
-            txt = Text(
-                bs.Lstr(
-                    resource='waitingForHostText', subs=[('${HOST}', adisp)]
-                ),
+            time_till_assign = max(
+                0, self._birth_time + self._min_view_time - bs.time()
+            )
+            subs = [
+                ('${BOMB}', ba.charstr(ba.SpecialChar.RIGHT_BUTTON)),
+                ('${PUNCH}', ba.charstr(ba.SpecialChar.LEFT_BUTTON)),
+                ('${JUMP}', ba.charstr(ba.SpecialChar.BOTTOM_BUTTON)),
+                ('${GRAB}', ba.charstr(ba.SpecialChar.TOP_BUTTON)),
+            ]
+            Text(
+                bs.Lstr(resource='coopScorePlayerPress', subs=subs),
                 maxwidth=300,
                 transition=Text.Transition.FADE_IN,
-                transition_delay=8.0,
-                scale=0.85,
+                transition_delay=time_till_assign,
+                scale=1.4,
                 h_align=Text.HAlign.CENTER,
                 v_align=Text.VAlign.CENTER,
                 color=(1, 1, 0, 1),
-                position=(0, -230),
+                position=(0, -140),
             ).autoretain()
-            assert txt.node
-            txt.node.client_only = True
         else:
             # In headless build, anyone can continue the game.
             sval = bs.Lstr(resource='pressAnyButtonPlayAgainText')
