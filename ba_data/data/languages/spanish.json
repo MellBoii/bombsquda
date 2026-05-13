@@ -1292,17 +1292,10 @@
   "noThanksText": "No Gracias",
   "noTournamentsInTestBuildText": "WARNING: Tournament scores from this test build will be ignored.",
   "noValidMapsErrorText": "No valid maps found for this game type.",
-<<<<<<< Updated upstream
   "notEnoughPlayersRemainingText": "no hay suficientes jugadores, reinicia",
   "notEnoughPlayersText": "hey, ¡necesitas al menos ${COUNT} para empezar esto!",
   "coopScorePlayerPress": "Cualquier jugador puede presionar un botón para continuar.\nPresiona ${JUMP}, ${BOMB} o ${GRAB} para reiniciar, y ${PUNCH} para continuar",
   "notEnoughticketsText": "broke ass mf :sob:",
-=======
-  "notEnoughPlayersRemainingText": "not enough players are left, restart",
-  "notEnoughPlayersText": "hey, you need atleast ${COUNT} to start this!",
-  "coopScorePlayerPress": "Cualquier jugador puede presionar un botón para continuar.\nPresiona ${JUMP}, ${BOMB} o ${GRAB} para reiniciar, y ${PUNCH} para continuar",
-  "notEnoughtiquetesText": "broke ass mf :sob:",
->>>>>>> Stashed changes
   "transferText": "Transferir Monedas",
   "getticketsText": "Consigue más tiquetes...",
   "transferSend": "mandar...",
