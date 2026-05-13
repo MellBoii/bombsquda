@@ -122,6 +122,8 @@ class StoreSubsystem:
                 'characters.homer': {'character': 'Homer'},
                 'characters.ogspaz': {'character': 'OG Spaz'},
                 'characters.rem': {'character': 'Rem'},
+                'characters.sparkii': {'character': 'Sparkii'},
+                'characters.kookoo': {'character': 'Kookoo'},
                 'maps.lake_frigid': {'map_type': maps.LakeFrigid},
             }
         return babase.app.classic.store_items
@@ -217,6 +219,8 @@ class StoreSubsystem:
                     'characters.orangecap',
                     'characters.homer',
                     'characters.rem',
+                    'characters.sparkii',
+                    'characters.kookoo'
                 ]
             }
         ]

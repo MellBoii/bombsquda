@@ -18,6 +18,7 @@ store_prices = {
     'characters.rk': 1450,
     #'characters.noob': 1200,
     'characters.mell': 4300,
+    'characters.sparkii': 2500,
     #'characters.gummyboiyt': 750,
     'characters.rayman': 670,
     'characters.bowser': 1150,
@@ -34,6 +35,7 @@ store_prices = {
     'characters.baller': 350,
     'characters.homer': 870,
     'characters.ogspaz': 700,
+    'characters.kookoo': 1300,
 }
 # A dict for store character names (basically coded 
 # names like characters.charname) that correspond to a spazappearance name.
@@ -46,6 +48,7 @@ appearance_dict = {
     'characters.rk': 'Roaring Knight',
     #'characters.noob': 'Noob',
     'characters.mell': 'Mell',
+    'characters.sparkii': 'Sparkii',
     #'characters.gummyboiyt': 'GummyBoiYT',
     'characters.rayman': 'Rayman',
     'characters.bowser': 'Bowser',
@@ -64,6 +67,7 @@ appearance_dict = {
     # Shouldn't be on store or etc but still use same system
     'characters.ire': 'Ire',
     'characters.dozer': 'Dozer',
+    'characters.kookoo': 'Kookoo',
 }
 # A dict we use in character select, profile edit, 
 # etc... to swapout vanilla or Gummy's Overhaul characters for ours.
