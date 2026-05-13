@@ -114,7 +114,7 @@ class RichPresence:
                         "details": bs.Lstr(resource=f'{self._r}.menuText').evaluate(),
                         "assets": {
                             "large_image": "logo",
-                            "large_text": f"BombSquda v{melly.version}",
+                            "large_text": f"BombSquda v{melly.version} (In-dev)",
                         },
                         "state": lstr.evaluate(),
                         "timestamps": {"start": self.starting_time},
@@ -129,7 +129,7 @@ class RichPresence:
                         "details": bs.Lstr(resource=f'{self._r}.menuAFKText').evaluate(),
                         "assets": {
                             "large_image": "logo",
-                            "large_text": f"BombSquda v{melly.version}",
+                            "large_text": f"BombSquda v{melly.version} (In-dev)",
                         },
                         "timestamps": {"start": self.starting_time},
                     }
