@@ -114,7 +114,7 @@ class RichPresence:
                         "details": bs.Lstr(resource=f'{self._r}.menuText').evaluate(),
                         "assets": {
                             "large_image": "logo",
-                            "large_text": f"BombSquda v{melly.version}\nlinebreak",
+                            "large_text": f"BombSquda v{melly.version}",
                         },
                         "state": lstr.evaluate(),
                         "timestamps": {"start": self.starting_time},
@@ -152,11 +152,11 @@ class RichPresence:
                             playerformatted.append(f'{player.getname()} ({player.character})')
                         if not playerformatted:
                             playerformatted = [bs.Lstr(resource=f'{self._r}.noOne').evaluate()]
-                        list = ", ".join(playerformatted)
+                        plist = ", ".join(playerformatted)
                         state = bs.Lstr(
                             resource=f'{self._r}.coopMultiplayerText',
                             subs=[
-                                ('${LIST}', list),
+                                ('${LIST}', plist),
                             ]
                         ).evaluate()
                     else:
@@ -176,7 +176,12 @@ class RichPresence:
                                 ('${CHAR}', character),
                             ]
                         ).evaluate()
-                        
+                    if not isinstance(session, bs.CoopSession):
+                        state = bs.Lstr(resource='partyText').evaluate()
+                        party = {
+                            "id": "00",
+                            "size": ( max(0, len( activity.players) ), 8 ),                    
+                        }
                     small_text2 = f'({session.campaign_level_name})' if isinstance(session, bs.CoopSession) else ''
                     if not sesssion:
                         sesssion = ''
