@@ -81,6 +81,8 @@ class Appearance:
         self.ffire_sounds: list[str] = []
         self.teamkill_sounds: list[str] = []
         self.style = 'spaz'
+        self.expression_changes = {}
+        self.general_style = 'normal'
         self.default_color: tuple[float, float, float] | None = None
         self.default_highlight: tuple[float, float, float] | None = None
 
@@ -846,6 +848,34 @@ def register_appearances() -> None:
     t.style = 'bones'
     t.default_color = (232 / 255, 17 / 255, 17 / 255)
     t.default_highlight = (240 / 255, 14 / 255, 14 / 255)
+    
+    # object show reference, but also like not ###################################
+    t = Appearance('Sparkii')
+    t.color_texture = 'sparkiiColor'
+    t.color_mask_texture = 'sparkiiColorMask'
+    t.icon_texture = 'sparkiiIcon'
+    t.icon_mask_texture = 'sparkiiIconCM'
+    t.head_mesh = 'sparkiiHead'
+    t.torso_mesh = 'sparkiiTorso'
+    t.pelvis_mesh = 'none'
+    t.upper_arm_mesh = 'sparkiiUpperArm'
+    t.forearm_mesh = 'sparkiiForeArm'
+    t.hand_mesh = 'sparkiiHand'
+    t.upper_leg_mesh = 'sparkiiUpperLeg'
+    t.lower_leg_mesh = 'sparkiiLowerLeg'
+    t.toes_mesh = 'sparkiiToes'
+    t.jump_sounds = ['voicelines/toad/jump' + str(i + 1) + '' for i in range(3)]
+    t.attack_sounds = ['voicelines/toad/attack' + str(i + 1) + '' for i in range(3)]
+    t.impact_sounds = ['voicelines/toad/hurt' + str(i + 1) + '' for i in range(3)]
+    t.death_sounds = ['voicelines/toad/death']
+    t.pickup_sounds = ['voicelines/toad/pickup']
+    t.fall_sounds = ['voicelines/toad/fall']
+    t.victory_sounds = ['voicelines/toad/win']
+    t.gloat_sounds = ['voicelines/toad/gloat']
+    t.style = 'bones'
+    t.general_style = 'metallic'
+    t.default_color = mell.hex_to_color('2a3ba4')
+    t.default_highlight = mell.hex_to_color('c6a598')
 
     # The Original      Spaz ###################################
     t = Appearance('OG Spaz')
@@ -929,4 +959,5 @@ def register_appearances() -> None:
     t.pickup_sounds = ['spazPickup01']
     t.fall_sounds = ['spazFall01']
     t.style = 'cyborg'
+    t.general_style = 'metallic'
     t.victory_sounds = ['spazJump01']

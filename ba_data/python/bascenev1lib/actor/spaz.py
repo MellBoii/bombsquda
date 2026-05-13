@@ -320,6 +320,8 @@ class Spaz(bs.Actor):
         super().__init__()
         shared = SharedObjects.get()
         activity = self.activity
+        if not getattr(self, 'character', None):
+            self.character = character
 
         factory = SpazFactory.get()
 
@@ -469,6 +471,12 @@ class Spaz(bs.Actor):
             character = fav_char
         media = factory.get_media(character)
         self.media = media
+        self.char_style = media['general_style']
+        supported_styles = ['normal', 'metallic']
+        if self.char_style not in supported_styles:
+            print(f'{self.char_style} IS NOT A SUPPORTED GENERAL STYLE. FALLING BACK TO NORMAL')
+            self.char_style = 'normal'
+        self.expression_list = media['expression_changes']
         punchmats = (factory.punch_material, shared.attack_material)
         pickupmats = (factory.pickup_material, shared.pickup_material)
         self.node: bs.Node = bs.newnode(
@@ -1053,6 +1061,9 @@ class Spaz(bs.Actor):
                 y, 0.05, 0, 0,
                 0, 20*400, 0
             )
+    
+    def set_expression(self):
+        pass
     
     def _start_screaming(self):
         if not self.node or not self.is_alive():
@@ -3752,7 +3763,10 @@ class Spaz(bs.Actor):
             if source_player:
                 self.last_player_attacked_by = source_player
                 if self.source_player:
-                    if source_player.team == self.source_player.team:
+                    if (
+                        source_player.team == self.source_player.team
+                        and source_player is not self.source_player
+                    ):
                         self.handle_ffire()
             # Change last hit type to the message's hit type.
             self.lasthittype = msg.hit_type
@@ -5005,17 +5019,17 @@ class Spaz(bs.Actor):
             self.sugarcoat_overlay(sound='block', image='white')
             self.shatter()
         elif intensity >= 5.0:
-            if self.node.style == 'cyborg':
+            if self.char_style == 'metallic':
                 sounds = SpazFactory.get().impact_sounds_harder_metal
             else:
                 sounds = SpazFactory.get().impact_sounds_harder
         elif intensity >= 3.0:
-            if self.node.style == 'cyborg':
+            if self.char_style == 'metallic':
                 sounds = SpazFactory.get().impact_sounds_hard_metal
             else:
                 sounds = SpazFactory.get().impact_sounds_hard
         else:
-            if self.node.style == 'cyborg':
+            if self.char_style == 'metallic':
                 sounds = SpazFactory.get().impact_sounds_medium_metal
             else:
                 sounds = SpazFactory.get().impact_sounds_medium
@@ -5408,6 +5422,13 @@ class Spaz(bs.Actor):
         for key in thisdict.keys():
             value = thisdict[key]
             setattr(self.node, key, value)
+            
+        self.char_style = media['general_style']
+        supported_styles = ['normal', 'metallic']
+        if self.char_style not in supported_styles:
+            print(f'{self.char_style} IS NOT A SUPPORTED GENERAL STYLE. FALLING BACK TO NORMAL')
+            self.char_style = 'normal'
+            
         if do_funny_poof:
             self.do_funny_poof()
     

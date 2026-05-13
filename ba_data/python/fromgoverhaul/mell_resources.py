@@ -265,6 +265,32 @@ def announcer_say(voiceline: str):
         gs('unknown').play(volume=volume)
         print(f'ANNOUNCER VOICELINE {voiceline} IS UNKNOWN')
 
+def hex_to_color(hex_color: str) -> tuple:
+    # Remove the '#' from the string if provided.
+    if hex_color.startswith('#'):
+        hex_color = hex_color.lstrip('#')
+    # Check if this has a valid length.
+    hexlength = len(hex_color)
+    if not hexlength in [6, 8]:
+        raise ValueError(f'Invalid HEX color provided: "{hex_color}"')
+
+    # Convert the hex bytes to their true byte form.
+    ar, ag, ab, aa = (
+        (int.from_bytes(bytes.fromhex(hex_color[0:2]))),
+        (int.from_bytes(bytes.fromhex(hex_color[2:4]))),
+        (int.from_bytes(bytes.fromhex(hex_color[4:6]))),
+        (
+            (int.from_bytes(bytes.fromhex(hex_color[6:8])))
+            if hexlength == 8
+            else None
+        ),
+    )
+    # Divide all numbers by 255 and return.
+    nr, ng, nb, na = (
+        x / 255 if x is not None else None for x in (ar, ag, ab, aa)
+    )
+    return (nr, ng, nb, na) if aa is not None else (nr, ng, nb)
+
 def get_unique_bs_id():
     """Gets the player's unique BombSquda ID.
     If it exists in the config, just returns that.
