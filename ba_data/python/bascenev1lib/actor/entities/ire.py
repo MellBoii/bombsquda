@@ -126,11 +126,11 @@ class Ire(bs.Actor):
         
         # wow this is very unsafe.. should do checks
         # get assets (textures) from our skin
-        skin_assets = ASSETS[self.skin]['textures']
+        skin_assets = ASSETS.get(self.skin, {}).get('textures', {})
         # hash data from the action name
-        tex, frames, delay, repeat = skin_assets[name]
+        tex, frames, delay, repeat = skin_assets.get(name)
         # get a path for all the actual assets
-        path = skin_assets['path']
+        path = skin_assets.get('path')
         pos = (self._x, self._y)
         scale = (self._scale, self._scale)
         if self.head:
@@ -152,10 +152,10 @@ class Ire(bs.Actor):
     def playsound(self, name: str):
         """Given a action name, plays a sound
         using assets from its' skin."""
-        skin_assets = ASSETS[self.skin]['sounds']
-        path = skin_assets['path']
-        sound = skin_assets[name]
-        volume = 1.5
+        skin_assets = ASSETS.get(self.skin, {}).get('sounds', {})
+        path = skin_assets.get('path', '')
+        sound = skin_assets.get(name, 'trublank')
+        volume = 1.3
         bs.getsound(f'{path}{sound}').play(volume=volume)
     
     def create_name_text(self):

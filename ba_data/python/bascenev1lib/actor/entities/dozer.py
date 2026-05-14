@@ -5,6 +5,25 @@ import fromgoverhaul.mell_resources as mell
 import random
 from bascenev1lib.actor.image_looped import LoopingImageAnimation
 
+ASSETS = {
+    'normal': {
+        'textures': {
+            # prefix for path
+            'path': 'entities/dozer/default/',
+            # 'action': ('filename', frame count, frame delay, loop)
+            'static': ('static', 3, 0.06, True),
+            'wake': ('wake', 3, 0.06, True),
+            'kill': ('kill', 3, 0.01, True),
+        },
+        'sounds': {
+            # prefix for path
+            'path': 'entities/dozer/default/',
+            'kill': 'kill',
+            'ticking': 'ticking',
+        },
+    },
+}
+
 class Dozer(bs.Actor):
     """spaz must stand still, or gets its head blown"""
     def __init__(self, actor: bs.Actor):
@@ -20,6 +39,7 @@ class Dozer(bs.Actor):
         self.name_text = None
         self._slot = 0
         self._rotate_timer = None
+        self.skin = 'normal'
     
     def _get_free_space(self):
         # ok... get a free space based on how many of us
@@ -34,7 +54,7 @@ class Dozer(bs.Actor):
         self.exists2 = True
         entities = self._activity().entities
         self._slot = _get_free_slot(entities)
-        if len(entities) > 0:
+        if len(self.getactivity().players) > 1:
             self.color = self.actor().node.color
             self.high = self.actor().node.highlight
         else:
@@ -50,22 +70,26 @@ class Dozer(bs.Actor):
         self._x = x
         self._y = y
     
-    def recreate_head(
-        self, 
-        tex: str = 'ktransb',
-        frames: int = 1, 
-        delay: int = 0.05,
-        repeat: bool = True,
-    ):
+    def recreate_head(self, name: str):
+        """Given a action name, recreates the
+        entity's head at its' position using assets from
+        its' skin and the action name."""
+        
+        # wow this is very unsafe.. should do checks
+        # get assets (textures) from our skin
+        skin_assets = ASSETS.get(self.skin, {}).get('textures', {})
+        # hash data from the action name
+        tex, frames, delay, repeat = skin_assets.get(name)
+        # get a path for all the actual assets
+        path = skin_assets.get('path')
         pos = (self._x, self._y)
         scale = (self._scale, self._scale)
-        # delete ye olde head
         if self.head:
-            self.head.node.delete()
-        # transition in persay idk man
+            self.head.die()
+            self.head = None
         self.head = LoopingImageAnimation(
-            tex, 
-            f'{tex}CM', 
+            f'{path}{tex}', 
+            f'{path}{tex}CM', 
             frame_count=frames, 
             frame_delay=delay, 
             scale=scale, 
@@ -75,6 +99,34 @@ class Dozer(bs.Actor):
         )
         self.head.node.tint_color = self.color
         self.head.node.tint2_color = self.high
+    
+    def playsound(self, name: str):
+        """Given a action name, plays a sound
+        using assets from its' skin."""
+        skin_assets = ASSETS.get(self.skin, {}).get('sounds', {})
+        path = skin_assets.get('path', '')
+        sound = skin_assets.get(name, 'trublank')
+        volume = 1.3
+        bs.getsound(f'{path}{sound}').play(volume=volume)
+    
+    def create_name_text(self):
+        self.name_text =  bs.newnode(
+            'text',
+            delegate=self,
+            attrs={
+                'text': f'({self.actor().node.name})',
+                'scale': 1.0,
+                'color': self.actor().node.color,
+                'h_align': 'center',
+                'position': (self._x - 3, self._y - 90),
+                'v_attach': 'bottom',
+                'front': True,
+            },
+        )
+        bs.animate(self.name_text, 'opacity', {
+            0.0: 0,
+            0.5: 0.5,
+        })
     
     def _rotate(self):
         if not self.head.node:
@@ -108,26 +160,10 @@ class Dozer(bs.Actor):
         self._get_free_space()
         scale = 200
         self._scale = scale
-        self.recreate_head('dozer', frames=3, delay=0.06, repeat=True)
-        self.name_text =  bs.newnode(
-            'text',
-            delegate=self,
-            attrs={
-                'text': f'({self.actor().node.name})',
-                'scale': 1.0,
-                'color': self.actor().node.color,
-                'h_align': 'center',
-                'position': (self._x - 3, self._y - 90),
-                'v_attach': 'bottom',
-                'front': True,
-            },
-        )
-        bs.animate(self.name_text, 'opacity', {
-            0.0: 0,
-            0.5: 0.5,
-        })
+        self.recreate_head('static')
+        self.create_name_text()
         time = random.uniform(0.8, 1.7)
-        bs.getsound('dwarnin').play(1.5)
+        self.playsound('ticking')
         bs.timer(time, self._check_standing)
         mell.shake_node(
             self.head.node,
@@ -154,8 +190,8 @@ class Dozer(bs.Actor):
         return
 
     def _death(self):
-        bs.getsound('ddie').play(1.2)
-        self.recreate_head('dozerd', frames=3, delay=0.01, repeat=True)
+        self.playsound('kill')
+        self.recreate_head('kill')
         def die():
             # if parrying, DON'T die.
             if self.actor().parrying:
@@ -169,7 +205,7 @@ class Dozer(bs.Actor):
         # schedules... yummy...
         bs.timer(0.2, self._delete)
         bs.timer(0.18, die)
-        self.actor().wheelchair_warning()
+        bs.timer(0.1, self.actor().wheelchair_warning)
     
     def _delete(self):
         # delete nodes
