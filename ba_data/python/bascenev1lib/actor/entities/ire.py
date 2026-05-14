@@ -6,11 +6,62 @@ import fromgoverhaul.mell_resources as mell
 import random
 from bascenev1lib.actor.image_looped import LoopingImageAnimation
 
+# define paths to assets like textures and sounds.
+# useful for things like skins
+ASSETS = {
+    'normal': {
+        'textures': {
+            # prefix for path
+            'path': 'entities/ire/default/',
+            # 'action': ('filename', frame count, frame delay, loop)
+            'appear': ('appear', 3, 0.08, True),
+            'ready': ('ready', 3, 0.06, True),
+            'kill': ('kill', 4, 0.05, True),
+            'frown': ('frown', 3, 0.05, True),
+            'angry': ('angry', 3, 0.05, True),
+            'attack': ('attack', 4, 0.05, False),
+        },
+        'sounds': {
+            # prefix for path
+            'path': 'entities/ire/default/',
+            'kill': 'kill',
+            'appear': 'appear',
+            'ready': 'ready',
+            'attack': 'attack',
+            'player_die': 'shatter_worse',
+        },
+    },
+    'kitty': {
+        'textures': {
+            # prefix for path
+            'path': 'entities/ire/kitty/',
+            # 'action': ('filename', frame count, frame delay, loop)
+            'appear': ('appear', 3, 0.08, True),
+            'ready': ('ready', 3, 0.06, True),
+            'kill': ('kill', 4, 0.05, True),
+            'frown': ('frown', 3, 0.05, True),
+            'angry': ('angry', 3, 0.05, True),
+            'attack': ('attack', 4, 0.05, False),
+        },
+        'sounds': {
+            # prefix for path
+            'path': 'entities/ire/default/',
+            'kill': 'kill',
+            'appear': 'appear',
+            'ready': 'ready',
+            'attack': 'attack',
+            'player_die': 'shatter_worse',
+        },
+    },
+}
+
 class Ire(bs.Actor):
     """spaz must jump when it strikes, or he dies
     'it's pronounced eye-r-uh!', was what this docstring originally said
     (and yes, that's how it's pronounced and i'm standing by that)"""
     def __init__(self, actor: bs.Actor):
+        """weakref actor otherwise the game 
+        cries about it not dying"""
         super().__init__()
         self.actor = actor
         self.color = None
@@ -18,13 +69,14 @@ class Ire(bs.Actor):
         self.head = None
         self._x = 0
         self._y = 0
-        self._scale = 0
+        self._scale = 200
         self.tick_timer = None
         self.exists2 = False
         self.name_text = None
         self.check_timer = None
         self._slot = 0
         self.times_avoided = 0
+        self.skin = 'normal'
 
     def _get_free_space(self):
         # ok... get a free space based on how many of us
@@ -56,8 +108,9 @@ class Ire(bs.Actor):
     
     def _delete(self):
         # delete nodes
-        if getattr(self.head, 'node', None):
-            self.head.node.delete()
+        if self.head:
+            self.head.die()
+            self.head = None
         if self.name_text:
             self.name_text.delete()
         self.exists2 = False
@@ -66,23 +119,26 @@ class Ire(bs.Actor):
         entities = self._activity().entities
         entities.pop(self._slot, None)  
     
-    # note; should rename this to 'recreate_eye'
-    # ..get it? because ire's a eye? okay whatever.
-    def recreate_head(
-        self, 
-        tex: str = 'ktransb',
-        frames: int = 1, 
-        delay: int = 0.05,
-        repeat: bool = True,
-    ):
+    def recreate_head(self, name: str):
+        """Given a action name, recreates the
+        entity's head at its' position using assets from
+        its' skin and the action name."""
+        
+        # wow this is very unsafe.. should do checks
+        # get assets (textures) from our skin
+        skin_assets = ASSETS[self.skin]['textures']
+        # hash data from the action name
+        tex, frames, delay, repeat = skin_assets[name]
+        # get a path for all the actual assets
+        path = skin_assets['path']
         pos = (self._x, self._y)
         scale = (self._scale, self._scale)
         if self.head:
-            self.head.node.delete()
-        # transition in persay idk man
+            self.head.die()
+            self.head = None
         self.head = LoopingImageAnimation(
-            tex, 
-            f'{tex}CM', 
+            f'{path}{tex}', 
+            f'{path}{tex}CM', 
             frame_count=frames, 
             frame_delay=delay, 
             scale=scale, 
@@ -93,14 +149,36 @@ class Ire(bs.Actor):
         self.head.node.tint_color = self.color
         self.head.node.tint2_color = self.high
     
+    def playsound(self, name: str):
+        """Given a action name, plays a sound
+        using assets from its' skin."""
+        skin_assets = ASSETS[self.skin]['sounds']
+        path = skin_assets['path']
+        sound = skin_assets[name]
+        volume = 1.5
+        bs.getsound(f'{path}{sound}').play(volume=volume)
+    
+    def create_name_text(self):
+        self.name_text =  bs.newnode(
+            'text',
+            delegate=self,
+            attrs={
+                'text': f'({self.actor().node.name})',
+                'scale': 1.0,
+                'color': self.actor().node.color,
+                'h_align': 'center',
+                'position': (self._x - 3, self._y - 90),
+                'v_attach': 'bottom',
+                'front': True,
+            },
+        )
+        bs.animate(self.name_text, 'opacity', {
+            0.0: 0,
+            0.5: 0.5,
+        })
+    
     def _check(self, chance = 0.12):
-        # Ire will do some checks of whether the actor exists, 
-        # whether the actor has a node, 
-        # whether the actor is alive and still kicking, 
-        # whether the actor should have Ire's status, 
-        # and whether the chance is exactly the one we should pop up with.
-        # This is obviously to prevent us from appearing where we'll bug out,
-        # or maybe when we shouldn't appear.
+        # fuck you
         if (
             random.random() >= chance 
             or self.exists2
@@ -120,31 +198,14 @@ class Ire(bs.Actor):
             self._delete()
             return
         self._get_free_space()
-        scale = 200
-        self._scale = scale
         self.exists2 = True
-        self.recreate_head('iappr', frames=3, delay=0.08, repeat=True)
-        self.name_text =  bs.newnode(
-            'text',
-            delegate=self,
-            attrs={
-                'text': f'({self.actor().node.name})',
-                'scale': 1.0,
-                'color': self.actor().node.color,
-                'h_align': 'center',
-                'position': (self._x - 3, self._y - 90),
-                'v_attach': 'bottom',
-                'front': True,
-            },
-        )
-        bs.animate(self.name_text, 'opacity', {
-            0.0: 0,
-            0.5: 0.5,
-        })
-        bs.getsound('iappr').play(1.5)
+        self.recreate_head('appear')
+        self.create_name_text()
+        self.playsound('appear')
         bs.timer(1.7, self._ready)
     
     def _check_ungrounded(self):
+        # aw dang it, they're already dead :<
         if not self.actor().node or not self.actor().is_alive():
             self.actor().ired = False
             self._delete()
@@ -160,17 +221,18 @@ class Ire(bs.Actor):
     
     def _animate_out(self):
         self.times_avoided += 1
-        # if we got avoided too many times, start doing another expression
+        # if we got avoided too many times, 
+        # start doing another expression
         if self.times_avoided >= 6:
-            expression = 'iangry'
+            expression = 'angry'
         else:
-            expression = 'ifrown'
-        self.recreate_head(expression, frames=3, delay=0.05, repeat=True)
+            expression = 'frown'
+        self.recreate_head(expression)
         bs.timer(0.5, self._delete)
     
     def _death(self):
-        bs.getsound('ideath').play(1.2)
-        self.recreate_head('istatic', frames=4, delay=0.03, repeat=True)
+        self.playsound('kill')
+        self.recreate_head('kill')
         mell.shake_node(
             self.head.node,
             duration=0.6,
@@ -199,31 +261,41 @@ class Ire(bs.Actor):
             self.actor().impulse(y=500)
             self.actor().killed_by_entity('ire')
             self._delete()
-            bs.getsound('shatter_worse').play(1.2)
+            self.playsound('player_die')
         bs.timer(1.2, die)
         bs.timer(1.1, self.actor().wheelchair_warning)
     
     def _anim_attack(self):
-        self.recreate_head('iatk', frames=4, delay=0.05, repeat=False)
-        bs.getsound('iatk').play(1.5)
+        # wow they're still dead!
+        if not self.actor().node or not self.actor().is_alive():
+            self.actor().ired = False
+            self._delete()
+            return
+        self.recreate_head('attack')
+        self.playsound('attack')
         bs.timer(0.4, self._check_ungrounded)
     
     def _ready(self):
-        # flash red, basically
-        self.recreate_head('iready', frames=3, delay=0.06, repeat=True)
-        dict = {
+        # wow why are they dead!
+        if not self.actor().node or not self.actor().is_alive():
+            self.actor().ired = False
+            self._delete()
+            return
+        # show a warning that we're about to attack
+        self.recreate_head('ready')
+        self.playsound('ready')
+        dict1 = {
             0: self.color,
             0.1: (5, 0, 0),
             0.3: self.color,
         }
         dict2 = {
             0: self.high,
-            0.1: (12, 0, 0),
+            0.1: (12, 0, 0), # higher here cuz our 'tint2' color is dark
             0.3: self.high,
         }
-        bs.animate_array(self.head.node, 'tint_color', 3, dict)
+        bs.animate_array(self.head.node, 'tint_color', 3, dict1)
         bs.animate_array(self.head.node, 'tint2_color', 3, dict2)
-        bs.getsound('iready').play(1.5)
         bs.timer(1.1, self._anim_attack)
     
     def start(self):
