@@ -602,6 +602,7 @@ class HelpWindow(bui.MainWindow):
             'curseKookoo',
             'curseIre',
             'curseSorrow',
+            'curseLitany',
         ]:
             name = bui.Lstr(resource=f'{self._r}.' + tex + 'NameText')
             desc = bui.Lstr(resource=f'{self._r}.' + tex + 'DescriptionText')
@@ -874,15 +875,17 @@ class HelpWindow(bui.MainWindow):
         elif text == 'powerupStar':
             bui.getsound('smb1_kick').play()
         elif text == 'curseGrace':
-            bui.getsound('error').play()
+            bui.getsound('blank').play()
         elif text == 'curseDozer':
-            bui.getsound('ddie').play()
+            bui.getsound('entities/dozer/default/ticking').play()
         elif text == 'curseKookoo':
             bui.getsound('kwarnin').play()
         elif text == 'curseIre':
-            bui.getsound('ideath').play()
+            bui.getsound('entities/ire/default/ready').play()
         elif text == 'curseSorrow':
             bui.getsound('safter').play()
+        elif text == 'curseLitany':
+            bui.getsound('entities/litany/default/ticking').play()
         else:
             print(f'HelpWindow error: {text} not in plpwpsound')
             bui.getsound('error').play()

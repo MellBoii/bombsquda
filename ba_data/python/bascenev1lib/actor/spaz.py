@@ -40,6 +40,7 @@ from bascenev1lib.actor.entities.ire import Ire
 from bascenev1lib.actor.entities.sorrow import Sorrow
 from bascenev1lib.actor.entities.mime import Mime
 from bascenev1lib.actor.entities.rue import Rue
+from bascenev1lib.actor.entities.litany import Litany
 
 
 if TYPE_CHECKING:
@@ -54,6 +55,8 @@ POWERUP_WEAR_OFF_TIME_K = 65000
 # Obsolete - just used for demo guy now.
 BASE_PUNCH_POWER_SCALE = 1.2
 BASE_PUNCH_COOLDOWN = 400
+
+SUPPORTED_STYLES = ['normal', 'metallic']
 
 RAINBOW_SPEED = 0.4  # determine speed
 RAINBOW_COLORS = [
@@ -151,56 +154,51 @@ ENTITY_CONFIG = {
     'kookoo': {
         'attr_flag': 'kookood',
         'attr_obj': 'kookoo',
+        'appearsLstr': bs.Lstr(resource='kookooAppears'),
         'class': Kookoo,
-        'flash': '_kookoo_wear_off_flash',
-        'wear_off': '_kookoo_wear_off',
-        'kill': '_kill_kookoo_if_he_still_exists',
         'texture': lambda: PowerupBoxFactory.get().tex_kookoo,
     },
     'dozer': {
         'attr_flag': 'dozered',
         'attr_obj': 'dozer',
+        'appearsLstr': bs.Lstr(resource='dozerAppears'),
         'class': Dozer,
-        'flash': '_dozer_wear_off_flash',
-        'wear_off': '_dozer_wear_off',
-        'kill': '_kill_dozer_if_it_still_exists',
         'texture': lambda: PowerupBoxFactory.get().tex_dozer,
     },
     'ire': {
         'attr_flag': 'ired',
         'attr_obj': 'ire',
+        'appearsLstr': bs.Lstr(resource='ireAppears'),
         'class': Ire,
-        'flash': '_ire_wear_off_flash',
-        'wear_off': '_ire_wear_off',
-        'kill': '_kill_ire_if_it_still_exists',
         'texture': lambda: PowerupBoxFactory.get().tex_ire,
     },
     'sorrow': {
         'attr_flag': 'sorrowful',
         'attr_obj': 'sorrow',
+        'appearsLstr': bs.Lstr(resource='sorrowAppears'),
         'class': Sorrow,
-        'flash': '_sorrow_wear_off_flash',
-        'wear_off': '_sorrow_wear_off',
-        'kill': '_kill_sorrow_if_it_still_exists',
         'texture': lambda: PowerupBoxFactory.get().tex_sorrow,
     },
     'mime': {
         'attr_flag': 'mimed',
         'attr_obj': 'mime',
+        'appearsLstr': bs.Lstr(resource='mimeAppears'),
         'class': Mime,
-        'flash': '_mime_wear_off_flash',
-        'wear_off': '_mime_wear_off',
-        'kill': '_kill_mime_if_it_still_exists',
         'texture': lambda: PowerupBoxFactory.get().tex_mime,
     },
     'rue': {
         'attr_flag': 'rued',
         'attr_obj': 'rue',
+        'appearsLstr': bs.Lstr(resource='rueAppears'),
         'class': Rue,
-        'flash': '_rue_wear_off_flash',
-        'wear_off': '_rue_wear_off',
-        'kill': '_kill_rue_if_it_still_exists',
         'texture': lambda: PowerupBoxFactory.get().tex_rue,
+    },
+    'litany': {
+        'attr_flag': 'litanyd',
+        'attr_obj': 'litany',
+        'appearsLstr': bs.Lstr(resource='litanyAppears'),
+        'class': Litany,
+        'texture': lambda: PowerupBoxFactory.get().tex_litany,
     },
 }
 
@@ -366,6 +364,7 @@ class Spaz(bs.Actor):
         self.sorrowful = False
         self.mimed = False
         self.rued = False
+        self.litanyd = False
         
         self.last_x = 0
         self.last_y = 0
@@ -378,6 +377,7 @@ class Spaz(bs.Actor):
         self.dozer = None
         self.mime = None
         self.rue = None
+        self.litany = None
 
         self.source_player = source_player
         self._dead = False
@@ -472,8 +472,7 @@ class Spaz(bs.Actor):
         media = factory.get_media(character)
         self.media = media
         self.char_style = media['general_style']
-        supported_styles = ['normal', 'metallic']
-        if self.char_style not in supported_styles:
+        if self.char_style not in SUPPORTED_STYLES:
             print(f'{self.char_style} IS NOT A SUPPORTED GENERAL STYLE. FALLING BACK TO NORMAL')
             self.char_style = 'normal'
         self.expression_list = media['expression_changes']
@@ -691,7 +690,8 @@ class Spaz(bs.Actor):
             self.kookoo,
             self.sorrow,
             self.mime,
-            self.rue
+            self.rue,
+            self.litany
         ]
         for entity in entities_tofuckingnuke:
             if entity is not None:
@@ -1321,7 +1321,8 @@ class Spaz(bs.Actor):
             self._roulette_active = False
             return
         self._roulette_active = False
-        baditems = ['curse', 'spongebob', 'kookoo', 'dozer', 'ire', 'sorrow', 'mime', 'rue']
+        baditems = ['curse', 'spongebob']
+        baditems.extend(list( ENTITY_CONFIG.keys()) )
         gooditems = ['metal', 'punch']
         if self._roulette_current in baditems:
             bs.getsound('baditem').play(position=self.node.position)
@@ -2845,6 +2846,9 @@ class Spaz(bs.Actor):
     def _activate_mortal_damage(self):
         if not self.node:
             return
+        if bs.app.config.get('squda_disablemortal', False):
+            self.die()
+            return
         if self.mortal_phase:
             return
         self.mortal_phase = True
@@ -2884,7 +2888,7 @@ class Spaz(bs.Actor):
                 )
                 if self.mortal_dmg_timer:
                     self.mortal_dmg_timer = None
-        self.mortal_dmg_timer = bs.Timer(0.01, take_damage, repeat=True)
+        self.mortal_dmg_timer = bs.Timer(0.03, take_damage, repeat=True)
     
     def _deactivate_mortal_damage(self):
         if not self.mortal_phase or not self.node:
@@ -2923,23 +2927,24 @@ class Spaz(bs.Actor):
             scale=1.0,
             lifespan=1.7,
         ).autoretain()
-
+        
+        name = choice
         # timers
         setattr(
             self,
-            f'_{choice}_wear_off_flash_timer',
+            f'_{name}_wear_off_flash_timer',
             bs.Timer(
                 (POWERUP_WEAR_OFF_TIME_K - 2000) / 1000.0,
-                bs.WeakCall(getattr(self, cfg['flash']))
+                bs.WeakCall(self._entity_wear_off_flash, name)
             )
         )
 
         setattr(
             self,
-            f'_{choice}_wear_off_timer',
+            f'_{name}_wear_off_timer',
             bs.Timer(
                 POWERUP_WEAR_OFF_TIME_K / 1000.0,
-                bs.WeakCall(getattr(self, cfg['wear_off']))
+                bs.WeakCall(self._entity_wear_off, name)
             )
         )
 
@@ -3089,181 +3094,46 @@ class Spaz(bs.Actor):
                 return True
             if self.pick_up_powerup_callback is not None:
                 self.pick_up_powerup_callback(self)
-            # FIXME: remind me to clean this up...
-            # FUCKASS CLOCK
-            if msg.poweruptype == 'kookoo':
+            # entity handling
+            if msg.poweruptype in list( ENTITY_CONFIG.keys() ):
+                name = msg.poweruptype
+                config = ENTITY_CONFIG[name]
                 self.scary_text(
-                    bs.Lstr(resource='kookooAppears').evaluate(),
-                    color=(0, 0, 1),
-                    xpos=-5,
-                    endtime=7,
-                    spacing_y=0.55,
-                    spacing_x=0.17,
-                )
-                tex = PowerupBoxFactory.get().tex_kookoo
-                self.node.mini_billboard_2_texture = tex
-                t_ms = int(bs.time() * 1000.0)
-                assert isinstance(t_ms, int)
-                self.node.mini_billboard_2_start_time = t_ms
-                self.node.mini_billboard_2_end_time = (
-                    t_ms + POWERUP_WEAR_OFF_TIME_K
-                )
-                self._kookoo_wear_off_flash_timer = bs.Timer(
-                    (POWERUP_WEAR_OFF_TIME_K - 2000) / 1000.0,
-                    bs.WeakCall(self._kookoo_wear_off_flash),
-                )
-                self._kookoo_wear_off_timer = bs.Timer(
-                    POWERUP_WEAR_OFF_TIME_K / 1000.0,
-                    bs.WeakCall(self._kookoo_wear_off),
-                )
-                self.kookoo = Kookoo(actor=weakref.ref(self))
-                self.kookoo.start()
-                self.kookood = True
-            # that goddamn sleeper that i hate
-            elif msg.poweruptype == 'dozer':
-                self.scary_text(
-                    bs.Lstr(resource='dozerAppears').evaluate(),
-                    color=(1, 1, 0.1),
-                    xpos=-5,
-                    endtime=7,
-                    spacing_y=0.55,
-                    spacing_x=0.17,
-                )
-                tex = PowerupBoxFactory.get().tex_dozer
-                self.node.mini_billboard_2_texture = tex
-                t_ms = int(bs.time() * 1000.0)
-                assert isinstance(t_ms, int)
-                self.node.mini_billboard_2_start_time = t_ms
-                self.node.mini_billboard_2_end_time = (
-                    t_ms + POWERUP_WEAR_OFF_TIME_K
-                )
-                self._dozer_wear_off_flash_timer = bs.Timer(
-                    (POWERUP_WEAR_OFF_TIME_K - 2000) / 1000.0,
-                    bs.WeakCall(self._dozer_wear_off_flash),
-                )
-                self._dozer_wear_off_timer = bs.Timer(
-                    POWERUP_WEAR_OFF_TIME_K / 1000.0,
-                    bs.WeakCall(self._dozer_wear_off),
-                )
-                self.dozer = Dozer(actor=weakref.ref(self))
-                self.dozer.start()
-                self.dozered = True
-            # goony's twin
-            elif msg.poweruptype == 'mime':
-                self.scary_text(
-                    bs.Lstr(resource='mimeAppears').evaluate(),
-                    color=(1, 1, 0.1),
-                    xpos=-5,
-                    endtime=7,
-                    spacing_y=0.55,
-                    spacing_x=0.17,
-                )
-                tex = PowerupBoxFactory.get().tex_dozer
-                self.node.mini_billboard_2_texture = tex
-                t_ms = int(bs.time() * 1000.0)
-                assert isinstance(t_ms, int)
-                self.node.mini_billboard_2_start_time = t_ms
-                self.node.mini_billboard_2_end_time = (
-                    t_ms + POWERUP_WEAR_OFF_TIME_K
-                )
-                self._mime_wear_off_flash_timer = bs.Timer(
-                    (POWERUP_WEAR_OFF_TIME_K - 2000) / 1000.0,
-                    bs.WeakCall(self._mime_wear_off_flash),
-                )
-                self._mime_wear_off_timer = bs.Timer(
-                    POWERUP_WEAR_OFF_TIME_K / 1000.0,
-                    bs.WeakCall(self._mime_wear_off),
-                )
-                self.mime = Dozer(actor=weakref.ref(self))
-                self.mime.start()
-                self.mimed = True
-            # bitchass eye
-            elif msg.poweruptype == 'ire':
-                self.scary_text(
-                    bs.Lstr(resource='ireAppears').evaluate(),
-                    color=(1, 1, 1),
-                    xpos=-5,
-                    endtime=7,
-                    spacing_y=0.55,
-                    spacing_x=0.17,
-                )
-                tex = PowerupBoxFactory.get().tex_ire
-                self.node.mini_billboard_2_texture = tex
-                t_ms = int(bs.time() * 1000.0)
-                assert isinstance(t_ms, int)
-                self.node.mini_billboard_2_start_time = t_ms
-                self.node.mini_billboard_2_end_time = (
-                    t_ms + POWERUP_WEAR_OFF_TIME_K
-                )
-                self._ire_wear_off_flash_timer = bs.Timer(
-                    (POWERUP_WEAR_OFF_TIME_K - 2000) / 1000.0,
-                    bs.WeakCall(self._ire_wear_off_flash),
-                )
-                self._ire_wear_off_timer = bs.Timer(
-                    POWERUP_WEAR_OFF_TIME_K / 1000.0,
-                    bs.WeakCall(self._ire_wear_off),
-                )
-                self.ire = Ire(actor=weakref.ref(self))
-                self.ire.start()
-                self.ired = True
-            # how the hell do i describe this
-            elif msg.poweruptype == 'sorrow':
-                self.scary_text(
-                    bs.Lstr(resource='sorrowAppears').evaluate(),
+                    config['appearsLstr'].evaluate(),
                     color=(1, 0.2, 0.2),
                     xpos=-5,
                     endtime=7,
                     spacing_y=0.55,
                     spacing_x=0.17,
                 )
-                tex = PowerupBoxFactory.get().tex_sorrow
-                self.node.mini_billboard_2_texture = tex
                 t_ms = int(bs.time() * 1000.0)
                 assert isinstance(t_ms, int)
-                self.node.mini_billboard_2_start_time = t_ms
-                self.node.mini_billboard_2_end_time = (
-                    t_ms + POWERUP_WEAR_OFF_TIME_K
+                # timers
+                setattr(
+                    self,
+                    f'_{name}_wear_off_flash_timer',
+                    bs.Timer(
+                        (POWERUP_WEAR_OFF_TIME_K - 2000) / 1000.0,
+                        bs.WeakCall(self._entity_wear_off_flash, name)
+                    )
                 )
-                self._sorrow_wear_off_flash_timer = bs.Timer(
-                    (POWERUP_WEAR_OFF_TIME_K - 2000) / 1000.0,
-                    bs.WeakCall(self._sorrow_wear_off_flash),
+
+                setattr(
+                    self,
+                    f'_{name}_wear_off_timer',
+                    bs.Timer(
+                        POWERUP_WEAR_OFF_TIME_K / 1000.0,
+                        bs.WeakCall(self._entity_wear_off, name)
+                    )
                 )
-                self._sorrow_wear_off_timer = bs.Timer(
-                    POWERUP_WEAR_OFF_TIME_K / 1000.0,
-                    bs.WeakCall(self._sorrow_wear_off),
-                )
-                self.sorrow = Sorrow(actor=weakref.ref(self))
-                self.sorrow.start()
-                self.sorrowful = True
-            # that one bum that really likes chains
-            elif msg.poweruptype == 'rue':
-                self.scary_text(
-                    bs.Lstr(resource='rueAppears').evaluate(),
-                    color=(1, 1, 1),
-                    xpos=-5,
-                    endtime=7,
-                    spacing_y=0.55,
-                    spacing_x=0.17,
-                )
-                tex = PowerupBoxFactory.get().tex_rue
-                self.node.mini_billboard_2_texture = tex
-                t_ms = int(bs.time() * 1000.0)
-                assert isinstance(t_ms, int)
-                self.node.mini_billboard_2_start_time = t_ms
-                self.node.mini_billboard_2_end_time = (
-                    t_ms + POWERUP_WEAR_OFF_TIME_K
-                )
-                self._rue_wear_off_flash_timer = bs.Timer(
-                    (POWERUP_WEAR_OFF_TIME_K - 2000) / 1000.0,
-                    bs.WeakCall(self._rue_wear_off_flash),
-                )
-                self._rue_wear_off_timer = bs.Timer(
-                    POWERUP_WEAR_OFF_TIME_K / 1000.0,
-                    bs.WeakCall(self._rue_wear_off),
-                )
-                self.rue = Rue(actor=weakref.ref(self))
-                self.rue.start()
-                self.rued = True
+
+                # create the entity
+                obj = config['class'](actor=weakref.ref(self))
+                obj.start()
+
+                setattr(self, config['attr_obj'], obj)
+                setattr(self, config['attr_flag'], True)
+                
             elif msg.poweruptype == 'triple_bombs':
                 tex = PowerupBoxFactory.get().tex_bomb
                 self._flash_billboard(tex)
@@ -4567,7 +4437,7 @@ class Spaz(bs.Actor):
             lifespan=2.5,
         ).autoretain()
 
-        # Explode if we're mell
+        # Explode if we're Mell
         if self.character == "Mell" and melblow:
             self._mel_mayhem()
 
@@ -4595,58 +4465,6 @@ class Spaz(bs.Actor):
                     2.5: (self.meterx, self.metery),
                 },
             )
-    
-    def flash(self, time: float = 0.1,texture=None, crossout=True):
-
-        if not self.node:
-            return
-
-        if self.flashing:
-            return
-        if time < 0.1:
-            raise ValueError('time is below 0.1 (In seconds) Ignoring.')
-            
-        def unflash():
-            if not self.node:
-                return
-            self.node.billboard_texture = None
-            self.node.billboard_opacity = 0
-            self.node.billboard_cross_out = False
-            self.flashing = False
-        
-        self.flashing = True
-        self.node.billboard_texture = texture
-        self.node.billboard_opacity = 1.0
-        self.node.billboard_cross_out = crossout
-
-        bs.timer(time, unflash)
-        
-            
-    def calculate_infront(self, return_vel: bool = False, return_pos: bool = False, radius: float = 50.0):
-        if not self.node:
-            return
-        p_center = self.node.position_center
-        p_forw = self.node.position_forward
-        angle = 180 if p_forw[0]-p_center[0] > 0 else 0
-        pos = (p_center[0]+math.sin(angle)*0.1,p_center[1],p_center[2]+math.cos(angle)*0.1)
-        cen = self.node.position_center
-        frw = self.node.position_forward
-        direction = [cen[0]-frw[0],frw[1]-cen[1],cen[2]-frw[2]]
-        direction[1] *= .03 
-        vel = [v * radius for v in direction]
-
-        if return_vel and return_pos:
-            raise TypeError('Can only return one thing at a time.')
-        elif not return_pos and not return_vel:
-            raise TypeError('Neither pos or vel was specified.') 
-        
-        if return_vel:
-            return vel
-
-        if return_pos:
-            return pos
-        
-        return False
     
     def drop_bomb(self) -> Bomb | None:
         """
@@ -5162,170 +4980,58 @@ class Spaz(bs.Actor):
             )
             self.node.billboard_opacity = 0.0
     
-    def _kookoo_wear_off_flash(self) -> None:
-        if self.node:
-            self.node.billboard_texture = PowerupBoxFactory.get().tex_kookoo
-            self.node.billboard_opacity = 1.0
-            self.node.billboard_cross_out = True
-        
-    def _kookoo_wear_off(self) -> None:
-        self.kookood = False
-        self.kookoo.stop()
-        self._kill_kookoo_if_he_still_exists()
-        self.kookoo = None
-        if self.node:
-            PowerupBoxFactory.get().powerup_sound.play(
-                position=self.node.position,
-            )
-            self.node.billboard_opacity = 0.0
-    
-    def _dozer_wear_off_flash(self) -> None:
-        if self.node:
-            self.node.billboard_texture = PowerupBoxFactory.get().tex_dozer
-            self.node.billboard_opacity = 1.0
-            self.node.billboard_cross_out = True
-        
-    def _dozer_wear_off(self) -> None:
-        self.dozered = False
-        self.dozer.stop()
-        self._kill_dozer_if_it_still_exists()
-        self.dozer = None
+    def _entity_wear_off_flash(self, entity_name: str) -> None:
+        if not self.node:
+            return
+
+        config = ENTITY_CONFIG[entity_name]
+        self.node.billboard_texture = config['texture']()
+        self.node.billboard_opacity = 1.0
+        self.node.billboard_cross_out = True
+
+    def _entity_wear_off(self, entity_name: str) -> None:
+        config = ENTITY_CONFIG[entity_name]
+
+        attr_flag = config['attr_flag']
+        attr_obj = config['attr_obj']
+
+        setattr(self, attr_flag, False)
+
+        entity = getattr(self, attr_obj, None)
+
+        if entity:
+            entity.stop()
+            self._kill_entity(entity_name)
+
+        setattr(self, attr_obj, None)
+
         if self.node:
             PowerupBoxFactory.get().powerup_sound.play(
                 position=self.node.position,
             )
+
             self.node.billboard_opacity = 0.0
-    
-    def _ire_wear_off_flash(self) -> None:
-        if self.node:
-            self.node.billboard_texture = PowerupBoxFactory.get().tex_ire
-            self.node.billboard_opacity = 1.0
-            self.node.billboard_cross_out = True
-        
-    def _ire_wear_off(self) -> None:
-        self.ired = False
-        self.ire.stop()
-        self._kill_ire_if_it_still_exists()
-        self.ire = None
-        if self.node:
-            PowerupBoxFactory.get().powerup_sound.play(
+
+
+    def _kill_entity(self, entity_name: str) -> None:
+        entity = getattr(
+            self,
+            ENTITY_CONFIG[entity_name]['attr_obj'],
+            None,
+        )
+
+        if entity and entity.exists2:
+            bs.getsound('playerLeft').play(
+                volume=2,
                 position=self.node.position,
             )
-            self.node.billboard_opacity = 0.0
-    
-    def _sorrow_wear_off_flash(self) -> None:
-        if self.node:
-            self.node.billboard_texture = PowerupBoxFactory.get().tex_sorrow
-            self.node.billboard_opacity = 1.0
-            self.node.billboard_cross_out = True
-        
-    def _sorrow_wear_off(self) -> None:
-        self.sorrowful = False
-        self.sorrow.stop()
-        self._kill_sorrow_if_it_still_exists()
-        self.sorrow = None
-        if self.node:
-            PowerupBoxFactory.get().powerup_sound.play(
-                position=self.node.position,
-            )
-            self.node.billboard_opacity = 0.0
-    
-    def _mime_wear_off_flash(self) -> None:
-        if self.node:
-            self.node.billboard_texture = PowerupBoxFactory.get().tex_mime
-            self.node.billboard_opacity = 1.0
-            self.node.billboard_cross_out = True
-    
-    def _rue_wear_off_flash(self) -> None:
-        if self.node:
-            self.node.billboard_texture = PowerupBoxFactory.get().tex_rue
-            self.node.billboard_opacity = 1.0
-            self.node.billboard_cross_out = True
-        
-    def _mime_wear_off(self) -> None:
-        self.mimed = False
-        self.mime.stop()
-        self._kill_mime_if_it_still_exists()
-        self.mime = None
-        if self.node:
-            PowerupBoxFactory.get().powerup_sound.play(
-                position=self.node.position,
-            )
-            self.node.billboard_opacity = 0.0
-    
-    def _rue_wear_off(self) -> None:
-        self.rued = False
-        self.rue.stop()
-        self._kill_rue_if_it_still_exists()
-        self.rue = None
-        if self.node:
-            PowerupBoxFactory.get().powerup_sound.play(
-                position=self.node.position,
-            )
-            self.node.billboard_opacity = 0.0
-    
-    def _kill_kookoo_if_he_still_exists(self):
-        """Does what it says."""
-        if self.kookoo.exists2:
-            bs.getsound('playerLeft').play(volume=2, position=self.node.position)
-            self.kookoo._delete()
-    
-    def _kill_dozer_if_it_still_exists(self):
-        """Does what it says."""
-        if self.dozer.exists2:
-            bs.getsound('playerLeft').play(volume=2, position=self.node.position)
-            self.dozer._delete()
-    
-    def _kill_ire_if_it_still_exists(self):
-        """Does what it says."""
-        if self.ire.exists2:
-            bs.getsound('playerLeft').play(volume=2, position=self.node.position)
-            self.ire._delete()
-    
-    def _kill_sorrow_if_it_still_exists(self):
-        """Does what it says."""
-        if self.sorrow.exists2:
-            bs.getsound('playerLeft').play(volume=2, position=self.node.position)
-            self.sorrow._delete()
-    
-    def _kill_mime_if_it_still_exists(self):
-        """Does what it says."""
-        if self.mime.exists2:
-            bs.getsound('playerLeft').play(volume=2, position=self.node.position)
-            self.mime._delete()
-    
-    def _kill_rue_if_it_still_exists(self):
-        """Does what it says."""
-        if self.rue.exists2:
-            bs.getsound('playerLeft').play(volume=2, position=self.node.position)
-            self.rue._delete()
-    
-    # debug helpers
-    def create_kookoo(self):
-        self.kookoo = Kookoo(actor=weakref.ref(self))
-        self.kookoo.start()
-        self.kookood = True
-    def create_dozer(self):
-        self.dozer = Dozer(actor=weakref.ref(self))
-        self.dozer.start()
-        self.dozered = True
-    def create_ire(self):
-        self.ire = Ire(actor=weakref.ref(self))
-        self.ire.start()
-        self.ired = True
-    def create_mime(self):
-        self.mime = Mime(actor=weakref.ref(self))
-        self.mime.start()
-        self.mimed = True
-    def create_rue(self):
-        self.rue = Rue(actor=weakref.ref(self))
-        self.rue.start()
-        self.rued = True
-    def create_sorrow(self):
-        self.sorrow = Sorrow(actor=weakref.ref(self))
-        self.sorrow.start()
-        self.sorrowful = True
-    # debug helpers
+            entity._delete()
+
+    def create_entity(self, entity_name: str):
+        obj = config['class'](actor=weakref.ref(self))
+        obj.start()
+        setattr(self, config['attr_obj'], obj)
+        setattr(self, config['attr_flag'], True)
     
     def killed_by_entity(self, name: str):
         """Just a helper for achievements."""
@@ -5334,6 +5040,10 @@ class Spaz(bs.Actor):
                 'DozireDeath'
             )
         if name == 'ire' and self.character == 'Ire':
+            ba.app.classic.ach.award_local_achievement(
+                'DozireDeath'
+            )
+        if name == 'kookoo' and self.character == 'Kookoo':
             ba.app.classic.ach.award_local_achievement(
                 'DozireDeath'
             )
@@ -5424,8 +5134,7 @@ class Spaz(bs.Actor):
             setattr(self.node, key, value)
             
         self.char_style = media['general_style']
-        supported_styles = ['normal', 'metallic']
-        if self.char_style not in supported_styles:
+        if self.char_style not in SUPPORTED_STYLES:
             print(f'{self.char_style} IS NOT A SUPPORTED GENERAL STYLE. FALLING BACK TO NORMAL')
             self.char_style = 'normal'
             

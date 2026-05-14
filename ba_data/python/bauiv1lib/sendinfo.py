@@ -212,6 +212,7 @@ class SendInfoWindow(bui.MainWindow):
         gnode = bs.getactivity().globalsnode
         slow = True if gnode.slow_motion == False else False
         gnode.slow_motion = slow
+        
     def killbots(self):
         try:
             for bot in bs.getactivity()._bots.get_living_bots(): 
@@ -220,27 +221,15 @@ class SendInfoWindow(bui.MainWindow):
         except AttributeError:
             bs.screenmessage('Try this again in coop...')
             bs.getsound('error').play()
+            
     def wither_and_die(self):
         bs.getsound('WITHERANDDIE').play()
         bs.timer(0.6, self.killbots)
-    def kookoo(self):
+        
+    def create_entity(self, name: str):
         for player in bs.getplayers():
-            player.actor.create_kookoo()
-    def dozer(self):
-        for player in bs.getplayers():
-            player.actor.create_dozer()
-    def ire(self):
-        for player in bs.getplayers():
-            player.actor.create_ire()
-    def sorrow(self):
-        for player in bs.getplayers():
-            player.actor.create_sorrow()
-    def mime(self):
-        for player in bs.getplayers():
-            player.actor.create_mime()
-    def rue(self):
-        for player in bs.getplayers():
-            player.actor.create_rue()
+            player.actor.create_entity(name)
+            
     def april(self):
         enabled = bui.app.config.get('squda_forceapril')
         bui.app.config['squda_forceapril'] = True if not enabled else False
@@ -308,12 +297,13 @@ class SendInfoWindow(bui.MainWindow):
             'FIREY': self.fireball,
             'NEWYEARS': self.firework,
             'GOLDENFORM': self.super,
-            'CUCKOO': self.kookoo,
-            'DOZE': self.dozer,
-            'WRATHFUL': self.ire,
-            'GOONY': self.mime,
-            'RUESOME': self.rue,
-            'BLOODY RAIN': self.sorrow,
+            'CUCKOO': bs.WeakCall(self.create_entity, 'kookoo'),
+            'DOZE': bs.WeakCall(self.create_entity, 'dozer'),
+            'WRATHFUL': bs.WeakCall(self.create_entity, 'ire'),
+            'GOONY': bs.WeakCall(self.create_entity, 'mime'),
+            'MY MANY EYES': bs.WeakCall(self.create_entity, 'litany'),
+            'RUESOME': bs.WeakCall(self.create_entity, 'rue'),
+            'BLOODY RAIN': bs.WeakCall(self.create_entity, 'sorrow'),
             'DEV INCLUSIVE': self.unlock_ire,
             'YELLOW IRE': self.unlock_dozer,
             'APRILFOOLS': self.april,

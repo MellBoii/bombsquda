@@ -79,6 +79,7 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
             ("squda_foxyjumpscare", "foxyJumpscareText", None),
             ("squda_spazhardmode", "spazHardModeText", ['hardmode', 'okitem']),
             ("squda_chaosemeralds", "enableEmeraldsText", None),
+            ("squda_disablemortal", "disableMortalDamageText", None),
             ("squda_parryalways", "parryAlwaysText", ['attempt_parry', 'voicelines/kris/pickup']),
             ("squda_dontshutdown", "dontShutdownText", ['gooditem', 'baditem']),
             ("squda_nowiggledance", "noWiggleText", None),

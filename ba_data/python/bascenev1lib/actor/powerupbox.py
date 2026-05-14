@@ -69,6 +69,7 @@ class PowerupBoxFactory:
         self.tex_sorrow = bs.gettexture('curseSorrow')
         self.tex_mime = bs.gettexture('curseMime')
         self.tex_rue = bs.gettexture('curseRue')
+        self.tex_litany = bs.gettexture('curseLitany')
         self.health_powerup_sounds = (
             bs.getsound('healthPowerup'),
             bs.getsound('healthPowerup2'),

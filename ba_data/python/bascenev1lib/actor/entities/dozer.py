@@ -177,7 +177,7 @@ class Dozer(bs.Actor):
         return bool(abs(self.actor().last_x) >= 0.2 or abs(self.actor().last_y) >= 0.2)
     
     def _check_standing(self):
-        self.recreate_head('dozerw', frames=3, delay=0.06, repeat=True)
+        self.recreate_head('wake')
         if not self.actor().node or not self.actor().is_alive():
             self.actor().dozered = False
             self._delete()
