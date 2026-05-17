@@ -366,6 +366,9 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
         # (that would allow restarting the game with zero players, etc).
         if not self.players:
             return
+        
+        if getattr(bs.app, 'stress_testing', False):
+            return
 
         rootc = self._root_ui = bui.containerwidget(
             size=(0, 0),

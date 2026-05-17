@@ -89,6 +89,7 @@ def run_stress_test(
                 attract_mode=attract_mode,
             )
         )
+        babase.app.stress_test_running = True
 
 
 def stop_stress_test() -> None:
@@ -99,6 +100,7 @@ def stop_stress_test() -> None:
     _baclassic.set_stress_testing(False, 0, False)
     babase.app.classic.stress_test_update_timer = None
     babase.app.classic.stress_test_update_timer_2 = None
+    babase.app.stress_test_running = True
 
 
 def _start_stress_test(args: _StressTestArgs) -> None:

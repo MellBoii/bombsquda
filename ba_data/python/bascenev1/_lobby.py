@@ -350,7 +350,10 @@ class Chooser:
 
         self._set_ready(False)
         # We can just ready up for them if it's a auto-join session... ish.
-        if getattr(bs.getsession(), 'lobby_autojoin', False):
+        if (
+            getattr(bs.getsession(), 'lobby_autojoin', False)
+            or getattr(bs.app, 'stress_testing', False)
+        ):
             bs.timer(0, lambda: self._handle_ready_msg(True))
 
     def _select_initial_profile(self) -> int:

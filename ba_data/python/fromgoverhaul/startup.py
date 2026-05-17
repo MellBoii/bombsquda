@@ -2,6 +2,7 @@ import bascenev1 as bs
 import babase
 import babase as ba
 import baclassic as bsc
+import _baclassic as _bsc
 import os
 import bauiv1 as bui
 from .discordrp_handler import RichPresence
@@ -22,6 +23,20 @@ BS_ID = None
 ID_FILE = 'bs_device_id.json'
 current_activity = None
 
+sst = _bsc.set_stress_testing
+def setstresstestin(
+    testing: bool, 
+    player_count: int, 
+    attract_mode: bool
+):
+    ba.app.stress_testing = testing
+    return sst(
+        testing, 
+        player_count, 
+        attract_mode
+    )
+_bsc.set_stress_testing = setstresstestin
+
 class stupid_attribute_holder:
     # basically we're gonna tell this 
     # fucker "here hold these attributes"
@@ -37,7 +52,7 @@ class Startup():
     textures = local + '\\textures\\'
     coconut = Path(textures + 'cowtato.dds')
     # "crash" game if texture doesn't exist
-    if platform not in ['android']:
+    if platform in ['windows']:
         if not coconut.is_file():
             os._exit(1)
     # alright we're ready to do startup stuff

@@ -138,12 +138,12 @@ REMARK_PHRASES = {
 }
 
 CHAIN_SOUNDS = [
-    (6, 'mbm/Chain5'),
-    (5, 'mbm/Chain4'),
-    (4, 'mbm/Chain3'),
-    (3, 'mbm/Chain2'),
-    (2, 'mbm/Chain1'),
-    (1, 'mbm/Chain0'),
+    (6, 'mbm/chain5'),
+    (5, 'mbm/chain4'),
+    (4, 'mbm/chain3'),
+    (3, 'mbm/chain2'),
+    (2, 'mbm/chain1'),
+    (1, 'mbm/chain0'),
 ]
 
 RELEASE_SOUNDS = [
@@ -1116,7 +1116,7 @@ class Spaz(bs.Actor):
             self._give_item()
             return
         if self.whiplashed:
-            if not self.node:
+            if not self.node or not self.is_alive():
                 return
             if not self.hook or not self.hook.node:
                 self._shoot_hook()
@@ -2355,8 +2355,9 @@ class Spaz(bs.Actor):
             if self._has_hot_potato == False or not self.node or self._dead:
                 if hasattr(self, "_potato_timer_img") and self._potato_timer_img.exists():
                     self._potato_timer_img.delete()
-                if hasattr(self, "_potato_player_img") and self._potato_player_img.exists():
-                    self._potato_player_img.node.delete()
+                if hasattr(self, "_potato_player_img"):
+                    if self._potato_player_img.exists():
+                        self._potato_player_img.node.delete()
                 if hasattr(self, "_potato_holder_text") and self._potato_holder_text.exists():
                     self._potato_holder_text.delete()
                 if hasattr(self, '_potato_timer_images'):

@@ -256,6 +256,7 @@ def announcer_say(voiceline: str):
         'OG Spaz': gs('ogspaz'),
         'Ire': gs('ire'),
         'Dozer': gs('dozer'),
+        'Spaz': gs('spaz'),
     }
     # get the voiceline sound equivalent and play it
     if voiceline in sound_dict:
