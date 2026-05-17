@@ -516,6 +516,8 @@ def get_texture_for_powerup(factory, ptype: str):
     Doesn't specifically have to be PowerupBoxFactory, 
     but you should use that."""
     import babase as ba
+    import bascenev1 as bs
+    import bauiv1 as bui
     texture_map = {
         'triple_bombs': factory.tex_bomb,
         'punch': factory.tex_punch,
@@ -542,6 +544,7 @@ def get_texture_for_powerup(factory, ptype: str):
         'sorrow': factory.tex_sorrow,
         'mime': factory.tex_mime,
         'rue': factory.tex_rue,
+        'litany': factory.tex_litany
     }
     if ptype not in texture_map:
         print(f'ERROR: {ptype} is not in the texture map. Please add it to mell_resources.\ndumbass')
