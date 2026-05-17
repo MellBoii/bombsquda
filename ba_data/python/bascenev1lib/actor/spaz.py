@@ -637,6 +637,7 @@ class Spaz(bs.Actor):
         self.pick_up_powerup_callback = None
         self.sparkies = None
         self.super_flash = None
+        # stop voicelines
         self.stop_voicelines()
 
         # Clean up timers to prevent leaks
@@ -2849,7 +2850,7 @@ class Spaz(bs.Actor):
             return
         if bs.app.config.get('squda_disablemortal', False):
             self.die()
-            return
+            return False
         if self.mortal_phase:
             return
         self.mortal_phase = True
@@ -2890,6 +2891,7 @@ class Spaz(bs.Actor):
                 if self.mortal_dmg_timer:
                     self.mortal_dmg_timer = None
         self.mortal_dmg_timer = bs.Timer(0.03, take_damage, repeat=True)
+        return True
     
     def _deactivate_mortal_damage(self):
         if not self.mortal_phase or not self.node:
@@ -3991,8 +3993,8 @@ class Spaz(bs.Actor):
                     if damage >= self.hitpoints and damage >= 530:
                         if not self.mortal_phase:
                             self.hitpoints += damage
-                            self._activate_mortal_damage()
-                            return
+                            if self._activate_mortal_damage():
+                                return
                     self.die()
 
             # If we're dead, take a look at the smoothed damage value
