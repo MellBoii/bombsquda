@@ -978,8 +978,6 @@ class MainMenuActivity(bs.GameActivity[bs.Player, bs.Team]):
                     round_duration=75,
                     attract_mode=True,
                 )
-                if not ba.app.config.get("squda_isplayingmusic", True):
-                    bs.localsetmusic(bs.MusicType.OPENING)
                 bui.app.config['squda_timesattracted'] += 1
 
 

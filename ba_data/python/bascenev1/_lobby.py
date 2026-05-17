@@ -350,6 +350,7 @@ class Chooser:
 
         self._set_ready(False)
         # We can just ready up for them if it's a auto-join session... ish.
+        # or, if we're stress testing
         if (
             getattr(bs.getsession(), 'lobby_autojoin', False)
             or getattr(bs.app, 'stress_testing', False)

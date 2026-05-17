@@ -214,7 +214,7 @@ class _UnixSocket(_Socket):
             except FileNotFoundError:
                 pass
         else:
-            print("Enable to start rich presence: Cannot find a Unix socket to connect to Discord")
+            print("unable to start rich presence: Cannot find a Unix socket to connect to Discord")
             raise FileNotFoundError
 
     def _get_pipe_path(self) -> str:
