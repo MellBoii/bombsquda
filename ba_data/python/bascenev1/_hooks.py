@@ -101,6 +101,14 @@ def cmd_char(ctx: CommandContext):
         with ctx.activity.context:
             ctx.player.actor.character = character.name
             ctx.player.actor.reset_character()
+            if ctx.player.sessionplayer:
+                sp = ctx.player.sessionplayer
+                ctx.player.sessionplayer.setdata(
+                    team=sp.sessionteam,
+                    character=character.name,
+                    color=sp.color,
+                    highlight=sp.highlight,
+                )
 
 @register('/color', usage='/color (r, g, b)', desc='Set player color')
 def cmd_color(ctx: CommandContext):
@@ -117,6 +125,14 @@ def cmd_color(ctx: CommandContext):
         if ctx.player.actor and ctx.player.actor.node:
             ctx.player.actor.node.color = value
             ctx.player.actor.node.name_color = value
+            if ctx.player.sessionplayer:
+                sp = ctx.player.sessionplayer
+                ctx.player.sessionplayer.setdata(
+                    team=sp.sessionteam,
+                    character=sp.character,
+                    color=value,
+                    highlight=sp.highlight,
+                )
 
 @register('/highlight', usage='/highlight (r, g, b)', desc='Set highlight color')
 def cmd_highlight(ctx: CommandContext):
@@ -132,6 +148,14 @@ def cmd_highlight(ctx: CommandContext):
         ctx.player.highlight = value
         if ctx.player.actor and ctx.player.actor.node:
             ctx.player.actor.node.highlight = value
+            if ctx.player.sessionplayer:
+                sp = ctx.player.sessionplayer
+                ctx.player.sessionplayer.setdata(
+                    team=sp.sessionteam,
+                    character=sp.character,
+                    color=sp.color,
+                    highlight=value,
+                )
 
 @register('/end', usage='/end', desc='Vote to, or end the game')
 def cmd_end(ctx: CommandContext):
