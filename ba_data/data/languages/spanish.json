@@ -92,9 +92,9 @@
       "name": "¡No quiero morir!"
     },
 	"DozireDeath": {
-      "descriptionFull": "Muere por Ire (Entidad) usando a Ire (o Dozer usando a Dozer)",
-      "descriptionFullComplete": "Moriste por Ire (Entidad) usando a Ire (o Dozer usando a Dozer). ¿¿Cómo funciona eso??",
-      "name": "Muy Ironico"
+      "descriptionFull": "Muere por una entidad jugando como su personaje respectivo",
+      "descriptionFullComplete": "Moriste por una entidad jugando como su personaje respectivo",
+      "name": "¿Quién es quién?"
     },
 	"Mustachioed": {
       "descriptionFull": "Pisa un enemigo saltando arriba de él. (INOBTENIBLE POR AHORA)",
