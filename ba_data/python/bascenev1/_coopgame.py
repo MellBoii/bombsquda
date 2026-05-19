@@ -376,10 +376,16 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
         from bascenev1 import _gameutils
         
         player1 = self.players[0]
-        p1name = player1.getname()
         assert isinstance(player1, ba.Player)
+        p1name = player1.getname()
         
-        bs.broadcastmessage(f"{p1name} lost the battle...", color=(1.0,0.1,0.1))
+        bs.broadcastmessage(
+            bs.Lstr(
+                resource='coopPlayerLost',
+                subs=[('${NAME}', p1name)],
+            ), 
+            color=(1.0,0.1,0.1),
+        )
         bs.setmusic(bs.MusicType.COOP_LOSS, show_playing=False)
 
         c_existing = self.globalsnode.tint
