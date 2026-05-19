@@ -1513,9 +1513,13 @@
 	"meloptions": "cosas bombsquda",
     "controllersText": "mando jodido",
     "graphicsText": "calidada mmala",
-    "playerProfilesMovedText": "Note: Player Profiles have moved to the Account window in the main menu.",
+    "playerProfilesMovedText": "Nota: Perfiles de jugador han sido ajustados a la ventana de Cuentas en el menú principal.",
     "titleText": "ok asi que \ncual problema",
 	"rpcText": "ajustando Ajustes"
+  },
+  "notifications": {
+	  "characterRemovalRefundTitle": "Reembolso de Personaje",
+	  "removalRefundText": "${NAME} fué borrado del juego.\nHas sido reembolsado ${COUNT}."
   },
   "melWindow": {
     "titleText": "configuración de BombSquda",
