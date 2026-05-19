@@ -8,6 +8,16 @@ class ImageJumper:
     _active_timers: dict[int, bs.Timer] = {}
 
     @classmethod
+    def stop(cls, node: bs.Node):
+        cls.stop_by_id(id(node))
+
+    @classmethod
+    def stop_by_id(cls, node_id: int):
+        timer = cls._active_timers.pop(node_id, None)
+        if timer:
+            timer = None
+
+    @classmethod
     def jump_image(cls,
                    node: bs.Node,
                    jump_force: float = 340.0,
@@ -139,13 +149,3 @@ class ImageJumper:
                 cls.stop_by_id(node_id)
 
         cls._active_timers[node_id] = bs.Timer(dt, tick, repeat=True)
-
-    @classmethod
-    def stop(cls, node: bs.Node):
-        cls.stop_by_id(id(node))
-
-    @classmethod
-    def stop_by_id(cls, node_id: int):
-        timer = cls._active_timers.pop(node_id, None)
-        if timer:
-            timer = None
