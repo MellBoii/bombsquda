@@ -368,6 +368,7 @@
   "easeDeton2": "TE PREGUNTÉ BIEN",
   "easeDeton3": "HORA DE MORIR",
   "smash": "¡¡SMAAAASH!!",
+  "coopPlayerLost": "${NAME} perdió la batalla...",
   "playerMortalDamage": "¡${NAME} sufrió\ndaño mortal!",
   "wigglePhrase1": "¡WOWZA!",
   "wigglePhrase2": "¡FUNKY!",
