@@ -144,6 +144,7 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
         self._player_death_sound = bs.getsound('playerDeath')
         self._new_wave_sound = bs.getsound('scoreHit01')
         self._winsound = bs.getsound('score')
+        self._life_up_sound = bs.getsound('heal')
         self._cashregistersound = bs.getsound('cashRegister')
         self._bad_guy_score_sound = bs.getsound('shieldDown')
         self._heart_tex = bs.gettexture('heart')
@@ -547,10 +548,12 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
         # oh yeah, and a special effect for endless
         elif self._preset is Preset.ENDLESS:
             bs.setmusic(None)
+            player = random.choice(self.players)
+            name = player.getname(full=True)
             DialogueManager(
                 [
                     {
-                        "name": self.players[0].actor.node.name,
+                        "name": name,
                         "text": "{pause=2.0}...what the fuck is tha-",
                         "sound": "tap",
                         "interrupt": True
@@ -561,7 +564,7 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
                         "interrupt": True
                     },
                     {
-                        "name": self.players[0].actor.node.name,
+                        "name": name,
                         "text": "AAAAAAHHHHHHHHHH!!!{pause=1.0}",
                         "interrupt": True
                     },
@@ -691,15 +694,6 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
             if self._lives == 0:
                 self._bots.stop_moving()
                 self.end_game()
-
-            # Heartbeat behavior
-            if self._lives < 5:
-                hbtime = 0.39 + (0.21 * self._lives)
-                self._lives_hbtime = bs.Timer(
-                    hbtime, lambda: self.heart_dyin(True, hbtime), repeat=True
-                )
-            else:
-                self._lives_hbtime = None
 
             assert self._lives_text is not None
             assert self._lives_text.node
@@ -999,6 +993,56 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
             scale=1.2,
             position=(0, 2, -1),
         ).autoretain()
+        if self._lives < 10:
+            self._life_up_sound.play()
+            self._lives += 1
+            self._lives_text.node.text = str(self._lives)
+            delay = 0.0
+
+            def _safesetattr(node: bs.Node, attr: str, value: Any) -> None:
+                if node:
+                    setattr(node, attr, value)
+
+            for _i in range(4):
+                bs.timer(
+                    delay,
+                    bs.Call(
+                        _safesetattr,
+                        self._lives_text.node,
+                        'color',
+                        (0, 1, 0, 1.0),
+                    ),
+                )
+                assert self._lives_bg is not None
+                assert self._lives_bg.node
+                bs.timer(
+                    delay,
+                    bs.Call(_safesetattr, self._lives_bg.node, 'opacity', 0.5),
+                )
+                delay += 0.125
+                bs.timer(
+                    delay,
+                    bs.Call(
+                        _safesetattr,
+                        self._lives_text.node,
+                        'color',
+                        (0, 0.5, 0),
+                    ),
+                )
+                bs.timer(
+                    delay,
+                    bs.Call(_safesetattr, self._lives_bg.node, 'opacity', 1.0),
+                )
+                delay += 0.125
+            bs.timer(
+                delay,
+                bs.Call(
+                    _safesetattr,
+                    self._lives_text.node,
+                    'color',
+                    (0.8, 0.8, 0.8),
+                ),
+            )
 
         assert self._flawless_bonus is not None
         self._score += self._flawless_bonus
@@ -1519,43 +1563,3 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
 
     def _set_can_end_wave(self) -> None:
         self._can_end_wave = True
-
-    def heart_dyin(self, status: bool, time: float = 1.22) -> None:
-        """Makes the UI heart beat at low health."""
-        assert self._lives_bg is not None
-        if self._lives_bg.node.exists():
-            return
-        heart = self._lives_bg.node
-
-        # Make the heart beat intensely!
-        if status:
-            bs.animate_array(
-                heart,
-                'scale',
-                2,
-                {
-                    0: (90, 90),
-                    time * 0.1: (105, 105),
-                    time * 0.21: (88, 88),
-                    time * 0.42: (90, 90),
-                    time * 0.52: (105, 105),
-                    time * 0.63: (88, 88),
-                    time: (90, 90),
-                },
-            )
-
-        # Neutralize heartbeat (Done did when dead.)
-        else:
-            # Ew; janky old scenev1 has a single 'Node' Python type so
-            # it thinks heart.scale could be a few different things
-            # (float, Sequence[float], etc.). So we have to force the
-            # issue with a cast(). This should go away with scenev2/etc.
-            bs.animate_array(
-                heart,
-                'scale',
-                2,
-                {
-                    0.0: cast(Sequence[float], heart.scale),
-                    time: (90, 90),
-                },
-            )
