@@ -144,11 +144,24 @@ class Startup():
     if owned.get('characters.baller', False):
         def do_it():
             name = 'Baller'
-            price = 350
+            key = 'characters.baller'
+            price = mell.store_prices[key]
             owned = ba.app.config.get('squda_storeowned')
-            owned['characters.baller'] = False
+            owned[key] = False
             ba.app.config.commit()
-            bs.screenmessage(f'{name} has been removed from the store.\nYou have been refunded {price}.')
+            bottom_lstr = bs.Lstr(
+                resource='notifications.removalRefundText',
+                subs=[
+                    ('${COUNT}', str(price)),
+                    ('${NAME}', name),
+                ]
+            ).evaluate()
+            top_lstr = bs.Lstr(resource='notifications.characterRemovalRefundTitle').evaluate()
+            mell.show_notification(
+                top_text=top_lstr,
+                bottom_text=bottom_lstr,
+                icon='spaztickets',
+            )
             with bs.get_foreground_host_activity().context:
                 mell.add_spaz(amount=price)
         ba.apptimer(4, do_it)

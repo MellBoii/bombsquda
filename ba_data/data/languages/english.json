@@ -1545,6 +1545,10 @@
     "titleText": "ok so \nwhat problem",
 	"rpcText": "setting Settings"
   },
+  "notifications": {
+	"characterRemovalRefundTitle": "Character Refund",
+	"removalRefundText": "${NAME} has been removed from the game.\nYou have been refunded ${COUNT}."
+  },
   "melWindow": {
     "titleText": "bombsquda config",
     "noisePollutionText": "make my game inaudible",

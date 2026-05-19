@@ -616,6 +616,206 @@ def shake_node(
 
     _update_shake()
 
+def show_notification(
+    top_text: str = 'Notification',
+    bottom_text: str = 'Bottom Text',
+    icon: str | None = None,
+    mini_icon: str | None = None,
+    important: bool = True,
+):
+    """Shows a notification.
+    important determines whether the notification
+    is a normal, important notification, or a 
+    non-important notification."""
+
+    import bascenev1 as bs
+    import textwrap
+
+    session = bs.get_foreground_host_session()
+    if not session:
+        return
+
+    with session.context:
+
+        # keep track of notifications
+        if not hasattr(bs.app, 'notifications'):
+            bs.app.notifications = {}
+
+        def _get_free_slot(entries: dict) -> int:
+            slot = 0
+            while slot in entries:
+                slot += 1
+            return slot
+
+        # simple text wrapping
+        wrap_width = 34
+        wrapped_bottom = textwrap.fill(bottom_text, width=wrap_width)
+        line_count = wrapped_bottom.count('\n') + 1
+
+        slot = _get_free_slot(bs.app.notifications)
+        bs.app.notifications[slot] = True
+
+        width = 320
+
+        # dynamically resize window
+        extra_lines = max(0, line_count - 2)
+        height = 70 + (extra_lines * 23)
+
+        base_x = 470
+        base_y = -40
+
+        # account for resized notifications
+        for i in range(slot):
+            base_y -= 75
+
+        base_y -= extra_lines * 8
+        extra_box_y = extra_lines * 10
+
+        nodes: list[bs.Node] = []
+        transitioning = False
+        front = True
+
+        # play a sound based on importance
+        if important:
+            bs.getsound('notification').play(volume=1.5)
+        else:
+            bs.getsound('notification2').play()
+
+        # background
+        bg = bs.newnode(
+            'image',
+            attrs={
+                'texture': bs.gettexture('softRect'),
+                'position': (base_x, base_y - extra_box_y),
+                'scale': (width, height),
+                'color': (0.1, 0.1, 0.1),
+                'opacity': 0.85,
+                'attach': 'topCenter',
+                'front': front,
+            },
+        )
+        nodes.append(bg)
+
+        # title
+        title = bs.newnode(
+            'text',
+            attrs={
+                'text': top_text,
+                'position': (base_x - 110, base_y + 20),
+                'scale': 1.1,
+                'maxwidth': 150,
+                'color': (1.0, 1.0, 1.0, 1.0),
+                'h_align': 'left',
+                'v_align': 'center',
+                'shadow': 1.0,
+                'flatness': 0.0,
+                'v_attach': 'top',
+                'front': front,
+            },
+        )
+        nodes.append(title)
+
+        # description
+        desc = bs.newnode(
+            'text',
+            attrs={
+                'text': wrapped_bottom,
+                'position': (base_x - 110, base_y + 7),
+                'scale': 0.9,
+                'maxwidth': 270,
+                'color': (0.85, 0.85, 0.85, 1.0),
+                'h_align': 'left',
+                'v_align': 'top',
+                'shadow': 0.8,
+                'flatness': 0.0,
+                'v_attach': 'top',
+                'front': front,
+            },
+        )
+        nodes.append(desc)
+
+        # main icon
+        if icon:
+            icon_node = bs.newnode(
+                'image',
+                attrs={
+                    'texture': bs.gettexture(icon),
+                    'position': (base_x - 145, base_y),
+                    'scale': (42, 42),
+                    'attach': 'topCenter',
+                    'front': front,
+                },
+            )
+            nodes.append(icon_node)
+
+            # mini icon
+            if mini_icon:
+                mini = bs.newnode(
+                    'image',
+                    attrs={
+                        'texture': bs.gettexture(mini_icon),
+                        'position': (base_x - 125, base_y - 18),
+                        'scale': (20, 20),
+                        'attach': 'topCenter',
+                        'front': front,
+                    },
+                )
+                nodes.append(mini)
+
+        # animate in
+        for node in nodes:
+            time = 0.05
+
+            if node.getnodetype() == 'text':
+                bs.animate(node, 'opacity', {
+                    0.0: 0.0,
+                    time: 1.0,
+                })
+            else:
+                bs.animate(node, 'opacity', {
+                    0.0: 0.0,
+                    time: node.opacity,
+                })
+
+            bs.animate_array(
+                node,
+                'position',
+                2,
+                {
+                    0.0: (node.position[0], node.position[1] + 20),
+                    time: node.position,
+                }
+            )
+
+        def trans_out():
+            nonlocal transitioning
+
+            if transitioning:
+                return
+
+            transitioning = True
+
+            bs.app.notifications.pop(slot, None)
+
+            for node in nodes:
+                try:
+                    current = getattr(node, 'opacity', 1.0)
+                    time = 0.3
+
+                    bs.animate(node, 'opacity', {
+                        0.0: current,
+                        time: 0.0,
+                    })
+
+                    bs.timer(time, node.delete)
+
+                except Exception:
+                    pass
+
+        # auto-remove
+        bs.timer(4.0, trans_out)
+    
+
 # keeping this here for later
 
 # def send_friend_request(name: str):
