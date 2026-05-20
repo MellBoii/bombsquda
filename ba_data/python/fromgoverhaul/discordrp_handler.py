@@ -226,6 +226,7 @@ class RichPresence:
                             "details": bs.Lstr(resource=f'{self._r}.charSelectText').evaluate(),
                             "state": 'Party',
                             "assets": {
+                                "large_image": 'background',
                                 "large_text": bs.Lstr(resource=f'{self._r}.lobbyText').evaluate(),
                                 "small_image": sesssion_image,
                                 "small_text": sesssion,
@@ -300,6 +301,7 @@ class RichPresence:
                         "details": 
                             bs.Lstr(resource=f'{self._r}.watchingCredits'),
                         "assets": {
+                            "large_image": 'logo',
                             "small_image": 'replay'
                         },
                         "timestamps": {"start": self.starting_time},
