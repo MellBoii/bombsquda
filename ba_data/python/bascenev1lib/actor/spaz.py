@@ -3343,7 +3343,8 @@ class Spaz(bs.Actor):
                                 ),
                             )
                     self.node.curse_death_time = 0
-                self.hitpoints = self.hitpoints_max
+                if self.hitpoints < self.hitpoints_max:
+                    self.hitpoints = self.hitpoints_max
                 self._flash_billboard(PowerupBoxFactory.get().tex_health)
                 self.node.hurt = 0
                 self._last_hit_time = None

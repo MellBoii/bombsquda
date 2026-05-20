@@ -270,7 +270,7 @@ class Startup():
                     print('Connection to the BombSquda server established successfully.')
                     loopt._connection_success_logged = True
                     loopt._connection_failed_logged = False
-                time.sleep(2)
+                time.sleep(7)
             # exception likely means no connection could be made
             except Exception as e:
                 bs.debprint(f"Server connection failed: {e}")

@@ -814,33 +814,63 @@ def show_notification(
 
         # auto-remove
         bs.timer(4.0, trans_out)
-    
 
-# keeping this here for later
+def send_friend_request(name: str):
+    import bascenev1 as bs
+    try:
+        import json
+        import urllib.request
+        import urllib.error
+        who = mell.get_unique_bs_id()
+        data = json.dumps({
+            "from": who,
+            "to": name
+        }).encode("utf-8")
 
-# def send_friend_request(name: str):
-    # session = requests.Session()
-    # try:
-        # session.post(
-            # f"{SERVER}/friends/request",
-            # json={
-                # "from": get_clean_display_name(),
-                # "to": name
-            # },
-            # timeout=2
-        # )
-        # bs.screenmessage(f"Friend request sent to {name}")
-    # except Exception:
-        # bs.screenmessage("Failed to send friend request", color=(1, 0, 0))
+        req = urllib.request.Request(
+            url=f"{server}/friends/request",
+            data=data,
+            headers={
+                "Content-Type": "application/json"
+            },
+            method="POST"
+        )
 
-# def respond_friend_request(name: str, accept: bool):
-    # session = requests.Session()
-    # session.post(
-        # f"{SERVER}/friends/respond",
-        # json={
-            # "user": get_clean_display_name(),
-            # "from": name,
-            # "accept": accept
-        # },
-        # timeout=2
-    # )
+        with urllib.request.urlopen(req, timeout=2) as response:
+            response.read()
+
+        return {'success': True, 'message': f"Friend request sent to {name}"}
+
+    except Exception as e:
+        return {'success': False, 'message': e}
+
+
+def respond_friend_request(name: str, accept: bool):
+    import bascenev1 as bs
+    try:
+        import json
+        import urllib.request
+        import urllib.error
+        who = mell.get_unique_bs_id()
+        data = json.dumps({
+            "user": who,
+            "from": name,
+            "accept": accept
+        }).encode("utf-8")
+
+        req = urllib.request.Request(
+            url=f"{server}/friends/respond",
+            data=data,
+            headers={
+                "Content-Type": "application/json"
+            },
+            method="POST"
+        )
+
+        with urllib.request.urlopen(req, timeout=2) as response:
+            response.read()
+        
+        return {'success': True, 'message': 'Done'}
+
+    except Exception as e:
+        return {'success': False, 'message': e}
