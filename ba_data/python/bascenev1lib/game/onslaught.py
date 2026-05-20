@@ -1909,18 +1909,19 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
 
         elif isinstance(msg, SpazBotDiedMessage):
             pts, importance = msg.spazbot.get_death_points(msg.how)
-            self.tickintimer = None
-            self.timebeforedeath += self.time_increase * 0.15 + importance
-            self.timebeforedeath = int(self.timebeforedeath)
-            self.timer_background.frame_delay = 0.03
-            bs.getsound('ding').play()
-            self.pizzatimertext.color = (0.1, 0.9, 0.1)
-            self.pizzatimertext.text = self._format_time(self.timebeforedeath)
-            def reset():
-                self.timer_background.frame_delay = 0.1
-                self.pizza_tick()
-                self.tickintimer = bs.Timer(1.0, self.pizza_tick, repeat=True)
-            bs.timer(0.3, reset)
+            if self._preset in {Preset.ENDLESS, Preset.ENDLESS_TOURNAMENT}:
+                self.tickintimer = None
+                self.timebeforedeath += self.time_increase * 0.15 + importance
+                self.timebeforedeath = int(self.timebeforedeath)
+                self.timer_background.frame_delay = 0.03
+                bs.getsound('ding').play()
+                self.pizzatimertext.color = (0.1, 0.9, 0.1)
+                self.pizzatimertext.text = self._format_time(self.timebeforedeath)
+                def reset():
+                    self.timer_background.frame_delay = 0.1
+                    self.pizza_tick()
+                    self.tickintimer = bs.Timer(1.0, self.pizza_tick, repeat=True)
+                bs.timer(0.3, reset)
             if msg.killerplayer is not None:
                 self._handle_kill_achievements(msg)
                 target: Sequence[float] | None
