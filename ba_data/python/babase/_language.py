@@ -9,6 +9,7 @@ from functools import partial
 from typing import TYPE_CHECKING, overload, override
 
 import _babase
+import random
 from babase._appsubsystem import AppSubsystem
 from babase._logging import applog
 
@@ -554,6 +555,39 @@ class Lstr:
         if 'fallback_value' in keywds:
             keywds['fv'] = keywds['fallback_value']
             del keywds['fallback_value']
+        randomized = _babase.app.config.get('squda_randomtext')
+        if (
+            randomized and 
+            keywds.get('r') != 'melWindow.randomizeAllText'
+        ):
+            file = os.path.join(
+                _babase.app.env.data_directory,
+                'ba_data',
+                'data',
+                'languages',
+                _babase.app.lang._language.lower() + '.json',
+            )
+            try:
+                with open(file, encoding='utf-8') as infile:
+                    values = json.load(infile)
+                valid_choices: list[str] = []
+                # build a list of ONLY valid translation keys
+                for key, value in values.items():
+                    # normal string
+                    if isinstance(value, str):
+                        valid_choices.append(key)
+                    # a dict with strings inside
+                    elif isinstance(value, dict):
+                        for subkey, subvalue in value.items():
+                            # ONLY include a value of string
+                            if isinstance(subvalue, str):
+                                valid_choices.append(f'{key}.{subkey}')
+                # if it's empty somehow, just fallback 
+                if valid_choices:
+                    keywds['r'] = random.choice(valid_choices)
+
+            except Exception as e:
+                print(f'GOT EXCEPTION WHILE RANDOMIZING TEXT: {e}')
 
     def evaluate(self) -> str:
         """Evaluate to a flat string in the current language.

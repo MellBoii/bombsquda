@@ -1555,6 +1555,7 @@
     "noisePollutionText": "make my game inaudible",
     "skipIntroText": "always skip intro",
     "spazHardModeText": "evil fucking hard mode!!!",
+	"randomizeAllText": "randomize all text",
     "enableEmeraldsText": "enable chaos emeralds",
     "disableMortalDamageText": "disable mortal damage",
     "parryAlwaysText": "i wanna parry all the time",
