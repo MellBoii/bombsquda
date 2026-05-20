@@ -815,10 +815,10 @@ def show_notification(
         # auto-remove
         bs.timer(4.0, trans_out)
 
-def get_clean_account_name(s: str) -> str:
+def get_clean_account_name() -> str:
     import bauiv1 as bui
     display = bui.app.plus.get_v1_account_display_string()
-    name = "".join(c for c in s if not (0xE000 <= ord(c) <= 0xF8FF))
+    name = "".join(c for c in display if not (0xE000 <= ord(c) <= 0xF8FF))
     return name
 
 def _request(endpoint: str, payload: dict):
@@ -835,18 +835,17 @@ def _request(endpoint: str, payload: dict):
             method="POST"
         )
 
-        with urllib.request.urlopen(req, timeout=2):
-            pass
+        response = urllib.request.urlopen(req, timeout=2)
 
-        return {'success': True, 'message': 'Done'}
+        return json.loads(response.read().decode('utf-8'))
 
     except Exception as e:
-        return {'success': False, 'message': str(e)}
+        return {'status': 'fail', 'message': str(e)}
 
 
 def send_friend_request(name: str):
     return _request('friends/request', {
-        'from': get_clean_account_name,
+        'from': get_clean_account_name(),
         'to': name
     })
 
@@ -861,12 +860,25 @@ def respond_friend_request(name: str, accept: bool, aswho: str):
 
 def send_message(name: str, message: str, aswho: str):
     return _request('friends/message', {
-        'user': aswho,
+        'from': aswho,
         'to': name,
         'message': message
     })
 
 def get_messages(name: str):
-    return _request('friends/message', {
+    return _request('friends/messages', {
         'with': name,
     })
+
+def get_name_from_id(id: str):
+    import json
+    import urllib.request
+    payload = {'id': id}
+    req = urllib.request.Request(
+        url=f'{server}/api/get_name_from_id',
+        data=json.dumps(payload).encode(),
+        headers={"Content-Type": "application/json"},
+        method="POST"
+    )
+    response = urllib.request.urlopen(req, timeout=2)
+    return response.read().decode('utf-8')
