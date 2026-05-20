@@ -4,7 +4,7 @@ like lists, dicts, server address, game version, and some useful functions.
 """
 
 screams = ['screams/scream' + str(i + 1) + '' for i in range(15)]
-server = "https://bombsquda.tailc76b25.ts.net"
+server = "http://127.0.0.1:5000"
 version = '2.5'
 update_date = '4/30/2026'
 
@@ -815,62 +815,58 @@ def show_notification(
         # auto-remove
         bs.timer(4.0, trans_out)
 
-def send_friend_request(name: str):
-    import bascenev1 as bs
+def get_clean_account_name(s: str) -> str:
+    import bauiv1 as bui
+    display = bui.app.plus.get_v1_account_display_string()
+    name = "".join(c for c in s if not (0xE000 <= ord(c) <= 0xF8FF))
+    return name
+
+def _request(endpoint: str, payload: dict):
     try:
         import json
         import urllib.request
-        import urllib.error
-        who = mell.get_unique_bs_id()
-        data = json.dumps({
-            "from": who,
-            "to": name
-        }).encode("utf-8")
+
+        payload.setdefault('user', get_clean_account_name())
 
         req = urllib.request.Request(
-            url=f"{server}/friends/request",
-            data=data,
-            headers={
-                "Content-Type": "application/json"
-            },
+            url=f"{server}/{endpoint}",
+            data=json.dumps(payload).encode(),
+            headers={"Content-Type": "application/json"},
             method="POST"
         )
 
-        with urllib.request.urlopen(req, timeout=2) as response:
-            response.read()
+        with urllib.request.urlopen(req, timeout=2):
+            pass
 
-        return {'success': True, 'message': f"Friend request sent to {name}"}
-
-    except Exception as e:
-        return {'success': False, 'message': e}
-
-
-def respond_friend_request(name: str, accept: bool):
-    import bascenev1 as bs
-    try:
-        import json
-        import urllib.request
-        import urllib.error
-        who = mell.get_unique_bs_id()
-        data = json.dumps({
-            "user": who,
-            "from": name,
-            "accept": accept
-        }).encode("utf-8")
-
-        req = urllib.request.Request(
-            url=f"{server}/friends/respond",
-            data=data,
-            headers={
-                "Content-Type": "application/json"
-            },
-            method="POST"
-        )
-
-        with urllib.request.urlopen(req, timeout=2) as response:
-            response.read()
-        
         return {'success': True, 'message': 'Done'}
 
     except Exception as e:
-        return {'success': False, 'message': e}
+        return {'success': False, 'message': str(e)}
+
+
+def send_friend_request(name: str):
+    return _request('friends/request', {
+        'from': get_clean_account_name,
+        'to': name
+    })
+
+
+def respond_friend_request(name: str, accept: bool, aswho: str):
+    return _request('friends/respond', {
+        'user': aswho,
+        'from': name,
+        'accept': accept
+    })
+
+
+def send_message(name: str, message: str, aswho: str):
+    return _request('friends/message', {
+        'user': aswho,
+        'to': name,
+        'message': message
+    })
+
+def get_messages(name: str):
+    return _request('friends/message', {
+        'with': name,
+    })
