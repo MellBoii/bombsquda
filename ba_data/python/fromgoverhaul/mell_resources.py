@@ -865,6 +865,11 @@ def send_message(name: str, message: str):
         'message': message
     })
 
+def set_all_seen(name: str):
+    return _request('friends/set_all_seen', {
+        'with': name,
+    })
+
 def remove_friend(name: str):
     return _request('friends/remove', {
         'target': name
