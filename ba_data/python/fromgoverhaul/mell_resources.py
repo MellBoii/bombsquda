@@ -815,6 +815,8 @@ def show_notification(
         # auto-remove
         bs.timer(4.0, trans_out)
 
+# ---------------------------------- NETWORKING -------------------------------------------
+
 def get_clean_account_name() -> str:
     import bauiv1 as bui
     display = bui.app.plus.get_v1_account_display_string()
@@ -850,19 +852,22 @@ def send_friend_request(name: str):
     })
 
 
-def respond_friend_request(name: str, accept: bool, aswho: str):
+def respond_friend_request(name: str, accept: bool):
     return _request('friends/respond', {
-        'user': aswho,
         'from': name,
         'accept': accept
     })
 
-
-def send_message(name: str, message: str, aswho: str):
+def send_message(name: str, message: str):
     return _request('friends/message', {
-        'from': aswho,
+        'from': get_clean_account_name(),
         'to': name,
         'message': message
+    })
+
+def remove_friend(name: str):
+    return _request('friends/remove', {
+        'target': name
     })
 
 def get_messages(name: str):
@@ -870,15 +875,10 @@ def get_messages(name: str):
         'with': name,
     })
 
-def get_name_from_id(id: str):
-    import json
-    import urllib.request
-    payload = {'id': id}
-    req = urllib.request.Request(
-        url=f'{server}/api/get_name_from_id',
-        data=json.dumps(payload).encode(),
-        headers={"Content-Type": "application/json"},
-        method="POST"
-    )
-    response = urllib.request.urlopen(req, timeout=2)
-    return response.read().decode('utf-8')
+def get_friends():
+    return _request('friends/list', {})
+
+def get_info_from_id(id: str):
+    return _request('api/get_info', {
+        'id': id,
+    })

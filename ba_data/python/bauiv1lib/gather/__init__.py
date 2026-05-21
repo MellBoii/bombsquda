@@ -67,6 +67,7 @@ class GatherWindow(bui.MainWindow):
 
         ABOUT = 'about'
         INTERNET = 'internet'
+        FRIENDS = 'friends'
         NEARBY = 'nearby'
         MANUAL = 'manual'
 
@@ -80,6 +81,7 @@ class GatherWindow(bui.MainWindow):
         from bauiv1lib.gather.abouttab import AboutGatherTab
         from bauiv1lib.gather.manualtab import ManualGatherTab
         from bauiv1lib.gather.publictab import PublicGatherTab
+        from bauiv1lib.gather.friendstab import FriendsTab
         from bauiv1lib.gather.nearbytab import NearbyGatherTab
 
         plus = bui.app.plus
@@ -191,6 +193,9 @@ class GatherWindow(bui.MainWindow):
                 )
             )
         tabdefs.append(
+            (self.TabID.FRIENDS, bui.Lstr(resource=f'{self._r}.friendsText'))
+        )
+        tabdefs.append(
             (self.TabID.NEARBY, bui.Lstr(resource=f'{self._r}.nearbyText'))
         )
         tabdefs.append(
@@ -214,6 +219,7 @@ class GatherWindow(bui.MainWindow):
         tabtypes: dict[GatherWindow.TabID, type[GatherTab]] = {
             self.TabID.ABOUT: AboutGatherTab,
             self.TabID.MANUAL: ManualGatherTab,
+            self.TabID.FRIENDS: FriendsTab,
             self.TabID.INTERNET: PublicGatherTab,
             self.TabID.NEARBY: NearbyGatherTab,
         }
