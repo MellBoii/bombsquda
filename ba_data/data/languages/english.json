@@ -818,6 +818,15 @@
 	"rpcText": "setting a game's settings"
   },
   "gamesToText": "${WINCOUNT} games to ${LOSECOUNT}",
+  "friendsTab": {
+	  "errorGettingFriendsText": "An error occured while getting friends.\n${ERROR}",
+	  "errorAddingFriendText": "An error occured while adding that friend.\n${ERROR}",
+	  "confirmRemoveFriend": "Are you sure you want to remove\n${NAME}?",
+	  "unknownError": "An unknown error occured.",
+	  "friendRequestFromUser": "Friend Request from ${NAME}",
+	  "requestSentText": "Request sent to ${NAME}.",
+	  "addFriendTitle": "Enter a friend's name or Squda ID\n(not recommended) to add them..."
+  },
   "gatherWindow": {
     "aboutDescriptionLocalMultiplayerExtraText": "Remember: any device in a party can have more\nthan one player if you have enough controllers.",
     "aboutDescriptionText": "This is a tab where you\ncan join people's online servers.\nIf you wish to host, you can do \nso by either port forwarding, \nusing a LAN VPN (Radmin, Hamachi, \nZerotier), or server forwarders (whatever\n they're called, stuff like playit.gg)\nWarning that disconnecting can often happen \npurely due to how many objects can exist or \nhow many things are running, and if that does \nhappen you can ask the host to enable \n'no particles' (just to help a bit more)",
@@ -882,6 +891,7 @@
     "manualText": "Manual",
     "manualYourAddressFromInternetText": "your address from the internet:",
     "manualYourLocalAddressText": "your local address:",
+    "friendsText": "Friends",
     "nearbyText": "Nearby",
     "noConnectionText": "<no connection>",
     "noPartiesAddedText": "No Parties Added",
