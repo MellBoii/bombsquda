@@ -1237,6 +1237,10 @@
     "resumeText": "continuar",
     "settingsText": "Ajustes",
 	"rpcText": "en el Menú Principal",
+	"pauseGame": "pausar juego",
+	"unpauseGame": "resumir juego",
+	"disableBots": "desactivar bots",
+	"enableBots": "activar bots",
 	"DiscordText": "Servidor de Discord"
   },
   "playlistBrowser": {
