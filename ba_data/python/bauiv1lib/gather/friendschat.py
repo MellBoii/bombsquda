@@ -15,6 +15,7 @@ class FriendChatWindow(bui.Window):
         self._friend = friend
         self._friend_info = info = mell.get_info_from_id(self._friend)
         self._friend_name = info.get('account_name', info.get('username', 'Unknown'))
+        mell.set_all_seen(friend)
         self._messages: list[dict] = []
         self._r = 'friendsTab'
 
