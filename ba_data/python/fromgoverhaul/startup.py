@@ -265,7 +265,29 @@ class Startup():
             )
             # now try opening the response
             try:
-                response = urllib.request.urlopen(request, timeout=2)
+                open = urllib.request.urlopen(request, timeout=2)
+                response = json.loads(open.read().decode('utf-8'))
+                new_msgs = response.get('new_messages')
+                if new_msgs:
+                    delay_inc = 0.5
+                    delay = 0.5
+                    for msg in new_msgs.keys():
+                        info = mell.get_info_from_id(msg)
+                        name = info.get('username', info.get('account_name', 'Unknown'))
+                        ba.pushcall(
+                            ba.Call(ba.apptimer,
+                                delay, 
+                                ba.Call(
+                                    mell.show_notification,
+                                    top_text=name,
+                                    bottom_text=new_msgs[msg],
+                                    icon=info.get('avatar', 'null'),
+                                ),
+                            ),
+                            from_other_thread=True
+                        )
+                        delay += delay_inc
+                    
                 if not loopt._connection_success_logged:
                     print('Connection to the BombSquda server established successfully.')
                     loopt._connection_success_logged = True
@@ -274,6 +296,7 @@ class Startup():
             # exception likely means no connection could be made
             except Exception as e:
                 bs.debprint(f"Server connection failed: {e}")
+                time.sleep(5)
                 if not loopt._connection_failed_logged:
                     print('Connecting to the BombSquda server failed.')
                     loopt._connection_success_logged = False
