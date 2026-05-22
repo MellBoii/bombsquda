@@ -159,7 +159,7 @@ class FriendChatWindow(bui.Window):
         if not text:
             return
         
-        if len(text) > 1:
+        if len(text) > 120:
             self._send_error(bui.Lstr(r=f'{self._r}.messageTooLong'))
             return
 
