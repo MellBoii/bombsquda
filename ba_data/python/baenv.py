@@ -729,3 +729,4 @@ def _modular_main() -> None:
 # Exec'ing this module directly will do a standard app run.
 if __name__ == '__main__':
     _modular_main()
+# cowtato is awesome
