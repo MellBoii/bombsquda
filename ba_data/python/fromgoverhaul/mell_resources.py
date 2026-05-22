@@ -837,12 +837,11 @@ def _request(endpoint: str, payload: dict):
             method="POST"
         )
 
-        response = urllib.request.urlopen(req, timeout=2)
+        with urllib.request.urlopen(req, timeout=2) as response:
+            return json.loads(response.read().decode('utf-8'))
 
-        return json.loads(response.read().decode('utf-8'))
-
-    except Exception as e:
-        return {'status': 'fail', 'message': str(e)}
+    except Exception as exc:
+        return {'status': 'fail', 'message': str(exc)}
 
 
 def send_friend_request(name: str):
@@ -887,3 +886,18 @@ def get_info_from_id(id: str):
     return _request('api/get_info', {
         'id': id,
     })
+
+def get_online():
+    try:
+        import json
+        import urllib.request
+        endpoint = '/online'
+        req = urllib.request.Request(
+            url=f"{server}/{endpoint}",
+            method="GET"
+        )
+        response = urllib.request.urlopen(req, timeout=2)
+        return json.loads(response.read().decode('utf-8'))
+
+    except Exception as e:
+        return {'status': 'fail', 'message': str(e)}

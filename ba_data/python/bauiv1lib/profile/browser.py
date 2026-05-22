@@ -388,7 +388,10 @@ class ProfileBrowserWindow(bui.MainWindow):
             except Exception:
                 char = p_info['character']
                 if char in mell.swapout_dict:
-                    char_index = spazzes.index(mell.swapout_dict[char])
+                    try:
+                        char_index = spazzes.index(mell.swapout_dict[char])
+                    except:
+                        char_index = spazzes.index('Spaz')
                 else:
                     char_index = spazzes.index('Spaz')
 

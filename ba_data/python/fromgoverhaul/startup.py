@@ -7,6 +7,7 @@ import os
 import bauiv1 as bui
 from .discordrp_handler import RichPresence
 from typing import Sequence, override
+from bascenev1._coopsession import CoopSession
 import json
 import urllib
 import _babase
@@ -246,7 +247,54 @@ class Startup():
         
         # while we exist, keep pinging the server
         while True:
-            # get our data like squda id n shi
+            global status
+            status = None
+            def update_status():
+                global status
+                activity = bs.get_foreground_host_activity()
+                session = bs.get_foreground_host_session()
+                player = None
+
+                aname = (
+                    f"{activity.__class__.__module__}."
+                    f"{activity.__class__.__name__}"
+                    if activity else None
+                )
+                players = getattr(activity, 'players', [])
+                for plr in players:
+                    inputdevice = plr._sessionplayer.inputdevice
+                    if not inputdevice.is_remote_client:
+                        player = plr
+                        break
+                pchar = getattr(player, 'character', None)
+                pname = getattr(player, 'getname()', None)
+                profile = f'{pname} ({pchar})'
+
+                sname = (
+                    f"{session.__class__.__module__}."
+                    f"{session.__class__.__name__}"
+                    if session else None
+                )
+                coop = isinstance(session, CoopSession)
+                score = getattr(activity, '_score', None)
+                rank = getattr(activity, 'ultrameter._rank', None)
+                share_status = True
+                if share_status:
+                    status = {
+                        'activity': aname,
+                        'session': sname,
+                        'coop': coop,
+                        'score': score,
+                        'rank': rank,
+                        'hidden': False,
+                        'profile': profile,
+                    }
+                else:
+                    status = {
+                        'hidden': True,
+                    }
+            # update the status
+            bs.pushcall(update_status, from_other_thread=True)
             data = {
                 "bs_id": BS_ID,
                 "account": bui.app.plus.get_v1_account_display_string(),
@@ -254,6 +302,7 @@ class Startup():
                 "bs_version": ba.app.env.engine_version,
                 "squda_version": mell.version,
                 "squda_updatedate": mell.update_date,
+                "squda_status": status,
             }
             # make a request to the server with the data (as dumped json)
             request = urllib.request.Request(

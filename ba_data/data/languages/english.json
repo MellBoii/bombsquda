@@ -823,9 +823,14 @@
 	  "errorAddingFriendText": "An error occured while adding that friend.\n${ERROR}",
 	  "confirmRemoveFriend": "Are you sure you want to remove\n${NAME}?",
 	  "unknownError": "An unknown error occured.",
+	  "errorGeneric": "An error occured.",
+	  "errorGenericDescriptive": "An error occured.\n${ERROR}",
 	  "friendRequestFromUser": "Friend Request from ${NAME}",
 	  "requestSentText": "Request sent to ${NAME}.",
-	  "addFriendTitle": "Enter a friend's name or Squda ID\n(not recommended) to add them..."
+	  "addFriendTitle": "Enter a friend's name or Squda ID\n(not recommended) to add them...",
+	  "onlineText": "Online",
+	  "offlineText": "Offline",
+	  "messageTooLong": "YOUR MESSAGE IS TOO LONG"
   },
   "gatherWindow": {
     "aboutDescriptionLocalMultiplayerExtraText": "Remember: any device in a party can have more\nthan one player if you have enough controllers.",

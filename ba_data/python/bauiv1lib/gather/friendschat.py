@@ -1,6 +1,10 @@
 from __future__ import annotations
+
 from typing import Sequence
+import threading
+
 import bauiv1 as bui
+import bascenev1 as bs
 import fromgoverhaul.mell_resources as mell
 
 
@@ -14,9 +18,16 @@ class FriendChatWindow(bui.Window):
     ):
         self._friend = friend
         self._friend_info = info = mell.get_info_from_id(self._friend)
-        self._friend_name = info.get('account_name', info.get('username', 'Unknown'))
-        mell.set_all_seen(friend)
+        self._friend_name = info.get(
+            'account_name',
+            info.get('username', 'Unknown'),
+        )
+
         self._messages: list[dict] = []
+
+        self._loading = False
+        self._closed = False
+
         self._r = 'friendsTab'
 
         self._width = 540
@@ -51,9 +62,13 @@ class FriendChatWindow(bui.Window):
             button_type='backSmall',
             on_activate_call=self.close,
         )
-        bui.containerwidget(edit=self._root_widget, cancel_button=btn)
 
-        # window title
+        bui.containerwidget(
+            edit=self._root_widget,
+            cancel_button=btn,
+        )
+
+        # Title.
         bui.textwidget(
             parent=self._root_widget,
             position=(self._width * 0.52, self._height - 30),
@@ -66,7 +81,25 @@ class FriendChatWindow(bui.Window):
             maxwidth=260,
         )
 
-        # scroll widget
+        # Loading spinner.
+        self._spinner = bui.spinnerwidget(
+            parent=self._root_widget,
+            position=(self._width * 0.5, self._height * 0.5),
+        )
+        
+        self._status_text = bui.textwidget(
+            parent=self._root_widget,
+            position=(self._width * 0.5, self._height * 0.5),
+            size=(0, 0),
+            text='',
+            scale=0.8,
+            color=(0.5, 0.5, 0.5),
+            h_align='center',
+            v_align='center',
+            maxwidth=self._width * 0.7,
+        )
+
+        # Scroll widget.
         self._scrollwidget = bui.scrollwidget(
             parent=self._root_widget,
             position=(25, 85),
@@ -80,7 +113,7 @@ class FriendChatWindow(bui.Window):
             margin=0,
         )
 
-        # text field
+        # Text field.
         self._text_field = bui.textwidget(
             parent=self._root_widget,
             editable=True,
@@ -95,7 +128,7 @@ class FriendChatWindow(bui.Window):
             autoselect=True,
         )
 
-        # send button
+        # Send button.
         self._send_button = bui.buttonwidget(
             parent=self._root_widget,
             position=(450, 30),
@@ -109,9 +142,9 @@ class FriendChatWindow(bui.Window):
             on_return_press_call=self._send_button.activate,
         )
 
-        # Auto update.
+        # Auto update timer.
         self._update_timer = bui.AppTimer(
-            1.0,
+            3,
             bui.WeakCall(self._update),
             repeat=True,
         )
@@ -119,37 +152,202 @@ class FriendChatWindow(bui.Window):
         self._update()
 
     def _send_message(self) -> None:
-        """Send a message."""
+        """Send message in background."""
 
         text = bui.textwidget(query=self._text_field).strip()
 
         if not text:
             return
+        
+        if len(text) > 1:
+            self._send_error(bui.Lstr(r=f'{self._r}.messageTooLong'))
+            return
 
-        result = mell.send_message(self._friend, text)
+        # Disable button while sending.
+        bui.buttonwidget(
+            edit=self._send_button,
+            label='...',
+        )
+
+        threading.Thread(
+            target=self._send_message_thread,
+            args=(text,),
+            daemon=True,
+        ).start()
+
+    def _send_message_thread(self, text: str) -> None:
+        """Background send."""
+
+        try:
+            result = mell.send_message(self._friend, text)
+
+            bs.pushcall(
+                bui.Call(
+                    self._finish_send,
+                    result,
+                    text,
+                ),
+                from_other_thread=True,
+            )
+
+        except Exception as exc:
+            bs.pushcall(
+                bui.Call(
+                    self._send_error,
+                    str(exc),
+                ),
+                from_other_thread=True,
+            )
+
+    def _finish_send(
+        self,
+        result: dict,
+        text: str,
+    ) -> None:
+        """Finish send on main thread."""
+
+        if self._closed:
+            return
+
+        bui.buttonwidget(
+            edit=self._send_button,
+            label='>',
+        )
 
         if result.get('status') == 'sent':
-            bui.textwidget(edit=self._text_field, text='')
+            bui.textwidget(
+                edit=self._text_field,
+                text='',
+            )
+
             self._update()
+
         else:
-            bui.screenmessage(
+            self._send_error(
                 result.get(
                     'error',
                     result.get(
                         'message',
                         bui.Lstr(r=f'{self._r}.unknownError'),
                     ),
-                ),
-                color=(1, 0, 0),
+                )
             )
-            bui.getsound('error').play()
+
+    def _send_error(self, error: str) -> None:
+        """Show send error."""
+
+        if self._closed:
+            return
+
+        bui.buttonwidget(
+            edit=self._send_button,
+            label='>',
+        )
+
+        bui.screenmessage(
+            error,
+            color=(1, 0, 0),
+        )
+
+        bui.getsound('error').play()
 
     def _update(self) -> None:
-        """Refresh messages."""
-        response = mell.get_messages(self._friend)
-        messages = response.get('messages')
+        """Threaded refresh."""
 
-        # Prevent rebuilding if unchanged.
+        if self._loading or self._closed:
+            return
+
+        self._loading = True
+
+        bui.spinnerwidget(
+            edit=self._spinner,
+            visible=True,
+        )
+        bui.textwidget(
+            edit=self._status_text,
+            text='',
+        )
+
+        threading.Thread(
+            target=self._update_thread,
+            daemon=True,
+        ).start()
+
+    def _update_thread(self) -> None:
+        """Background fetch."""
+
+        response = mell.get_messages(self._friend)
+        messages = response.get('messages', [])
+        if (
+            response.get('status', '') 
+            in ['error', 'fail'] 
+            or response.get('error')
+        ):
+            bs.pushcall(
+                bui.Call(
+                    self._update_failed,
+                    response.get(
+                        'error',
+                        response.get(
+                            'message',
+                            bui.Lstr(r=f'{self._r}.unknownError'),
+                        ),
+                    ),
+                ),
+                from_other_thread=True,
+            )
+            return
+
+        bs.pushcall(
+            bui.Call(
+                self._apply_messages,
+                messages,
+            ),
+            from_other_thread=True,
+        )
+        mell.set_all_seen(self._friend)
+
+    def _update_failed(self, error: str) -> None:
+        """Handle update failure."""
+
+        self._loading = False
+
+        if self._closed:
+            return
+
+        bui.textwidget(
+            edit=self._status_text,
+            text=bui.Lstr(
+                r=f'{self._r}.errorGenericDescriptive',
+                s=[('${ERROR}', error)]
+            ),
+        )
+        bui.spinnerwidget(
+            edit=self._spinner,
+            visible=False,
+        )
+
+    def _apply_messages(
+        self,
+        messages: list[dict],
+    ) -> None:
+        """Apply messages on main thread."""
+
+        self._loading = False
+
+        if self._closed:
+            return
+
+        bui.spinnerwidget(
+            edit=self._spinner,
+            visible=False,
+        )
+        bui.textwidget(
+            edit=self._status_text,
+            text=''
+        )
+
+        # Skip rebuilding if unchanged.
         if messages == self._messages:
             return
 
@@ -174,7 +372,11 @@ class FriendChatWindow(bui.Window):
                 else (1.0, 1.0, 1.0)
             )
 
-            prefix = 'You' if mine else self._friend_name
+            prefix = (
+                'You'
+                if mine
+                else self._friend_name
+            )
 
             widget = bui.textwidget(
                 parent=self._columnwidget,
@@ -197,6 +399,8 @@ class FriendChatWindow(bui.Window):
 
     def close(self) -> None:
         """Close window."""
+
+        self._closed = True
 
         if not self._root_widget:
             return

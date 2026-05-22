@@ -154,8 +154,11 @@ class EditProfileWindow(
             char = profile.get('character', None)
             # We can do some swapouts if the character has those.
             if char in mell.swapout_dict:
-                lookalike = mell.swapout_dict[char]
-                icon_index = self._spazzes.index(lookalike)
+                try:
+                    lookalike = mell.swapout_dict[char]
+                    icon_index = self._spazzes.index(lookalike)
+                except:
+                    icon_index = self._spazzes.index('Spaz')
                 # Warn about the occasion.
                 bui.screenmessage(
                     bui.Lstr(
