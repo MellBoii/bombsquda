@@ -830,7 +830,16 @@
 	  "addFriendTitle": "Enter a friend's name or Squda ID\n(not recommended) to add them...",
 	  "onlineText": "Online",
 	  "offlineText": "Offline",
-	  "messageTooLong": "YOUR MESSAGE IS TOO LONG"
+	  "messageTooLong": "YOUR MESSAGE IS TOO LONG",
+	  "profileEditTitle": "Edit BombSquda Profile",
+	  "avatarText": "Avatar",
+	  "avatarCMText": "Avatar (Color Mask)",
+	  "avatarPreviewText": "Preview of your avatar:",
+	  "colorText": "Color",
+	  "highlightText": "Highlight",
+	  "saveToServerText": "Save and Send",
+	  "savedText": "Saved.",
+	  "rpcText": "I Dunno Man"
   },
   "gatherWindow": {
     "aboutDescriptionLocalMultiplayerExtraText": "Remember: any device in a party can have more\nthan one player if you have enough controllers.",

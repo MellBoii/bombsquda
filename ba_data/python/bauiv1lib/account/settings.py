@@ -499,6 +499,17 @@ class AccountSettingsWindow(bui.MainWindow):
                 h_align='center',
                 v_align='center',
             )
+            bui.buttonwidget(
+                parent=self._subcontainer,
+                position=(self._sub_width * 0.05, v - 40),
+                autoselect=True,
+                size=(50, 50),
+                label='',
+                color=(0.55, 0.5, 0.6),
+                icon=bui.gettexture('profileEditIcon'),
+                scale=0.9,
+                on_activate_call=bui.WeakCall(self.edit_squda_profile),
+            )
             v -= signed_in_as_space * 0.5
             self._account_name_text = bui.textwidget(
                 parent=self._subcontainer,
@@ -1488,7 +1499,14 @@ class AccountSettingsWindow(bui.MainWindow):
             titletext=ba.Lstr(resource='aboutBombSqudaIDSTitle'),
             bodytext=ba.Lstr(resource='aboutBombSqudaIDS'),
         )
-        
+    
+    def edit_squda_profile(self):
+        if not self._root_widget or self._root_widget.transitioning_out:
+            return
+            
+        from bauiv1lib.profile.squda import SqudaProfileEditWindow
+        self.main_window_replace(SqudaProfileEditWindow())
+    
     def _refresh_account_name_text(self) -> None:
         plus = bui.app.plus
         assert plus is not None

@@ -887,6 +887,9 @@ def get_info_from_id(id: str):
         'id': id,
     })
 
+def set_profile_data(data: dict):
+    return _request('api/set_profile_data', data)
+
 def get_online():
     try:
         import json
