@@ -887,6 +887,11 @@ def get_info_from_id(id: str):
         'id': id,
     })
 
+def get_status_from_id(id: str):
+    return _request('api/get_status', {
+        'id': id,
+    })
+
 def set_profile_data(data: dict):
     return _request('api/set_profile_data', data)
 

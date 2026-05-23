@@ -1,187 +1,245 @@
 # Released under the MIT License. See LICENSE for details.
 #
-"""UI for setting... settings."""
+"""Profile editing window."""
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Sequence, override
-import logging
+from threading import Thread
+from typing import cast, override, Sequence
 
 import bauiv1 as bui
 import bascenev1 as bs
 import os
-import babase
-import random
+
 import fromgoverhaul.mell_resources as mell
-from bauiv1lib.popup import PopupMenu
+
 from bauiv1lib.texturepicker import TexturePicker
 from bauiv1lib.colorpicker import ColorPicker
 from pathlib import Path
 
-if TYPE_CHECKING:
-    from typing import Callable
-    
 class SqudaProfileEditWindow(bui.MainWindow):
-    """Window for editing your profile."""
+    """Window for editing profile data."""
     def __init__(
         self,
         transition: str | None = 'in_right',
         origin_widget: bui.Widget | None = None,
-    ):
-        # pylint: disable=too-many-locals
-
-        bui.set_analytics_screen('BombSquda Settings')
-        assert bui.app.classic is not None
+    ):      
         uiscale = bui.app.ui_v1.uiscale
-        width = 1000 if uiscale is bui.UIScale.SMALL else 800
-        height = 650
         self._r = 'friendsTab'
+        self._loading = False
+        self._closed = False
 
-        uiscale = bui.app.ui_v1.uiscale
-        # Do some fancy math to fill all available screen area up to the
-        # size of our backing container. This lets us fit to the exact
-        # screen shape at small ui scale.
-        screensize = bui.get_virtual_screen_size()
-        safesize = bui.get_virtual_safe_area_size()
+        # Default placeholder values while loading.
+        self._profile = {}
 
-        # We're a generally widescreen shaped window, so bump our
-        # overall scale up a bit when screen width is wider than safe
-        # bounds to take advantage of the extra space.
-        smallscale = min(2.0, 1.5 * screensize[0] / safesize[0])
-        scale = (
-            smallscale
-            if uiscale is bui.UIScale.SMALL
-            else 1.1 if uiscale is bui.UIScale.MEDIUM else 0.8
-        )
-        target_height = min(height - 70, screensize[1] / scale)
-        target_width = min(width - 80, screensize[0] / scale)
-        yoffs = 0.5 * height + 0.5 * target_height + 30.0
-        self._scroll_width = target_width - 30
-        self._scroll_height = target_height - 45
-        self._sub_width = min(500, self._scroll_width * 0.95)
-        # remember to ALWAYS increase 
-        # by 50 whenever adding a new option
-        self._sub_height = 500.0
-        y = start_y = self._sub_height - 200
-        scroll_bottom = yoffs - 56 - self._scroll_height
-        self.is_small = bui.app.ui_v1.uiscale is bui.UIScale.SMALL
-        
+        self._texture = 'null'
+        self._cmtexture = 'white'
+
+        self._color = (1, 1, 1)
+        self._highlight = (1, 1, 1)
+
+        self._username = ''
+        self._status = ''
+
+        # Profile load state.
+        self._profile_loaded = False
+
+        self._width = 1000 if uiscale is bui.UIScale.SMALL else 760
+        self._height = 600
+
+        self._sub_width = 700
+        self._sub_height = 670
+
+        assert bui.app.classic is not None
+
         super().__init__(
             root_widget=bui.containerwidget(
-                size=(width, height),
-                toolbar_visibility='menu_full',
-                scale=scale,
+                size=(self._width, self._height),
+                scale=(
+                    1.3
+                    if uiscale is bui.UIScale.SMALL
+                    else 1.1
+                    if uiscale is bui.UIScale.MEDIUM
+                    else 1.0
+                ),
+                stack_offset=(
+                    (0, -20)
+                    if uiscale is bui.UIScale.SMALL
+                    else (0, 0)
+                ),
+                transition=transition,
+                scale_origin_stack_offset=(
+                    origin_widget.get_screen_space_center()
+                    if origin_widget
+                    else None
+                ),
             ),
-            transition=transition,
             origin_widget=origin_widget,
-            # We're affected by screen size only at small ui-scale.
-            refresh_on_screen_size_changes=uiscale is bui.UIScale.SMALL,
+            transition=transition,
+        )
+        self._build_loading_ui()
+
+        Thread(
+            target=self._load_profile_thread,
+            daemon=True,
+        ).start()
+
+    def _build_ui(self):
+        root = self._root_widget
+        # normal ui
+        self._back_button = bui.buttonwidget(
+            parent=root,
+            position=(45, self._height - 70),
+            size=(55, 55),
+            scale=0.8,
+            autoselect=True,
+            label=bui.charstr(
+                bui.SpecialChar.BACK
+            ),
+            button_type='backSmall',
+            on_activate_call=self.main_window_back,
+        )
+        bui.containerwidget(
+            edit=root,
+            cancel_button=self._back_button,
+        )
+        # title
+        bui.textwidget(
+            parent=root,
+            position=(
+                self._width * 0.5,
+                self._height - 45,
+            ),
+            size=(0, 0),
+            text=bui.Lstr(
+                resource=f'{self._r}.profileEditTitle'
+            ),
+            color=bui.app.ui_v1.title_color,
+            scale=1.3,
+            h_align='center',
+            v_align='center',
         )
         self._scrollwidget = bui.scrollwidget(
-            parent=self._root_widget,
-            size=(self._scroll_width, self._scroll_height),
-            position=(
-                width * 0.5 - self._scroll_width * 0.5,
-                scroll_bottom,
+            parent=root,
+            position=(35, 40),
+            size=(
+                self._width - 70,
+                self._height - 120,
             ),
             simple_culling_v=20.0,
-            highlight=False,
-            center_small_content_horizontally=True,
-            selection_loops_to_parent=True,
             border_opacity=0.4,
         )
-        bui.widget(edit=self._scrollwidget, right_widget=self._scrollwidget)
         self._subcontainer = bui.containerwidget(
             parent=self._scrollwidget,
-            size=(self._sub_width, self._sub_height),
+            size=(
+                self._sub_width,
+                self._sub_height,
+            ),
             background=False,
-            selection_loops_to_parent=True,
         )
-        if uiscale is bui.UIScale.SMALL:
-            self._back_button = None
-            bui.containerwidget(
-                edit=self._root_widget, on_cancel_call=self.main_window_back
-            )
-        else:
-            self._back_button = btn = bui.buttonwidget(
-                parent=self._root_widget,
-                autoselect=True,
-                position=(50, yoffs - 50.0),
-                size=(70, 70),
-                scale=0.8,
-                text_scale=1.2,
-                label=bui.charstr(bui.SpecialChar.BACK),
-                button_type='backSmall',
-                on_activate_call=self.main_window_back,
-            )
-            
-            bui.containerwidget(edit=self._root_widget, cancel_button=btn)
-        info = mell.get_info_from_id(mell.get_unique_bs_id())
-        self._texture = info.get('avatar', 'null')
-        self._cmtexture = info.get('cm_avatar', 'white')
-        self._color = tuple(info.get('color', [1, 1, 1]))
-        self._highlight = tuple(info.get('highlight', [1, 1, 1]))
-        bui.textwidget(
-            parent=self._root_widget,
-            position=(width * 0.5, height - 38),
-            size=(0, 0),
-            text=bui.Lstr(resource=f'{self._r}.profileEditTitle'),
-            color=bui.app.ui_v1.title_color,
-            maxwidth=290,
+        y = self._sub_height - 50
+        # profile section
+        self._section_title(
+            'Profile',
+            y,
+        )
+        y -= 50
+        self._username_field = self._text_setting(
+            label='Username',
+            text=self._username,
+            y=y,
+        )
+        y -= 50
+        self._status_field = self._text_setting(
+            label='Status',
+            text=self._status,
+            y=y,
+        )
+        y -= 70
+        # avatar section
+        self._section_title(
+            'Appearance',
+            y,
+        )
+        y -= 130
+        self._build_avatar_section(y)
+
+        y -= 60
+        # colors section
+        self._section_title(
+            'Colors',
+            y,
+        )
+        y -= 100
+        self._build_color_buttons(y)
+        y -= 120
+        self._build_save_button(y)
+
+    def _section_title(
+        self,
+        text: str | bui.Lstr,
+        y: float,
+    ):
+
+        return bui.textwidget(
+            parent=self._subcontainer,
+            position=(
+                self._sub_width * 0.08,
+                y,
+            ),
+            text=text,
+            h_align='left',
+            v_align='center',
             scale=1.0,
-            h_align='center',
-            v_align='center',
+            color=(0.75, 0.75, 0.75),
+            maxwidth=self._sub_width * 0.8,
         )
-        # label and avatar
-        x = self._sub_width * 0.2
-        self._texture_button = bui.buttonwidget(
-            label='',
-            parent=self._subcontainer,
-            position=(x, y),
-            autoselect=True,
-            on_activate_call=bui.Call(self.open_texture_picker, 'tex', (x, y)),
-            texture=bui.gettexture(self._texture),
-            size=(100, 100),
-            color=(1, 1, 1),
-            scale=1.1,
-        )
+
+    def _text_setting(
+        self,
+        *,
+        label: str,
+        text: str,
+        y: float,
+        max_chars: int = 64,
+    ):
+
+        label_x = self._sub_width * 0.08
+        field_x = self._sub_width * 0.33
+
         bui.textwidget(
             parent=self._subcontainer,
-            position=(x, y + 100),
-            size=(100, 100),
-            text=bui.Lstr(resource=f'{self._r}.avatarText'),
-            maxwidth=200,
-            h_align='center',
+            position=(label_x, y + 5),
+            text=label,
+            h_align='left',
             v_align='center',
+            scale=0.9,
+            color=(0.8, 0.8, 0.8),
         )
-        # label and color mask avatar
-        x = self._sub_width * 0.6
-        self._cm_texture_button = bui.buttonwidget(
-            label='',
+
+        return bui.textwidget(
             parent=self._subcontainer,
-            position=(x, y),
+            position=(field_x, y),
+            size=(420, 50),
+            text=text,
+            editable=True,
+            max_chars=max_chars,
+            v_align='center',
+            corner_scale=0.7,
             autoselect=True,
-            on_activate_call=bui.Call(self.open_texture_picker, 'cmtex', (x, y)),
-            texture=bui.gettexture(self._cmtexture),
-            size=(100, 100),
-            color=(1, 1, 1),
-            scale=1.1,
         )
-        bui.textwidget(
-            parent=self._subcontainer,
-            position=(x, y + 100),
-            size=(100, 100),
-            text=bui.Lstr(resource=f'{self._r}.avatarCMText'),
-            maxwidth=200,
-            h_align='center',
-            v_align='center',
-        )
-        # full avatar preview
-        y -= 200
-        x = self._sub_width * 0.38
+    def _build_avatar_section(
+        self,
+        y: float,
+    ):
+
+        center_x = self._sub_width * 0.5
+
+        # Preview.
+
         self._icon_preview = bui.imagewidget(
             parent=self._subcontainer,
-            position=(x, y),
+            position=(center_x - 64, y),
             texture=bui.gettexture(self._texture),
             tint_texture=bui.gettexture(self._cmtexture),
             mask_texture=bui.gettexture('characterIconMask'),
@@ -189,80 +247,254 @@ class SqudaProfileEditWindow(bui.MainWindow):
             tint2_color=self._highlight,
             size=(128, 128),
         )
+
+        # Avatar button.
+        self._texture_button = bui.buttonwidget(
+            parent=self._subcontainer,
+            position=(center_x - 210, y + 18),
+            size=(90, 90),
+            label='',
+            texture=bui.gettexture(self._texture),
+            on_activate_call=bui.Call(
+                self.open_texture_picker,
+                'tex',
+                (center_x - 210, y + 18),
+            ),
+            color=(1, 1, 1),
+        )
+
+        # Mask button.
+        self._cm_texture_button = bui.buttonwidget(
+            parent=self._subcontainer,
+            position=(center_x + 120, y + 18),
+            size=(90, 90),
+            label='',
+            texture=bui.gettexture(
+                self._cmtexture
+            ),
+            on_activate_call=bui.Call(
+                self.open_texture_picker,
+                'cmtex',
+                (center_x + 120, y + 18),
+            ),
+            color=(1, 1, 1),
+        )
+        x = 20
         bui.textwidget(
             parent=self._subcontainer,
-            position=(x, y + 100),
-            size=(128, 128),
-            text=bui.Lstr(resource=f'{self._r}.avatarPreviewText'),
-            maxwidth=200,
+            position=(center_x - 210 + x, y - 20),
+            text='Avatar',
+            scale=0.75,
+            color=(0.7, 0.7, 0.7),
             h_align='center',
-            v_align='center',
         )
-        # color pickers
-        x = self._sub_width * 0.15
-        y += 5
-        b_size = 100
-        self._color_button = btn = bui.buttonwidget(
+
+        bui.textwidget(
             parent=self._subcontainer,
-            autoselect=True,
-            position=(x, y),
-            size=(b_size, b_size),
+            position=(center_x + 120 + x, y - 20),
+            text='Overlay',
+            scale=0.75,
+            color=(0.7, 0.7, 0.7),
+            h_align='center',
+        )
+
+    def _build_color_buttons(
+        self,
+        y: float,
+    ):
+
+        spacing = 120
+        start_x = (
+            self._sub_width * 0.3
+        )
+
+        self._color_button = bui.buttonwidget(
+            parent=self._subcontainer,
+            position=(start_x, y),
+            size=(100, 100),
             color=self._color,
             label='',
             button_type='square',
+            on_activate_call=bui.WeakCall(
+                self._make_picker,
+                'color',
+                (start_x, y),
+            ),
         )
-        bui.textwidget(
+
+        self._highlight_button = bui.buttonwidget(
             parent=self._subcontainer,
-            position=(x, y + 70),
-            size=(b_size, b_size),
-            text=bui.Lstr(r=f'{self._r}.colorText'),
-            maxwidth=200,
-            h_align='center',
-            v_align='center',
-        )
-        origin = self._color_button.get_screen_space_center()
-        bui.buttonwidget(
-            edit=self._color_button,
-            on_activate_call=bui.WeakCall(self._make_picker, 'color', origin),
-        )
-        x = self._sub_width * 0.65
-        self._highlight_button = btn = bui.buttonwidget(
-            parent=self._subcontainer,
-            autoselect=True,
-            position=(x, y),
-            size=(b_size, b_size),
+            position=(
+                start_x + spacing,
+                y,
+            ),
+            size=(100, 100),
             color=self._highlight,
             label='',
             button_type='square',
+            on_activate_call=bui.WeakCall(
+                self._make_picker,
+                'highlight',
+                (
+                    start_x + spacing,
+                    y,
+                ),
+            ),
         )
+
         bui.textwidget(
             parent=self._subcontainer,
-            position=(x, y + 70),
-            size=(b_size, b_size),
-            text=bui.Lstr(r=f'{self._r}.highlightText'),
-            maxwidth=200,
+            position=(start_x + 50, y - 40),
+            text='Color',
+            scale=0.8,
+            color=(0.75, 0.75, 0.75),
             h_align='center',
-            v_align='center',
         )
-        origin = self._highlight_button.get_screen_space_center()
-        bui.buttonwidget(
-            edit=self._highlight_button,
-            on_activate_call=bui.WeakCall(self._make_picker, 'highlight', origin),
-        )
-        y -= 5
-        # save button
-        y -= 80
-        x = self._sub_width * 0.1
-        bui.buttonwidget(
+
+        bui.textwidget(
             parent=self._subcontainer,
-            autoselect=True,
-            position=(x, y),
-            size=(self._sub_width * 0.8, 80),
-            label=bui.Lstr(r=f'{self._r}.saveToServerText'),
-            on_activate_call=bui.WeakCall(self._save_data),
+            position=(
+                start_x + spacing + 50,
+                y - 40,
+            ),
+            text='Highlight',
+            scale=0.8,
+            color=(0.75, 0.75, 0.75),
+            h_align='center',
         )
-    
-    def open_texture_picker(self, tag: str, position: Sequence[tuple, tuple]):
+
+    def _build_save_button(
+        self,
+        y: float,
+    ):
+        self._spinner = bui.spinnerwidget(
+            parent=self._subcontainer,
+            position=(
+                self._sub_width * 0.5,
+                y + 38,
+            ),
+            visible=False,
+        )
+
+        self._save_button = bui.buttonwidget(
+            parent=self._subcontainer,
+            position=(
+                self._sub_width * 0.2,
+                y,
+            ),
+            size=(
+                self._sub_width * 0.6,
+                70,
+            ),
+            label=bui.Lstr(
+                resource=f'{self._r}.saveToServerText'
+            ),
+            on_activate_call=bui.WeakCall(
+                self._save_data,
+            ),
+        )
+
+    def _save_data(self):
+        if self._loading:
+            return
+        if not self._profile_loaded:
+            return
+        self._loading = True
+        bui.spinnerwidget(
+            edit=self._spinner,
+            visible=True,
+        )
+        bui.buttonwidget(
+            edit=self._save_button,
+            label='',
+        )
+        Thread(
+            target=self._save_thread,
+            daemon=True,
+        ).start()
+
+    def _save_thread(self):
+
+        data = {
+            'avatar': self._texture,
+            'cm_avatar': self._cmtexture,
+            'color': list(self._color),
+            'highlight': list(
+                self._highlight
+            ),
+            'username': cast(
+                str,
+                bui.textwidget(
+                    query=self._username_field
+                ),
+            ).strip(),
+            'status': cast(
+                str,
+                bui.textwidget(
+                    query=self._status_field
+                ),
+            ).strip(),
+        }
+
+        result = mell.set_profile_data(data)
+
+        bs.pushcall(
+            bui.Call(
+                self._finish_save,
+                result,
+            ),
+            from_other_thread=True,
+        )
+
+    def _finish_save(
+        self,
+        result: dict,
+    ):
+
+        self._loading = False
+        if self._closed:
+            return
+        bui.spinnerwidget(
+            edit=self._spinner,
+            visible=False,
+        )
+        bui.buttonwidget(
+            edit=self._save_button,
+            label=bui.Lstr(
+                resource=f'{self._r}.saveToServerText'
+            ),
+        )
+        if (
+            result.get('status')
+            in ['error', 'fail']
+            or result.get('error')
+        ):
+            bui.screenmessage(
+                str(
+                    result.get(
+                        'error',
+                        result.get(
+                            'message',
+                            bui.Lstr(r=f'{self._r}.unknownError'),
+                        ),
+                    )
+                ),
+                color=(1, 0, 0),
+            )
+            bui.getsound('error').play()
+            return
+        bui.screenmessage(
+            bui.Lstr(resource=f'{self._r}.savedText'),
+            color=(0, 1, 0),
+        )
+        bui.getsound('ding').play()
+        self.main_window_back()
+
+    def open_texture_picker(
+        self,
+        picker_type: str,
+        origin: tuple[float, float],
+    ):
         # it's a little unsafe to be allowing everyone to
         # just access the textures and use them... but,
         # i do kinda want them to get creative and mesh together
@@ -275,149 +507,246 @@ class SqudaProfileEditWindow(bui.MainWindow):
         )
         # get the stem so we only get filename
         textures = [f.stem for f in Path(path).iterdir() if f.is_file()]
-        # make the picker
         TexturePicker(
-            parent=self._root_widget,
-            position=position,
             delegate=self,
+            tag=picker_type,
+            position=origin,
+            parent=self._root_widget,
             textures=textures,
-            tag=tag,
         )
-    
+
     def _make_picker(
-        self, picker_type: str, origin: tuple[float, float]
-    ) -> None:
-        if picker_type == 'color':
-            initial_color = self._color
-        elif picker_type == 'highlight':
-            initial_color = self._highlight
-        else:
-            raise ValueError('invalid picker_type: ' + picker_type)
+        self,
+        picker_type: str,
+        origin: tuple[float, float],
+    ):
+
         ColorPicker(
             parent=self._root_widget,
             position=origin,
-            initial_color=initial_color,
+            initial_color=(
+                self._color
+                if picker_type == 'color'
+                else self._highlight
+            ),
             delegate=self,
             tag=picker_type,
         )
-    
-    def color_picker_closing(self, picker: ColorPicker) -> None:
-        """Called when a color picker is closing."""
-        if not self._root_widget:
-            return
-        tag = picker.get_tag()
-        if tag == 'color':
-            bui.containerwidget(
-                edit=self._root_widget, selected_child=self._color_button
-            )
-        elif tag == 'highlight':
-            bui.containerwidget(
-                edit=self._root_widget, selected_child=self._highlight_button
-            )
-        else:
-            print('color_picker_closing got unknown tag ' + str(tag))
 
     def color_picker_selected_color(
-        self, picker: ColorPicker, color: tuple[float, float, float]
-    ) -> None:
-        """Called when a color is selected in a color picker."""
-        if not self._root_widget:
-            return
+        self,
+        picker: ColorPicker,
+        color: tuple[float, float, float],
+    ):
+
         tag = picker.get_tag()
+
         if tag == 'color':
-            self._set_color(color)
+            self._color = color
+            bui.buttonwidget(
+                edit=self._color_button,
+                color=color,
+            )
+
         elif tag == 'highlight':
-            self._set_highlight(color)
-        else:
-            print('color_picker_selected_color got unknown tag ' + str(tag))
-    
-    def texture_picker_selected(self, source: TexturePicker, texture: str) -> None:
-        """A character has been selected by the picker."""
-        if not self._root_widget:
-            return
-        tag = source.get_tag()
-        if tag == 'tex':
-            button = self._texture_button
+            self._highlight = color
+            bui.buttonwidget(
+                edit=self._highlight_button,
+                color=color,
+            )
+
+        self._update_preview()
+
+    def texture_picker_selected(
+        self,
+        picker: TexturePicker,
+        texture: str,
+    ):
+        picker_type = picker.get_tag()
+
+        if picker_type == 'tex':
             self._texture = texture
-        elif tag == 'cmtex':
-            button = self._cm_texture_button
+            bui.buttonwidget(
+                edit=self._texture_button,
+                texture=bui.gettexture(texture),
+            )
+
+        elif picker_type == 'cmtex':
             self._cmtexture = texture
-        bui.buttonwidget(edit=button, texture=bui.gettexture(texture))
-        if tag == 'tex':
-            bui.imagewidget(
-                edit=self._icon_preview, 
-                texture=bui.gettexture(texture)
+            bui.buttonwidget(
+                edit=self._cm_texture_button,
+                texture=bui.gettexture(texture),
             )
-        elif tag == 'cmtex':
-            bui.imagewidget(
-                edit=self._icon_preview, 
-                tint_texture=bui.gettexture(texture)
-            )
-    
-        
-    def texture_picker_closing(self, source: TexturePicker) -> None:
-        pass
-        
-    def _set_color(self, color: tuple[float, float, float]) -> None:
-        self._color = color
-        if self._color_button:
-            bui.buttonwidget(edit=self._color_button, color=color)
+
+        self._update_preview()
+
+    def _update_preview(self):
         bui.imagewidget(
-            edit=self._icon_preview, 
-            tint_color=color
+            edit=self._icon_preview,
+            texture=bui.gettexture(
+                self._texture
+            ),
+            tint_texture=bui.gettexture(
+                self._cmtexture
+            ),
+            tint_color=self._color,
+            tint2_color=self._highlight,
         )
 
-    def _set_highlight(self, color: tuple[float, float, float]) -> None:
-        self._highlight = color
-        if self._highlight_button:
-            bui.buttonwidget(edit=self._highlight_button, color=color)
-        bui.imagewidget(
-            edit=self._icon_preview, 
-            tint2_color=color
+    def on_main_window_close(self):
+        self._closed = True
+    
+    def texture_picker_closing(self, yeah):
+        pass
+    
+    def _build_loading_ui(self):
+        root = self._root_widget
+        self._back_button = bui.buttonwidget(
+            parent=root,
+            position=(45, self._height - 70),
+            size=(55, 55),
+            scale=0.8,
+            autoselect=True,
+            label=bui.charstr(
+                bui.SpecialChar.BACK
+            ),
+            button_type='backSmall',
+            on_activate_call=self.main_window_back,
+        )
+        bui.containerwidget(
+            edit=root,
+            cancel_button=self._back_button,
+        )
+        bui.textwidget(
+            parent=root,
+            position=(
+                self._width * 0.5,
+                self._height - 45,
+            ),
+            size=(0, 0),
+            text=bui.Lstr(
+                resource=f'{self._r}.profileEditTitle'
+            ),
+            color=bui.app.ui_v1.title_color,
+            scale=1.3,
+            h_align='center',
+            v_align='center',
+        )
+        self._loading_spinner = bui.spinnerwidget(
+            parent=root,
+            position=(
+                self._width * 0.5,
+                self._height * 0.5,
+            ),
+            visible=True,
         )
     
-    def _save_data(self):
-        data = {
-            'avatar': self._texture,
-            'cm_avatar': self._cmtexture,
-            'color': list(self._color),
-            'highlight': list(self._highlight),
-        }
-        result = mell.set_profile_data(data)
+    def _load_profile_thread(self):
+        """Load profile in background."""
+
+        try:
+            result = mell.get_info_from_id(
+                mell.get_unique_bs_id()
+            )
+            bs.pushcall(
+                bui.Call(
+                    self._finish_loading_profile,
+                    result,
+                ),
+                from_other_thread=True,
+            )
+        except Exception as exc:
+            bs.pushcall(
+                bui.Call(
+                    self._finish_loading_profile,
+                    {
+                        'error': str(exc),
+                    },
+                ),
+                from_other_thread=True,
+            )
+    
+    def _finish_loading_profile(
+        self,
+        result: dict,
+    ):
+        """Finish profile loading."""
+
+        if self._closed:
+            return
+        # Hide spinner.
+        bui.spinnerwidget(
+            edit=self._loading_spinner,
+            visible=False,
+        )
+        # Handle errors.
         if (
-            result.get('status') in ['error', 'fail']
+            result.get('status')
+            in ['error', 'fail']
             or result.get('error')
         ):
-            full_error = (
-                f"{data.get('status', '')}"
-                f"{chr(10) if data.get('status') else ''}"
-                f"{data.get('error', '')}"
-                f"{chr(10) if data.get('error') else ''}"
-                f"{data.get('message', '')}"
-            )
             bui.screenmessage(
-                bui.Lstr(
-                    resource=f'{self._r}.errorGenericDescriptive',
-                    subs=[('${ERROR}', full_error)],
+                str(
+                    result.get(
+                        'error',
+                        result.get(
+                            'message',
+                            bui.Lstr(
+                                r=f'{self._r}.unknownError'
+                            ),
+                        ),
+                    )
                 ),
                 color=(1, 0, 0),
             )
             bui.getsound('error').play()
-        else:
-            bui.screenmessage(
-                bui.Lstr(resource=f'{self._r}.savedText'),
-                color=(0, 1, 0),
+            bui.apptimer(
+                0,
+                self.main_window_back,
             )
-            bui.getsound('ding').play()
-            self.main_window_back()
-        
-    
+            return
+        # Save loaded profile.
+        self._profile = result
+        self._texture = result.get(
+            'avatar',
+            'null',
+        )
+        self._cmtexture = result.get(
+            'cm_avatar',
+            'white',
+        )
+        self._color = tuple(
+            result.get(
+                'color',
+                (1, 1, 1),
+            )
+        )
+        self._highlight = tuple(
+            result.get(
+                'highlight',
+                (1, 1, 1),
+            )
+        )
+        self._username = result.get(
+            'username',
+            '',
+        )
+        self._status = result.get(
+            'status',
+            '',
+        )
+        self._profile_loaded = True
+        # Build actual UI.
+        self._build_ui()
+            
     @override
     def get_main_window_state(self) -> bui.MainWindowState:
         # Support recreating our window for back/refresh purposes.
         cls = type(self)
+
         return bui.BasicMainWindowState(
             create_call=lambda transition, origin_widget: cls(
-                transition=transition, origin_widget=origin_widget
+                transition=transition,
+                origin_widget=origin_widget,
             )
         )

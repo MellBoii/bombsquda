@@ -89,6 +89,8 @@ class PowerupSetupWindow(bui.MainWindow):
             parent=self._root_widget,
             size=(width - 80, height - 100),
             position=(40, 40),
+            border_opacity=0.4,
+            highlight=False,
         )
         self._sub = bui.containerwidget(
             parent=self._scroll,

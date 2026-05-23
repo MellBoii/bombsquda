@@ -240,15 +240,15 @@ class Startup():
     ba.apptimer(1.5, set_bs_id)
     # define our thread loop
     def loop():
+        global status
         loopt = stupid_attribute_holder()
+        status = {}
 
         while BS_ID is None:
             time.sleep(0.2)  # wait until ID is ready
         
         # while we exist, keep pinging the server
         while True:
-            global status
-            status = None
             def update_status():
                 global status
                 activity = bs.get_foreground_host_activity()
@@ -276,18 +276,23 @@ class Startup():
                     if session else None
                 )
                 coop = isinstance(session, CoopSession)
-                score = getattr(activity, '_score', None)
-                rank = getattr(activity, 'ultrameter._rank', None)
+                score = getattr(activity, '_score', 0)
+                rank = getattr(activity, 'ultrameter._rank', str(None))
                 share_status = True
                 if share_status:
                     status = {
-                        'activity': aname,
-                        'session': sname,
+                        'activity_module': str(activity.__class__.__module__),
+                        'activity_class': str(activity.__class__.__name__),
+                        'activity_full': aname,
+                        'session_module': str(session.__class__.__module__),
+                        'session_class': str(session.__class__.__name__),
+                        'session_full': sname,
                         'coop': coop,
                         'score': score,
                         'rank': rank,
                         'hidden': False,
                         'profile': profile,
+                        'online': True if bs.get_connection_to_host_info_2() else False,
                     }
                 else:
                     status = {

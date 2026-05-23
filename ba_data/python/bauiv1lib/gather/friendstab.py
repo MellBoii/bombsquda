@@ -20,11 +20,11 @@ from bauiv1lib.gather.friendsadd import AddFriendsWindow
 import fromgoverhaul.mell_resources as mell
 import bauiv1 as bui
 import bascenev1 as bs
+import importlib
 
 if TYPE_CHECKING:
     from typing import Callable, Any
     from bauiv1lib.gather import GatherWindow
-
 
 class FriendsTab(GatherTab):
     """A tab that gets all the user's friends and formats
@@ -56,6 +56,7 @@ class FriendsTab(GatherTab):
 
         self.c_width = c_width = region_width
         self.c_height = c_height = region_height - 20
+        self._closed = False
 
         self._container = bui.containerwidget(
             parent=parent_widget,
@@ -368,9 +369,9 @@ class FriendsTab(GatherTab):
         self.friend_requests = flist.get('requests', [])
         self.friend_list = flist.get('friends', [])
 
-        friend_height = 140
+        friend_height = 170
         scale = 1.2
-        spacing = 20 * scale
+        spacing = 40 * scale
 
         tdelay_inc = 0.1
         tdelay = 0.5
@@ -414,6 +415,8 @@ class FriendsTab(GatherTab):
 
             color = tuple(info.get('color', (1, 1, 1)))
             highlight = tuple(info.get('highlight', (1, 1, 1)))
+            
+            user_status = info.get('status', '')
 
             friend_width = sub_width + 10
 
@@ -449,9 +452,93 @@ class FriendsTab(GatherTab):
                 h_align='left',
                 v_align='center',
                 maxwidth=friend_width * 0.7,
-                position=(95, friend_height - 40),
+                position=(105, friend_height - 45),
                 transition_delay=tdelay,
             )
+            
+            if online:
+                status = self.format_status(
+                    mell.get_status_from_id(friend)
+                )
+                bui.textwidget(
+                    parent=container,
+                    text=status,
+                    size=(0, 0),
+                    scale=0.9,
+                    color=(0.8, 0.8, 0.8),
+                    h_align='left',
+                    v_align='center',
+                    maxwidth=friend_width * 0.8,
+                    position=(105, friend_height - 70),
+                    transition_delay=tdelay,
+                )
+                
+            if user_status and online:
+                # overall bubble scale
+                bub_scale = 0.8
+
+                # base bubble dimensions (unscaled)
+                padding_x = 30
+                bubble_h = 64
+                cap_w = 16
+
+                # text measurements
+                text_scale = bub_scale + 0.1
+                text_width = (
+                    bui.get_string_width(user_status, suppress_warning=True)
+                    * text_scale
+                )
+
+                # final bubble width
+                bubble_w = text_width + (padding_x * 2)
+
+                # position
+                x = 60
+                y = friend_height - 40
+
+                # center/stretch section
+                bui.imagewidget(
+                    parent=container,
+                    size=(bubble_w, bubble_h * bub_scale),
+                    position=(x, y),
+                    texture=bui.gettexture('bubbleMid'),
+                    transition_delay=tdelay,
+                )
+
+                # left cap
+                bui.imagewidget(
+                    parent=container,
+                    size=(cap_w * bub_scale, bubble_h * bub_scale),
+                    position=(x - (cap_w * bub_scale) + 1, y),
+                    texture=bui.gettexture('bubbleStart'),
+                    transition_delay=tdelay,
+                )
+
+                # right cap
+                bui.imagewidget(
+                    parent=container,
+                    size=(cap_w * bub_scale, bubble_h * bub_scale),
+                    position=(x + bubble_w - 1, y),
+                    texture=bui.gettexture('bubbleEnd'),
+                    transition_delay=tdelay,
+                )
+
+                # text
+                bui.textwidget(
+                    parent=container,
+                    text=user_status,
+                    size=(0, 0),
+                    scale=text_scale,
+                    color=(0, 0, 0),
+                    shadow=0,
+                    h_align='left',
+                    v_align='center',
+                    position=(
+                        x + padding_x * 0.5,
+                        y + (bubble_h * bub_scale * 0.5),
+                    ),
+                    transition_delay=tdelay,
+                )
 
             bui.textwidget(
                 parent=container,
@@ -463,14 +550,14 @@ class FriendsTab(GatherTab):
                 h_align='left',
                 v_align='center',
                 maxwidth=friend_width * 0.7,
-                position=(friend_width * 0.8, friend_height - 40),
+                position=(friend_width * 0.8, friend_height - 45),
                 transition_delay=tdelay,
             )
 
             bui.imagewidget(
                 parent=container,
                 size=(80, 80),
-                position=(10, 30),
+                position=(10, friend_height * 0.28),
                 texture=bui.gettexture(avatar),
                 mask_texture=bui.gettexture('characterIconMask'),
                 tint_texture=bui.gettexture(cm_avatar),
@@ -480,10 +567,12 @@ class FriendsTab(GatherTab):
             )
 
             d -= 0.2
-
+            # buttons
+            b_spacing = 65
+            bx = 100
             bui.buttonwidget(
                 parent=container,
-                position=(friend_width * 0.8, friend_height * 0.1),
+                position=(bx, friend_height * 0.13),
                 size=(60, 60),
                 label='',
                 color=(
@@ -503,7 +592,7 @@ class FriendsTab(GatherTab):
 
             bui.buttonwidget(
                 parent=container,
-                position=(friend_width * 0.65, friend_height * 0.1),
+                position=(bx + b_spacing, friend_height * 0.13),
                 size=(60, 60),
                 label='',
                 color=(
@@ -519,6 +608,25 @@ class FriendsTab(GatherTab):
                 ),
                 transition_delay=tdelay,
             )
+            
+            # bui.buttonwidget(
+                # parent=container,
+                # position=(bx + (b_spacing * 2), friend_height * 0.13),
+                # size=(60, 60),
+                # label='',
+                # color=(
+                    # color[0] * d,
+                    # color[1] * d,
+                    # color[2] * d,
+                # ),
+                # texture=bui.gettexture('buttonSquare'),
+                # icon=bui.gettexture('infoIcon'),
+                # on_activate_call=bui.Call(
+                    # self.chat_with,
+                    # friend,
+                # ),
+                # transition_delay=tdelay,
+            # )
 
             current_y -= friend_height + spacing
             tdelay += tdelay_inc
@@ -620,3 +728,35 @@ class FriendsTab(GatherTab):
 
             current_y -= friend_height + spacing
             tdelay += tdelay_inc
+    
+    def format_status(self, status: dict):
+        hidden = status.get('hidden')
+        if hidden:
+            return ''
+        # AAAGGHHHHHHHHHHHH
+        activity = status.get('activity_full')
+        amodn = status.get('activity_module')
+        aclassn = status.get('activity_class')
+        session = status.get('session_full')
+        smodn = status.get('session_module')
+        sclassn = status.get('session_class')
+        online = status.get('online')
+        try:
+            amod = importlib.import_module(amodn)
+            smod = importlib.import_module(smodn)
+            acls = getattr(amod, aclassn)
+            scls = getattr(smod, sclassn)
+        except:
+            acls = None
+            scls = None
+        # ok actually handle everything nicely
+        if sclassn == 'MainMenuSession':
+            return 'in main menu'
+        if online:
+            return 'playing online'
+        name = getattr(acls, 'name', '???')
+        score = status.get('score')
+        rank = status.get('rank')
+        if sclassn == 'CoopSession':
+            return f'playing {name} score: {score}, rank: {rank}'
+        return f'playing {name}'
