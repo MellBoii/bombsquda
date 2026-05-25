@@ -1265,6 +1265,7 @@
   },
   "discordRPC": {
 	"menuText": "l👀king around the menu..",
+	"menuAFKText": "doin nothing...",
 	"coopMultiplayerText": "with ${LIST}",
 	"coopSingleplayerText": "playing as ${CHAR} (${NAME})",
 	"activityPlaying": "playin ${ACTIVITY}",

@@ -599,6 +599,9 @@ class SqudaProfileEditWindow(bui.MainWindow):
     def texture_picker_closing(self, yeah):
         pass
     
+    def color_picker_closing(self, yeah):
+        pass
+    
     def _build_loading_ui(self):
         root = self._root_widget
         self._back_button = bui.buttonwidget(
