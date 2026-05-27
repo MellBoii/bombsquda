@@ -2,16 +2,9 @@
 import random
 import bascenev1 as bs
 from typing import Any, Sequence, override
-from bascenev1lib.gameutils import SharedObjects
+from bascenev1lib.gameutils import SharedObjects, TouchedMessage
 from babase._logging import squdalog
 
-# Note: Need to suppress an undefined variable here because our pylint
-# plugin clears type-arg declarations (which we don't require to be
-# present at runtime) but keeps parent type-args (which we sometimes use
-# at runtime).
-class TouchedMsg:
-    pass
-    
 class EmeraldActor(bs.Actor):
     """
     The actor for a chaos emerald.
@@ -29,19 +22,11 @@ class EmeraldActor(bs.Actor):
         self.mesh = bs.getmesh('chaosEmerald')
         self.texname = force_type if force_type else self.get_fairest_emerald()
         self.tex = bs.gettexture(self.texname)
-        self.material = bs.Material()
+        shared = SharedObjects.get()
         self.emeralds_die = True
         self.mscale = 0.6
         if self.emeralds_die:
             self.deathTimer = bs.Timer(5, self.scheduled_die_message)
-        self.material.add_actions(
-            conditions=('they_have_material', SharedObjects.get().player_material),
-            actions=(
-                ('modify_part_collision', 'collide', True),
-                ('modify_part_collision', 'physical', True),
-                ('message', 'our_node', 'at_connect', TouchedMsg()),
-            ),
-        )
         self.node = bs.newnode(
             'prop',
             delegate=self,
@@ -56,7 +41,7 @@ class EmeraldActor(bs.Actor):
                 'color_texture': self.tex,
                 'reflection': 'powerup',
                 'reflection_scale': [1.0],
-                'materials': (self.material, SharedObjects.get().object_material),
+                'materials': (shared.touch_material, shared.object_material),
             },
         )
         bs.animate(self.node, 'mesh_scale', {0: 0, 0.3: self.mscale})
@@ -130,7 +115,7 @@ class EmeraldActor(bs.Actor):
                     bs.timer(0.1, self.node.delete)
                 self.deathTimer = None
 
-        elif isinstance(msg, TouchedMsg):
+        elif isinstance(msg, TouchedMessage):
             if not self.node:
                 return
             toucher = bs.getcollision().opposingnode

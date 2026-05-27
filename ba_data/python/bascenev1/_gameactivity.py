@@ -1001,7 +1001,7 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
                 nameoverride = cget("squda_ch4name")
                 player.character = 'Noob'
                 player.color = (1, 1, 0.1)
-                player.highlight = (0.1, 0.1, 1)
+                player.highlight = (0.1, 0.3, 1)
             else:
                 # Anyone out of the 4 of the cast get a
                 # random name, color, and highlight

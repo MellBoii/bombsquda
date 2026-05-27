@@ -166,6 +166,7 @@ class PlayWindow(bui.MainWindow):
         )
 
         scl = 0.75 if self._playlist_select_context is None else 0.68
+        dude_scl_div = 0.4
         v = height * 0.5 - button_height * scl * 0.5 - 20.0
         clr = (0.6, 0.7, 0.6, 1.0)
 
@@ -175,24 +176,7 @@ class PlayWindow(bui.MainWindow):
             bcount * button_width * scl + (bcount - 1) * button_spacing
         )
         hoffs = (width - total_b_width) * 0.5
-
-        self._lineup_tex = bui.gettexture('playerLineup')
-        angry_computer_transparent_mesh = bui.getmesh(
-            'angryComputerTransparent'
-        )
-        self._lineup_1_transparent_mesh = bui.getmesh(
-            'playerLineup1Transparent'
-        )
-        self._lineup_2_transparent_mesh = bui.getmesh(
-            'playerLineup2Transparent'
-        )
-        self._lineup_3_transparent_mesh = bui.getmesh(
-            'playerLineup3Transparent'
-        )
-        self._lineup_4_transparent_mesh = bui.getmesh(
-            'playerLineup4Transparent'
-        )
-        self._eyes_mesh = bui.getmesh('plasticEyesTransparent')
+        vv = v + 30
 
         self._coop_button: bui.Widget | None = None
 
@@ -237,44 +221,63 @@ class PlayWindow(bui.MainWindow):
                     edit=btn,
                     down_widget=bui.get_special_widget('settings_button'),
                 )
-
+            # coop dudes
+            bui.imagewidget(
+                parent=self._root_widget,
+                draw_controller=btn,
+                color=(0, 0, 0),
+                opacity=0.5,
+                position=(hoffs + 55, v + 110),
+                size=(scl * 230, scl * 200),
+                texture=bui.gettexture('softRect'),
+            )
+            bui.imagewidget(
+                parent=self._root_widget,
+                draw_controller=btn,
+                position=(hoffs + 35, v + 120),
+                size=(scl * 300, scl * 300),
+                texture=bui.gettexture('playerLineupCPU'),
+            )
+            sep = 140
+            xxx = -20
             self._draw_dude(
                 0,
                 btn,
                 hoffs,
-                v,
-                scl,
-                position=(140, 30),
-                color=(0.72, 0.4, 1.0),
-            )
-            self._draw_dude(
-                1,
-                btn,
-                hoffs,
-                v,
-                scl,
-                position=(185, 53),
-                color=(0.71, 0.5, 1.0),
+                vv,
+                scl * dude_scl_div,
+                position=(140 + xxx + sep, 30),
+                color=(0.6, 0.3, 1.0),
             )
             self._draw_dude(
                 2,
                 btn,
                 hoffs,
-                v,
-                scl,
-                position=(220, 27),
-                color=(0.67, 0.44, 1.0),
+                vv,
+                scl * dude_scl_div,
+                position=(140 + xxx + (sep * 2), 53),
+                color=(0.5, 0.5, 0.5),
+                highlight=(0.1, 0.1, 0.1),
             )
             self._draw_dude(
-                3, btn, hoffs, v, scl, position=(255, 57), color=(0.7, 0.3, 1.0)
+                3,
+                btn,
+                hoffs,
+                vv,
+                scl * dude_scl_div,
+                position=(140 + xxx + (sep * 3), 27),
+                color=(0.2, 1.0, 1.0),
+                highlight=(1.0, 0.2, 0.4),
             )
-            bui.imagewidget(
-                parent=self._root_widget,
-                draw_controller=btn,
-                position=(hoffs + scl * 230, v + scl * 153),
-                size=(scl * 115, scl * 115),
-                texture=self._lineup_tex,
-                mesh_transparent=angry_computer_transparent_mesh,
+            self._draw_dude(
+                7, 
+                btn, 
+                hoffs, 
+                vv, 
+                scl * dude_scl_div, 
+                position=(140 + xxx + (sep * 4), 57),
+                color=(1, 1, 0.1),
+                highlight=(0.1, 0.3, 1),
             )
 
             bui.textwidget(
@@ -323,80 +326,81 @@ class PlayWindow(bui.MainWindow):
             button_type='square',
             on_activate_call=self._team_tourney,
         )
-
-        xxx = -14
+        # team dudes
+        xxx = -70
+        sep = 80
         self._draw_dude(
-            2,
+            0,
             btn,
             hoffs,
-            v,
-            scl,
-            position=(xxx + 148, 30),
+            vv,
+            scl * dude_scl_div,
+            position=(xxx + 148 + (sep), 30),
             color=(0.2, 0.4, 1.0),
         )
         self._draw_dude(
             3,
             btn,
             hoffs,
-            v,
-            scl,
-            position=(xxx + 181, 53),
+            vv,
+            scl * dude_scl_div,
+            position=(xxx + 148 + (sep * 2), 53),
             color=(0.3, 0.4, 1.0),
         )
         self._draw_dude(
             1,
             btn,
             hoffs,
-            v,
-            scl,
-            position=(xxx + 216, 33),
+            vv,
+            scl * dude_scl_div,
+            position=(xxx + 148 + (sep * 3), 33),
             color=(0.3, 0.5, 1.0),
         )
         self._draw_dude(
-            0,
+            2,
             btn,
             hoffs,
-            v,
-            scl,
-            position=(xxx + 245, 57),
+            vv,
+            scl * dude_scl_div,
+            position=(xxx + 148 + (sep * 4), 57),
             color=(0.3, 0.5, 1.0),
         )
 
-        xxx = 155
+        xxx = 470
         self._draw_dude(
-            0,
+            2,
             btn,
             hoffs,
-            v,
-            scl,
-            position=(xxx + 151, 30),
+            vv,
+            scl * dude_scl_div,
+            position=(xxx + (sep), 30),
             color=(1.0, 0.5, 0.4),
         )
         self._draw_dude(
             1,
             btn,
             hoffs,
-            v,
-            scl,
-            position=(xxx + 189, 53),
+            vv,
+            scl * dude_scl_div,
+            position=(xxx + (sep * 2), 53),
             color=(1.0, 0.58, 0.58),
         )
         self._draw_dude(
             3,
             btn,
             hoffs,
-            v,
-            scl,
-            position=(xxx + 223, 27),
+            vv,
+            scl * dude_scl_div,
+            position=(xxx + (sep * 3), 27),
             color=(1.0, 0.5, 0.5),
         )
         self._draw_dude(
-            2,
+            0,
             btn,
             hoffs,
-            v,
-            scl,
-            position=(xxx + 257, 57),
+            vv,
+            scl * dude_scl_div,
+            position=(xxx + (sep * 4), 57),
             color=(1.0, 0.5, 0.5),
         )
 
@@ -441,79 +445,79 @@ class PlayWindow(bui.MainWindow):
             button_type='square',
             on_activate_call=self._free_for_all,
         )
-
-        xxx = -5
+        # ffa dudes
+        xxx = -30
+        sep = 80
         self._draw_dude(
             0,
             btn,
             hoffs,
-            v,
-            scl,
-            position=(xxx + 140, 30),
+            vv,
+            scl * dude_scl_div,
+            position=(xxx + 140 + sep, 30),
             color=(0.4, 1.0, 0.4),
         )
         self._draw_dude(
-            3,
+            1,
             btn,
             hoffs,
-            v,
-            scl,
-            position=(xxx + 185, 53),
+            vv,
+            scl * dude_scl_div,
+            position=(xxx + 140 + (sep * 2), 53),
             color=(1.0, 0.4, 0.5),
         )
         self._draw_dude(
-            1,
+            2,
             btn,
             hoffs,
-            v,
-            scl,
-            position=(xxx + 220, 27),
+            vv,
+            scl * dude_scl_div,
+            position=(xxx + 140 + (sep * 3), 27),
             color=(0.4, 0.5, 1.0),
-        )
-        self._draw_dude(
-            2,
-            btn,
-            hoffs,
-            v,
-            scl,
-            position=(xxx + 255, 57),
-            color=(0.5, 1.0, 0.4),
-        )
-        xxx = 140
-        self._draw_dude(
-            2,
-            btn,
-            hoffs,
-            v,
-            scl,
-            position=(xxx + 148, 30),
-            color=(1.0, 0.9, 0.4),
-        )
-        self._draw_dude(
-            0,
-            btn,
-            hoffs,
-            v,
-            scl,
-            position=(xxx + 182, 53),
-            color=(0.7, 1.0, 0.5),
         )
         self._draw_dude(
             3,
             btn,
             hoffs,
-            v,
-            scl,
-            position=(xxx + 233, 27),
+            vv,
+            scl * dude_scl_div,
+            position=(xxx + 140 + (sep * 4), 57),
+            color=(0.5, 1.0, 0.4),
+        )
+        self._draw_dude(
+            4,
+            btn,
+            hoffs,
+            vv,
+            scl * dude_scl_div,
+            position=(xxx + 140 + (sep * 5), 30),
+            color=(1.0, 0.9, 0.4),
+        )
+        self._draw_dude(
+            5,
+            btn,
+            hoffs,
+            vv,
+            scl * dude_scl_div,
+            position=(xxx + 140 + (sep * 6), 53),
+            color=(0.7, 1.0, 0.5),
+        )
+        self._draw_dude(
+            6,
+            btn,
+            hoffs,
+            vv,
+            scl * dude_scl_div,
+            position=(xxx + 140 + (sep * 7), 27),
             color=(0.7, 0.5, 0.9),
         )
         self._draw_dude(
-            1,
+            7,
             btn,
             hoffs,
-            v,
-            scl,
-            position=(xxx + 266, 53),
+            vv,
+            scl * dude_scl_div,
+            position=(xxx + 140 + (sep * 8), 53),
             color=(0.4, 0.5, 0.8),
         )
         bui.textwidget(
@@ -650,115 +654,24 @@ class PlayWindow(bui.MainWindow):
         scl: float,
         position: tuple[float, float],
         color: tuple[float, float, float],
+        highlight: tuple[float, float, float] | None = None,
     ) -> None:
         # pylint: disable=too-many-positional-arguments
         h_extra = -100
         v_extra = 130
-        eye_color = (
-            0.7 * 1.0 + 0.3 * color[0],
-            0.7 * 1.0 + 0.3 * color[1],
-            0.7 * 1.0 + 0.3 * color[2],
+        bui.imagewidget(
+            parent=self._root_widget,
+            draw_controller=btn,
+            position=(
+                hoffs + scl * (h_extra + position[0]),
+                v + scl * (v_extra + position[1]),
+            ),
+            size=(256 * scl, 512 * scl),
+            tint_color=color,
+            tint2_color=highlight if highlight else color,
+            texture=bui.gettexture(f'playerLineup{i}'),
+            tint_texture=bui.gettexture(f'playerLineup{i}CM'),
         )
-        if i == 0:
-            bui.imagewidget(
-                parent=self._root_widget,
-                draw_controller=btn,
-                position=(
-                    hoffs + scl * (h_extra + position[0]),
-                    v + scl * (v_extra + position[1]),
-                ),
-                size=(scl * 60, scl * 80),
-                color=color,
-                texture=self._lineup_tex,
-                mesh_transparent=self._lineup_1_transparent_mesh,
-            )
-            bui.imagewidget(
-                parent=self._root_widget,
-                draw_controller=btn,
-                position=(
-                    hoffs + scl * (h_extra + position[0] + 12),
-                    v + scl * (v_extra + position[1] + 53),
-                ),
-                size=(scl * 36, scl * 18),
-                texture=self._lineup_tex,
-                color=eye_color,
-                mesh_transparent=self._eyes_mesh,
-            )
-        elif i == 1:
-            bui.imagewidget(
-                parent=self._root_widget,
-                draw_controller=btn,
-                position=(
-                    hoffs + scl * (h_extra + position[0]),
-                    v + scl * (v_extra + position[1]),
-                ),
-                size=(scl * 45, scl * 90),
-                color=color,
-                texture=self._lineup_tex,
-                mesh_transparent=self._lineup_2_transparent_mesh,
-            )
-            bui.imagewidget(
-                parent=self._root_widget,
-                draw_controller=btn,
-                position=(
-                    hoffs + scl * (h_extra + position[0] + 5),
-                    v + scl * (v_extra + position[1] + 67),
-                ),
-                size=(scl * 32, scl * 16),
-                texture=self._lineup_tex,
-                color=eye_color,
-                mesh_transparent=self._eyes_mesh,
-            )
-        elif i == 2:
-            bui.imagewidget(
-                parent=self._root_widget,
-                draw_controller=btn,
-                position=(
-                    hoffs + scl * (h_extra + position[0]),
-                    v + scl * (v_extra + position[1]),
-                ),
-                size=(scl * 45, scl * 90),
-                color=color,
-                texture=self._lineup_tex,
-                mesh_transparent=self._lineup_3_transparent_mesh,
-            )
-            bui.imagewidget(
-                parent=self._root_widget,
-                draw_controller=btn,
-                position=(
-                    hoffs + scl * (h_extra + position[0] + 5),
-                    v + scl * (v_extra + position[1] + 59),
-                ),
-                size=(scl * 34, scl * 17),
-                texture=self._lineup_tex,
-                color=eye_color,
-                mesh_transparent=self._eyes_mesh,
-            )
-        elif i == 3:
-            bui.imagewidget(
-                parent=self._root_widget,
-                draw_controller=btn,
-                position=(
-                    hoffs + scl * (h_extra + position[0]),
-                    v + scl * (v_extra + position[1]),
-                ),
-                size=(scl * 48, scl * 96),
-                color=color,
-                texture=self._lineup_tex,
-                mesh_transparent=self._lineup_4_transparent_mesh,
-            )
-            bui.imagewidget(
-                parent=self._root_widget,
-                draw_controller=btn,
-                position=(
-                    hoffs + scl * (h_extra + position[0] + 2),
-                    v + scl * (v_extra + position[1] + 62),
-                ),
-                size=(scl * 38, scl * 19),
-                texture=self._lineup_tex,
-                color=eye_color,
-                mesh_transparent=self._eyes_mesh,
-            )
 
     def _save_state(self) -> None:
         try:

@@ -1161,8 +1161,6 @@ def _preload1() -> None:
         'windowBGBlotch',
     ]:
         bs.getmesh(mname)
-    for tname in ['playerLineup', 'lock']:
-        bs.gettexture(tname)
     for tex in [
         'iconRunaround',
         'iconOnslaught',
@@ -1171,6 +1169,15 @@ def _preload1() -> None:
         'medalSilver',
         'medalGold',
         'characterIconMask',
+        'playerLineup1',
+        'playerLineup2',
+        'playerLineup3',
+        'playerLineup4',
+        'playerLineup5',
+        'playerLineup6',
+        'playerLineup7',
+        'playerLineupCPU',
+        'lock',
     ]:
         bs.gettexture(tex)
     bs.gettexture('bg')

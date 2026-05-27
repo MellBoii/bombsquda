@@ -7,7 +7,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import bascenev1 as bs
-from bascenev1lib.gameutils import SharedObjects
+from bascenev1lib.gameutils import SharedObjects, TouchedMessage
 
 if TYPE_CHECKING:
     from typing import Any, Sequence
@@ -222,19 +222,17 @@ class SpazFactory:
                 ('message', 'our_node', 'at_disconnect', FootingMessage(-1)),
             ),
         )
-        
-        from bascenev1lib.actor.emerald import TouchedMsg
 
         self.spaz_material.add_actions(
             conditions=('they_have_material', player_material),
             actions=(
-                ('message', 'our_node', 'at_connect', TouchedMsg()),
+                ('message', 'our_node', 'at_connect', TouchedMessage(1)),
             ),
         )
         self.spaz_material.add_actions(
             conditions=('they_have_material', object_material),
             actions=(
-                ('message', 'our_node', 'at_connect', TouchedMsg()),
+                ('message', 'our_node', 'at_connect', TouchedMessage(1)),
             ),
         )
 

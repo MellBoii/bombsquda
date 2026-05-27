@@ -19,6 +19,12 @@ class FootingMessage:
 class TouchedMessage:
     def __init__(self, state):
         self.state = state
+
+class BounceMessage:
+    pass
+    
+class HookedMessage:
+    pass
     
 class SharedObjects:
     """Various common components for use in games.
@@ -48,6 +54,7 @@ class SharedObjects:
         self._particle_material: bs.Material | None = None
         self._sorrowful_material: bs.Material | None = None
         self._touch_material: bs.Material | None = None
+        self._fireball_material: bs.Material | None = None
 
     @classmethod
     def get(cls) -> SharedObjects:
@@ -224,6 +231,30 @@ class SharedObjects:
                 ),
             )
         return self._touch_material
+    
+    @property
+    def fireball_material(self) -> bs.Material:
+        if self._fireball_material is None:
+            mat = self._fireball_material = bs.Material()
+            mat.add_actions(
+                conditions=('they_have_material', shared.object_material),
+                actions=(
+                    ('message', 'our_node', 'at_connect', TouchedMsg()),
+                ),
+            )
+            mat.add_actions(
+                conditions=('they_have_material', shared.player_material),
+                actions=(
+                    ('message', 'our_node', 'at_connect', TouchedMsg()),
+                ),
+            )
+            mat.add_actions(
+                conditions=('they_have_material', shared.footing_material),
+                actions=(
+                    ('message', 'our_node', 'at_connect', BounceMessage()),
+                ),
+            )
+        return self._fireball_material
 
     @property
     def region_material(self) -> bs.Material:

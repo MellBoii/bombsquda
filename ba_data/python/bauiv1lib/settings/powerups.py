@@ -183,7 +183,7 @@ class PowerupSetupWindow(bui.MainWindow):
 
         for i, (ptype, weight) in enumerate(self._powerups.items()):
             y = start_y - i * row_height
-            x = 300
+            x = 130
 
             enabled = weight > 0
 

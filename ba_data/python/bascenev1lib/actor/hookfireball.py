@@ -3,13 +3,12 @@ import random
 import bascenev1 as bs
 import math
 from typing import Any, Sequence, override
-from bascenev1lib.gameutils import SharedObjects
-from bascenev1lib.actor.emerald import TouchedMsg
-
-class BounceMessage:
-    pass
-class HookedMessage:
-    pass
+from bascenev1lib.gameutils import (
+    SharedObjects, 
+    TouchedMessage, 
+    HookedMessage, 
+    BounceMessage
+)
 
 class UKHook(bs.Actor):
     """A 'hook' that tells a Spaz 
@@ -30,23 +29,6 @@ class UKHook(bs.Actor):
         self.owner = owner
         self.allowtouches = True
         shared = SharedObjects.get()
-        self.material = bs.Material()
-        self.material.add_actions(
-            conditions=('they_have_material', shared.object_material),
-            actions=(
-                ('modify_part_collision', 'collide', True),
-                ('modify_part_collision', 'physical', True),
-                ('message', 'our_node', 'at_connect', TouchedMsg()),
-            ),
-        )
-        self.material.add_actions(
-            conditions=('they_have_material', shared.player_material),
-            actions=(
-                ('modify_part_collision', 'collide', True),
-                ('modify_part_collision', 'physical', True),
-                ('message', 'our_node', 'at_connect', TouchedMsg()),
-            ),
-        )
         self.node = bs.newnode(
             'prop',
             delegate=self,
@@ -61,7 +43,7 @@ class UKHook(bs.Actor):
                 'color_texture': self.tex,
                 'reflection': 'powerup',
                 'reflection_scale': [1.0],
-                'materials': (self.material, shared.object_material),
+                'materials': (shared.touch_material, shared.object_material),
             },
         )
         self.soundloop = bs.newnode(
@@ -144,7 +126,7 @@ class UKHook(bs.Actor):
                 bs.animate(self.node, 'mesh_scale', {0: self.scale, 0.1: 0})
                 bs.timer(0.1, self.node.delete)
 
-        elif isinstance(msg, TouchedMsg):
+        elif isinstance(msg, TouchedMessage):
             if not self.node:
                 return
             toucher = bs.getcollision().opposingnode
@@ -226,28 +208,9 @@ class Fireball(bs.Actor):
         self.tex = bs.gettexture('confetti_colors/orange')
         self.scale = 0.7
         self.bscale = 0.9
-        self.material = bs.Material()
         self.owner = owner
         self.hurtpoints = random.randint(100, 350)
         shared = SharedObjects.get()
-        self.material.add_actions(
-            conditions=('they_have_material', shared.object_material),
-            actions=(
-                ('message', 'our_node', 'at_connect', TouchedMsg()),
-            ),
-        )
-        self.material.add_actions(
-            conditions=('they_have_material', shared.player_material),
-            actions=(
-                ('message', 'our_node', 'at_connect', TouchedMsg()),
-            ),
-        )
-        self.material.add_actions(
-            conditions=('they_have_material', shared.footing_material),
-            actions=(
-                ('message', 'our_node', 'at_connect', BounceMessage()),
-            ),
-        )
         self.node = bs.newnode(
             'prop',
             delegate=self,
@@ -262,7 +225,7 @@ class Fireball(bs.Actor):
                 'color_texture': self.tex,
                 'reflection': 'powerup',
                 'reflection_scale': [1.0],
-                'materials': (self.material, shared.object_material),
+                'materials': (shared.fireball_material, shared.object_material),
             },
         )
         self.deathTimer = bs.Timer(7, self.autodie)
@@ -299,7 +262,7 @@ class Fireball(bs.Actor):
                 bs.animate(self.node, 'mesh_scale', {0: self.scale, 0.1: 0})
                 bs.timer(0.1, self.node.delete)
         
-        elif isinstance(msg, TouchedMsg):
+        elif isinstance(msg, TouchedMessage):
             collision = bs.getcollision()
             toucher = collision.opposingnode
             if not toucher:

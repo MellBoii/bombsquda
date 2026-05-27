@@ -26,9 +26,8 @@ from bascenev1lib.actor.powerupbox import PowerupBoxFactory, PowerupBox
 from bascenev1lib.actor.spazfactory import SpazFactory
 from bascenev1lib.actor.particles import BloodParticle, ConfettiParticle, SparkParticle
 from bascenev1lib.actor.hookfireball import UKHook, Fireball
-from bascenev1lib.actor.emerald import TouchedMsg
 from bascenev1lib.actor.image_looped import LoopingImageAnimation
-from bascenev1lib.gameutils import SharedObjects
+from bascenev1lib.gameutils import SharedObjects, TouchedMessage
 from babase._logging import squdalog
 from fromgoverhaul.mell_sfx import SoundFactory
 
@@ -324,6 +323,7 @@ class Spaz(bs.Actor):
             self.character = character
 
         factory = SpazFactory.get()
+        SoundFactory.get()
 
         # We need to behave slightly different in the tutorial.
         self._demo_mode = demo_mode
@@ -1277,47 +1277,90 @@ class Spaz(bs.Actor):
         Returns:
             None
         """
+        
         if not self.node:
             return
-        SoundFactory.get().firework_launch.play(position=self.node.position)
-        yforce = 240
-        savedY = self.node.position[1]
-        def actualexplode():
-            if not self.node:
-                self.explotimer = None
-                return
-            self.explotimer = None
-            Bomb(
-                position=self.node.position, 
-                bomb_type='tntfirework'
-            ).explode()
-            self.shatter(extreme=True, force_scream=True)
-            SoundFactory.get().firework_explode.play(
+        mode = 'manic'
+        if mode == 'manic':
+            SoundFactory.get().firework_launch.play(
                 position=self.node.position
             )
-            if on_die_call:
-                # FIXME: maybe just use exec or eval since
-                # then we can do non-callables
-                bs.Call(on_die_call)()
+            # make a generic box
+            box = GenericBox()
+            box.autoretain()
+            # connect its node to us so we get
+            # wacky physics and just fly all around
+            self.node.connectattr('torso_position', box.node, 'position')
+            def make_spark():
+                if not self.node:
+                    self.sparkiiestimer = None
+                    return
+                bs.emitfx(
+                    position=self.node.torso_position,
+                    velocity=self.node.velocity,
+                    count=50,
+                    scale=1,
+                    spread=0.1,
+                    chunk_type='spark',
+                )
+            def explode():
+                if not self.node:
+                    return
+                box.handlemessage(bs.DieMessage())
+                Bomb(
+                    position=self.node.position, 
+                    bomb_type='tntfirework'
+                ).explode()
+                self.shatter(extreme=True, force_scream=force_scream)
+                SoundFactory.get().firework_explode_classic.play(
+                    position=self.node.position
+                )
+                self.sparkiiestimer = None
+                if on_die_call:
+                    bs.Call(on_die_call)()
+            bs.timer(3, explode)        
+            self.sparkiiestimer = bs.Timer(0.005, make_spark, repeat=True)
+            
+        elif mode == 'classic':
+            SoundFactory.get().firework_launch_classic.play(
+                position=self.node.position
+            )
+            yforce = 240
+            savedY = self.node.position[1]
+            def actualexplode():
+                if not self.node:
+                    self.explotimer = None
+                    return
+                self.explotimer = None
+                Bomb(
+                    position=self.node.position, 
+                    bomb_type='tntfirework'
+                ).explode()
+                self.shatter(extreme=True, force_scream=force_scream)
+                SoundFactory.get().firework_explode_classic.play(
+                    position=self.node.position
+                )
+                if on_die_call:
+                    bs.Call(on_die_call)()
 
-        # Check if we're a little above where we once were,
-        # and if we are, trigger our actual 'firework' explosion.
-        def do_impulse_stuff():
-            if not self.node:
-                self.explotimer = None 
-                return
-            if self.node.position[1] >= savedY + 5:
-                actualexplode()
-            self.impulse(y=120)
+            # Check if we're a little above where we once were,
+            # and if we are, trigger our actual 'firework' explosion.
+            def do_impulse_stuff():
+                if not self.node:
+                    self.explotimer = None 
+                    return
+                if self.node.position[1] >= savedY + 5:
+                    actualexplode()
+                self.impulse(y=120)
 
-        def check_stuck():
-            if not self.node:
-                return
-            if self.is_alive():
-                actualexplode()
+            def check_stuck():
+                if not self.node:
+                    return
+                if self.is_alive():
+                    actualexplode()
 
-        self.explotimer = bs.Timer(0.01, do_impulse_stuff, repeat=True)
-        self.stuck_timer = bs.Timer(2.0, check_stuck)
+            self.explotimer = bs.Timer(0.01, do_impulse_stuff, repeat=True)
+            self.stuck_timer = bs.Timer(2.0, check_stuck)
 
     def _safe_play_sound(self, sound: bs.Sound, volume: float) -> None:
         """Plays a sound at our position if we exist."""
@@ -2887,7 +2930,7 @@ class Spaz(bs.Actor):
         if self.mortal_phase:
             return
         self.mortal_phase = True
-        bs.getsound('mortal_damage').play(
+        SoundFactory.get().mortal_damage.play(
             volume=1.5, position=self.node.position
         )
         self.updatemeter()
@@ -2906,12 +2949,14 @@ class Spaz(bs.Actor):
             if not self.node:
                 self.mortal_dmg_timer = None
                 return
+            if self.node.knockout > 0.1:
+                return
             self.hitpoints -= 5
             self.node.hurt = (
                 1.0 - float(self.hitpoints) / self.hitpoints_max
             )
             self.updatemeter()
-            bs.getsound('mortal_dmg_spike').play(position=self.node.position)
+            SoundFactory.get().mortal_damage_spike.play(position=self.node.position)
             if self.hitpoints <= 0 or not self.is_alive():
                 self.die()
                 Blast(
@@ -2932,7 +2977,7 @@ class Spaz(bs.Actor):
         if self.mortal_dmg_timer:
             self.mortal_dmg_timer = None
         self.mortal_phase = False
-        bs.getsound('scoreOG').play(volume=1.5, position=self.node.position)
+        SoundFactory.get().survived_mortal_damage.play(volume=1.5, position=self.node.position)
         self.hitpoints = self.hitpoints_max
         self.updatemeter()
         self.handlemessage(bs.CelebrateMessage(duration=3))
@@ -2998,7 +3043,7 @@ class Spaz(bs.Actor):
         # pylint: disable=too-many-branches
         assert not self.expired
         
-        if isinstance(msg, TouchedMsg):
+        if isinstance(msg, TouchedMessage):
             collision = bs.getcollision()
             toucher = collision.opposingnode
             actor = toucher.getdelegate(bs.Actor)
@@ -5257,3 +5302,39 @@ class Spaz(bs.Actor):
             if node:
                 node.volume = 0
                 node.delete()
+
+class GenericBox(bs.Actor):
+    def __init__(self):
+        super().__init__()
+        shared = SharedObjects.get()
+        self.node = bs.newnode(
+            'prop',
+            delegate=self,
+            attrs={
+                'body': 'box',
+                'body_scale': 0.3,
+                'position': (0, 5, 0),
+                'mesh': bs.getmesh('none'),
+                'light_mesh': bs.getmesh('none'),
+                'color_texture': bs.gettexture('white'),
+                'reflection': 'powerup',
+                'mesh_scale': 0,
+                'reflection_scale': [1.0],
+                'materials': [shared.object_material,],
+            },
+        )
+    
+    @override
+    def exists(self) -> bool:
+        return bool(self.node)
+    
+    @override
+    def handlemessage(self, msg: Any):
+        if isinstance(msg, bs.DieMessage):
+            if self.node:
+                self.node.delete()
+        elif isinstance(msg, bs.OutOfBoundsMessage):
+            self.handlemessage(bs.DieMessage())
+        else:
+            super().handlemessage(msg)
+        
