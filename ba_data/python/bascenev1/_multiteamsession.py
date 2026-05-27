@@ -129,7 +129,7 @@ class MultiTeamSession(Session):
         self._custom_menu_ui = [
             {
                 'label': babase.Lstr(resource='nextGameText'),
-                'call': babase.WeakCall(self.restart),
+                'call': babase.WeakCall(self.next_game),
             }
         ]
 
@@ -198,7 +198,7 @@ class MultiTeamSession(Session):
             self._next_game_spec['settings'],
         )
         
-    def restart(self) -> None:
+    def next_game(self) -> None:
         """Restart the current game activity."""
 
         # Tell the current activity to end with a 'restart' outcome.
@@ -217,6 +217,13 @@ class MultiTeamSession(Session):
             activity.can_show_ad_on_death = True
             from bascenev1._activitytypes import TransitionActivity
             with self.context:
+                restart = False
+                if restart:
+                    activity = self.getactivity() 
+                    self._next_game_instance = _bascenev1.newactivity(
+                        type(activity),
+                        activity.settings_raw,
+                    )
                 self.setactivity(_bascenev1.newactivity(TransitionActivity))
                 
     @override
@@ -393,17 +400,18 @@ class MultiTeamSession(Session):
                     color=babase.normalized_color(winning_sessionteam.color),
                 )
                 bs.cameraflash()
-                bs.getsound('boxingBell').play()
+                bs.getsound('matchWin').play()
                 
             else:
-                bs.getsound('bellDraw').play()
+                bs.getsound('matchDraw').play()
                 bs.timer(0.4, lambda: mell.announcer_say('draw'))
                 bs.broadcastmessage(
                     bs.Lstr(resource='drawMSGText')
                 )
             def do_bg():
-                Background(fade_time=1.0).autoretain()
-            bs.basetimer(2.5, do_bg)
+                with self.context:
+                    Background(fade_time=0.5).autoretain()
+            bs.basetimer(3, do_bg)
 
 
 class ShuffleList:

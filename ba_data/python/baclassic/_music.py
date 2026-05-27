@@ -11,6 +11,7 @@ from enum import Enum
 
 import babase
 import bascenev1
+from babase._logging import squdalog
 from bascenev1 import MusicType
 
 if TYPE_CHECKING:
@@ -566,7 +567,7 @@ def do_play_music(*args: Any, **keywds: Any) -> None:
 def preload_all_music():
     import bascenev1 as bs
 
-    bs.debprint('[MusicPreloader] Starting preload...')
+    squdalog.debug('[MusicPreloader] Starting preload...')
 
     total = 0
     failed = 0
@@ -575,14 +576,14 @@ def preload_all_music():
         try:
             asset = entry.assetname
 
-            bs.debprint(f'[MusicPreloader] {mtype.value} -> {asset}')
+            squdalog.debug(f'[MusicPreloader] {mtype.value} -> {asset}')
 
             bs.getsound(asset)
 
             total += 1
         except Exception as e:
             failed += 1
-            bs.debprint(f'[MusicPreloader] FAILED {mtype.value}: {e}')
+            squdalog.debug(f'[MusicPreloader] FAILED {mtype.value}: {e}')
 
-    bs.debprint(f'[MusicPreloader] Done. Loaded={total} Failed={failed}')
+    squdalog.debug(f'[MusicPreloader] Done. Loaded={total} Failed={failed}')
 

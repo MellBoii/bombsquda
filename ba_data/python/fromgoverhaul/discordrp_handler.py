@@ -38,7 +38,7 @@ from bascenev1._activitytypes import JoinActivity
 from bascenev1._gameactivity import GameActivity
 from bascenev1lib.creditsroll import CreditsActivity
 from bascenev1lib.game.thefinale import TheFinaleGame
-from bascenev1lib.game.onslaught import Preset
+from babase._logging import squdalog
 import fromgoverhaul.mell_resources as melly
 import bauiv1 as bui
 
@@ -310,7 +310,7 @@ class RichPresence:
                     
             except Exception as e:
                 # comment this out for now.
-                bs.debprint(f'Error updating rich presence. ({e})')
+                squdalog.debug(f'Error updating rich presence. ({e})')
                 pass
         
         def check(self):

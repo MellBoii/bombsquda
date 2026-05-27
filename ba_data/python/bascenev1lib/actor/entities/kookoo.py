@@ -251,7 +251,7 @@ class Kookoo(bs.Actor):
         # schedules... yummy...
         bs.timer(0.5, self._delete)
         bs.timer(0.4, die)
-        bs.timer(0.25, self.actor().wheelchair_warning)
+        bs.timer(0.25, self.actor().dodge_warning)
     
     def _start_ticking(self, speed: int = 0.8):
         self.recreate_head('ktick', frames=2, delay=0.06, repeat=True)

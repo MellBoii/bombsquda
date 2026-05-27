@@ -1625,6 +1625,8 @@
   },
   "powerupsWindow": {
 	"rpcText": "changin' BombSquda Settings",
+	"disableAllText": "disable all powerups",
+	"enableAllText": "enable all powerups",
 	"titleText": "powerup settings",
 	"triple_bombs": "Triple Bombs",
 	"ice_bombs": "Ice Bombs",

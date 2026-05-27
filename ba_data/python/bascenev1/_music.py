@@ -13,6 +13,9 @@ import babase
 import bauiv1 as bui
 import babase as ba
 import fromgoverhaul.mell_resources as mell
+import json
+import os
+from babase._logging import squdalog
 
 if TYPE_CHECKING:
     pass
@@ -159,124 +162,24 @@ def show_music_now_playing(music_type: bs.MusicType | str) -> None:
     
     if music_type in excluded_types:
         return
-    music_names = {
-        # bs.MusicType.MUSICTYPE: "musictitleandartistmaybe",
-        bs.MusicType.TO_THE_DEATH: "Daniel Bautista - Intro",
-        bs.MusicType.SHOP: "Wii Shop Channel - Nintendo Sound Team",
-        bs.MusicType.TO_THE_DEATH2: "Chrono Symphonic - Darkness Dueling (Plastic Men and Iron Blades)",
-        bs.MusicType.TO_THE_DEATH2FAST: "Daniel Bautista - Flight of the Bumblebee",
-        bs.MusicType.TO_THE_DEATH3FAST: "Bãtutã la trompeta - Rabbids Go Home",
-        bs.MusicType.TO_THE_DEATH3: "Bãtutã din Moldova - Rabbids Go Home",
-        bs.MusicType.TO_THE_DEATHFAST: "Daniel Bautista - Flight of the Bumblebee",
-        bs.MusicType.EPIC: "Nocturne no. 2 in E-Flat major, op. 9 no. 2",
-        bs.MusicType.EPICFAST: "Starvation V2 - T_heonlywhitesofa",
-        ##################
-        bs.MusicType.COOP_SELECT: "Map Medley (Super Mario Bros. 3) - Mario Kart World",
-        bs.MusicType.FINALE_SELECT: "Map Medley (Super Mario Bros. 3) - Mario Kart World",
-        bs.MusicType.FFA_SELECT1: "Your Name, Please - EarthBound Dimensions",
-        bs.MusicType.TEAMS_SELECT1: "Map Medley (Super Mario World) - Mario Kart World",
-        bs.MusicType.TEAMS_SELECT2: "Slot Machine - Super Mario 3D World",
-        ##################
-        bs.MusicType.TUTORIAL: "Go Go Go Summer, Nobuhamu - Tetr.io",
-        bs.MusicType.ONLINE: "Online Menu - Mario Kart Wii",
-        bs.MusicType.D_RUNNIN: "Runnin from Evil - Doom II", 
-        bs.MusicType.BUSINESS: "Porky Means Business! - EarthBound",
-        bs.MusicType.PAUSE: "Upgrade Station - Team Fortress 2",
-        bs.MusicType.ELIM_DANGER: "Danger - Dr. Robotnik's Mean Bean Machine",
-        bs.MusicType.ELIM_VERSUS: "2P. Versus - Dr. Robotnik's Mean Bean Machine",
-        bs.MusicType.SCORES: "Intermission - Sonic Robo Blast 2",
-        bs.MusicType.FLYING: "Ducktales Moon Theme meets Metal - 331Erock",
-        bs.MusicType.FLYING2: "Sky Theme - Mario vs Luigi Online",
-        bs.MusicType.RACE: "VS Metal Sonic - Sonic Mania",
-        bs.MusicType.EPIC_RACE: "Final Boss - Sonic Mania",
-        bs.MusicType.MENU1: "Artistic Mindset - Spamton123",
-        bs.MusicType.MENU2: "Super Mario Kart Title Remastered",
-        bs.MusicType.MENU3: "Mario vs Luigi 2.0 Title Theme Remix - Goldyber",
-        bs.MusicType.MENU4: "Cascade Zone Act 1 - Bomb Boy",
-        bs.MusicType.MENU5: "Mario vs Luigi 2.0 Title Theme",
-        bs.MusicType.MENU6: "Mario Kart: Double Dash!! Title Theme",
-        bs.MusicType.MENU7: "Start your Engines - CTGP-7",
-        bs.MusicType.MENU8: "Dog...? - Item Asylum",
-        bs.MusicType.MENU9: "Title Theme -  Mario Kart 7",
-        bs.MusicType.MENU10: "Friends no More x Papá Cerdito vs Bebé George",
-        bs.MusicType.MENU11: "Title Theme - Mario Kart 8",
-        bs.MusicType.MENU12: "Title Theme - Mario Kart 64",
-        bs.MusicType.MENU13: "Title Theme - Dr. Robotnik's Mean Bean Machine",
-        bs.MusicType.MENU14: "Pizza Deluxe - POST ELVIS",
-        bs.MusicType.MENU15: "Pollyanna Rock My World - Furries in a blender",
-        bs.MusicType.MENU16: "Wii Theme but it's September - Mr Rock",
-        bs.MusicType.MENU17: "The Final Fight - Sonic 3D Blast",
-        bs.MusicType.MENU18: "Title Screen - New Super Mario Bros. Wii",
-        bs.MusicType.MENU19: "Main Theme - Angry Birds",
-        bs.MusicType.MENU20: "Main Theme (Ssvsab Remix) - Angry Birds",
-        bs.MusicType.MENU21: "Title Theme - Super Mario 64",
-        bs.MusicType.MENU22: "Main Menu - Hotel Mario",
-        bs.MusicType.RMENU: "Clock Strikes 12 - Reddit Bullshit",
-        bs.MusicType.MENU67: "Super Compressed Version of the JRMP Menu Music That Isn't Really From JRMP But I Also Sing It With Myself Whilst Screaming - Mell",
-        bs.MusicType.CREDITS: "Staff Roll - Super Mario 3D Land",
-        bs.MusicType.SNESCOURSE: "SNES Battle Course - Mario Kart World",
-        bs.MusicType.SNESCOURSE2: "SNES Battle Course 4 - Mario Kart Wii",
-        bs.MusicType.DEFEAT: "Faint Courage - Deltarune Chapter 2 OST",
-        bs.MusicType.FINALDESTINATION: "Final Destination - Super Smash Bros Melee",
-        bs.MusicType.THEFINALE: "In The Finale - Bowser's Inside Story",
-        bs.MusicType.WAR: "Thousand March - Mr. Sauceman",
-        bs.MusicType.WWR: "War Without Reason - Heaven Pierce Her",
-        bs.MusicType.LAP0: "It's Pizza Time! - Mr. Sauceman",
-        bs.MusicType.LAP0H: "Nuclear Avalanche - Ronach",
-        bs.MusicType.LAP1: "The Death I Deservioli - Mr. Sauceman",
-        bs.MusicType.LAP2: "Pillar John's Revenge - Lap 3",
-        bs.MusicType.LAP3: "Absolute AbsurZiti V2 - bilkshaker",
-        bs.MusicType.LAP4: "Pasta La Vista - Oofator",
-        bs.MusicType.LAP5: "Doppelganger's Delight V1 - ???",
-        bs.MusicType.LAP6: "Moon-Eyed Madness - spooklass",
-        bs.MusicType.LAP7: "Holy Ravioli S&%t - Parpal",
-        bs.MusicType.LAP8: "Closed for Renovations - LyteRayz",
-        bs.MusicType.LAP9: "Vengeance With a Pinch of Sauce - skibsthegoober2500",
-        bs.MusicType.GAMBLING: "WEXECUTED (Instrumental) - Sherry",
-        bs.MusicType.METALCAPTIME: "IT'S TV TIME but it's Metal Cap Theme - @secret_fan48",
-        bs.MusicType.SUPER: "Super Sonic - Sonic Robo Blast 2",
-        bs.MusicType.SRB2_PINCH: "Hurry Up! - Sonic Robo Blast 2 Battle",
-        bs.MusicType.SRB2_OVERTIME: "OVERTIME!! - Sonic Robo Blast 2 Battle",
-        bs.MusicType.RAGE: "Dr. Andonuts' Rage SSBU Mix - Frakture",
-        bs.MusicType.GRAND_ROMP: "It's TV Time! - Deltarune",
-        bs.MusicType.SPORTS: "Opening Movie (Beta Mix) - Eek! The Cat",
-        bs.MusicType.FOOTBALL: "GOLF CENTRAL - Uncanny Cat Golf",
-        bs.MusicType.VICTORY: "Stars and Stripes Forever (Metal Rock Remix) - Blue Claw Philharmonic",
-        bs.MusicType.VICTORYFINAL: "Tracking Device - Half Life 2",
-        bs.MusicType.ONSLAUGHT: "Ruder Buster - Deltarune",
-        bs.MusicType.SURVIVAL: "Tough Guy Alert! - M&L:BIS GaMetal Remix",
-        bs.MusicType.ONSLAUGHT2: "Rude Buster - Deltarune",
-        bs.MusicType.NOISESUPER: "Unexpectancy Gatcha Remix - ClascyJitto",
-        bs.MusicType.MODULATINGTIME: "A Journey in Modulating Time - MaliceX",
-        bs.MusicType.KEEP_AWAY: "Flying Battery Zone 1 - Tee Lopes",
-        bs.MusicType.KEEP_AWAY2: "Flying Battery Zone 2 - Tee Lopes",
-        bs.MusicType.MARCHING: "Loonboon - Plants VS Zombies",
-        bs.MusicType.RUNAROUNDFINAL: "Brainiac Maniac - Plants VS Zombies",
-        bs.MusicType.DS1: "Battle Theme - Mario Kart DS",
-        bs.MusicType.DS2: "Waluigi Pinball - Mario Kart DS",
-        bs.MusicType.DS3: "Twilight House - Mario Kart Wii",
-        bs.MusicType.SURVEY: "ANOTHER HIM - Deltarune",
-        bs.MusicType.CRASH_HANDLER: "Cloudcones - Nagz",
-        bs.MusicType.LOGOTYPE: "LOGOTYPE - Mother 3",
-        bs.MusicType.FLAG_CATCHER: "Metallic Madness 1 - Tee Lopes",
-        bs.MusicType.FORWARD_MARCH: "Metallic Madness 2 - Tee Lopes",
-        bs.MusicType.OPENING: "Opening Credits - Bound to the Dark World",
-        bs.MusicType.CHOSEN_ONE: "Tough Guy Alert! - M&L Bowser's Inside Story - GaMetal Cover",
-        bs.MusicType.RUN_AWAY: "Tough Guy Alert! - M&L Bowser's Inside Story - GaMetal Cover",
-        bs.MusicType.FEEL_THE_FURY: "Feel The Fury - ThatGuyRamon",
-        bs.MusicType.RAINBOW_ROAD: "Rainbow Road Pentagon Path Remix - B1itz Lunar",
-        bs.MusicType.STARMAN: "Invincibility (Starman) - Sonic Robo Blast 2",
-        bs.MusicType.HARDMODE1: "Stronger Enemies - Undertale OST",
-        bs.MusicType.HARDMODE2: "ASGORE - Undertale OST",
-        bs.MusicType.HARDMODE3: "Song That Might Play When You Fight Sans - Undertale OST",
-    }
+    path = os.path.join(
+        babase.app.env.data_directory,
+        'ba_data',
+        'data',
+        'musicvals.json',
+    )
+    with open(path, encoding='utf-8') as infile:
+        music_names = json.loads(infile.read())
     # Get the music name from the list.
     # If we don't get any, tell the player it's either unknown
     # or will be added later down the line. Laziness kills the 'Squda. 
-    name = music_names.get(music_type, ba.Lstr(resource='npUnknownMusic'))
-    if music_type not in music_names:
-        print(f'QUICK NOTE: {music_type} is missing from the music popup list.')
-        print('Please add it later.')
+    name = music_names.get(
+        str(music_type), 
+        ba.Lstr(resource='npUnknownMusic')
+    )
+    if str(music_type) not in music_names:
+        squdalog.error(f'{str(music_type)} is missing from the music popup list.')
+        bs.getsound('dev_epicfail').play()
     activity = bs.get_foreground_host_activity()
     with activity.context:
         # get important variables
@@ -400,15 +303,6 @@ def setmusic(musictype: MusicType | None, continuous: bool = False, show_playing
     gnode.music_continuous = continuous
     gnode.music = '' if musictype is None else musictype.value
     gnode.music_count += 1
-    # Ensure activity has lyric storage
-    if not hasattr(activity, '_lyric_player'):
-        activity._lyric_player = None
-
-    # Stop any existing lyric player
-    if activity._lyric_player:
-        bs.debprint('[LyricPlayer] stopping previous instance')
-        activity._lyric_player.stop()
-        activity._lyric_player = None
 
     with activity.context:
         # Don't show game-set music if the player
@@ -456,87 +350,3 @@ def test_musicnames():
     ]
     for musictype in list:
         bs.setmusic(musictype)
-
-class LyricPlayer:
-    """Plays a timed sequence of lyrics onscreen."""
-
-    def __init__(
-        self,
-        lyric_list: list[tuple[str, float]],
-        *,
-        pos=(0, 60),
-        color=(1, 1, 1),
-        v_attach='bottom',
-        scale=1.2,
-        song_length: float | None = None,
-        loop: bool = False,
-        offset: float = 0.0,
-    ):
-        bs.debprint("[LyricPlayer] __init__")
-
-        self.lyrics = lyric_list
-        self.pos = pos
-        self.color = color
-        self.v_attach = v_attach
-        self.scale = scale
-        self.song_length = song_length
-        self.loop = loop
-        self.offset = offset
-        self._start_time: float | None = None
-
-        self._timers: list[bs.Timer] = []
-        self._running = False
-
-    def play(self):
-        bs.debprint("[LyricPlayer] play()")
-
-        self.stop()
-        self._running = True
-
-        self._start_time = bs.apptime()   # <-- anchor
-        fade_time = 2.0
-
-        for text, t in self.lyrics:
-            scheduled_time = max(0.0, t + self.offset)
-            delay = max(0.0, self._start_time + scheduled_time - bs.apptime())
-
-            bs.debprint(f"[LyricPlayer] scheduling in {delay:.3f}s: {text}")
-
-            def make_fn(msg=text):
-                if not self._running:
-                    return
-
-                bs.debprint(f"[LyricPlayer] showing lyric: {msg}")
-
-                node = bs.newnode(
-                    'text',
-                    attrs={
-                        'text': msg,
-                        'position': self.pos,
-                        'scale': self.scale,
-                        'color': self.color,
-                        'h_align': 'center',
-                        'v_attach': self.v_attach,
-                    },
-                )
-
-                bs.animate(node, 'opacity', {0.0: 1.0, fade_time: 0.0})
-                bs.timer(fade_time + 0.2, node.delete)
-
-            self._timers.append(bs.Timer(delay, make_fn))
-
-        if self.loop and self.song_length:
-            loop_delay = max(0.0, self._start_time + self.song_length + self.offset - bs.apptime())
-            self._timers.append(bs.Timer(loop_delay, self._restart))
-
-    def _restart(self):
-        if not self._running:
-            return
-        self._start_time = bs.apptime()
-        self.play()
-
-    def stop(self):
-        if self._running:
-            bs.debprint("[LyricPlayer] stop()")
-        self._running = False
-        self._timers.clear()

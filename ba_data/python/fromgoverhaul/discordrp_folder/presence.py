@@ -11,6 +11,7 @@ from enum import IntEnum
 from typing import Any, Optional, cast
 from types import TracebackType
 from uuid import uuid4
+from babase._logging import squdalog
 
 
 class _OpCode(IntEnum):
@@ -71,7 +72,7 @@ class Presence:
         )
         # Send a handshake request
         self._handshake()
-        bascenev1.debprint('Discord RPC is functioning.')
+        squdalog.debug('Discord RPC is functioning.')
 
     def set(self, activity: Optional[dict[str, Any]]) -> None:
         """
@@ -94,7 +95,7 @@ class Presence:
         try:
             reply = self._read()
         except AttributeError:
-            bs.debprint('Discord RPC socket has no buffer; cannot read data from it.')
+            squdalog.debug('Discord RPC socket has no buffer; cannot read data from it.')
             return
         if reply.get("evt") != "ERROR":
             return
@@ -132,7 +133,7 @@ class Presence:
         try:
             payload = self._read()
         except AttributeError:
-            bs.debprint('Discord RPC socket has no buffer; cannot read data from it.')
+            squdalog.debug('Discord RPC socket has no buffer; cannot read data from it.')
             payload = None
             return
         
@@ -214,26 +215,10 @@ class _UnixSocket(_Socket):
             except FileNotFoundError:
                 pass
         else:
-            print("unable to start rich presence: Cannot find a Unix socket to connect to Discord")
+            squdalog.debug("unable to start rich presence: Cannot find a Unix socket to connect to Discord")
             raise FileNotFoundError
 
-    def _get_pipe_path(self) -> str:
-        
-        import _baplus # type: ignore
-        if _baplus.get_v1_account_display_string(False) == 'GummyBoiYT' and False:
-            paths_to_try = [
-                "/private/var/folders/w6/npklj0pd7k9gp9xlhsjn1tnw0000gp/T/",
-            ]
-            
-
-            for path in paths_to_try:
-                if os.path.exists(path):
-                    print(f"Found Discord IPC socket at: {path}")
-                    return path
-                else:
-                    print(f"Discord IPC socket not found. {path}")
-        
-        
+    def _get_pipe_path(self) -> str:     
         for env in ("XDG_RUNTIME_DIR", "TMPDIR", "TMP", "TEMP"):
             path = os.environ.get(env)
             if path is not None:
@@ -273,7 +258,7 @@ class _WindowsSocket(_Socket):
             self._buffer.write(data)
             self._buffer.flush()
         except AttributeError:
-            bs.debprint('Discord IPC socket has no buffer; cannot write data to it.')
+            squdalog.debug('Discord IPC socket has no buffer; cannot write data to it.')
 
     def _close(self) -> None:
         self._buffer.close()

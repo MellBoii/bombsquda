@@ -18,6 +18,7 @@ import json
 import urllib.request
 import urllib.parse
 import math
+from babase._logging import squdalog
 SERVER = mell.server
 
 if TYPE_CHECKING:
@@ -132,7 +133,7 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
         }
         try:
             self.http_post("/submit", payload)
-            bs.debprint('personal best uploaded successfully')
+            squdalog.debug('personal best uploaded successfully')
             bs.getsound('dingSmall').play()
             return True
         except Exception as e:

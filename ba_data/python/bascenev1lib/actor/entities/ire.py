@@ -263,7 +263,7 @@ class Ire(bs.Actor):
             self._delete()
             self.playsound('player_die')
         bs.timer(1.2, die)
-        bs.timer(1.1, self.actor().wheelchair_warning)
+        bs.timer(1.1, self.actor().dodge_warning)
     
     def _anim_attack(self):
         # wow they're still dead!

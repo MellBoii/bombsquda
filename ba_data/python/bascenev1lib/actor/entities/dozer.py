@@ -205,7 +205,7 @@ class Dozer(bs.Actor):
         # schedules... yummy...
         bs.timer(0.2, self._delete)
         bs.timer(0.18, die)
-        bs.timer(0.1, self.actor().wheelchair_warning)
+        bs.timer(0.1, self.actor().dodge_warning)
     
     def _delete(self):
         # delete nodes

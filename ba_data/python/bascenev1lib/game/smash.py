@@ -7,7 +7,7 @@
 
 from __future__ import annotations
 
-from bascenev1lib.actor.popuptext import PopupText, PopupWriterText
+from bascenev1lib.actor.popuptext import PopupText
 import babase as ba
 import weakref
 import logging

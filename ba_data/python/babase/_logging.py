@@ -5,12 +5,14 @@
 from __future__ import annotations
 
 import logging
+import os
 
 from bacommon.logging import ClientLoggerName
 
 # Keep a dict of logger descriptions so lookup is speedy, but lazy-init
 # it since most users won't need it.
 _g_logger_descs: dict[str, str] | None = None
+
 
 # Common loggers we may want convenient access to.
 balog = logging.getLogger(ClientLoggerName.BA.value)
@@ -31,7 +33,7 @@ cloudsublog = logging.getLogger(ClientLoggerName.CLOUD_SUBSCRIPTION.value)
 accountv2log = logging.getLogger(ClientLoggerName.ACCOUNT_V2.value)
 accountclientv2log = logging.getLogger(ClientLoggerName.ACCOUNT_CLIENT_V2.value)
 loginadapterlog = logging.getLogger(ClientLoggerName.LOGIN_ADAPTER.value)
-
+squdalog = logging.getLogger(ClientLoggerName.BOMBSQUDA.value)
 
 def description_for_logger(logger: str) -> str | None:
     """Return a short description for a given logger.

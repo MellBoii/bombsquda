@@ -172,16 +172,5 @@ class TeamGameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
                 delay = 0.0
             else:
                 delay = 4.0
-                try:
-                    if isinstance(results, bascenev1.GameResults) and results.winning_team is None:                   
-                        delay = 10.0
-                        _bascenev1.getsound('bellDraw').play()
-                        bascenev1.setmusic(None)
-                    else:
-                        delay = 10.0
-                        _bascenev1.getsound('boxingBell').play()
-                        bascenev1.setmusic(None)
-                except Exception:
-                    _bascenev1.getsound('boxingBell').play()
-                    pass
+                bs.getsound('matchEnd').play()
             super().end(results, delay=delay, force=force)

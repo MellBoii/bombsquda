@@ -1,4 +1,5 @@
 import bascenev1 as bs
+from babase._logging import squdalog
 import babase
 import babase as ba
 import baclassic as bsc
@@ -49,13 +50,16 @@ class stupid_attribute_holder:
 
 class Startup():
     platform = ba.app.classic.platform
-    local = ba.app.env.data_directory + '\\ba_data'
-    textures = local + '\\textures\\'
-    coconut = Path(textures + 'cowtato.dds')
-    # "crash" game if texture doesn't exist
-    if platform in ['windows']:
-        if not coconut.is_file():
-            os._exit(1)
+    suffix = '.dds' if platform not in ['android'] else '.ktx'
+    file = os.path.join(
+        _babase.app.env.data_directory,
+        'ba_data',
+        'textures',
+        'cowtato' + suffix,
+    )
+    file = Path(file)
+    if not file.is_file():
+        os._exit(1)
     # alright we're ready to do startup stuff
     print(f'welcome to bombsquda v{mell.version}, updated as of {mell.update_date}.')
     # very important stuff that needs to be set on startup
@@ -120,12 +124,12 @@ class Startup():
     for k,v in conflist.items():
         config.setdefault(k, v)
     config.apply_and_commit()
-    bs.debprint('set default config stuff applied!')
+    squdalog.debug('set default config stuff applied!')
     try:
-        bs.debprint('attempting to check config')
+        squdalog.debug('attempting to check config')
         cfg['squda_playersfirsttime']
     except:
-        print(
+        logging.critical(
             (
                 'An error occured; default config values couldn\'t'
                 'be set. Please contact @mellboii on Discord...'
@@ -139,7 +143,7 @@ class Startup():
             print(f'Unable to start rich presence: {e}')
     bui.app.config['squda_isplayingmusic'] = False
     bui.app.config['squda_timesattracted'] = 0
-    bs.debprint('config stuff is done')
+    squdalog.debug('config stuff is done')
     
     owned = ba.app.config.get('squda_storeowned')
     if owned.get('characters.baller', False):
@@ -188,7 +192,7 @@ class Startup():
         globals['gp'] = bs.getplayers
         globals['gs'] = bs.getsession
         globals['mell'] = mell
-        bs.debprint('console globals done!')
+        squdalog.debug('console globals done!')
     # call it
     auto_module_import()
     
@@ -225,13 +229,13 @@ class Startup():
             activity = None
         if activity:
             with activity.context:
-                bs.getsound('error').play()
+                bs.getsound('dev_epicfail').play()
         else:
-            bui.getsound('error').play()
+            bui.getsound('dev_epicfail').play()
         
     # Install the hook
     sys.excepthook = my_global_exception_hook
-    bs.debprint('global exception hook is ready!')
+    squdalog.debug('global exception hook is ready!')
     
     def set_bs_id():
         import fromgoverhaul.mell_resources as mell
@@ -317,11 +321,13 @@ class Startup():
                     "Content-Type": "application/json"
                 },
             )
+            squdalog.debug('PINGING SERVER')
             # now try opening the response
             try:
                 open = urllib.request.urlopen(request, timeout=2)
                 response = json.loads(open.read().decode('utf-8'))
                 new_msgs = response.get('new_messages')
+                squdalog.debug(f'GOT RESPONSE: {response}')
                 if new_msgs:
                     delay_inc = 0.5
                     delay = 0.5
@@ -343,23 +349,23 @@ class Startup():
                         delay += delay_inc
                     
                 if not loopt._connection_success_logged:
-                    print('Connection to the BombSquda server established successfully.')
+                    squdalog.info('Connection to the BombSquda server established successfully.')
                     loopt._connection_success_logged = True
                     loopt._connection_failed_logged = False
                 time.sleep(7)
             # exception likely means no connection could be made
             except Exception as e:
-                bs.debprint(f"Server connection failed: {e}")
+                squdalog.debug(f"Server connection failed: {e}")
                 time.sleep(5)
                 if not loopt._connection_failed_logged:
-                    print('Connecting to the BombSquda server failed.')
+                    squdalog.info('Connecting to the BombSquda server failed.')
                     loopt._connection_success_logged = False
                     loopt._connection_failed_logged = True
                     
     # ONLY run the thread if online is enabled
     if not ba.app.config.get('squda_noonline'):
         threading.Thread(target=loop, daemon=True).start()
-    bs.debprint('everything should be good to go :3')
+    squdalog.debug('everything should be good to go :3')
     
 
 

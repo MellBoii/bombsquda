@@ -57,8 +57,6 @@ class PopupText(bs.Actor):
             delegate=self,
         )
 
-        lifespan = lifespan
-
         # scale up
         bs.animate(
             self.node,
@@ -90,10 +88,10 @@ class PopupText(bs.Actor):
                 'input0': color[0],
                 'input1': color[1],
                 'input2': color[2],
-                'size': 4,
+                'size': 3,
             },
         )
-        for i in range(4):
+        for i in range(3):
             bs.animate(
                 self._combine,
                 'input' + str(i),
@@ -104,12 +102,12 @@ class PopupText(bs.Actor):
                 },
             )
         bs.animate(
-            self._combine,
-            'input3',
+            self.node,
+            'opacity',
             {
                 0: 0,
-                0.1 * lifespan: color[3],
-                0.7 * lifespan: color[3],
+                0.1 * lifespan: 1,
+                0.7 * lifespan: 1,
                 lifespan: 0,
             },
         )
@@ -128,55 +126,3 @@ class PopupText(bs.Actor):
                 self.node.delete()
         else:
             super().handlemessage(msg)
-            
-
-class PopupWriterText:
-    def __init__(self, 
-                text: str, 
-                position: Sequence[float] = (0.0, 0.0, 0.0), 
-                delay: float = 0.05, 
-                color=(1, 1, 1),
-                h_align: str = 'left',
-                scale: float = 1.1,
-                sound: str = 'blank',
-                ):
-        """
-        Display text letter by letter, like an RPG dialogue box.
-        :param text: The full text to display
-        :param position: (x, y, z) position
-        :param delay: Time between letters
-        :param color: RGB color tuple
-        :param h_align: Horizontal alignment
-        :param sound: Sound to play on every letter
-        """
-        self.full_text = text
-        self.displayed = ""
-        self.index = 0
-        self.delay = delay
-        self.finished = False
-        self.sound = sound
-
-        self.popuptex = PopupText(
-            text, 
-            position=position,
-            scale=scale,
-            color=color,
-        )
-
-        # Begin typing effect
-        self._tick()
-
-    def _tick(self):
-        if self.index < len(self.full_text):
-            try:
-                self.displayed += self.full_text[self.index]
-                self.popuptex.node.text = self.displayed
-                self.index += 1
-                self.tick_timer = bs.Timer(self.delay, self._tick)
-                bs.getsound(self.sound).play()
-            except Exception as exc:
-                self.tick_timer = None
-                print(f"Cancelling popupwritertext because {exc}")
-                pass
-        else:
-            self.finished = True

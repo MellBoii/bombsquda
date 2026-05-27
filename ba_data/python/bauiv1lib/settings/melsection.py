@@ -15,6 +15,7 @@ import random
 from bauiv1lib.popup import PopupMenu
 from bauiv1lib.characterpicker import CharacterPickerDelegate, CharacterPicker
 from bascenev1lib.mainmenu import MENU_MUSIC_AMOUNT
+from babase._logging import squdalog
 
 if TYPE_CHECKING:
     from typing import Callable
@@ -347,17 +348,29 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
         # FILES (WHICH ALSO MEANS THEY REVERT
         # EVERY UPDATE), BUT THEY COULD JUST SCREW UP
         # SOMETHING AND I DON'T EVEN KNOW THAT!!
-        app = babase.app
-        platform = app.classic.platform
-       
-        local = bui.app.env.data_directory + '\\ba_data'
-        textures = local + '\\textures\\'
-        os.rename(textures + 'fontSmall0.dds', textures + 'oldefont.dds')
-        os.rename(textures + 'fontBig.dds', textures + 'oldefont2.dds')
-        os.rename(textures + 'fontALT0.dds', textures + 'fontSmall0.dds')
-        os.rename(textures + 'fontBigALT.dds', textures + 'fontBig.dds')
-        os.rename(textures + 'oldefont.dds', textures + 'fontALT0.dds')
-        os.rename(textures + 'oldefont2.dds', textures + 'fontBigALT.dds')
+        def rename(name: str, output: str):
+            platform = app.classic.platform
+            app = babase.app
+            suffix = '.dds' if platform not in ['android'] else '.ktx'
+            path = os.path.join(
+                app.env.data_directory,
+                'ba_data',
+                'textures',
+                name + suffix,
+            )
+            out = os.path.join(
+                app.env.data_directory,
+                'ba_data',
+                'textures',
+                output + suffix,
+            )
+            os.rename(path, out)
+        rename('fontSmall0', 'oldefont')
+        rename('fontBig', 'oldefont2')
+        rename('fontALT0', 'fontSmall0')
+        rename('fontBigALT', 'fontBig')
+        rename('oldefont', 'fontALT0')
+        rename('oldefont2', 'fontBigALT')
         bs.screenmessage('doing media reload to apply change...')
         bui.app.classic.run_media_reload_benchmark()
     
@@ -402,7 +415,7 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
         cfg = bui.app.config
         cfg[key] = choice
         cfg.apply_and_commit()
-        bs.debprint(f'{key} changed into {choice}')
+        squdalog.debug(f'{key} changed into {choice}')
     
     def _music_choice(self, choice):
         from bascenev1lib.mainmenu import MainMenuActivity
@@ -419,7 +432,7 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
         cfg = bui.app.config
         cfg[key] = val
         cfg.apply_and_commit()
-        bs.debprint(f'{key} changed into {val}')
+        squdalog.debug(f'{key} changed into {val}')
         if key == 'squda_customfont':
             self.changefont()
 

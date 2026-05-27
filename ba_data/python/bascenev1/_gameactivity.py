@@ -26,6 +26,7 @@ from bascenev1 import _music
 import bascenev1 as bs
 import babase as ba
 import fromgoverhaul.mell_resources as mell
+from babase._logging import squdalog
 
 if TYPE_CHECKING:
     from typing import Any, Callable, Sequence
@@ -478,7 +479,7 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
                 ]
             )
         except KeyError:
-            bs.debprint(f'Failed to set config for {player.getname()}. Falling back to {self.players[0].getname()}.')
+            squdalog.error(f'Failed to set config for {player.getname()}. Falling back to {self.players[0].getname()}.')
             bs.broadcastmessage(
                 (
                     f'WARNING: {player.getname()}\'s settings'
@@ -987,8 +988,8 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
             elif index == 1:
                 nameoverride = cget("squda_ch2name")
                 player.character = 'Kris'
-                player.color = (1.0, 0.2, 0.4)
-                player.highlight = (0.2, 1.0, 1.0)
+                player.highlight = (1.0, 0.2, 0.4)
+                player.color = (0.2, 1.0, 1.0)
             # Snake Shadow
             elif index == 2:
                 nameoverride = cget("squda_ch3name")
@@ -1260,9 +1261,9 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
             bs.broadcastmessage(babase.Lstr(resource='hurryUp'))
             mell.announcer_say('hurryup')
             if base_music == None:
-                bs.timer(2.0, lambda: bs.setmusic(None))
+                bs.basetimer(2.0, lambda: bs.setmusic(None))
             else:
-                bs.timer(2.0, lambda: bs.setmusic(fast_music))
+                bs.basetimer(2.0, lambda: bs.setmusic(fast_music))
         if self._standard_time_limit_time <= 1 and not getattr(self, "did_extra", False):
             self.did_extra = True
             if random.random() < 0.6:

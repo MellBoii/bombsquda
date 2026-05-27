@@ -1200,7 +1200,6 @@ def _preload2() -> None:
     for sname in [
         'powerup01',
         'boxDrop',
-        'boxingBell',
         'scoreHit01',
         'scoreHit02',
         'dripity',

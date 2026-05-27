@@ -82,26 +82,12 @@ class TitleWindow(bui.MainWindow):
     def close(self) -> None:
         """Close the window."""
         # no-op if we're not currently in control.
-        rsfx = [
-            'voicelines/spaz/death04',
-            'voicelines/noise/sound2',
-            'voicelines/homer/sound3',
-            'voicelines/mell/sound6',
-            'punchSFX/strong1',
-            'punchSFX/strong3',
-            'screams/scream1',
-            'mbm/Chain1',
-            'shatter',
-            'smaash',
-            'thunder',
-            'swish',
-            'okitem',
-            'gibbed2',
-            'healthPowerup',
-        ]
-        bui.getsound(random.choice(rsfx)).play()
         if not self.main_window_has_control():
             return
+        rsfx = [
+            'titlePress1',
+        ]
+        bui.getsound(random.choice(rsfx)).play()
         from bauiv1lib.mainmenu import MainMenuWindow
         self.main_window_replace(
             MainMenuWindow(

@@ -3,6 +3,7 @@ import random
 import bascenev1 as bs
 from typing import Any, Sequence, override
 from bascenev1lib.gameutils import SharedObjects
+from babase._logging import squdalog
 
 # Note: Need to suppress an undefined variable here because our pylint
 # plugin clears type-arg declarations (which we don't require to be
@@ -142,7 +143,7 @@ class EmeraldActor(bs.Actor):
                 or not actor.is_alive()
                 or not isspaz
             ):
-                bs.debprint(
+                squdalog.debug(
                     (
                         '[EmeraldActor]: actor didn\'t meet requirements'
                         ' (toucher, actor, alive, or is a spaz)'

@@ -126,7 +126,7 @@ class TransitionActivity(Activity[EmptyPlayer, EmptyTeam]):
     """
 
     # Keep prev activity alive while we fade in.
-    transition_time = 0.5
+    transition_time = 0.3
     inherits_slow_motion = True  # Don't change.
     inherits_tint = True  # Don't change.
     inherits_vr_camera_offset = True  # Don't change.
@@ -144,7 +144,7 @@ class TransitionActivity(Activity[EmptyPlayer, EmptyTeam]):
 
         super().on_transition_in()
         self._background = Background(
-            fade_time=0.5, start_faded=False, show_logo=False
+            fade_time=0.25, start_faded=False, show_logo=False
         )
 
     @override
@@ -153,7 +153,6 @@ class TransitionActivity(Activity[EmptyPlayer, EmptyTeam]):
 
         # Die almost immediately.
         _bascenev1.timer(0.1, self.end)
-
 
 class ScoreScreenActivity(Activity[EmptyPlayer, EmptyTeam]):
     """A standard score screen that fades in and shows stuff for a while.
@@ -181,6 +180,8 @@ class ScoreScreenActivity(Activity[EmptyPlayer, EmptyTeam]):
         self._default_show_tips = True
         self._custom_continue_message: babase.Lstr | None = None
         self._server_transitioning: bool | None = None
+        self._ending = False
+        self._background = None
 
     @override
     def on_player_join(self, player: EmptyPlayer) -> None:
@@ -199,12 +200,6 @@ class ScoreScreenActivity(Activity[EmptyPlayer, EmptyTeam]):
     def on_transition_in(self) -> None:
         from bascenev1lib.actor.tipstext import TipsText
         super().on_transition_in()
-        mesh = bs.getmesh('thePadLevel')
-        cmesh = bs.getcollisionmesh('thePadLevelCollide')
-        bottom_mesh = bs.getmesh('thePadLevelBottom')
-        color_texture = bs.gettexture('thePadLevelColor')
-        bgtex = bs.gettexture('menuBG')
-        bgmesh = bs.getmesh('thePadBG')
 
         gnode = self.globalsnode
         gnode.camera_mode = 'rotate'
@@ -213,43 +208,6 @@ class ScoreScreenActivity(Activity[EmptyPlayer, EmptyTeam]):
         gnode.ambient_color = (1.1, 1.1, 1.0)
         gnode.vignette_outer = (0.5, 0.5, 0.65)
         gnode.vignette_inner = (0.95, 0.95, 0.93)
-        
-        self.bottom = bs.NodeActor(
-            bs.newnode(
-                'terrain',
-                attrs={
-                    'mesh': bottom_mesh,
-                    'lighting': False,
-                    'reflection': 'soft',
-                    'reflection_scale': [0.45],
-                    'color_texture': color_texture,
-                },
-            )
-        )
-        self.terrain = bs.NodeActor(
-            bs.newnode(
-                'terrain',
-                attrs={
-                    'mesh': mesh,
-                    'collision_mesh': cmesh,
-                    'color_texture': color_texture,
-                    'reflection': 'soft',
-                    'reflection_scale': [0.3],
-                },
-            )
-        )
-        self.bgterrain = bs.NodeActor(
-            bs.newnode(
-                'terrain',
-                attrs={
-                    'mesh': bgmesh,
-                    'color': (0.92, 0.91, 0.9),
-                    'lighting': False,
-                    'background': True,
-                    'color_texture': bgtex,
-                },
-            )
-        )
         if self._default_show_tips:
             self._tips_text = TipsText()
         setmusic(self.default_music)
@@ -289,10 +247,49 @@ class ScoreScreenActivity(Activity[EmptyPlayer, EmptyTeam]):
             transition=Text.Transition.IN_BOTTOM_SLOW,
             transition_delay=self._min_view_time,
         ).autoretain()
-        self._background = Background(
-            fade_time=0.5, start_faded=True, show_logo=False
+        mesh = bs.getmesh('thePadLevel')
+        cmesh = bs.getcollisionmesh('thePadLevelCollide')
+        bottom_mesh = bs.getmesh('thePadLevelBottom')
+        color_texture = bs.gettexture('thePadLevelColor')
+        bgtex = bs.gettexture('menuBG')
+        bgmesh = bs.getmesh('thePadBG')
+        
+        self.bottom = bs.NodeActor(
+            bs.newnode(
+                'terrain',
+                attrs={
+                    'mesh': bottom_mesh,
+                    'lighting': False,
+                    'reflection': 'soft',
+                    'reflection_scale': [0.45],
+                    'color_texture': color_texture,
+                },
+            )
         )
-        self._background.__del__()
+        self.terrain = bs.NodeActor(
+            bs.newnode(
+                'terrain',
+                attrs={
+                    'mesh': mesh,
+                    'collision_mesh': cmesh,
+                    'color_texture': color_texture,
+                    'reflection': 'soft',
+                    'reflection_scale': [0.3],
+                },
+            )
+        )
+        self.bgterrain = bs.NodeActor(
+            bs.newnode(
+                'terrain',
+                attrs={
+                    'mesh': bgmesh,
+                    'color': (0.92, 0.91, 0.9),
+                    'lighting': False,
+                    'background': True,
+                    'color_texture': bgtex,
+                },
+            )
+        )
 
     def _player_press(self) -> None:
         # If this activity is a good 'end point', ask server-mode just once if
@@ -309,16 +306,22 @@ class ScoreScreenActivity(Activity[EmptyPlayer, EmptyTeam]):
             assert isinstance(self._server_transitioning, bool)
 
         # If server-mode is handling this, don't do anything ourself.
-        if self._server_transitioning is True:
+        if (
+            self._server_transitioning is True 
+            or self._ending
+        ):
             return
         from bascenev1lib.actor.background import Background
-        self._background2 = Background(
-            fade_time=0.4, start_faded=False, show_logo=True
+        interval = 0.3
+        self._background = Background(
+            fade_time=interval, start_faded=False, show_logo=False
         )
-        bs.timer(1.4, self._background2.__del__)
-
-        # Otherwise end the activity normally.
-        self.end()
+        self._ending = True
+        # end normally
+        def end():
+            self.background = None
+            self.end()
+        bs.timer(interval + 0.15, end)
 
     def _safe_assign(self, player: EmptyPlayer) -> None:
         # Just to be extra careful, don't assign if we're transitioning out.

@@ -25,6 +25,7 @@ class ClientLoggerName(Enum):
     BA = 'ba'
     ENV = 'ba.env'
     APP = 'ba.app'
+    BOMBSQUDA = 'bombsquda'
     ASSETS = 'ba.assets'
     AUDIO = 'ba.audio'
     CACHE = 'ba.cache'
@@ -86,6 +87,8 @@ class ClientLoggerName(Enum):
             return 'v2 (modern) account functionality'
         if self is cls.LOGIN_ADAPTER:
             return 'support for particular login types'
+        if self is cls.BOMBSQUDA:
+            return 'generic bombsquda stuff'
         assert_never(self)
 
 
@@ -103,5 +106,6 @@ def get_base_logger_control_config_client() -> LoggerControlConfig:
         levels={
             'root': logging.WARNING,
             ClientLoggerName.APP.value: logging.INFO,
+            ClientLoggerName.BOMBSQUDA.value: logging.INFO,
         }
     )

@@ -68,6 +68,9 @@ def print_live_object_warnings(
         print(f'ERROR: Actor found {when}: {actor}')
         
 def debprint(text):
-    """Prints ONLY if we have debug prints on."""
-    if babase.app.config.get("squda_debugprints", False):
-        print(text)
+    raise RuntimeError(
+        (
+            'bascenev1._debug.debprint is deprecated.'
+            ' Use babase._logging.squdalog.'
+        )
+    )

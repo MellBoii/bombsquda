@@ -121,100 +121,15 @@ class BombSqudaUtilsTab(DevConsoleTab):
 
     @override
     def refresh(self) -> None:
-        debug_prints = ba.app.config.get('squda_debugprints')
-        xoff = 140
-        self.text(
-            'This tab allows you to debug some info that might be useful.',
-            scale=0.8,
-            pos=(self.width * -0.2, 100),
-            h_align='left',
-            v_align='center',
-        )
-        self.button(
-            'Debug Prints: ON' if debug_prints else 'Debug Prints: OFF',
-            pos=(self.width * -0.1 + xoff, 15), 
-            size=(200, 40),
-            label_scale=0.8,
-            call=self.toggle_debug_prints,
-            style='bright' if debug_prints else 'normal',
-        )
-        self.button(
-            'Ping Server',
-            pos=(self.width * -0.3 + xoff, 15), 
-            size=(200, 40),
-            label_scale=0.8,
-            call=self.test_server,
-            style='normal',
-        )
+        xoffs = -305
         self.button(
             'Refresh Media',
-            pos=(self.width * -0.6 + xoff, 15), 
+            pos=(xoffs + 15, 15), 
             size=(200, 40),
             label_scale=0.6,
             call=self.refresh_media,
             style='normal',
         )
-
-    def toggle_debug_prints(self) -> None:
-        ba.app.config['squda_debugprints'] = not ba.app.config.get(
-            'squda_debugprints', False
-        )
-        ba.app.config.commit()
-        global debug_prints
-        debug_prints = ba.app.config['squda_debugprints']
-        self.request_refresh()
-
-    def test_server(self):
-        import bascenev1 as bs
-        import json
-        import bauiv1 as bui
-        import time
-        def get_unique_bs_id():
-            if ba.app.config.get('squda_accountid'):
-                return ba.app.config.get('squda_accountid')
-            def get_device_id():
-                if os.path.exists(ID_FILE):
-                    return json.load(open(ID_FILE))["id"]
-
-                new_id = str(uuid.uuid4())
-                json.dump({"id": new_id}, open(ID_FILE, "w"))
-                return new_id
-                
-            def clean_account_name(s: str) -> str:
-                return "".join(c for c in s if not (0xE000 <= ord(c) <= 0xF8FF))
-                
-            display = bui.app.plus.get_v1_account_display_string()
-            name = clean_account_name(display)
-            full_str = f"{name}:{get_device_id()}"
-            ba.app.config['squda_accountid'] = full_str
-            if os.path.exists(ID_FILE):
-                os.remove(ID_FILE)
-            return full_str
-        BS_ID = get_unique_bs_id()
-        start_time = time.time()
-        try:
-            data = {
-                "bs_id": BS_ID,
-                "account": bui.app.plus.get_v1_account_display_string(),
-                "device_id": BS_ID.split(":")[-1],
-                "bs_version": ba.app.env.engine_version,
-                "squda_version": mellres.version,
-                "squda_updatedate": mellres.update_date,
-            }
-            request = urllib.request.Request(
-                f"{mellres.server}/ping",
-                data=json.dumps(data).encode('utf-8'),
-                headers={
-                    "Content-Type": "application/json"
-                },
-            )
-            response = urllib.request.urlopen(request, timeout=2)
-            end_time = time.time()
-            latency = end_time - start_time
-            bs.screenmessage(f'Connection was a success!\nLatency = {str(latency)}')
-        except Exception as e:
-            bs.screenmessage(f'Connection failed. See console for more details.')
-            print(e)
             
     def refresh_media(self):
         import bauiv1 as bui

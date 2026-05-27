@@ -13,11 +13,10 @@ from bascenev1lib.actor.text import Text
 
 import bascenev1 as bs
 import baclassic as bsc
-import bascenev1lib.actor.bomb as bomb
 import math
 import os
 import weakref
-from bascenev1lib.actor.popuptext import PopupText, PopupWriterText
+from bascenev1lib.actor.popuptext import PopupText
 from bascenev1lib.actor import spazappearance
 import bascenev1lib.actor.spazappearance as spazappearance
 from bascenev1._gameactivity import GameActivity
@@ -30,6 +29,9 @@ from bascenev1lib.actor.hookfireball import UKHook, Fireball
 from bascenev1lib.actor.emerald import TouchedMsg
 from bascenev1lib.actor.image_looped import LoopingImageAnimation
 from bascenev1lib.gameutils import SharedObjects
+from babase._logging import squdalog
+from fromgoverhaul.mell_sfx import SoundFactory
+
 import fromgoverhaul.mell_resources as mell
 import babase as ba
 
@@ -269,8 +271,8 @@ class ClashMessage:
     Message for when two spazzes 
     punch eachother in a short period, effectively, a 'clash'.
     """
-    def __init__(self, spaz):
-        self.spaz = spaz
+    def __init__(self, position):
+        self.position = position
 
 class Spaz(bs.Actor):
     """
@@ -785,7 +787,7 @@ class Spaz(bs.Actor):
                         blast_type='tnt',
                         source_player= None
                     )
-                    bs.getsound('boo').play(position=self.node.position)
+                    SoundFactory.get().turbo_death.play(position=self.node.position)
                     ba.app.classic.ach.award_local_achievement('Turbo')
                     self.shatter()
 
@@ -1033,7 +1035,7 @@ class Spaz(bs.Actor):
             }
         )
         bs.timer(parrytime, self.parryshield.delete)
-        bs.getsound('attempt_parry').play(position=self.node.position)
+        SoundFactory.get().attempt_parry.play(position=self.node.position)
     
     def impulse(self, x: float | int = 0, y: float | int = 0):
         if not self.node:
@@ -1043,7 +1045,6 @@ class Spaz(bs.Actor):
         y = y
         if x == 0 and y == 0:
             raise ValueError("You must specify at least X or Y for impulse.")
-            return False
         # only use x and y impulse if specified
         if x != 0:
             self.node.handlemessage('impulse', 
@@ -1123,7 +1124,7 @@ class Spaz(bs.Actor):
                 self._shoot_hook()
                 return
             else:
-                bs.getsound('swip').play(position=self.hook.node.position)
+                SoundFactory.get().hook_despawn.play(position=self.hook.node.position)
                 self.hook.handlemessage(bs.DieMessage())
         if self.deton:
             if not self.node:
@@ -1140,8 +1141,14 @@ class Spaz(bs.Actor):
                     color=(1, 0.5, 0, 1.0),
                     scale=1.4,
                 ).autoretain()
-                bs.getsound('s3kb2').play(volume=vol, position=self.node.position)
-                bs.getsound('HWARNING').play(volume=vol, position=self.node.position)
+                SoundFactory.get().horn_warningS.play(
+                    volume=vol, 
+                    position=self.node.position
+                )
+                SoundFactory.get().horn_warningV.play(
+                    volume=vol, 
+                    position=self.node.position
+                )
             if self.times_detond == 26:
                 PopupText(
                     bs.Lstr(resource='easeDeton2'),
@@ -1149,8 +1156,14 @@ class Spaz(bs.Actor):
                     color=(1, 0.1, 0.1, 1.0),
                     scale=1.4,
                 ).autoretain()
-                bs.getsound('s3k50').play(volume=vol, position=self.node.position)
-                bs.getsound('HDANGER').play(volume=vol, position=self.node.position)
+                SoundFactory.get().horn_dangerS.play(
+                    volume=vol, 
+                    position=self.node.position
+                )
+                SoundFactory.get().horn_dangerV.play(
+                    volume=vol, 
+                    position=self.node.position
+                )
             if self.times_detond == 39:
                 PopupText(
                     bs.Lstr(resource='easeDeton3'),
@@ -1247,8 +1260,6 @@ class Spaz(bs.Actor):
         
     def firework_explode(self, 
         on_die_call: Callable = None,
-        snd1: str = 'wackyplatform', 
-        snd2: str = 'retired',
         force_scream: bool = False
     ) -> None:
         """
@@ -1268,7 +1279,7 @@ class Spaz(bs.Actor):
         """
         if not self.node:
             return
-        bs.getsound(snd1).play(position=self.node.position)
+        SoundFactory.get().firework_launch.play(position=self.node.position)
         yforce = 240
         savedY = self.node.position[1]
         def actualexplode():
@@ -1276,9 +1287,14 @@ class Spaz(bs.Actor):
                 self.explotimer = None
                 return
             self.explotimer = None
-            bomb.Bomb(position=self.node.position, bomb_type='tntfirework',).explode()
-            self.shatter(True, force_scream=True)
-            bs.getsound(snd2).play(position=self.node.position)
+            Bomb(
+                position=self.node.position, 
+                bomb_type='tntfirework'
+            ).explode()
+            self.shatter(extreme=True, force_scream=True)
+            SoundFactory.get().firework_explode.play(
+                position=self.node.position
+            )
             if on_die_call:
                 # FIXME: maybe just use exec or eval since
                 # then we can do non-callables
@@ -1326,11 +1342,19 @@ class Spaz(bs.Actor):
         baditems.extend(list( ENTITY_CONFIG.keys()) )
         gooditems = ['metal', 'punch']
         if self._roulette_current in baditems:
-            bs.getsound('baditem').play(position=self.node.position)
+            SoundFactory.get().bad_item.play(
+                position=self.node.position
+            )
+            
         elif self._roulette_current in gooditems:
-            bs.getsound('gooditem').play(position=self.node.position)
+            SoundFactory.get().good_item.play(
+                position=self.node.position
+            )
+            
         else:
-            bs.getsound('okitem').play(position=self.node.position)
+            SoundFactory.get().ok_item.play(
+                position=self.node.position
+            )
         self.node.billboard_opacity = 0
         self.handlemessage(bs.PowerupMessage(self._roulette_current))
         self._roulette_current = None
@@ -1430,7 +1454,9 @@ class Spaz(bs.Actor):
         if self.shotgun_shots == 0:
             self.shotgunned = False
             self.node.counter_text = ''
-        bs.getsound('shotgunshot').play(position=self.node.position)
+        SoundFactory.get().shotgun_shot.play(
+            position=self.node.position
+        )
     
     def _shoot_fireball(self):
         # Get pos and velocity
@@ -1493,7 +1519,7 @@ class Spaz(bs.Actor):
         if self.fireballs == 0:
             self.fireballed = False
             self.node.counter_text = ''
-        bs.getsound('smb1_fireball').play(position=pos)
+        SoundFactory.get().fireball_throw.play(position=pos)
     
     def _shoot_hook(self):
         pos = self.node.position
@@ -1518,13 +1544,12 @@ class Spaz(bs.Actor):
             pos[1] + spawn_height,
             pos[2] + forward[2] * spawn_distance
         )
-        hook = UKHook(
+        self.hook = UKHook(
             position=spawn_pos,
             owner=self,
         ).autoretain()
-        self.hook = hook
         force = 670
-        hook.node.handlemessage(
+        self.hook.node.handlemessage(
             'impulse',
             spawn_pos[0],
             spawn_pos[1],
@@ -1541,7 +1566,7 @@ class Spaz(bs.Actor):
         # Punch
         self.node.punch_pressed = True
         self.node.punch_pressed = False
-        bs.getsound('hook_throw').play(position=self.node.position)
+        SoundFactory.get().hook_throw.play(position=self.node.position)
         
     def on_bomb_press(self) -> None:
         """
@@ -1708,7 +1733,7 @@ class Spaz(bs.Actor):
             ba.app.classic.ach.award_local_achievement('Multidance')
             self.say(melblow=False, shouldcelb=True)
             
-        bs.getsound('drumRollShort').play(position=self.node.position)
+        SoundFactory.get().wiggle_start.play(position=self.node.position)
         if isinstance(self.getactivity(), GameActivity):
             self.getactivity().dancing_players.append(self)
         
@@ -1916,7 +1941,7 @@ class Spaz(bs.Actor):
             try:
                 self.getactivity().metal_players.remove(self)
             except Exception as e: 
-                bs.debprint(f"Couldn't remove {self} remove from metal list: {e}")
+                squdalog.debug(f"Couldn't remove {self} remove from metal list: {e}")
                 pass
                 
     def remove_from_dancin(self):
@@ -1924,7 +1949,7 @@ class Spaz(bs.Actor):
             try:
                 self.getactivity().dancing_players.remove(self)
             except Exception as e: 
-                bs.debprint(f"Couldn't remove {self} from wiggle dance list: {e}")
+                squdalog.debug(f"Couldn't remove {self} from wiggle dance list: {e}")
                 pass
             
     def _deactivate_metalcap(self):
@@ -1965,12 +1990,12 @@ class Spaz(bs.Actor):
                     0.0: 0,
                     0.5: 1,
                 })
-                bs.getsound('theFinaleStart').play(volume=vol)
+                SoundFactory.get().prowler.play(volume=vol)
             def swoon2():
                 self.swoon.delete()
                 self.bg.delete()
                 self.hitpoints += 1400
-                bomb.Bomb(position=self.node.position, bomb_type='tnt',).explode()
+                Bomb(position=self.node.position, bomb_type='tnt').explode()
                 bs.getsound('explosion01').play(volume=2.0, position=self.node.position)
                 self.impulse(x=-1345, y=800)
             bs.basetimer(2.1, swoon2)
@@ -2001,23 +2026,9 @@ class Spaz(bs.Actor):
         vol = 3
         if char_name:
             appearances = bs.app.classic.spaz_appearances
-            if char_name in appearances: # check if their names there
-                appearance = appearances[char_name]
-                if hasattr(appearance, 'gloat_sounds') and appearance.gloat_sounds:
-                     # play the character's gloat voiceline(s)
-                    sound = random.choice(appearance.gloat_sounds)
-                    bs.getsound(sound).play(volume=vol, position=self.node.position)
-                else:
-                    if hasattr(appearance, 'victory_sounds') and appearance.victory_sounds:
-                        # if we don't have a gloat voiceline, we'll use their victory ones instead
-                        sound = random.choice(appearance.victory_sounds)
-                        bs.getsound(sound).play(volume=vol, position=self.node.position)
-                    else:
-                        # this character doesn't have a victory voiceline too. we'll play the default one.
-                        bs.getsound('win').play(volume=vol, position=self.node.position)
-            else: # didn't find this character's name in appearances
-                bs.getsound('error').play(volume=vol, position=self.node.position) 
-                raise ValueError(f"Character name '{char_name}' not found in appearances.")
+            random.choice(self.media['gloat_sounds']).play(
+                position=self.node.position
+            )
     
     def _deactivate_star(self):
         self._has_star = False
@@ -2049,7 +2060,9 @@ class Spaz(bs.Actor):
                 if not ba.app.config.get("squda_disablemmusic"):
                     self.getactivity().metal_players.append(self)
         # play a sound
-        self._metalcap_sound = bs.getsound('metalcap').play(position=self.node.position)
+        SoundFactory.get().equip_metalcap.play(
+            position=self.node.position
+        )
 
         # make us metal...
         self.node.color_texture = bs.gettexture('metal')
@@ -2081,7 +2094,6 @@ class Spaz(bs.Actor):
             color=(1, 0, 1, 0.9),
             scale=1.0,
         ).autoretain()
-        bs.getsound('orchestraHit').play(position=self.node.position)
         return      
     
     def super_spark(self, chance = 0.6, amount1 = 2, amount2 = 5):
@@ -2130,7 +2142,7 @@ class Spaz(bs.Actor):
         if not self.node:
             return
         self.impulse(y=350)
-        bs.getsound('pretrans').play(position=self.node.position)
+        SoundFactory.get().super_pre.play(position=self.node.position)
         bs.timer(0.4, lambda: self._super(shouldntsetmusic=shouldntsetmusic))
         bs.timer(0.4, lambda: self.super_spark(1.0, 15, 25))
 
@@ -2138,7 +2150,7 @@ class Spaz(bs.Actor):
         if self.node:
             activity = self.getactivity()
             gnode = activity.globalsnode
-            bs.getsound('supertrans').play(position=self.node.position)
+            SoundFactory.get().super_trans.play(position=self.node.position)
             self.issuper = True
             # flashing effect function
             if not self.node.exists():
@@ -2377,7 +2389,9 @@ class Spaz(bs.Actor):
                 self.firework_explode()
                 self._potato_holder_text.delete()
                 self.spongebob_timer = None
-                bs.getsound('spongebobdead').play(position=self.node.position)
+                SoundFactory.get().spongebob_death.play(
+                    position=self.node.position
+                )
                 self._potato_timer_images = []
                 endtime = 0.5
                 bs.animate(
@@ -2413,25 +2427,31 @@ class Spaz(bs.Actor):
                     self._potato_player_img.node.delete()
                 bs.timer(endtime, delete)
             else:
-                bs.getsound('spongebob').play(position=self.node.position)
+                SoundFactory.get().spongebob_tick.play(
+                    position=self.node.position
+                )
         tick()
         self.spongebob_timer = bs.Timer(self._potato_speed, tick, repeat=True)
         
     def _activate_bloxy(self):
-        bs.getsound('cola').play(position=self.node.position)
+        SoundFactory.get().cola_drink.play(
+            position=self.node.position
+        )
         def heal():
             if not self.node or not self.is_alive():
                 self.healTimer = None
                 return
             self.hitpoints += 30
             self.updatemeter()
-            bs.getsound('heal').play(position=self.node.position)
+            SoundFactory.get().heal.play(
+                position=self.node.position
+            )
             if self.hitpoints >= self.hitpoints_max - 450:
                 self.hitpoints += 100
                 self.updatemeter()
-                bs.getsound('heal').play(volume=0.5, position=self.node.position)
                 PowerupBoxFactory.get().powerdown_sound.play(
                     position=self.node.position,
+                    volume=1.4,
                 )
                 self.healTimer = None
         self.healTimer = bs.Timer(0.5, heal, repeat=True)
@@ -2461,7 +2481,7 @@ class Spaz(bs.Actor):
         if autodie == True:
             self.die(how=bs.DeathType.FALL)
         
-    def sugarcoat_overlay(self, sound, image):
+    def sugarcoat_overlay(self, sound: str, image: str):
         """
         overlay based on the 
         i'm not gonna sugarcoat it meme
@@ -2642,25 +2662,36 @@ class Spaz(bs.Actor):
             self.sparkies = None
 
     def is_bomb_impactdmg(self, max_dist=1.0):
+        # our pos
         ox, oy, oz = self.node.position
-        best = False
+        close = False
+        owner = None
         best_dist_sq = max_dist * max_dist
         for node in bs.getnodes():
+            # if not node or node is us
             if not node or node is self.node:
                 continue
-            if node.getnodetype() != 'bomb':
+            # node not bomb
+            if node.getnodetype() not in ['bomb']:
                 continue
+            # pos not 3-num tuple
             pos = getattr(node, 'position', None)
             if not pos or len(pos) != 3:
                 continue
+            # get distance
             dx = pos[0] - ox
             dy = pos[1] - oy
             dz = pos[2] - oz
             dist_sq = dx*dx + dy*dy + dz*dz
+            # if close enough, confirmed
             if dist_sq < best_dist_sq:
                 best_dist_sq = dist_sq
-                best = True
-        return best
+                close = True
+                # o and owner too
+                owner = node.getdelegate(Bomb)
+                if owner:
+                    owner = owner.owner
+        return close, owner
         
     def mpa(self, heal: bool = True, healpoints: int = 250):
         # Short for Manual Parry Activator.
@@ -2699,7 +2730,9 @@ class Spaz(bs.Actor):
                 self.shield_hitpoints += healpoints / 1.5
             self.updatemeter()
         # ---------------- healpoints -------------------
-        bs.getsound('parried').play(position=self.node.position)
+        SoundFactory.get().parry_success.play(
+            position=self.node.position
+        )
         bs.emitfx(
             position=self.node.position,
             velocity=self.node.velocity,
@@ -3087,7 +3120,10 @@ class Spaz(bs.Actor):
         elif isinstance(msg, bs.ImpactDamageMessage):
             # Eww; seems we have to do this in a timer or it wont work right.
             # (since we're getting called from within update() perhaps?..)
-            if self.is_bomb_impactdmg():
+            bomb, owner = self.is_bomb_impactdmg()
+            if bomb:
+                # give kill credit to bomb owner's player
+                self.last_player_attacked_by = getattr(owner, 'source_player', None)
                 bs.timer(0.001, bs.WeakCall(self._hit_self, msg.intensity * 18.0, True))
             else:
                 bs.timer(0.001, bs.WeakCall(self._hit_self, msg.intensity, False))
@@ -3100,7 +3136,7 @@ class Spaz(bs.Actor):
             # entity handling
             if msg.poweruptype in list( ENTITY_CONFIG.keys() ):
                 name = msg.poweruptype
-                config = ENTITY_CONFIG[name]
+                config = ENTITY_CONFIG.get(name)
                 self.scary_text(
                     config['appearsLstr'].evaluate(),
                     color=(1, 0.2, 0.2),
@@ -3460,66 +3496,31 @@ class Spaz(bs.Actor):
                     # Get the other spaz's node.
                     otherspaz = msg.srcnode.getdelegate(Spaz)
                     # If the otherspaz is parrying, do something
-                    # to prevent a infinite recursion.
-                    if otherspaz.parrying == True:
+                    # to prevent a infinite recursion
+                    if (
+                        otherspaz and
+                        otherspaz.parrying == True
+                    ):
                         xforce = -200
                         yforce = 200
+                        
                         v = (-self.node.velocity[0], -self.node.velocity[1], -self.node.velocity[2])
-                        v2 = self.node.velocity   
+                        v2 = self.node.velocity
                         hurtiness = 3.8
                         flash_color = (1.0, 0.8, 0.4)
-                        bs.getsound('bellHigh').play(position=self.node.position)
-                        bs.getsound('OUUHH').play(position=self.node.position)
+                        SoundFactory.get().clash.play(
+                            position=self.node.position
+                        )
                         self.impulse(xforce, yforce)
-                        bs.timer(0.01, lambda: self.impulse(xforce))
-                        # FIXME: for some reason impulse doesn't 
-                        # work on other node?
-                        msg.srcnode.handlemessage('impulse', 
-                            msg.srcnode.position[0], 
-                            msg.srcnode.position[1], 
-                            msg.srcnode.position[2],
-                            0, 25, 0,
-                            yforce, 0.05, 0, 0,
-                            0, 20*400, 0
-                        )
-                        msg.srcnode.handlemessage('impulse', 
-                            msg.srcnode.position[0], 
-                            msg.srcnode.position[1], 
-                            msg.srcnode.position[2],
-                            0, 25, 0,
-                            xforce, 0.05, 0, 0,
-                            v2[0]*15*2, 0, v2[2]*15*2
-                        )
-                        bs.timer(0.01, lambda: msg.srcnode.handlemessage('impulse', 
-                                msg.srcnode.position[0], 
-                                msg.srcnode.position[1], 
-                                msg.srcnode.position[2],
-                                0, 25, 0,
-                                xforce, 0.05, 0, 0,
-                                v2[0]*15*2, 0, v2[2]*15*2
-                            )
-                        )
-                        # Flash light to confirm we parried.
-                        light = bs.newnode(
-                            'light',
-                            attrs={
-                                'position': self.node.position,
-                                'radius': 0.12 + hurtiness * 0.31,
-                                'intensity': 1.4 * (1.0 + 1.0 * hurtiness),
-                                'height_attenuated': False,
-                                'color': flash_color,
-                            },
-                        )
-                        bs.timer(0.06, light.delete)
-                        flash = bs.newnode(
-                            'flash',
-                            attrs={
-                                'position': self.node.position,
-                                'size': 0.37 + 0.37 * hurtiness,
-                                'color': flash_color,
-                            },
-                        )
-                        bs.timer(0.06, flash.delete)
+                        bs.timer(0.01, bs.Call(
+                            self.impulse, xforce
+                        ))
+                        otherspaz.impulse(-xforce, yforce)
+                        bs.timer(0.01, bs.Call(
+                            otherspaz.impulse, -xforce, yforce
+                        ))
+                        self.mpa(heal=False)
+                        otherspaz.mpa(heal=False)
                         return
                     # Values for the force.
                     xforce = 30
@@ -3982,6 +3983,7 @@ class Spaz(bs.Actor):
                         self.hitpoints += damage
                         self.swoon()
                         return
+                    # FIXME: fuck you
                     if damage >= 1000 and msg.hit_type == 'punch':
                         self.sugarcoat_overlay(sound='bellMed', image='sugarcoatpunch')
                     elif damage >= 1000 and msg.hit_type == 'explosion':
@@ -4073,7 +4075,7 @@ class Spaz(bs.Actor):
                         self._deactivate_star()
                     self.node.dead = True
                     bs.timer(4.0, self.node.delete)
-                    self.drop_emeralds()
+                    bs.timer(0.1, self.drop_emeralds)
                     self.explode_deton_bombs()
                     self.stop_voicelines()
         elif isinstance(msg, bs.OutOfBoundsMessage):
@@ -4126,10 +4128,11 @@ class Spaz(bs.Actor):
                     self.node.punch_momentum_angular * self._punch_power_scale
                 )
                 punch_power = self.node.punch_power * self._punch_power_scale
-                recently_punched = bs.time() - self.last_punched_time < 0.5
+                recently_punched = bs.time() - self.last_punched_time < 0.3
+                ppos = self.node.punch_position
                 if recently_punched and isspaz:
-                    actor.handlemessage(ClashMessage(self))
-                    self.impulse(x=-540)
+                    actor.handlemessage(ClashMessage(ppos))
+                    self.impulse(x=-600)
 
                 # Ok here's the deal:  we pass along our base velocity for use
                 # in the impulse damage calculations since that is a more
@@ -4161,7 +4164,6 @@ class Spaz(bs.Actor):
                         if hasattr(self, "_potato_player_img") and self._potato_player_img.node.exists():
                             self._potato_player_img.node.delete()
 
-                ppos = self.node.punch_position
                 punchdir = self.node.punch_velocity
                 vel = self.node.punch_momentum_linear
 
@@ -4224,20 +4226,35 @@ class Spaz(bs.Actor):
         elif isinstance(msg, ClashMessage):
             # Knock us backwards
             self.impulse(x=-210)
-            pos = self.node.position
-            vel = self.node.velocity
-            bs.getsound('bellHigh').play(position=pos, volume=1.5)
+            pos = msg.position
+            vel = msg.position
+            SoundFactory.get().clash.play(position=pos)
+            
             # Emit fake explosion for visual effect...
             explosion = bs.newnode(
                 'explosion',
                 attrs={
                     'position': pos,
                     'velocity': vel,
-                    'radius': 1.7,
+                    'radius': 1.5,
                     'big': False,
                 },
             )
             bs.timer(1.0, explosion.delete)
+            light = bs.newnode(
+                'light',
+                attrs={
+                    'position': self.node.position,
+                    'radius': 0.5,
+                    'height_attenuated': False,
+                    'color': (1, 1, 1),
+                },
+            )
+            bs.animate(
+                light, 'intensity', {0.0: 0, 0.04: 3, 0.08: 1, 0.3: 0}
+            )
+            bs.timer(0.3, light.delete)
+            
             bs.emitfx(
                 position=pos,
                 velocity=vel,
@@ -4314,29 +4331,43 @@ class Spaz(bs.Actor):
             return super().handlemessage(msg)
         return None
 
-    def wheelchair_warning(self):
-        PopupText(
-            '!!!',
+    def dodge_warning(self):
+        text = PopupText(
+            '!',
             position=self.node.position,
             color=(1.0, 0.1, 0.1),
-            scale=1.8,
-            lifespan=0.5,
-        ).autoretain()
-        bs.getsound('BTwheelchair').play(volume=4, position=self.node.position)
+            scale=2.5,
+            lifespan=0.8,
+        )
+        text.autoretain()
+        # note to self; use this for flashing
+        flash_color = (2, 0, 0)
+        color = (1, 1, 0)
+        steps = 8
+        step_time = 0.06
+        anim = {
+            i * step_time: (flash_color if i % 2 == 0 else color)
+            for i in range(steps)
+        }
+        bs.animate_array(text.node, 'color', 3, anim)
+        SoundFactory.get().blocktales_dodge.play(volume=4, position=self.node.position)
 
     def _mel_mayhem(self):
         if random.random() >= 0.25:
             return
-        bs.getsound('baditem').play(volume=0.7, position=self.node.position)
+        SoundFactory.get().bad_item.play(
+            volume=0.7,
+            position=self.node.position
+        )
         oldcanparry = self.canparry
         self.canparry = True
-        bs.timer(1.4, self.wheelchair_warning)
+        bs.timer(1.4, self.dodge_warning)
         bs.timer(1.6, lambda: self.smashkill(sound='thunder', autodie=False))
 
         def check():
             if self.is_alive():
                 self.say(bs.Lstr(resource='melDiesnt'), melblow=False)
-                bs.getsound('BTrating5').play(volume=2, position=self.node.position)
+                SoundFactory.get().blocktales_rating5.play(volume=2, position=self.node.position)
                 if oldcanparry != True:
                     self.canparry = False
             else:
@@ -4553,9 +4584,7 @@ class Spaz(bs.Actor):
                 color=(1, 0.2, 0.1, 1.0),
                 scale=1.4,
             ).autoretain()
-            # Play sounds.
-            bs.getsound('bellHigh').play(position=self.node.position)
-            bs.getsound('orchestraHit2').play(position=self.node.position)
+            self.mpa()
             self._cursed = False
             self.node.curse_death_time = 0
             # Still explode, but won't hurt us due to parrying.
@@ -4568,7 +4597,6 @@ class Spaz(bs.Actor):
                     source_player if source_player else self.source_player
                 ),
             ).autoretain()
-            # Don't explode.
             return
         self.shatter(extreme=True)
         self.die()
@@ -4599,7 +4627,7 @@ class Spaz(bs.Actor):
         ):
             return      
         pos = self.node.position
-        bs.getsound('ring_spill').play(position=self.node.position)
+        SoundFactory.get().emeralds_drop.play(position=self.node.position)
         for emerald in list(self.emeralds):
             # random spawn offset
             offset_x = random.uniform(-1.4, 1.4)
@@ -4648,8 +4676,8 @@ class Spaz(bs.Actor):
                 dir_z,
             )
         # clear inventory
-        bs.timer(0.3, self.emeralds.clear)
-        bs.timer(0.31, self.update_emerald_indicator)
+        bs.timer(0.1, self.emeralds.clear)
+        bs.timer(0.11, self.update_emerald_indicator)
 
     def explode_head(self, extra_sound: str = 'trublank'):
         """'Explode' the Spaz's head in a gruesome way."""
@@ -4667,6 +4695,21 @@ class Spaz(bs.Actor):
         self.impulse(y=150)
         self.die()
         # don't make particles if the player disabled them
+        # Momentary flash of light.
+        light = bs.newnode(
+            'light',
+            attrs={
+                'position': self.node.position,
+                'radius': 0.5,
+                'height_attenuated': False,
+                'color': (1, 0.2, 0.2),
+            },
+        )
+        bs.animate(
+            light, 'intensity', {0.0: 3.0, 0.13: 0.5, 0.08: 0.2, 0.3: 0}
+        )
+        bs.timer(0.3, light.delete)
+        
         if not ba.app.config.get('squda_noparticles'):
             for _ in range(65):
                 offset_x = random.uniform(-0.3, 0.3)
@@ -4768,7 +4811,7 @@ class Spaz(bs.Actor):
                 particle_type = BloodParticle if bloody else ConfettiParticle 
                 pos = self.node.position    
                 if not bloody:
-                    bs.getsound('party_blower').play(position=pos)
+                    SoundFactory.get().party_blower.play(position=pos)
                 for _ in range(110):
                     offset_x = random.uniform(-0.3, 0.3)
                     offset_z = random.uniform(-0.3, 0.3)
@@ -4795,16 +4838,30 @@ class Spaz(bs.Actor):
                 bs.getsound('block').play(volume=5.0, position=self.node.position)
                 ba.app.classic.ach.award_local_achievement('Hard Head')
                 return False
-            PopupText(
+            text = PopupText(
                 bs.Lstr(resource='bombCritted'),
                 position=self.node.position,
                 color=(0, 1, 0, 0.9),
                 scale=1.3,
-            ).autoretain()
-            bs.getsound('bananasnipe').play(position=self.node.position)
+                lifespan=1.5,
+            )
+            # note to self; use this for flashing
+            flash_color = (1, 1, 1)
+            color = (0, 1, 0)
+            steps = 16
+            step_time = 0.06
+            anim = {
+                i * step_time: (flash_color if i % 2 == 0 else color)
+                for i in range(steps)
+            }
+            bs.animate_array(text.node, 'color', 3, anim)
+            text.autoretain()
             if self.parrying or self.node.invincible:
                 self.mpa()
                 return False
+            SoundFactory.get().crit_bloody.play(
+                position=self.node.position
+            )
             self.explode_head()
             mell.add_spaz(120, 'tix', self.node.position, 'popup')
         pos = self.node.position
@@ -4841,17 +4898,17 @@ class Spaz(bs.Actor):
             self.sugarcoat_overlay(sound='block', image='white')
             self.shatter()
         elif intensity >= 5.0:
-            if self.char_style == 'metallic':
+            if self.char_style in ['metallic', 'robot']:
                 sounds = SpazFactory.get().impact_sounds_harder_metal
             else:
                 sounds = SpazFactory.get().impact_sounds_harder
         elif intensity >= 3.0:
-            if self.char_style == 'metallic':
+            if self.char_style in ['metallic', 'robot']:
                 sounds = SpazFactory.get().impact_sounds_hard_metal
             else:
                 sounds = SpazFactory.get().impact_sounds_hard
         else:
-            if self.char_style == 'metallic':
+            if self.char_style in ['metallic', 'robot']:
                 sounds = SpazFactory.get().impact_sounds_medium_metal
             else:
                 sounds = SpazFactory.get().impact_sounds_medium
@@ -5101,7 +5158,7 @@ class Spaz(bs.Actor):
         bs.emitfx(
             position=self.node.position,
             velocity=self.node.velocity,
-            count=int(2.0 + random.random() * 4),
+            count=int(2.0 + random.random() * 8),
             emit_type='tendrils',
             tendril_type='smoke',
         )

@@ -619,7 +619,7 @@ def shake_node(
 def show_notification(
     top_text: str = 'Notification',
     bottom_text: str = 'Bottom Text',
-    icon: str | None = None,
+    icon: str | dict | None = None,
     mini_icon: str | None = None,
     important: bool = True,
 ):

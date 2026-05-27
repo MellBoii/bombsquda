@@ -92,7 +92,7 @@ class Sorrow(bs.Actor):
         bs.getsound('swindy').play(1.5)
         self.shake_timer = bs.Timer(0.040, lambda: bs.camerashake(intensity=0.2), repeat=True)
         bs.timer(0.8, self._resolve)
-        bs.timer(0.7, self.actor().wheelchair_warning)
+        bs.timer(0.7, self.actor().dodge_warning)
     
     def _spawn_particle(self):
         # stop if we should

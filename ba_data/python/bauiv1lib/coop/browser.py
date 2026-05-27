@@ -45,19 +45,7 @@ class CoopBrowserWindow(bui.MainWindow):
         classic = app.classic
         assert classic is not None
         cfg = app.config
-
-        # Quick note to players that tourneys won't work in ballistica
-        # core builds. (need to split the word so it won't get subbed
-        # out)
-        if 'ballistica' + 'kit' == bui.appname() and bui.do_once():
-            bui.apptimer(
-                1.0,
-                lambda: bui.screenmessage(
-                    bui.Lstr(resource='noTournamentsInTestBuildText'),
-                    color=(1, 1, 0),
-                ),
-            )
-
+        
         # Try to recreate the same number of buttons we had last time so our
         # re-selection code works.
         self._tournament_button_count = app.config.get('Tournament Rows', 0)
@@ -90,20 +78,6 @@ class CoopBrowserWindow(bui.MainWindow):
         self._campaign_difficulty = plus.get_v1_account_misc_val(
             'campaignDifficulty', 'easy'
         )
-
-        if (
-            self._campaign_difficulty == 'hard'
-            and HARD_REQUIRES_PRO
-            and not classic.accounts.have_pro_options()
-        ):
-            plus.add_v1_account_transaction(
-                {
-                    'type': 'SET_MISC_VAL',
-                    'name': 'campaignDifficulty',
-                    'value': 'easy',
-                }
-            )
-            self._campaign_difficulty = 'easy'
 
         # Do some fancy math to fill all available screen area up to the
         # size of our backing container. This lets us fit to the exact
@@ -198,7 +172,9 @@ class CoopBrowserWindow(bui.MainWindow):
         self._selected_row = cfg.get('Selected Coop Row', None)
 
         self._subcontainerwidth = 800.0
-        self._subcontainerheight = 1400.0
+        self._subcontainerheight = 300.0
+        
+        self._subcontainer = None
 
         self._scrollwidget = bui.scrollwidget(
             parent=self._root_widget,
@@ -249,8 +225,6 @@ class CoopBrowserWindow(bui.MainWindow):
                 # color=(1, 0, 0),
             )
             bui.widget(edit=bimg, depth_range=(0.9, 1.0))
-
-        self._subcontainer: bui.Widget | None = None
 
         # Take note of our account state; we'll refresh later if this changes.
         self._account_state_num = plus.get_v1_account_state_num()
@@ -559,10 +533,8 @@ class CoopBrowserWindow(bui.MainWindow):
             self._subcontainer.delete()
 
         tourney_row_height = 200
-        self._subcontainerheight = (
-            500 + self._tournament_button_count * tourney_row_height
-        )
-
+        
+                
         self._subcontainer = bui.containerwidget(
             parent=self._scrollwidget,
             size=(self._subcontainerwidth, self._subcontainerheight),
@@ -571,17 +543,17 @@ class CoopBrowserWindow(bui.MainWindow):
             selection_loops_to_parent=True,
         )
 
+        w_parent = self._subcontainer
+
         bui.containerwidget(
             edit=self._root_widget, selected_child=self._scrollwidget
         )
-
-        w_parent = self._subcontainer
         h_base = 6
 
         v = self._subcontainerheight - 90
 
         self._campaign_percent_text = bui.textwidget(
-            parent=w_parent,
+            parent=self._subcontainer,
             position=(h_base + 27, v + 50),
             size=(0, 0),
             text='',
@@ -770,116 +742,6 @@ class CoopBrowserWindow(bui.MainWindow):
 
         if bui.app.classic.launch_coop_game(game, args=args):
             bui.containerwidget(edit=self._root_widget, transition='out_left')
-
-    def run_tournament(self, tournament_button: TournamentButton) -> None:
-        """Run the provided tournament game."""
-        # pylint: disable=too-many-return-statements
-
-        from bauiv1lib.purchase import PurchaseWindow
-        from bauiv1lib.account.signin import show_sign_in_prompt
-        from bauiv1lib.tournamententry import TournamentEntryWindow
-
-        plus = bui.app.plus
-        assert plus is not None
-
-        classic = bui.app.classic
-        assert classic is not None
-
-        if plus.get_v1_account_state() != 'signed_in':
-            show_sign_in_prompt()
-            return
-
-        if bui.workspaces_in_use():
-            bui.screenmessage(
-                bui.Lstr(resource='tournamentsDisabledWorkspaceText'),
-                color=(1, 0, 0),
-            )
-            bui.getsound('error').play()
-            return
-
-        if not self._tourney_data_up_to_date:
-            bui.screenmessage(
-                bui.Lstr(resource='tournamentCheckingStateText'),
-                color=(1, 1, 0),
-            )
-            bui.getsound('error').play()
-            return
-
-        if tournament_button.tournament_id is None:
-            bui.screenmessage(
-                bui.Lstr(resource='internal.unavailableNoConnectionText'),
-                color=(1, 0, 0),
-            )
-            bui.getsound('error').play()
-            return
-
-        if tournament_button.required_league is not None:
-            bui.screenmessage(
-                bui.Lstr(
-                    resource='league.tournamentLeagueText',
-                    subs=[
-                        (
-                            '${NAME}',
-                            bui.Lstr(
-                                translate=(
-                                    'leagueNames',
-                                    tournament_button.required_league,
-                                )
-                            ),
-                        )
-                    ],
-                ),
-                color=(1, 0, 0),
-            )
-            bui.getsound('error').play()
-            return
-
-        if tournament_button.game is not None and not classic.is_game_unlocked(
-            tournament_button.game
-        ):
-            required_purchases = classic.required_purchases_for_game(
-                tournament_button.game
-            )
-            # We gotta be missing *something* if its locked.
-            assert required_purchases
-
-            for purchase in required_purchases:
-                if not plus.get_v1_account_product_purchased(purchase):
-                    if plus.get_v1_account_state() != 'signed_in':
-                        show_sign_in_prompt()
-                    else:
-                        PurchaseWindow(
-                            items=[purchase],
-                            origin_widget=tournament_button.button,
-                        )
-                    return
-
-            # assert required_purchases
-            # if plus.get_v1_account_state() != 'signed_in':
-            #     show_sign_in_prompt()
-            # else:
-            #     # Hmm; just show the first requirement. They can come
-            #     # back to see more after they purchase the first.
-            #     PurchaseWindow(
-            #         items=[required_purchases[0]],
-            #         origin_widget=tournament_button.button,
-            #     )
-            # return
-
-        if tournament_button.time_remaining <= 0:
-            bui.screenmessage(
-                bui.Lstr(resource='tournamentEndedText'), color=(1, 0, 0)
-            )
-            bui.getsound('error').play()
-            return
-
-        self._save_state()
-
-        assert tournament_button.tournament_id is not None
-        TournamentEntryWindow(
-            tournament_id=tournament_button.tournament_id,
-            position=tournament_button.button.get_screen_space_center(),
-        )
 
     def _save_state(self) -> None:
         cfg = bui.app.config
