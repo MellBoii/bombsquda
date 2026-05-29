@@ -12,6 +12,7 @@ import bascenev1lib as bslib
 import babase as ba
 
 from bascenev1lib.actor.spaz import Spaz
+from bascenev1lib.actor.earthboundmeter import EarthboundMeter
 from bascenev1lib.actor import spazappearance
 from bascenev1lib.actor.popuptext import PopupText
 
@@ -200,151 +201,19 @@ class PlayerSpaz(Spaz):
     
     @override
     def updatemeter(self):
-        # FIXME: activity should manage this stuff
-        if self.hardmode and self.hitpoints >= self.hitpoints_max:
-            self.hitpoints = self.hitpoints_max
-        if not self.earthmeter:
-            return
-
-        # Update HP number
-        if self.earthhptext and self.earthhptext.exists():
-            self.earthhptext.text = str(int(self.hitpoints / 10))
-        
-        # Update SP number
-        if self.earthsptext and self.earthsptext.exists():
-            self.earthsptext.text = str(int(self.shield_hitpoints / 10))
-
-        # Determine visual state
-        low_hp = self.hitpoints <= 210
-        is_super = self.issuper
-
-        # Pick texture
-        if low_hp:
-            texture = 'earthmetermortal'
-            color = (1.0, 0.3, 0.3)
-        elif is_super:
-            texture = 'earthmetersuper'
-            color = (1.0, 0.9, 0.4)
-        else:
-            texture = 'earthmeter'
-            color = (1.0, 1.0, 1.0)
-
-        # Apply texture
-        if self.earthmeter.exists():
-            self.earthmeter.texture = bs.gettexture(texture)
-
-        # Apply colors
-        for node in (self.earthhptext, self.earthmetertext, self.earthsptext):
-            if node and node.exists():
-                node.color = color
-
-    def set_meter_position(self):
-        if not self.source_player:
-            self.meterx = self.metery = -9999
-            return
-
-        players = bs.getplayers()
-
-        if self.source_player not in players:
-            self.meterx = self.metery = -9999
-            return
-
-        index = players.index(self.source_player)
-
-        normal_x = -670
-        spacing = 150
-        default_y = -270
-
-        self.meterx = normal_x + spacing * (index + 1)
-        self.metery = default_y
+        self.eb_meter.refresh()
     
     def create_earth_meter(self):
-        self.set_meter_position()
-
-        def make_image(tex, scale):
-            return bs.newnode('image', attrs={
-                'texture': tex,
-                'absolute_scale': True,
-                'position': (self.meterx, self.metery),
-                'attach': 'center',
-                'opacity': 1.0,
-                'scale': scale,
-                'color': (1, 1, 1),
-            })
-        self.earthchar = make_image(self.media['earthportrait'], (100, 100))
-        self.earthmeter = make_image(bs.gettexture('earthmeter'), (150, 150))
-
-        self.earthmetertext = bs.newnode('text', attrs={
-            'text': self.node.name,
-            'h_align': 'center',
-            'position': (self.meterx, self.metery + 25),
-            'scale': 0.7,
-            'color': (1, 1, 1),
-            'shadow': 0.7,
-            'flatness': 0.6,
-        })
-
-        self.earthhptext = bs.newnode('text', attrs={
-            'text': str(int(self.hitpoints / 10)),
-            'h_align': 'center',
-            'position': (self.meterx + 18, self.metery - 16),
-            'scale': 0.9,
-            'color': (1, 1, 1),
-            'shadow': 0.7,
-            'flatness': 0.6,
-        })
-        self.earthsptext = bs.newnode('text', attrs={
-            'text': '0',
-            'h_align': 'center',
-            'position': (self.meterx + 18, self.metery - 53),
-            'scale': 0.9,
-            'color': (1, 1, 1),
-            'shadow': 0.7,
-            'flatness': 0.6,
-        })
-    
+        self.eb_meter = EarthboundMeter(
+            spaz=self,
+            portrait_texture=self.media['earthportrait'],
+            lose_texture=self.media['EBlose'],
+            scale=1.0,
+        )
     
     def refresh_earth_meter(self):
-        self.set_meter_position()
+        self.eb_meter.refresh_position()
 
-        nodes = [
-            self.earthchar,
-            self.earthmeter,
-            self.earthmetertext,
-            self.earthsptext,
-            self.earthhptext
-        ]
-        for node in nodes:
-            if node and node.exists():
-                node.position = (self.meterx, self.metery)
-        if self.earthmetertext and self.earthmetertext.exists():
-            self.earthmetertext.position = (self.meterx, self.metery + 25)
-
-        if self.earthhptext and self.earthhptext.exists():
-            self.earthhptext.position = (self.meterx + 18, self.metery - 16)
-        
-        if self.earthsptext and self.earthsptext.exists():
-            self.earthsptext.position = (self.meterx + 18, self.metery - 53)
-            
-    def play_meter_death_animation(self):
-        from bascenev1lib.actor.nodejumper import ImageJumper
-        if self.alreadydidanimation:
-            return
-
-        self.alreadydidanimation = True
-
-        for node in (
-            self.earthchar, 
-            self.earthmeter, 
-            self.earthmetertext, 
-            self.earthsptext
-        ):
-            if node and node.exists():
-                ImageJumper.jump_image(node, 220, 230, -1500)
-        if self.earthchar and self.earthchar.exists():
-            self.earthchar.texture = self.media['EBlose']
-        if self.earthhptext and self.earthhptext.exists():
-            self.earthhptext.delete()
     def disconnect_controls_from_player(self) -> None:
         """
         Completely sever any previously connected

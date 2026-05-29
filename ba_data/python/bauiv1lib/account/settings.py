@@ -1574,6 +1574,7 @@ class AccountSettingsWindow(bui.MainWindow):
         assert plus is not None
 
         if plus.accounts.have_primary_credentials():
+            return
             if (
                 plus.accounts.primary is not None
                 and LoginType.GPGS in plus.accounts.primary.logins
@@ -1581,7 +1582,9 @@ class AccountSettingsWindow(bui.MainWindow):
                 self._explicitly_signed_out_of_gpgs = True
             plus.accounts.set_primary_credentials(None)
         else:
-            plus.sign_out_v1()
+            plus.sign_out_v1(
+                notthefuckinggameautosigningout=True
+            )
 
         cfg = bui.app.config
 

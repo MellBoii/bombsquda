@@ -586,11 +586,7 @@ class Spaz(bs.Actor):
         self._turbo_filter_times: dict[str, int] = {}
         self._turbo_filter_time_bucket = 0
         self._turbo_filter_counts: dict[str, int] = {}
-        self.earthhptext = None
-        self.earthsptext = None
-        self.earthmeter = None
-        self.earthchar = None
-        self.earthmetertext = None
+        self.eb_meter = None
         self.super_sparkies = None
         self.alreadydidanimation = False
         self.frozen = False
@@ -673,11 +669,7 @@ class Spaz(bs.Actor):
             self.shield,
             self._score_text,
             self.emeralds_indicator,
-            self.earthchar,
-            self.earthmeter,
-            self.earthmetertext,
-            self.earthsptext,
-            self.earthhptext,
+            self.eb_meter,
             self.charge_flash,
             self.yeehaw_text,
             self.parryshield,
@@ -4058,71 +4050,76 @@ class Spaz(bs.Actor):
             self.bomb_count += 1
 
         elif isinstance(msg, bs.DieMessage):
-            wasdead = self._dead
-            self._dead = True
-            self.hitpoints = 0
-            self._roulette_timer = None
-            self._stop_screaming()
-            if self._has_metalcap == True:
-                musicis = self.getactivity().globalsnode.music
-                if musicis == 'MetalCapTime':
-                    bs.setmusic(bs.MusicType.GRAND_ROMP)
-                else:
-                    if not ba.app.config.get("squda_disablemmusic"):
-                        self.remove_from_metal_list()
-            if self.prev_music: 
-                bs.setmusic(getattr(bs.MusicType, self.prev_music))
-                self.prev_music = None
-            if self.charge_flash:
-                self.charge_flash.delete()
-                self.charge_flash = None
-            if self.sparkies:
-                self.sparkies = None
-            if self.yeehaw_text:
-                self.yeehaw_text.delete()
-                self.yeehaw_text = None
-            if msg.immediate:
+            try:
+                wasdead = self._dead
+                self._dead = True
+                self.hitpoints = 0
+                self._roulette_timer = None
+                self._stop_screaming()
+                if self._has_metalcap == True:
+                    musicis = self.getactivity().globalsnode.music
+                    if musicis == 'MetalCapTime':
+                        bs.setmusic(bs.MusicType.GRAND_ROMP)
+                    else:
+                        if not ba.app.config.get("squda_disablemmusic"):
+                            self.remove_from_metal_list()
+                if self.prev_music: 
+                    bs.setmusic(getattr(bs.MusicType, self.prev_music))
+                    self.prev_music = None
+                if self.charge_flash:
+                    self.charge_flash.delete()
+                    self.charge_flash = None
+                if self.sparkies:
+                    self.sparkies = None
+                if self.yeehaw_text:
+                    self.yeehaw_text.delete()
+                    self.yeehaw_text = None
+                if msg.immediate:
+                    if self.node:
+                        self.node.delete()
+                if self.hook:
+                    self.hook.node.delete()
+                    self.hook = None
                 if self.node:
-                    self.node.delete()
-            if self.hook:
-                self.hook.node.delete()
-                self.hook = None
-            if self.node:
-                if not wasdead:
-                    if self.hardmode:
-                        if self.broadcast_death:
-                            pname = self.node.name
-                            bs.broadcastmessage(
-                                bs.Lstr(
-                                    resource='playerDiedHardMode', 
-                                    subs=[('${NAME}', pname)]
-                                ),
-                                color=(4, 4, 4)
-                            )
-                        self.hardmode_death()
-                    if self.play_big_death_sound:
-                        death_sound = SpazFactory.get().single_player_death_sound
-                        if isinstance(death_sound, tuple):
-                            random.choice(death_sound).play()
-                        else:
-                            death_sound.play()
-                            
-                    last_player = getattr(self, 'last_player_attacked_by', None)
-                    if last_player and last_player is not self.source_player:
-                        if self.yeehaws and last_player:
-                            last_player.actor.increase_chain(self.yeehaws)
-                        if last_player.actor.mortal_phase:
-                            last_player.actor._deactivate_mortal_damage()
-                            
-                    if self.earthmeter:
-                        self.play_meter_death_animation()
-                    if self._has_star:
-                        self._deactivate_star()
-                    self.node.dead = True
-                    bs.timer(4.0, self.node.delete)
-                    bs.timer(0.1, self.drop_emeralds)
-                    self.explode_deton_bombs()
-                    self.stop_voicelines()
+                    if not wasdead:
+                        if self.hardmode:
+                            if self.broadcast_death:
+                                pname = self.node.name
+                                bs.broadcastmessage(
+                                    bs.Lstr(
+                                        resource='playerDiedHardMode', 
+                                        subs=[('${NAME}', pname)]
+                                    ),
+                                    color=(4, 4, 4)
+                                )
+                            self.hardmode_death()
+                        if self.play_big_death_sound:
+                            death_sound = SpazFactory.get().single_player_death_sound
+                            if isinstance(death_sound, tuple):
+                                random.choice(death_sound).play()
+                            else:
+                                death_sound.play()
+                                
+                        last_player = getattr(self, 'last_player_attacked_by', None)
+                        if last_player and last_player is not self.source_player:
+                            if self.yeehaws and last_player:
+                                last_player.actor.increase_chain(self.yeehaws)
+                            if last_player.actor.mortal_phase:
+                                last_player.actor._deactivate_mortal_damage()
+                                
+                        if self.eb_meter:
+                            self.eb_meter.play_death_animation()
+                        if self._has_star:
+                            self._deactivate_star()
+                        self.node.dead = True
+                        bs.timer(4.0, self.node.delete)
+                        bs.timer(0.1, self.drop_emeralds)
+                        self.explode_deton_bombs()
+                        self.stop_voicelines()
+            except Exception as e:
+                squdalog.error(f'Spaz failed to die because {e}. Setting its\' node to dead to prevent multiple errors.')
+                self.node.dead = True
+                raise e
         elif isinstance(msg, bs.OutOfBoundsMessage):
             if self.parrying == True:
                 self.tptosafety()
@@ -4532,19 +4529,8 @@ class Spaz(bs.Actor):
         if wave:
             self.node.handlemessage('celebrate_r', 1700.0)
 
-        # Portrait animation
-        if self.earthchar and self.earthchar.exists():
-            bs.animate_array(
-                self.earthchar,
-                "position",
-                2,
-                {
-                    0.0: (self.meterx, self.metery),
-                    0.5: (self.meterx, self.metery + 90),
-                    1.5: (self.meterx, self.metery + 90),
-                    2.5: (self.meterx, self.metery),
-                },
-            )
+        if self.eb_meter:
+            self.eb_meter.popup_char()
     
     def drop_bomb(self) -> Bomb | None:
         """

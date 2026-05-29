@@ -1169,21 +1169,15 @@ def _preload1() -> None:
         'medalSilver',
         'medalGold',
         'characterIconMask',
-        'playerLineup1',
-        'playerLineup2',
-        'playerLineup3',
-        'playerLineup4',
-        'playerLineup5',
-        'playerLineup6',
-        'playerLineup7',
-        'playerLineupCPU',
         'lock',
     ]:
         bs.gettexture(tex)
     bs.gettexture('bg')
     from bascenev1lib.actor.powerupbox import PowerupBoxFactory
+    from fromgoverhaul.mell_sfx import SoundFactory
 
     PowerupBoxFactory.get()
+    SoundFactory.get()
     bui.apptimer(0.1, _preload2)
 
 
@@ -1202,6 +1196,23 @@ def _preload2() -> None:
         'powerupShield',
         'powerupImpactBombs',
         'powerupHealth',
+        'playerLineup0',
+        'playerLineup1',
+        'playerLineup2',
+        'playerLineup3',
+        'playerLineup4',
+        'playerLineup5',
+        'playerLineup6',
+        'playerLineup7',
+        'playerLineup0CM',
+        'playerLineup1CM',
+        'playerLineup2CM',
+        'playerLineup3CM',
+        'playerLineup4CM',
+        'playerLineup5CM',
+        'playerLineup6CM',
+        'playerLineup7CM',
+        'playerLineupCPU',
     ]:
         bs.gettexture(tname)
     for sname in [

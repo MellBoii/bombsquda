@@ -237,19 +237,19 @@ class SharedObjects:
         if self._fireball_material is None:
             mat = self._fireball_material = bs.Material()
             mat.add_actions(
-                conditions=('they_have_material', shared.object_material),
+                conditions=('they_have_material', self.object_material),
                 actions=(
                     ('message', 'our_node', 'at_connect', TouchedMsg()),
                 ),
             )
             mat.add_actions(
-                conditions=('they_have_material', shared.player_material),
+                conditions=('they_have_material', self.player_material),
                 actions=(
                     ('message', 'our_node', 'at_connect', TouchedMsg()),
                 ),
             )
             mat.add_actions(
-                conditions=('they_have_material', shared.footing_material),
+                conditions=('they_have_material', self.footing_material),
                 actions=(
                     ('message', 'our_node', 'at_connect', BounceMessage()),
                 ),
