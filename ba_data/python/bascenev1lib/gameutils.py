@@ -13,17 +13,25 @@ if TYPE_CHECKING:
     pass
 
 class FootingMessage:
+    """A message that tells a Spaz it's 
+    current state of footing."""
     def __init__(self, footing):
         self.footing = footing
 
 class TouchedMessage:
+    """A generic message for 
+    when 2 objects touch."""
     def __init__(self, state):
         self.state = state
 
 class BounceMessage:
+    """A message that tells a 
+    fireball to bounce."""
     pass
     
 class HookedMessage:
+    """A message that tells a
+    whiplash it has hooked onto something."""
     pass
     
 class SharedObjects:
@@ -239,13 +247,13 @@ class SharedObjects:
             mat.add_actions(
                 conditions=('they_have_material', self.object_material),
                 actions=(
-                    ('message', 'our_node', 'at_connect', TouchedMsg()),
+                    ('message', 'our_node', 'at_connect', TouchedMessage(1)),
                 ),
             )
             mat.add_actions(
                 conditions=('they_have_material', self.player_material),
                 actions=(
-                    ('message', 'our_node', 'at_connect', TouchedMsg()),
+                    ('message', 'our_node', 'at_connect', TouchedMessage(1)),
                 ),
             )
             mat.add_actions(
