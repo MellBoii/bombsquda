@@ -779,7 +779,9 @@ class Spaz(bs.Actor):
                         blast_type='tnt',
                         source_player= None
                     )
-                    SoundFactory.get().turbo_death.play(position=self.node.position)
+                    SoundFactory.get().turbo_death.play(
+                        position=self.node.position
+                    )
                     ba.app.classic.ach.award_local_achievement('Turbo')
                     self.shatter()
 
@@ -2713,12 +2715,12 @@ class Spaz(bs.Actor):
             pos = getattr(node, 'position', None)
             if not pos or len(pos) != 3:
                 continue
-            # get distance
+            # get distance from them to us
             dx = pos[0] - ox
             dy = pos[1] - oy
             dz = pos[2] - oz
             dist_sq = dx*dx + dy*dy + dz*dz
-            # if close enough, confirmed
+            # if bomb is close enough, confirmed crit
             if dist_sq < best_dist_sq:
                 best_dist_sq = dist_sq
                 close = True

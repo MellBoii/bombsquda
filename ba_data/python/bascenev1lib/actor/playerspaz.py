@@ -212,7 +212,8 @@ class PlayerSpaz(Spaz):
         )
     
     def refresh_earth_meter(self):
-        self.eb_meter.refresh_position()
+        if self.eb_meter:
+            self.eb_meter.refresh_position()
 
     def disconnect_controls_from_player(self) -> None:
         """
